@@ -569,6 +569,106 @@ body::before{content:'';position:fixed;inset:0;
 /* Undo button */
 #undo-btn:not(:disabled){color:var(--wound);border-color:rgba(245,158,11,.4)}
 
+
+/* ═══ HOME MODE CARDS ═══ */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:340px;margin-bottom:10px}
+.mode-card{border-radius:var(--r);padding:18px 12px;cursor:pointer;transition:all .2s;text-align:center;border:2px solid transparent;position:relative;overflow:hidden}
+.mode-card:active{transform:scale(.96)}
+.mode-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s}
+.mode-card:active::before{opacity:1}
+.mode-40k{background:linear-gradient(135deg,rgba(183,50,40,.2),rgba(183,50,40,.05));border-color:rgba(183,50,40,.4)}
+.mode-40k::before{background:rgba(183,50,40,.1)}
+.mode-kt{background:linear-gradient(135deg,rgba(6,182,212,.2),rgba(6,182,212,.05));border-color:rgba(6,182,212,.4)}
+.mode-kt::before{background:rgba(6,182,212,.1)}
+.mode-icon{font-size:32px;margin-bottom:8px;filter:drop-shadow(0 0 8px currentColor)}
+.mode-name{font-family:var(--ff);font-size:16px;letter-spacing:1px;line-height:1;margin-bottom:4px}
+.mode-40k .mode-name{color:var(--blood2)}
+.mode-kt .mode-name{color:#06b6d4}
+.mode-sub{font-size:10px;color:var(--muted);font-family:var(--fu);letter-spacing:.5px;line-height:1.3}
+
+
+/* ═══ KILL TEAM UI ═══ */
+/* Turn banner */
+.kt-turn-banner{background:linear-gradient(135deg,rgba(6,182,212,.15),rgba(6,182,212,.03));border:1px solid rgba(6,182,212,.35);border-radius:var(--r);padding:14px;text-align:center;margin-bottom:14px}
+.ktb-label{font-family:var(--fu);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.ktb-team{font-family:var(--ff);font-size:26px;letter-spacing:1px;color:#06b6d4;line-height:1}
+.ktb-sub{font-size:12px;color:var(--muted);font-family:var(--fu);margin-top:3px}
+
+/* Operative cards */
+.kt-op-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative}
+.kt-op-card:active{transform:scale(.98)}
+.kt-op-card.activated{opacity:.45;filter:grayscale(.5)}
+.kt-op-card.dead{opacity:.25;filter:grayscale(1);cursor:default}
+.kt-op-card.selected{border-color:var(--gold);background:rgba(232,184,75,.05)}
+.kt-op-hdr{display:flex;align-items:center;gap:10px}
+.kt-op-emoji{font-size:20px;flex-shrink:0}
+.kt-op-info{flex:1;min-width:0}
+.kt-op-name{font-family:var(--ff);font-size:16px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kt-op-sub{font-size:11px;color:var(--muted);font-family:var(--fu);margin-top:1px}
+.kt-op-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.kt-op-hp{font-family:var(--ff);font-size:18px;line-height:1}
+.kt-op-bar{width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.kt-op-bar-fill{height:100%;border-radius:2px;transition:width .3s,background .3s}
+
+/* APL tracker */
+.kt-apl-row{display:flex;align-items:center;gap:6px;margin-top:7px}
+.kt-apl-label{font-family:var(--fu);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.kt-apl-pips{display:flex;gap:4px}
+.kt-apl-pip{width:18px;height:18px;border-radius:50%;border:2px solid rgba(6,182,212,.5);background:rgba(6,182,212,.1);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;font-size:9px}
+.kt-apl-pip.used{background:rgba(6,182,212,.5);border-color:#06b6d4}
+.kt-apl-pip:active{transform:scale(.85)}
+
+/* KT stats row */
+.kt-stats{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.kt-stat{background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-family:var(--fu);font-size:11px;font-weight:700}
+.kt-stat s{color:#06b6d4;text-decoration:none;margin-right:2px}
+
+/* Activated badge */
+.kt-activated-badge{position:absolute;top:8px;right:8px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);border-radius:4px;padding:2px 7px;font-family:var(--fu);font-size:10px;color:var(--hit);letter-spacing:1px}
+.kt-dead-badge{position:absolute;top:8px;right:8px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:4px;padding:2px 7px;font-family:var(--fu);font-size:10px;color:var(--dmg);letter-spacing:1px}
+
+/* Team overview */
+.kt-team-overview{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-bottom:8px}
+.kt-team-ov-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.kt-team-ov-name{font-family:var(--ff);font-size:16px;flex:1}
+.kt-team-ov-count{font-family:var(--fu);font-size:11px;color:var(--muted)}
+.kt-mini-ops{display:flex;flex-wrap:wrap;gap:5px}
+.kt-mini-op{width:34px;height:34px;border-radius:var(--rsm);background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;cursor:pointer;transition:all .2s}
+.kt-mini-op.dead{opacity:.25;filter:grayscale(1)}
+.kt-mini-op.activated{border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.05)}
+.kt-mini-op-hp{position:absolute;bottom:1px;right:2px;font-size:8px;font-family:var(--fu);font-weight:700;color:var(--text)}
+
+/* KT combat dice */
+.kt-die-atk{border-color:var(--wound)!important;color:var(--wound)!important}
+.kt-die-crit{border-color:var(--gold)!important;color:var(--gold)!important;background:var(--gold-glow)!important;animation:mortalPulse .5s}
+.kt-die-def-ok{border-color:var(--save)!important;color:var(--save)!important}
+.kt-die-def-fail{border-color:var(--dmg)!important;color:var(--dmg)!important}
+
+/* KT team roster card */
+.kt-team-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s;border-left:4px solid transparent}
+.kt-team-card:active{transform:scale(.98)}
+.kt-team-card.selected{border-left-color:var(--pcolor)}
+.kt-tc-hdr{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.kt-tc-emoji{font-size:26px}
+.kt-tc-info{flex:1}
+.kt-tc-name{font-family:var(--ff);font-size:18px;letter-spacing:.5px}
+.kt-tc-faction{font-size:11px;color:var(--muted);font-family:var(--fu)}
+.kt-tc-style{font-size:11px;font-family:var(--fu);margin-top:2px}
+.kt-tc-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-top:6px}
+.kt-tc-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;flex-shrink:0}
+.kt-team-card.selected .kt-tc-check{background:var(--pcolor);border-color:var(--pcolor);color:#000;font-weight:900}
+
+/* KT operative select */
+.kt-op-select-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:10px}
+.kt-osc-info{flex:1}
+.kt-osc-name{font-family:var(--ff);font-size:15px}
+.kt-osc-sub{font-size:11px;color:var(--muted);font-family:var(--fu)}
+.kt-osc-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.kt-osc-unique{font-family:var(--fu);font-size:10px;color:var(--gold);letter-spacing:1px;background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.3);border-radius:4px;padding:2px 6px}
+.kt-osc-toggle{width:28px;height:28px;border-radius:var(--rsm);border:1px solid var(--border2);background:var(--card2);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.kt-osc-toggle.active{background:rgba(6,182,212,.2);border-color:#06b6d4;color:#06b6d4}
+.kt-osc-toggle:active{transform:scale(.88)}
+
 </style>
 </head>
 <body>
@@ -764,9 +864,21 @@ const VFX = {
 
     <!-- Buttons -->
     <div class="home-intro-btns" style="width:100%;max-width:300px;display:flex;flex-direction:column;gap:10px;margin-top:16px">
-      <button class="btn btn-primary" id="btn-start-battle" onclick="onStartBattle()">⚔ INICIAR BATALHA</button>
+      <!-- Mode selection -->
+      <div class="mode-grid">
+        <div class="mode-card mode-40k" id="btn-start-battle" onclick="onStartBattle()">
+          <div class="mode-icon">⚔</div>
+          <div class="mode-name">WARHAMMER 40K</div>
+          <div class="mode-sub">Batalha em escala de exército</div>
+        </div>
+        <div class="mode-card mode-kt" onclick="onStartKillTeam()">
+          <div class="mode-icon">🎯</div>
+          <div class="mode-name">KILL TEAM</div>
+          <div class="mode-sub">Esquadrões de elite em missões táticas</div>
+        </div>
+      </div>
       <button class="btn btn-secondary btn-sm" onclick="SFX.click();NAV.go('screen-library',initLibrary)">📚 BIBLIOTECA DE FICHAS</button>
-      <button class="btn btn-secondary btn-sm" onclick="openSettings();SFX.click()" style="margin-top:2px">⚙ CONFIGURAÇÕES</button>
+      <button class="btn btn-secondary btn-sm" onclick="openSettings();SFX.click()" style="margin-top:4px">⚙ CONFIGURAÇÕES</button>
     </div>
 
     <div class="home-intro-stats" style="margin-top:20px;font-size:12px;line-height:1.8" id="home-stats"></div>
@@ -4005,5 +4117,1184 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 </div>
 </div>
 
+
+<!-- ═══ KT: TEAM SELECT ═══ -->
+<div class="screen" id="screen-kt-team-select">
+  <div class="hdr">
+    <button class="hdr-back" onclick="SFX.click();NAV.back(initHome)">←</button>
+    <div class="hdr-info"><div class="hdr-eyebrow">Kill Team · Passo 1</div><div class="hdr-title">🎯 <span>ESCOLHA OS TIMES</span></div></div>
+  </div>
+  <div class="screen-body">
+    <div id="kt-player-forms"></div>
+    <button class="btn btn-primary" id="btn-kt-to-roster" onclick="NAV.go('screen-kt-roster',initKTRoster);SFX.click()" disabled>MONTAR ROSTER →</button>
+  </div>
+</div>
+
+<!-- ═══ KT: ROSTER BUILD ═══ -->
+<div class="screen" id="screen-kt-roster">
+  <div class="hdr">
+    <button class="hdr-back" onclick="SFX.click();NAV.back(initKTTeamSelect)">←</button>
+    <div class="hdr-info">
+      <div class="hdr-eyebrow" id="kt-roster-progress">Jogador 1 de 2</div>
+      <div class="hdr-title" id="kt-roster-title" style="font-size:17px">OPERATIVOS</div>
+    </div>
+    <div class="hdr-right"><div class="hdr-badge">Selecionados</div><div class="hdr-val" id="kt-op-count">0</div></div>
+  </div>
+  <div class="screen-body">
+    <div id="kt-team-info-card" style="margin-bottom:12px"></div>
+    <div class="sec-label">Selecione os operativos:</div>
+    <div id="kt-operative-list"></div>
+    <button class="btn btn-primary" id="btn-kt-roster-next" onclick="ktRosterNext();SFX.click()" disabled>PRÓXIMO →</button>
+  </div>
+</div>
+
+<!-- ═══ KT: BATTLE ═══ -->
+<div class="screen" id="screen-kt-battle">
+  <div class="hdr">
+    <button class="hdr-back" onclick="SFX.click();NAV.back()">←</button>
+    <div class="hdr-info"><div class="hdr-eyebrow">Kill Team · Em andamento</div><div class="hdr-title">🎯 <span>BATALHA</span></div></div>
+    <div class="hdr-right">
+      <div class="hdr-badge">Turno</div>
+      <div class="hdr-val" id="kt-turn-num">1</div>
+    </div>
+  </div>
+  <!-- KT Tab bar -->
+  <div class="battle-tab-bar">
+    <div class="battle-tab active" id="kt-tab-activation" onclick="ktSwitchTab('activation');SFX.click()">⚡ ATIVAR</div>
+    <div class="battle-tab" id="kt-tab-combat" onclick="ktSwitchTab('combat');SFX.click()">⚔ COMBATE</div>
+    <div class="battle-tab" id="kt-tab-status" onclick="ktSwitchTab('status');SFX.click()">❤ STATUS</div>
+  </div>
+
+  <!-- ACTIVATION TAB -->
+  <div id="kt-tab-activation-panel" class="screen-body">
+    <!-- Turn header -->
+    <div class="kt-turn-banner" id="kt-turn-banner">
+      <div class="ktb-label">VEZ DE ATIVAR</div>
+      <div class="ktb-team" id="ktb-team-name">—</div>
+      <div class="ktb-sub" id="ktb-sub">Escolha um operativo</div>
+    </div>
+    <!-- Active player operatives -->
+    <div class="sec-label" id="kt-active-label">Operativos disponíveis:</div>
+    <div id="kt-active-operatives"></div>
+    <!-- All teams overview -->
+    <div class="divider"></div>
+    <div class="sec-label">Todos os operativos:</div>
+    <div id="kt-all-teams-overview"></div>
+    <button class="btn btn-gold" style="margin-top:8px" onclick="ktEndTurn();SFX.click()" id="kt-end-turn-btn">⏭ FINALIZAR TURNO</button>
+  </div>
+
+  <!-- COMBAT TAB -->
+  <div id="kt-tab-combat-panel" class="screen-body" style="display:none">
+    <div class="sec-label">① Operativo Atacante</div>
+    <div id="kt-atk-selector"></div>
+    <div id="kt-weapon-wrap" class="hidden">
+      <div class="sec-label">② Arma</div>
+      <div class="weapon-pills-big" id="kt-weapon-pills"></div>
+    </div>
+    <div class="sec-label">③ Operativo Defensor</div>
+    <div id="kt-def-selector"></div>
+    <div id="kt-combat-checklist" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-bottom:12px">
+      <div style="font-family:var(--fu);font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:8px">FALTA:</div>
+      <div id="kt-checklist-items"></div>
+    </div>
+    <button class="btn btn-primary" id="kt-btn-combat" onclick="ktOpenCombat()" disabled>⚔ RESOLVER COMBATE</button>
+    <div id="kt-hist-section" class="hist-section hidden" style="margin-top:14px">
+      <div class="sec-label">Histórico</div>
+      <div id="kt-hist-list"></div>
+    </div>
+  </div>
+
+  <!-- STATUS TAB -->
+  <div id="kt-tab-status-panel" class="screen-body" style="display:none">
+    <div id="kt-status-content"></div>
+  </div>
+</div>
+
+
+<script>
+// ═══════════════════════════════════════════════════════
+// KILL TEAM DATA — Operatives, Teams, Rules
+// ═══════════════════════════════════════════════════════
+
+// Kill Team stat block is different from 40K:
+// M (Movement), APL (Action Points), GA (Group Activation),
+// DF (Defense dice), SV (Save), W (Wounds)
+// Weapons: A (Attacks), BS/WS (Skill), D (Damage normal), CD (Critical Damage)
+// Critical Hit special rules per weapon
+
+const KT_TEAMS = [
+  // ── INTERCESSION SQUAD (Space Marines) ──────────────
+  {
+    id:'kt-intercession', name:'Intercession Squad', faction:'Space Marines',
+    color:'#4a90d9', emoji:'🔵',
+    desc:'Intercessors do Primaris — versáteis, resistentes e adaptáveis. Bom para iniciantes.',
+    style:'Tiro · Versátil',
+    limit: 6, // max operatives
+    operatives: [
+      { id:'kt-intercessor-sgt', name:'Sargento Intercessor', unique:true,
+        M:'3"', APL:2, GA:1, DF:3, SV:3, W:14,
+        abilities:'Líder: Uma vez por turno, pode usar 1 APL para dar 1 APL a um aliado a 6".',
+        weapons:[
+          { name:'Bolt Rifle',     A:4, skill:3, D:4, CD:5, range:'long', tags:['Relentless'] },
+          { name:'Espada Astartes',A:4, skill:3, D:4, CD:5, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-intercessor', name:'Guerreiro Intercessor', unique:false, count:5,
+        M:'3"', APL:2, GA:1, DF:3, SV:3, W:12,
+        abilities:'Determinado: Ignora penalidades de movimento ao atirar.',
+        weapons:[
+          { name:'Bolt Rifle',     A:4, skill:3, D:4, CD:5, range:'long', tags:['Relentless'] },
+          { name:'Espada Astartes',A:3, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-intercessor-heavy', name:'Guerreiro com Arma Pesada', unique:false, count:1,
+        M:'3"', APL:2, GA:1, DF:3, SV:3, W:12,
+        abilities:'Arma Pesada: Após atirar, esta figurine fica Engajada.',
+        weapons:[
+          { name:'Auto Bolt Rifle',A:5, skill:3, D:3, CD:5, range:'long', tags:['Ceaseless'] },
+          { name:'Espada Astartes',A:3, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+    ]
+  },
+
+  // ── TYRANID WARRIORS (Tyranids) ─────────────────────
+  {
+    id:'kt-warriors', name:'Tyranid Warriors', faction:'Tyranids',
+    color:'#a855f7', emoji:'🟣',
+    desc:'Seres híbridos entre comandante e soldado. Synapse psíquica controla o enxame.',
+    style:'Melee · Synapse',
+    limit: 5,
+    operatives: [
+      { id:'kt-warrior-prime', name:'Warrior Prime', unique:true,
+        M:'3"', APL:2, GA:1, DF:3, SV:4, W:18,
+        abilities:'Synapse: Operativos Tyranid a 6" podem re-rolar 1 dado de Defesa por ativação.',
+        weapons:[
+          { name:'Deathspitter',   A:4, skill:3, D:4, CD:6, range:'long' },
+          { name:'Lâminas Tyranid',A:5, skill:3, D:5, CD:7, range:'melee', tags:['Rending'] },
+        ]},
+      { id:'kt-warrior', name:'Warrior', unique:false, count:4,
+        M:'3"', APL:2, GA:1, DF:3, SV:4, W:16,
+        abilities:'Predatório: Re-rola 1 dado de ataque ao carregar (Fight action).',
+        weapons:[
+          { name:'Devourer',       A:5, skill:4, D:3, CD:5, range:'long', tags:['Ceaseless'] },
+          { name:'Lâminas Tyranid',A:4, skill:3, D:4, CD:6, range:'melee', tags:['Rending'] },
+        ]},
+    ]
+  },
+
+  // ── KOMMANDOS (Orks) ────────────────────────────────
+  {
+    id:'kt-kommandos', name:'Kommandos', faction:'Orks',
+    color:'#f59e0b', emoji:'🟡',
+    desc:'Orks furtivos especializados em infiltração e emboscadas. Caóticos mas devastadores.',
+    style:'Furtivo · Melee',
+    limit: 10,
+    operatives: [
+      { id:'kt-kommando-boss', name:'Boss Kommando', unique:true,
+        M:'3"', APL:2, GA:1, DF:4, SV:5, W:16,
+        abilities:'WAAAGH!: Uma vez por fase de combate, pode usar Charge como ação bônus gratuita.',
+        weapons:[
+          { name:'Slugga',         A:4, skill:5, D:3, CD:4, range:'short' },
+          { name:'Choppa',         A:4, skill:3, D:4, CD:6, range:'melee', tags:['Rending'] },
+        ]},
+      { id:'kt-kommando', name:'Kommando', unique:false, count:9,
+        M:'3"', APL:2, GA:2, DF:4, SV:5, W:10,
+        abilities:'Furtivo: Quando se mover para Cover, não recebe penalidade de visibilidade.',
+        weapons:[
+          { name:'Slugga',         A:3, skill:5, D:3, CD:4, range:'short' },
+          { name:'Choppa',         A:3, skill:4, D:3, CD:5, range:'melee' },
+        ]},
+      { id:'kt-kommando-snipa', name:'Kommando Snipa', unique:true,
+        M:'3"', APL:2, GA:1, DF:4, SV:5, W:10,
+        abilities:'Snipa: Pode atacar alvos em Heavy Cover sem penalidade.',
+        weapons:[
+          { name:'Snipa Rifle',    A:3, skill:4, D:5, CD:6, range:'long', tags:['Silent','Severe'] },
+          { name:'Faca Ork',       A:3, skill:4, D:3, CD:4, range:'melee' },
+        ]},
+    ]
+  },
+
+  // ── DEATH KORPS OF KRIEG (Astra Militarum) ──────────
+  {
+    id:'kt-krieg', name:'Death Korps of Krieg', faction:'Astra Militarum',
+    color:'#d97706', emoji:'🟠',
+    desc:'Soldados fanáticos da Guarda Imperial sem medo da morte. Força em números e determinação.',
+    style:'Tiro · Horda',
+    limit: 14,
+    operatives: [
+      { id:'kt-krieg-watchmaster', name:'Watchmaster', unique:true,
+        M:'3"', APL:2, GA:1, DF:3, SV:5, W:10,
+        abilities:'Ordens: Uma vez por ativação, dá +1 APL a um Guardsman aliado a 6".',
+        weapons:[
+          { name:'Laspistol',      A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Espada de Poder',A:4, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-krieg-gunner', name:'Krieg Guardsman', unique:false, count:11,
+        M:'3"', APL:1, GA:2, DF:3, SV:5, W:8,
+        abilities:'Fanático: Ignora modificadores de moral. Nunca faz Fall Back.',
+        weapons:[
+          { name:'Lasgun',         A:4, skill:4, D:3, CD:4, range:'long', tags:['Relentless'] },
+          { name:'Baioneta',       A:3, skill:4, D:2, CD:3, range:'melee' },
+        ]},
+      { id:'kt-krieg-melta', name:'Gunner com Meltagun', unique:true,
+        M:'3"', APL:1, GA:2, DF:3, SV:5, W:8,
+        abilities:'Melta: Critical hits com esta arma causam +2 de dano adicional.',
+        weapons:[
+          { name:'Meltagun',       A:4, skill:4, D:5, CD:6, range:'short', tags:['Melta'] },
+          { name:'Baioneta',       A:3, skill:4, D:2, CD:3, range:'melee' },
+        ]},
+      { id:'kt-krieg-grenadier', name:'Grenadier', unique:true,
+        M:'3"', APL:1, GA:2, DF:3, SV:5, W:8,
+        abilities:'Granadas: Uma vez por batalha, pode lançar Granada Krak (D:5, CD:6, Blast).',
+        weapons:[
+          { name:'Lasgun',         A:4, skill:4, D:3, CD:4, range:'long', tags:['Relentless'] },
+          { name:'Baioneta',       A:3, skill:4, D:2, CD:3, range:'melee' },
+        ]},
+    ]
+  },
+
+  // ── CHAOS SPACE MARINES (Traitor Astartes) ──────────
+  {
+    id:'kt-legionaries', name:'Legionaries', faction:'Chaos Space Marines',
+    color:'#ef4444', emoji:'🔴',
+    desc:'Ex-Space Marines corrompidos pelo Caos. Versáteis e implacáveis, com bênçãos sombrias.',
+    style:'Melee · Versátil',
+    limit: 6,
+    operatives: [
+      { id:'kt-legionary-aspiring', name:'Aspiring Champion', unique:true,
+        M:'3"', APL:2, GA:1, DF:3, SV:3, W:16,
+        abilities:'Bênção do Caos: No início da ativação, escolha um bônus: +1 Ataque, re-rolar Hits, ou +1 Dano.',
+        weapons:[
+          { name:'Bolter do Caos', A:4, skill:3, D:4, CD:5, range:'long' },
+          { name:'Espada do Caos', A:5, skill:3, D:5, CD:7, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-legionary', name:'Legionary', unique:false, count:5,
+        M:'3"', APL:2, GA:1, DF:3, SV:3, W:13,
+        abilities:'Aura do Caos: Re-rola 1 dado de ataque por ativação.',
+        weapons:[
+          { name:'Bolter do Caos', A:4, skill:3, D:4, CD:5, range:'long' },
+          { name:'Punho do Caos',  A:4, skill:3, D:4, CD:6, range:'melee' },
+        ]},
+    ]
+  },
+
+  // ── TAU PATHFINDERS ─────────────────────────────────
+  {
+    id:'kt-pathfinders', name:"T'au Pathfinders", faction:"T'au Empire",
+    color:'#06b6d4', emoji:'🔵',
+    desc:"Batedores T'au com tecnologia avançada de reconhecimento. Marcar alvos para aliados.",
+    style:'Tiro · Suporte',
+    limit: 10,
+    operatives: [
+      { id:'kt-pathfinder-shas', name:"Shas'ui Pathfinder", unique:true,
+        M:'3"', APL:2, GA:1, DF:3, SV:5, W:10,
+        abilities:"Liderança T'au: Pode usar Marcar Alvo como ação de 0 APL uma vez por ativação.",
+        weapons:[
+          { name:'Pulse Rifle',    A:4, skill:3, D:4, CD:6, range:'long', tags:['Assault'] },
+          { name:'Lança Carbono',  A:3, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-pathfinder', name:'Pathfinder', unique:false, count:9,
+        M:'3"', APL:2, GA:2, DF:3, SV:5, W:8,
+        abilities:"Marcar Alvo: Ação (1 APL): alvo a até 9\" fica Marcado — todos os T'au ganham re-rolar 1 Hit contra ele.",
+        weapons:[
+          { name:'Pulse Carbine',  A:4, skill:4, D:3, CD:5, range:'short', tags:['Assault'] },
+          { name:'Lança Carbono',  A:3, skill:4, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-pathfinder-drone', name:'Recon Drone', unique:true,
+        M:'4"', APL:2, GA:1, DF:3, SV:5, W:8,
+        abilities:'Voo: Ignora terreno ao mover. Sensor: Inimigos a 9" não podem ficar Hidden.',
+        weapons:[
+          { name:'Pulse Carbine',  A:4, skill:4, D:3, CD:5, range:'short', tags:['Assault'] },
+          { name:'Colisão',        A:3, skill:4, D:3, CD:3, range:'melee' },
+        ]},
+    ]
+  },
+];
+
+// ── KILL TEAM ACTIONS ────────────────────────────────
+const KT_ACTIONS = [
+  { name:'Mover',      apl:1, desc:'Move até M" em qualquer direção.' },
+  { name:'Avançar',    apl:1, desc:'Move até M" adicional mas não pode atacar nesta ativação.' },
+  { name:'Atacar',     apl:1, desc:'Faz um ataque com uma arma.' },
+  { name:'Recarregar', apl:1, desc:'Remove o token de Recarregamento da arma.' },
+  { name:'Esconder',   apl:1, desc:'Fica Hidden se estiver em cobertura.' },
+  { name:'Lutar',      apl:1, desc:'Engaja em combate corpo a corpo.' },
+  { name:'Misericórdia',apl:2,desc:'Elimina um operativo aliado ferido (conta como morto mas não Cortado).' },
+];
+
+// ── KILL TEAM DB ─────────────────────────────────────
+const KT_DB = {
+  getTeams()   { return KT_TEAMS; },
+  getTeam(id)  { return KT_TEAMS.find(t => t.id === id); },
+  getActions() { return KT_ACTIONS; },
+};
+
+// ── KILL TEAM SESSION ────────────────────────────────
+const KT_SESSION = {
+  teams:      [],   // [{playerId, playerName, teamId, color, operatives:[...with curW, dead, activated]}]
+  turn:       1,
+  phase:      'strategy', // strategy → firefight → morale
+  activeIdx:  0,   // whose turn to activate
+  turnOrder:  [],  // [playerId, playerId, ...] alternating
+  log:        [],
+
+  init(players) {
+    this.teams = players.map((p, i) => {
+      const team = KT_DB.getTeam(p.teamId);
+      // Build full operative roster
+      const operatives = [];
+      (team?.operatives || []).forEach(op => {
+        const count = p.selectedOps[op.id] || 0;
+        for (let j = 0; j < count; j++) {
+          operatives.push({
+            ...op,
+            instanceId: `${op.id}-${j}`,
+            displayName: count > 1 ? `${op.name} ${j+1}` : op.name,
+            curW: op.W,
+            dead: false,
+            activated: false,
+            hidden: false,
+            tokens: [], // Engaged, Reloading, etc.
+          });
+        }
+      });
+      return { playerId: `p${i}`, playerName: p.name, teamId: p.teamId,
+               color: team?.color || '#888', operatives, cp: 2, score: 0 };
+    });
+    this.turn = 1;
+    this.phase = 'strategy';
+    this.activeIdx = 0;
+    this.log = [];
+    this.resetActivations();
+  },
+
+  getTeamByPlayer(playerId) { return this.teams.find(t => t.playerId === playerId); },
+
+  resetActivations() {
+    this.teams.forEach(t => t.operatives.forEach(op => op.activated = false));
+    // Randomize who goes first each turn
+    this.activeIdx = Math.floor(Math.random() * this.teams.length);
+  },
+
+  nextActivation() {
+    // Alternate between teams
+    this.activeIdx = (this.activeIdx + 1) % this.teams.length;
+    // Check if all activated
+    const anyLeft = this.teams.some(t => t.operatives.some(op => !op.dead && !op.activated));
+    if (!anyLeft) this.endTurn();
+  },
+
+  endTurn() {
+    this.turn++;
+    this.resetActivations();
+  },
+
+  getActiveTeam() { return this.teams[this.activeIdx]; },
+
+  applyDamage(playerId, instanceId, dmg) {
+    const team = this.getTeamByPlayer(playerId);
+    if (!team) return 0;
+    const op = team.operatives.find(o => o.instanceId === instanceId);
+    if (!op || op.dead) return 0;
+    op.curW = Math.max(0, op.curW - dmg);
+    if (op.curW === 0) op.dead = true;
+    return op.dead ? 1 : 0;
+  },
+};
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════
+// KILL TEAM LOGIC — Screens, Combat, Activation
+// ═══════════════════════════════════════════════════════
+
+// ── SETUP STATE ──────────────────────────────────────
+let ktPendingPlayers = []; // [{name, teamId, selectedOps:{opId->count}}]
+let ktRosterIdx = 0;
+
+function onStartKillTeam() {
+  SFX.buttonPress();
+  VFX.warpTransition(() => NAV.go('screen-kt-team-select', initKTTeamSelect));
+}
+
+// ── TEAM SELECT ──────────────────────────────────────
+function initKTTeamSelect() {
+  const numPlayers = 2; // Kill Team is always 2 players
+  ktPendingPlayers = Array.from({length: numPlayers}, (_, i) => ({
+    name: `Jogador ${i+1}`, teamId: null, selectedOps: {}, cp: 2,
+  }));
+  renderKTPlayerForms();
+}
+
+function renderKTPlayerForms() {
+  const container = document.getElementById('kt-player-forms');
+  container.innerHTML = '';
+  const teams = KT_DB.getTeams();
+
+  ktPendingPlayers.forEach((p, i) => {
+    const section = document.createElement('div');
+    section.style.marginBottom = '18px';
+
+    // Player name input
+    const nameRow = document.createElement('div');
+    nameRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:10px';
+    nameRow.innerHTML = `
+      <div class="setup-player-num">${i+1}</div>
+      <input class="setup-name-input" style="flex:1" value="${p.name}" placeholder="Nome do jogador"
+        oninput="ktPendingPlayers[${i}].name=this.value">`;
+    section.appendChild(nameRow);
+
+    const label = document.createElement('div');
+    label.className = 'sec-label';
+    label.textContent = 'Escolha o Kill Team:';
+    section.appendChild(label);
+
+    teams.forEach(team => {
+      const card = document.createElement('div');
+      card.className = 'kt-team-card' + (p.teamId === team.id ? ' selected' : '');
+      card.style.setProperty('--pcolor', team.color);
+      card.innerHTML = `
+        <div class="kt-tc-hdr">
+          <div class="kt-tc-emoji">${team.emoji}</div>
+          <div class="kt-tc-info">
+            <div class="kt-tc-name" style="color:${team.color}">${team.name}</div>
+            <div class="kt-tc-faction">${team.faction}</div>
+            <div class="kt-tc-style" style="color:${team.color}">${team.style}</div>
+          </div>
+          <div class="kt-tc-check" style="${p.teamId===team.id?`background:${team.color};border-color:${team.color};color:#000`:''}">${p.teamId===team.id?'✓':''}</div>
+        </div>
+        <div class="kt-tc-desc">${team.desc}</div>`;
+      card.onclick = () => {
+        SFX.click();
+        ktPendingPlayers[i].teamId = team.id;
+        ktPendingPlayers[i].selectedOps = {};
+        renderKTPlayerForms();
+        updateKTSetupBtn();
+      };
+      section.appendChild(card);
+    });
+
+    container.appendChild(section);
+  });
+  updateKTSetupBtn();
+}
+
+function updateKTSetupBtn() {
+  const btn = document.getElementById('btn-kt-to-roster');
+  if (btn) btn.disabled = !ktPendingPlayers.every(p => p.teamId !== null);
+}
+
+// ── ROSTER BUILD ─────────────────────────────────────
+function initKTRoster() {
+  ktRosterIdx = 0;
+  renderKTRosterForPlayer(0);
+}
+
+function renderKTRosterForPlayer(idx) {
+  const p = ktPendingPlayers[idx];
+  const team = KT_DB.getTeam(p.teamId);
+  if (!team) return;
+
+  document.getElementById('kt-roster-progress').textContent = `Jogador ${idx+1} de ${ktPendingPlayers.length}`;
+  document.getElementById('kt-roster-title').textContent = `${p.name} — ${team.name}`;
+
+  // Team info card
+  const infoCard = document.getElementById('kt-team-info-card');
+  infoCard.innerHTML = `
+    <div style="background:linear-gradient(135deg,rgba(6,182,212,.12),transparent);border:1px solid rgba(6,182,212,.3);border-radius:var(--r);padding:11px 13px">
+      <div style="font-family:var(--ff);font-size:16px;color:${team.color};margin-bottom:3px">${team.emoji} ${team.name}</div>
+      <div style="font-size:12px;color:var(--muted);font-family:var(--fu)">Limite: ${team.limit} operativos · ${team.style}</div>
+    </div>`;
+
+  // Count selected
+  const totalSelected = Object.values(p.selectedOps).reduce((s,v)=>s+v,0);
+  const countEl = document.getElementById('kt-op-count');
+  if (countEl) countEl.textContent = `${totalSelected}/${team.limit}`;
+
+  const list = document.getElementById('kt-operative-list');
+  list.innerHTML = '';
+
+  team.operatives.forEach(op => {
+    const isUnique = op.unique;
+    const maxCount = isUnique ? 1 : (op.count || 5);
+    const selected = p.selectedOps[op.id] || 0;
+    const pct = op.W > 0 ? 1 : 1;
+
+    const card = document.createElement('div');
+    card.className = 'kt-op-select-card';
+    card.innerHTML = `
+      <div class="kt-op-emoji" style="font-size:22px">${team.emoji}</div>
+      <div class="kt-osc-info">
+        <div class="kt-osc-name">${op.name}</div>
+        <div class="kt-osc-sub">APL:${op.APL} · DF:${op.DF} · Sv:${op.SV}+ · PV:${op.W}</div>
+        <div class="kt-stats" style="margin-top:4px">
+          ${op.weapons.map(w=>`<span class="kt-stat"><s>${w.range==='melee'?'⚔':'🎯'}</s>${w.name} A:${w.A} D:${w.D}/C:${w.CD}</span>`).join('')}
+        </div>
+      </div>
+      <div class="kt-osc-right">
+        ${isUnique ? `<span class="kt-osc-unique">ÚNICO</span>` : ''}
+        <div style="display:flex;align-items:center;gap:5px">
+          ${!isUnique && selected > 0 ? `<button class="kt-osc-toggle" onclick="ktChangeOp(${idx},'${op.id}',-1)">−</button>` : ''}
+          ${selected > 0 ? `<span style="font-family:var(--ff);font-size:18px;color:var(--gold);min-width:18px;text-align:center">${selected}</span>` : ''}
+          <button class="kt-osc-toggle ${selected>0?'active':''}" onclick="ktChangeOp(${idx},'${op.id}',1)">${selected>0?'✓':'+'}</button>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+
+  // Next/start button
+  const btn = document.getElementById('btn-kt-roster-next');
+  const isLast = idx === ktPendingPlayers.length - 1;
+  btn.textContent = isLast ? '⚔ INICIAR KILL TEAM!' : 'PRÓXIMO JOGADOR →';
+  btn.disabled = totalSelected === 0;
+}
+
+function ktChangeOp(pidx, opId, delta) {
+  SFX.click();
+  const p = ktPendingPlayers[pidx];
+  const team = KT_DB.getTeam(p.teamId);
+  const op = team.operatives.find(o => o.id === opId);
+  const maxCount = op.unique ? 1 : (op.count || 5);
+  const totalSelected = Object.values(p.selectedOps).reduce((s,v)=>s+v,0);
+
+  if (delta > 0 && totalSelected >= team.limit) {
+    showToast(`⚠ Limite de ${team.limit} operativos atingido!`);
+    return;
+  }
+  const cur = p.selectedOps[opId] || 0;
+  const next = Math.max(0, Math.min(maxCount, cur + delta));
+  if (next === 0) delete p.selectedOps[opId];
+  else p.selectedOps[opId] = next;
+  renderKTRosterForPlayer(pidx);
+}
+
+function ktRosterNext() {
+  SFX.click();
+  if (ktRosterIdx < ktPendingPlayers.length - 1) {
+    ktRosterIdx++;
+    renderKTRosterForPlayer(ktRosterIdx);
+  } else {
+    // Start the game
+    KT_SESSION.init(ktPendingPlayers);
+    NAV.go('screen-kt-battle', initKTBattle);
+  }
+}
+
+// ── BATTLE ───────────────────────────────────────────
+let ktActiveCombat = { atkTeamId:null, atkOpId:null, weapon:null, defTeamId:null, defOpId:null };
+let ktCombatHist = [];
+
+function initKTBattle() {
+  document.getElementById('kt-turn-num').textContent = KT_SESSION.turn;
+  ktCombatHist = [];
+  ktSwitchTab('activation');
+  renderKTActivation();
+}
+
+function ktSwitchTab(tab) {
+  ['activation','combat','status'].forEach(t => {
+    const panel = document.getElementById(`kt-tab-${t}-panel`);
+    const btn   = document.getElementById(`kt-tab-${t}`);
+    if (panel) panel.style.display = t===tab ? 'block' : 'none';
+    if (btn) {
+      btn.classList.toggle('active', t===tab);
+      btn.style.color = t===tab ? '#06b6d4' : 'var(--muted)';
+      btn.style.borderBottomColor = t===tab ? '#06b6d4' : 'transparent';
+    }
+  });
+  if (tab === 'activation') renderKTActivation();
+  if (tab === 'combat') renderKTCombatTab();
+  if (tab === 'status') renderKTStatus();
+}
+
+// ── ACTIVATION TAB ───────────────────────────────────
+function renderKTActivation() {
+  const activeTeam = KT_SESSION.getActiveTeam();
+  const banner = document.getElementById('ktb-team-name');
+  const sub    = document.getElementById('ktb-sub');
+  const label  = document.getElementById('kt-active-label');
+
+  if (banner) { banner.textContent = activeTeam.playerName; banner.style.color = activeTeam.color; }
+
+  const aliveOps = activeTeam.operatives.filter(op => !op.dead);
+  const availOps = aliveOps.filter(op => !op.activated);
+
+  if (sub) sub.textContent = availOps.length > 0
+    ? `${availOps.length} operativo${availOps.length!==1?'s':''} disponível${availOps.length!==1?'s':''}`
+    : 'Todos ativados neste turno';
+  if (label) label.textContent = availOps.length > 0
+    ? `${activeTeam.playerName} — Escolha um operativo:`
+    : 'Aguardando adversário...';
+
+  // Active operatives
+  const container = document.getElementById('kt-active-operatives');
+  container.innerHTML = '';
+  activeTeam.operatives.forEach(op => renderKTOpCard(op, activeTeam, container, true));
+
+  // All teams overview
+  const overview = document.getElementById('kt-all-teams-overview');
+  overview.innerHTML = '';
+  KT_SESSION.teams.forEach(team => {
+    const div = document.createElement('div');
+    div.className = 'kt-team-overview';
+    div.style.borderLeft = `3px solid ${team.color}`;
+    const alive = team.operatives.filter(o=>!o.dead).length;
+    const activated = team.operatives.filter(o=>!o.dead&&o.activated).length;
+    div.innerHTML = `
+      <div class="kt-team-ov-hdr">
+        <div class="kt-team-ov-name" style="color:${team.color}">${team.playerName}</div>
+        <div class="kt-team-ov-count">${activated}/${alive} ativados</div>
+      </div>
+      <div class="kt-mini-ops">
+        ${team.operatives.map(op => `
+          <div class="kt-mini-op ${op.dead?'dead':op.activated?'activated':''}"
+            onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')" title="${op.displayName}">
+            <span style="font-size:13px">${team.emoji}</span>
+            <div class="kt-mini-op-hp">${op.dead?'💀':op.curW}</div>
+          </div>`).join('')}
+      </div>`;
+    overview.appendChild(div);
+  });
+
+  // End turn button
+  const endBtn = document.getElementById('kt-end-turn-btn');
+  const anyLeft = KT_SESSION.teams.some(t => t.operatives.some(op=>!op.dead&&!op.activated));
+  if (endBtn) {
+    endBtn.disabled = anyLeft;
+    endBtn.textContent = anyLeft ? `⏭ Fim de turno (${KT_SESSION.teams.reduce((s,t)=>s+t.operatives.filter(o=>!o.dead&&!o.activated).length,0)} restantes)` : '⏭ FINALIZAR TURNO';
+  }
+}
+
+function renderKTOpCard(op, team, container, clickable) {
+  const pct = op.W > 0 ? op.curW / op.W : 0;
+  const barColor = pct > .6 ? 'var(--hit)' : pct > .3 ? 'var(--wound)' : 'var(--dmg)';
+  const hpEmoji = op.dead ? '💀' : pct > .6 ? '🟢' : pct > .3 ? '🟡' : '🔴';
+
+  const card = document.createElement('div');
+  card.className = `kt-op-card${op.activated?' activated':''}${op.dead?' dead':''}`;
+  card.style.borderLeft = `3px solid ${team.color}`;
+  card.innerHTML = `
+    ${op.activated && !op.dead ? '<div class="kt-activated-badge">✓ ATIVADO</div>' : ''}
+    ${op.dead ? '<div class="kt-dead-badge">💀 MORTO</div>' : ''}
+    <div class="kt-op-hdr">
+      <div class="kt-op-emoji">${team.emoji}</div>
+      <div class="kt-op-info">
+        <div class="kt-op-name">${op.displayName}</div>
+        <div class="kt-op-sub">${op.name !== op.displayName ? op.name : (team.name)}</div>
+      </div>
+      <div class="kt-op-right">
+        <div class="kt-op-hp">${hpEmoji} ${op.dead?'Morto':`${op.curW}/${op.W}`}</div>
+        <div class="kt-op-bar"><div class="kt-op-bar-fill" style="width:${pct*100}%;background:${barColor}"></div></div>
+      </div>
+    </div>
+    <div class="kt-stats">
+      <span class="kt-stat"><s>APL</s>${op.APL}</span>
+      <span class="kt-stat"><s>DF</s>${op.DF}</span>
+      <span class="kt-stat"><s>Sv</s>${op.SV}+</span>
+    </div>
+    ${!op.dead && !op.activated && clickable ? `
+    <div class="kt-apl-row">
+      <div class="kt-apl-label">Ações:</div>
+      <div class="kt-apl-pips">
+        ${Array.from({length:op.APL},(_,i)=>`<div class="kt-apl-pip" onclick="event.stopPropagation();ktUseAPL('${team.playerId}','${op.instanceId}',${i})">⚡</div>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-gold" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktActivateOp('${team.playerId}','${op.instanceId}')">✓ ATIVAR</button>
+      <button class="btn btn-sm btn-secondary" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktSwitchTab('combat');SFX.click()">⚔ Combate</button>
+      <button class="info-btn" onclick="event.stopPropagation();showKTOpDetail('${team.playerId}','${op.instanceId}')" style="flex-shrink:0">ℹ</button>
+    </div>` : ''}`;
+  container.appendChild(card);
+}
+
+function ktActivateOp(teamId, instanceId) {
+  SFX.click();
+  const team = KT_SESSION.teams.find(t => t.playerId === teamId);
+  const op = team?.operatives.find(o => o.instanceId === instanceId);
+  if (!op || op.activated || op.dead) return;
+  op.activated = true;
+  SFX.objective();
+  // Pass to next team
+  KT_SESSION.nextActivation();
+  document.getElementById('kt-turn-num').textContent = KT_SESSION.turn;
+  renderKTActivation();
+  showToast(`✓ ${op.displayName} ativado!`);
+}
+
+function ktUseAPL(teamId, instanceId, pipIdx) {
+  SFX.cp();
+  // Visual feedback only — APL tracking is conceptual in this version
+  const pips = document.querySelectorAll('.kt-apl-pip');
+  if (pips[pipIdx]) pips[pipIdx].classList.toggle('used');
+}
+
+function ktEndTurn() {
+  SFX.turn();
+  KT_SESSION.endTurn();
+  document.getElementById('kt-turn-num').textContent = KT_SESSION.turn;
+  renderKTActivation();
+  showToast(`🎯 Turno ${KT_SESSION.turn} iniciado!`);
+  VFX.flash('rgba(6,182,212,0.2)', 300);
+}
+
+// ── OPERATIVE DETAIL ─────────────────────────────────
+function showKTOpDetail(teamId, instanceId) {
+  const team = KT_SESSION.teams.find(t => t.playerId === teamId);
+  const op   = team?.operatives.find(o => o.instanceId === instanceId);
+  if (!op) return;
+  SFX.click();
+
+  const pct = op.W > 0 ? op.curW / op.W : 0;
+  const barColor = pct>.6?'var(--hit)':pct>.3?'var(--wound)':'var(--dmg)';
+
+  document.getElementById('udm-title').textContent = op.displayName;
+  const body = document.getElementById('udm-body');
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="font-size:36px">${team.emoji}</div>
+      <div style="flex:1">
+        <div style="font-family:var(--fu);font-size:11px;color:${team.color};letter-spacing:1px">${team.playerName} · ${team.name || ''}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${op.name}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--ff);font-size:22px;color:${barColor}">${op.curW}/${op.W}</div>
+        <div style="font-size:11px;color:var(--muted);font-family:var(--fu)">Wounds</div>
+      </div>
+    </div>
+    <div style="height:6px;background:var(--border);border-radius:3px;margin-bottom:12px;overflow:hidden">
+      <div style="height:100%;width:${pct*100}%;background:${barColor};border-radius:3px;transition:width .3s"></div>
+    </div>
+    <div class="udm-stats-grid">
+      <div class="udm-stat"><div class="udm-sk">MOV</div><div class="udm-sv">${op.M}</div></div>
+      <div class="udm-stat"><div class="udm-sk">APL</div><div class="udm-sv">${op.APL}</div></div>
+      <div class="udm-stat"><div class="udm-sk">GA</div><div class="udm-sv">${op.GA}</div></div>
+      <div class="udm-stat"><div class="udm-sk">DF</div><div class="udm-sv">${op.DF}</div></div>
+      <div class="udm-stat"><div class="udm-sk">Sv</div><div class="udm-sv">${op.SV}+</div></div>
+      <div class="udm-stat"><div class="udm-sk">PV</div><div class="udm-sv">${op.W}</div></div>
+    </div>
+    ${op.abilities ? `<div class="udm-abilities"><div class="udm-section-title">⚡ Habilidade</div>${op.abilities}</div>` : ''}
+    <div class="udm-section-title" style="margin-top:10px">🗡 Armas</div>
+    ${op.weapons.map(w => `
+      <div class="udm-weapon">
+        <div class="udm-w-hdr">
+          <span class="udm-w-name">${w.name}</span>
+          <span class="wtag ${w.range==='melee'?'melee':'ranged'}">${w.range==='melee'?'Melee':'Tiro'}</span>
+          ${(w.tags||[]).map(t=>`<span class="wtag torrent">${t}</span>`).join('')}
+        </div>
+        <div class="udm-w-stats">
+          <span><s>A</s>${w.A}</span>
+          <span><s>Skill</s>${w.skill}+</span>
+          <span><s>D</s>${w.D}</span>
+          <span><s>Crit</s>${w.CD}</span>
+        </div>
+        <div class="udm-w-tip">💥 Normal: ${w.D} dano · 🎯 Critical (6): ${w.CD} dano + efeito especial</div>
+      </div>`).join('')}
+    <!-- Manual HP adjustment -->
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+      <div style="flex:1;font-family:var(--fu);font-size:12px;color:var(--muted)">Ajustar PV manualmente:</div>
+      <button class="qty-btn" onclick="ktManualDmg('${teamId}','${instanceId}',-1)">−1</button>
+      <button class="qty-btn" onclick="ktManualDmg('${teamId}','${instanceId}',1)">+1</button>
+    </div>
+    <div style="height:8px"></div>`;
+  document.getElementById('unit-detail-modal').classList.add('open');
+}
+
+function ktManualDmg(teamId, instanceId, delta) {
+  const team = KT_SESSION.teams.find(t => t.playerId === teamId);
+  const op = team?.operatives.find(o => o.instanceId === instanceId);
+  if (!op) return;
+  op.curW = Math.max(0, Math.min(op.W, op.curW + delta));
+  if (op.curW === 0 && delta < 0) { op.dead = true; SFX.death(); VFX.deathEffect(); }
+  else if (delta < 0) SFX.wound();
+  renderKTActivation();
+  renderKTStatus();
+  // Refresh the detail modal
+  showKTOpDetail(teamId, instanceId);
+}
+
+// ── COMBAT TAB ───────────────────────────────────────
+function renderKTCombatTab() {
+  ktActiveCombat = { atkTeamId:null, atkOpId:null, weapon:null, defTeamId:null, defOpId:null };
+  document.getElementById('kt-weapon-wrap').classList.add('hidden');
+  document.getElementById('kt-btn-combat').disabled = true;
+  document.getElementById('kt-combat-checklist').style.display = 'none';
+
+  // Build selectors
+  renderKTCombatSelector('kt-atk-selector', 'atk');
+  renderKTCombatSelector('kt-def-selector', 'def');
+}
+
+function renderKTCombatSelector(containerId, role) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  KT_SESSION.teams.forEach(team => {
+    const acc = document.createElement('div');
+    acc.className = 'combat-acc';
+    const hdr = document.createElement('div');
+    hdr.className = 'combat-acc-hdr';
+    hdr.style.setProperty('--pcolor', team.color);
+    hdr.innerHTML = `<div class="fah-emoji">${team.emoji}</div><div class="cah-name" style="color:${team.color}">${team.playerName}</div><div class="cah-arrow">▾</div>`;
+    const body = document.createElement('div');
+    body.className = 'combat-acc-body open';
+    const grid = document.createElement('div');
+    grid.className = 'combat-unit-grid';
+    team.operatives.filter(op => !op.dead).forEach(op => {
+      const card = document.createElement('div');
+      card.className = 'combat-unit-card';
+      card.id = `kt-cuc-${role}-${team.playerId}-${op.instanceId}`;
+      card.style.setProperty('--pcolor', team.color);
+      const pct = op.curW/op.W;
+      const hpC = pct>.6?'var(--hit)':pct>.3?'var(--wound)':'var(--dmg)';
+      card.innerHTML = `<div class="cuc-img" style="font-size:17px">${team.emoji}</div><div class="cuc-name">${op.displayName}</div><div class="cuc-sub" style="color:${hpC}">PV: ${op.curW}/${op.W}</div><div class="cuc-check">✓</div>`;
+      card.onclick = () => ktPickCombatOp(role, team.playerId, op.instanceId);
+      grid.appendChild(card);
+    });
+    hdr.onclick = () => { body.classList.toggle('open'); hdr.classList.toggle('open'); SFX.click(); };
+    body.appendChild(grid);
+    acc.appendChild(hdr);
+    acc.appendChild(body);
+    container.appendChild(acc);
+  });
+}
+
+function ktPickCombatOp(role, teamId, instanceId) {
+  SFX.click();
+  const team = KT_SESSION.teams.find(t => t.playerId === teamId);
+  const op   = team?.operatives.find(o => o.instanceId === instanceId);
+  if (!op) return;
+
+  if (role === 'atk') {
+    ktActiveCombat.atkTeamId = teamId;
+    ktActiveCombat.atkOpId   = instanceId;
+    ktActiveCombat.weapon    = null;
+    document.querySelectorAll('[id^="kt-cuc-atk-"]').forEach(c => c.classList.remove('active'));
+    document.getElementById(`kt-cuc-atk-${teamId}-${instanceId}`)?.classList.add('active');
+    // Weapon pills
+    const wp = document.getElementById('kt-weapon-pills');
+    wp.innerHTML = '';
+    op.weapons.forEach(w => {
+      const p = document.createElement('div');
+      p.className = 'weapon-pill';
+      p.innerHTML = `${w.name} <span style="font-size:10px;color:var(--muted)">(A:${w.A} D:${w.D}/C:${w.CD})</span>`;
+      p.onclick = () => {
+        ktActiveCombat.weapon = w.name;
+        document.querySelectorAll('#kt-weapon-pills .weapon-pill').forEach(x=>x.classList.remove('active'));
+        p.classList.add('active');
+        ktRefreshCombatUI();
+        SFX.click();
+      };
+      wp.appendChild(p);
+    });
+    document.getElementById('kt-weapon-wrap').classList.remove('hidden');
+  } else {
+    ktActiveCombat.defTeamId = teamId;
+    ktActiveCombat.defOpId   = instanceId;
+    document.querySelectorAll('[id^="kt-cuc-def-"]').forEach(c => c.classList.remove('active'));
+    document.getElementById(`kt-cuc-def-${teamId}-${instanceId}`)?.classList.add('active');
+  }
+  ktRefreshCombatUI();
+}
+
+function ktRefreshCombatUI() {
+  const hasAtk = !!(ktActiveCombat.atkTeamId && ktActiveCombat.atkOpId);
+  const hasW   = !!ktActiveCombat.weapon;
+  const hasDef = !!(ktActiveCombat.defTeamId && ktActiveCombat.defOpId);
+  const ok = hasAtk && hasW && hasDef;
+  document.getElementById('kt-btn-combat').disabled = !ok;
+
+  const cl = document.getElementById('kt-combat-checklist');
+  if (!ok && (hasAtk || hasW || hasDef)) {
+    cl.style.display = 'block';
+    const items = document.getElementById('kt-checklist-items');
+    const checks = [
+      { ok:hasAtk, label:'Operativo atacante', hint: hasAtk ? '✓' : '← Selecione acima' },
+      { ok:hasW,   label:'Arma',               hint: hasW ? ktActiveCombat.weapon : '← Escolha a arma' },
+      { ok:hasDef, label:'Operativo defensor', hint: hasDef ? '✓' : '← Selecione abaixo' },
+    ];
+    items.innerHTML = checks.map(c =>
+      `<div class="checklist-item"><div class="cli-icon">${c.ok?'✅':'⬜'}</div><div class="cli-text" style="color:${c.ok?'var(--hit)':'var(--wound)'}">${c.label}</div><div class="cli-status">${c.hint}</div></div>`
+    ).join('');
+  } else {
+    cl.style.display = 'none';
+  }
+}
+
+// ── KT COMBAT RESOLUTION ────────────────────────────
+let ktBS = {};
+
+function ktOpenCombat() {
+  const atkTeam = KT_SESSION.teams.find(t => t.playerId === ktActiveCombat.atkTeamId);
+  const defTeam = KT_SESSION.teams.find(t => t.playerId === ktActiveCombat.defTeamId);
+  const atkOp   = atkTeam?.operatives.find(o => o.instanceId === ktActiveCombat.atkOpId);
+  const defOp   = defTeam?.operatives.find(o => o.instanceId === ktActiveCombat.defOpId);
+  const ktTeam  = KT_DB.getTeam(atkTeam.teamId);
+  const weapon  = atkOp?.weapons.find(w => w.name === ktActiveCombat.weapon);
+  if (!atkOp || !defOp || !weapon) return;
+
+  // Pre-roll attack dice
+  const atkRolls = Array.from({length: weapon.A}, () => d6());
+  const hits   = atkRolls.filter(v => v >= weapon.skill && v < 6).length;
+  const crits  = atkRolls.filter(v => v === 6).length;
+
+  // Pre-roll defense dice
+  const defRolls = Array.from({length: defOp.DF}, () => d6());
+  const saves    = defRolls.filter(v => v >= defOp.SV).length;
+  const defCrits = defRolls.filter(v => v === 6).length;
+
+  // Saves cancel normal hits first (not crits)
+  const savesLeft = saves + defCrits;
+  const hitsBlocked  = Math.min(hits, savesLeft);
+  const hitsLanded   = hits - hitsBlocked;
+  const normalDmg    = hitsLanded * weapon.D;
+  const critDmg      = crits * weapon.CD;
+  const totalDmg     = normalDmg + critDmg;
+
+  ktBS = { atkRolls, defRolls, hits, crits, saves, defCrits, hitsLanded, normalDmg, critDmg, totalDmg,
+           weapon, atkOp, defOp, atkTeam, defTeam };
+
+  // Open battle modal with KT layout
+  renderKTCombatModal();
+}
+
+function renderKTCombatModal() {
+  const { atkRolls, defRolls, hits, crits, saves, defCrits, hitsLanded, normalDmg, critDmg, totalDmg,
+          weapon, atkOp, defOp, atkTeam, defTeam } = ktBS;
+
+  document.getElementById('vs-atk-name').textContent   = atkOp.displayName;
+  document.getElementById('vs-atk-player').textContent = atkTeam.playerName;
+  document.getElementById('vs-atk-player').style.color = atkTeam.color;
+  document.getElementById('vs-weapon').textContent     = `🗡 ${weapon.name} (A:${weapon.A} D:${weapon.D}/C:${weapon.CD})`;
+  document.getElementById('vs-atk-qty').textContent    = `Skill: ${weapon.skill}+`;
+  document.getElementById('vs-def-name').textContent   = defOp.displayName;
+  document.getElementById('vs-def-player').textContent = defTeam.playerName;
+  document.getElementById('vs-def-player').style.color = defTeam.color;
+  document.getElementById('vs-def-qty').textContent    = `DF:${defOp.DF} Sv:${defOp.SV}+`;
+
+  // Hide phase strip (KT resolves in one go)
+  const phaseStrip = document.querySelector('.phase-strip');
+  if (phaseStrip) phaseStrip.style.display = 'none';
+
+  // Build dice area
+  const diceArea = document.getElementById('dice-area');
+  diceArea.innerHTML = '';
+
+  // Attack dice section
+  const atkSection = document.createElement('div');
+  atkSection.innerHTML = `<div class="da-title" style="margin-bottom:6px">🎯 DADOS DE ATAQUE (${atkRolls.length} dados · Skill ${weapon.skill}+)</div>`;
+  const atkGrid = document.createElement('div');
+  atkGrid.className = 'log-dice';
+  atkRolls.forEach((v, i) => {
+    setTimeout(() => {
+      const die = document.createElement('div');
+      die.className = `die rolling`;
+      die.textContent = v;
+      atkGrid.appendChild(die);
+      setTimeout(() => {
+        die.classList.remove('rolling');
+        if (v === 6) { die.classList.add('kt-die-crit'); SFX.mortal(); }
+        else if (v >= weapon.skill) { die.classList.add('kt-die-atk'); SFX.hit(); }
+        else die.classList.add('hit-fail');
+      }, 350);
+    }, i * 80);
+  });
+  atkSection.appendChild(atkGrid);
+  const atkBadges = document.createElement('div');
+  atkBadges.className = 'log-badges';
+  atkBadges.style.marginTop = '6px';
+  setTimeout(() => {
+    atkBadges.innerHTML = [
+      hits > 0  ? `<div class="badge b-hit">✅ ${hits} Hit${hits!==1?'s':''}</div>` : '',
+      crits > 0 ? `<div class="badge b-mortal">🎯 ${crits} Critical${crits!==1?'s':''}</div>` : '',
+      hits+crits===0 ? '<div class="badge b-note">Nenhum acerto</div>' : '',
+    ].join('');
+  }, atkRolls.length * 80 + 400);
+  atkSection.appendChild(atkBadges);
+  diceArea.appendChild(atkSection);
+
+  // Defense dice section
+  const defSection = document.createElement('div');
+  defSection.style.marginTop = '14px';
+  defSection.innerHTML = `<div class="da-title" style="margin-bottom:6px">🛡 DADOS DE DEFESA (${defRolls.length} dados · Sv ${defOp.SV}+)</div>`;
+  const defGrid = document.createElement('div');
+  defGrid.className = 'log-dice';
+  defRolls.forEach((v, i) => {
+    setTimeout(() => {
+      const die = document.createElement('div');
+      die.className = 'die rolling';
+      die.textContent = v;
+      defGrid.appendChild(die);
+      setTimeout(() => {
+        die.classList.remove('rolling');
+        if (v === 6) { die.classList.add('kt-die-crit'); }
+        else if (v >= defOp.SV) { die.classList.add('kt-die-def-ok'); SFX.save(); }
+        else die.classList.add('kt-die-def-fail');
+      }, 350);
+    }, i * 80);
+  });
+  defSection.appendChild(defGrid);
+  const defBadges = document.createElement('div');
+  defBadges.className = 'log-badges';
+  defBadges.style.marginTop = '6px';
+  setTimeout(() => {
+    defBadges.innerHTML = [
+      saves > 0    ? `<div class="badge b-save">🛡 ${saves} Save${saves!==1?'s':''}</div>` : '',
+      defCrits > 0 ? `<div class="badge b-mortal">⭐ ${defCrits} Crit Save</div>` : '',
+    ].join('') || '<div class="badge b-note">Nenhuma defesa</div>';
+  }, defRolls.length * 80 + 400);
+  defSection.appendChild(defBadges);
+  diceArea.appendChild(defSection);
+
+  // Final result - show after all dice
+  const totalDelay = (Math.max(atkRolls.length, defRolls.length) * 80) + 900;
+  setTimeout(() => {
+    document.getElementById('dice-area').style.display = 'none';
+    const fr = document.getElementById('final-result');
+    fr.classList.add('show');
+
+    // Scoreboard
+    document.getElementById('r-atk').textContent = atkRolls.length;
+    document.getElementById('r-hit').textContent = hits;
+    document.getElementById('r-wnd').textContent = crits;
+    document.getElementById('r-sv').textContent  = saves + defCrits;
+    document.getElementById('r-dmg').textContent = totalDmg;
+
+    // Labels for KT
+    fr.querySelector('[class="sb-label"]:nth-child(1)') && null; // handled below
+    const rows = fr.querySelectorAll('.sb-row .sb-label');
+    if (rows[0]) rows[0].textContent = '🎯 Dados Ataque';
+    if (rows[1]) rows[1].textContent = '✅ Hits Normais';
+    if (rows[2]) rows[2].textContent = '🎯 Critical Hits';
+    if (rows[3]) rows[3].textContent = '🛡 Saves (normal+crit)';
+    if (rows[4]) rows[4].textContent = '💥 Dano Total';
+
+    // Death banner
+    const db = document.getElementById('db');
+    const dbi = document.getElementById('db-icon');
+    const dbt = document.getElementById('db-title');
+    const dbs = document.getElementById('db-sub');
+    if (totalDmg >= defOp.curW) {
+      db.className = 'death-banner';
+      dbi.textContent = '💀';
+      dbt.textContent = `${defOp.displayName} ELIMINADO!`;
+      dbs.textContent = `${totalDmg} dano · ${defOp.curW} PV restantes`;
+      SFX.death(); VFX.deathEffect();
+    } else if (totalDmg > 0) {
+      db.className = 'death-banner dmg';
+      dbi.textContent = '🩹';
+      dbt.textContent = `${totalDmg} DANO`;
+      dbs.textContent = `${defOp.curW - totalDmg} PV restantes em ${defOp.displayName}`;
+      SFX.wound();
+    } else {
+      db.className = 'death-banner safe';
+      dbi.textContent = '🛡';
+      dbt.textContent = 'BLOQUEADO COMPLETAMENTE!';
+      dbs.textContent = 'Os saves anularam todo o dano';
+    }
+
+    const ab = document.getElementById('apply-dmg-btn');
+    ab.disabled = totalDmg === 0;
+    ab.classList.remove('applied');
+    ab.textContent = totalDmg > 0 ? '⚡ APLICAR DANO' : '✅ Sem dano';
+
+    // History
+    ktCombatHist.unshift({ atkName:atkOp.displayName, defName:defOp.displayName,
+      weapon:weapon.name, hits, crits, saves, totalDmg });
+    renderKTHist();
+  }, totalDelay);
+
+  // Phase strip hide
+  document.getElementById('ph0')?.parentElement && (document.querySelector('.phase-strip').style.display='none');
+  document.getElementById('dice-area').style.display = 'block';
+  document.getElementById('final-result').classList.remove('show');
+  document.getElementById('btn-phase').style.display = 'none';
+  document.getElementById('apply-dmg-btn').classList.remove('applied');
+
+  document.getElementById('battle-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  SFX.roll();
+}
+
+function renderKTHist() {
+  const sec = document.getElementById('kt-hist-section');
+  const list = document.getElementById('kt-hist-list');
+  if (!ktCombatHist.length) return;
+  sec.classList.remove('hidden');
+  list.innerHTML = ktCombatHist.slice(0,6).map((h,i) =>
+    `<div class="hist-item">
+      <div class="hi-n">#${i+1}</div>
+      <div class="hi-c">
+        <div class="hi-t">${h.atkName} → ${h.defName}</div>
+        <div class="hi-s">${h.weapon} · ${h.hits}H ${h.crits}C · ${h.saves}S · ${h.totalDmg} dano</div>
+      </div>
+      <div class="hi-d ${h.totalDmg===0?'safe':''}">${h.totalDmg>0?`💥${h.totalDmg}`:'🛡'}</div>
+    </div>`
+  ).join('');
+}
+
+// Override apply damage for KT
+const _origApplyDmg = typeof applyDamageFromBattle === 'function' ? applyDamageFromBattle : null;
+function applyDamageFromBattle() {
+  // Check if we're in KT mode
+  if (Object.keys(ktBS).length && ktActiveCombat.defOpId) {
+    const { totalDmg, defOp, defTeam } = ktBS;
+    if (totalDmg <= 0) return;
+    const deaths = KT_SESSION.applyDamage(defTeam.playerId, defOp.instanceId, totalDmg);
+    const ab = document.getElementById('apply-dmg-btn');
+    ab.classList.add('applied');
+    ab.textContent = '✅ DANO APLICADO';
+    SFX.objective();
+    if (deaths > 0) { VFX.deathEffect(); }
+    setTimeout(() => {
+      closeBattle();
+      ktSwitchTab('status');
+      renderKTActivation();
+    }, 800);
+    ktBS = {};
+    return;
+  }
+  // Otherwise fall through to 40K version
+  if (_origApplyDmg) _origApplyDmg();
+}
+
+// ── STATUS TAB ───────────────────────────────────────
+function renderKTStatus() {
+  const container = document.getElementById('kt-status-content');
+  if (!container) return;
+  container.innerHTML = '';
+  KT_SESSION.teams.forEach(team => {
+    const section = document.createElement('div');
+    section.style.marginBottom = '14px';
+    const alive = team.operatives.filter(o=>!o.dead).length;
+    section.innerHTML = `<div style="font-family:var(--ff);font-size:18px;color:${team.color};margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)">${team.emoji} ${team.playerName} — ${alive}/${team.operatives.length} vivos</div>`;
+    team.operatives.forEach(op => {
+      const pct = op.W > 0 ? op.curW/op.W : 0;
+      const barColor = pct>.6?'var(--hit)':pct>.3?'var(--wound)':'var(--dmg)';
+      const hpEmoji = op.dead?'💀':pct>.6?'🟢':pct>.3?'🟡':'🔴';
+      const div = document.createElement('div');
+      div.className = 'kt-op-card' + (op.dead?' dead':'') + (op.activated&&!op.dead?' activated':'');
+      div.style.marginBottom = '6px';
+      div.style.borderLeft = `3px solid ${team.color}`;
+      div.innerHTML = `
+        <div class="kt-op-hdr">
+          <span style="font-size:18px">${hpEmoji}</span>
+          <div class="kt-op-info">
+            <div class="kt-op-name">${op.displayName}</div>
+            <div class="kt-op-sub">${op.dead?'ELIMINADO':op.activated?'Ativado este turno':'Aguardando'}</div>
+          </div>
+          <div class="kt-op-right">
+            <div class="kt-op-hp">${op.dead?'—':`${op.curW}/${op.W}`}</div>
+            <div class="kt-op-bar"><div class="kt-op-bar-fill" style="width:${pct*100}%;background:${barColor}"></div></div>
+          </div>
+        </div>
+        ${!op.dead ? `<div class="mini-btns" style="margin-top:6px">
+          <button class="mini-btn dmg" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',-1)">−1 PV</button>
+          <button class="mini-btn heal" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',1)">+1 PV</button>
+          <button class="info-btn" onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')" style="margin-left:4px">ℹ</button>
+        </div>` : ''}`;
+      section.appendChild(div);
+    });
+    container.appendChild(section);
+  });
+}
+
+</script>
 </body>
 </html>
