@@ -751,6 +751,15 @@ body::before{content:'';position:fixed;inset:0;
 .kt-op-card.order-conceal{border-left:3px solid var(--save)}
 .kt-op-card.order-engage{border-left:3px solid #f97316}
 
+
+/* ═══ WEAPON SUMMARY CHIPS (on operative cards) ═══ */
+.kt-weapon-summary{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.kt-weapon-chip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px}
+.kwc-icon{font-size:12px;flex-shrink:0}
+.kwc-name{font-family:var(--fu);font-weight:700;color:var(--text2);flex-shrink:0}
+.kwc-profile{color:var(--gold);font-weight:600}
+.kwc-stats{font-family:var(--fu);font-weight:700;color:var(--muted);white-space:nowrap}
+
 </style>
 </head>
 <body>
@@ -4330,6 +4339,35 @@ function openGlobalRulesHub() {
 // KT COMBAT ENGINE — Faithful to official Lite Rules
 // ═══════════════════════════════════════════════════════
 
+// ── WEAPON PROFILES (multi-mode weapons, e.g. Plasma Pistol Standard/Supercharge) ──
+// A weapon can either be "flat" (single profile: uses its own A/skill/D/CD/tags directly)
+// or have a `profiles` array for weapons with multiple firing/attack modes.
+function getWeaponProfiles(weapon) {
+  if (weapon.profiles && weapon.profiles.length) {
+    return weapon.profiles.map(p => ({
+      name: p.name, A: p.A, skill: p.skill, D: p.D, CD: p.CD,
+      tags: p.tags || [], range: p.range || weapon.range, melee: (p.range || weapon.range) === 'melee',
+    }));
+  }
+  return [{ name: weapon.name, A: weapon.A, skill: weapon.skill, D: weapon.D, CD: weapon.CD,
+            tags: weapon.tags || [], range: weapon.range, melee: weapon.range === 'melee' }];
+}
+
+function renderWeaponSummaryChips(weapons) {
+  if (!weapons || !weapons.length) return '';
+  return weapons.map(w => {
+    const profiles = getWeaponProfiles(w);
+    const hasMultiple = profiles.length > 1;
+    return profiles.map(p => `
+      <div class="kt-weapon-chip">
+        <span class="kwc-icon">${p.melee ? '⚔' : '🎯'}</span>
+        <span class="kwc-name">${w.name}${hasMultiple ? ` <span class="kwc-profile">(${p.name})</span>` : ''}</span>
+        <span class="kwc-stats">A${p.A} ${p.skill}+ D${p.D}/${p.CD}</span>
+        ${renderTagPills(p.tags)}
+      </div>`).join('');
+  }).join('');
+}
+
 function ktParseTag(tagStr) {
   const m = tagStr.match(/^([A-Za-z ]+?)\s*(\d+)?\+?$/);
   if (!m) return { key: tagStr.trim(), value: null };
@@ -4563,12 +4601,18 @@ function ktOpenFightCombat(atkOp, defOp, atkWeapon, defWeapon, atkTeam, defTeam)
     atkOp, defOp, atkTeam, defTeam, atkWeapon, defWeapon,
     atk: atkSide, def: defSide,
     turnSide: 'atk', // attacker resolves first
-    dmgToDef: atkSide.devastatingDmg, // devastating pre-damage
-    dmgToAtk: defSide.devastatingDmg,
+    // Running wound counters — updated LIVE as each success resolves, one at a time
+    atkCurW: atkOp.curW,
+    defCurW: defOp.curW,
     shockUsedAtk: false, shockUsedDef: false,
     log: [...atkSide.log, ...defSide.log],
     pendingBlockChoice: null, // {side, successId} when choosing what to block
+    endedEarly: false,
   };
+
+  // Devastating deals its damage immediately, before the interactive sequence even starts
+  if (atkSide.devastatingDmg) ktFight.defCurW = Math.max(0, ktFight.defCurW - atkSide.devastatingDmg);
+  if (defSide.devastatingDmg) ktFight.atkCurW = Math.max(0, ktFight.atkCurW - defSide.devastatingDmg);
 
   // Reset modal chrome for a fresh Fight sequence
   const btnPhase = document.getElementById('btn-phase');
@@ -4583,6 +4627,13 @@ function ktOpenFightCombat(atkOp, defOp, atkWeapon, defWeapon, atkTeam, defTeam)
   document.getElementById('battle-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
   SFX.roll();
+
+  // If Devastating damage alone was already lethal, end immediately — no dice to resolve interactively
+  if (ktFight.defCurW <= 0 || ktFight.atkCurW <= 0) {
+    ktFight.endedEarly = true;
+    ktFightFinalize();
+    return;
+  }
 
   renderKTFightModal();
 }
@@ -4618,6 +4669,24 @@ function ktFightStrike(successId) {
   success.action = 'strike';
   SFX.hit();
   ktFight.pendingBlockChoice = null;
+
+  // Apply this single success's damage IMMEDIATELY (dice resolve one at a time — never batched)
+  const strikingWeapon = ktFight.turnSide === 'atk' ? ktFight.atkWeapon : ktFight.defWeapon;
+  const dmg = success.type === 'crit' ? strikingWeapon.CD : strikingWeapon.D;
+  if (ktFight.turnSide === 'atk') {
+    ktFight.defCurW = Math.max(0, ktFight.defCurW - dmg);
+  } else {
+    ktFight.atkCurW = Math.max(0, ktFight.atkCurW - dmg);
+  }
+
+  // If this strike just incapacitated someone, the fight ends RIGHT NOW —
+  // no further successes (from either side) can be resolved by a dead operative
+  if (ktFight.defCurW <= 0 || ktFight.atkCurW <= 0) {
+    ktFight.endedEarly = true;
+    setTimeout(() => ktFightFinalize(), 350);
+    return;
+  }
+
   ktFightAdvanceTurn();
 }
 
@@ -4661,7 +4730,6 @@ function ktFightDoBlock(mySuccessId, targetId) {
 
 function ktFightAdvanceTurn() {
   // Check Shock: first strike with a crit in a sequence discards 1 opposing unresolved success
-  // (approximated: triggers once per side, the first time that side lands a crit strike)
   const justActed = ktFight.turnSide;
   const list = justActed === 'atk' ? ktFight.atk : ktFight.def;
   const lastResolved = [...list.successes].reverse().find(s => s.resolved);
@@ -4672,7 +4740,6 @@ function ktFightAdvanceTurn() {
       ktFight[shockFlag] = true;
       const otherList = justActed === 'atk' ? ktFight.def : ktFight.atk;
       const otherPending = ktFightPending(otherList);
-      // Prefer discarding a normal, else a crit
       const discardTarget = otherPending.find(s => s.type === 'normal') || otherPending[0];
       if (discardTarget) {
         discardTarget.resolved = true;
@@ -4687,13 +4754,6 @@ function ktFightAdvanceTurn() {
   const otherList2 = otherSide === 'atk' ? ktFight.atk : ktFight.def;
   if (ktFightPending(otherList2).length > 0) {
     ktFight.turnSide = otherSide;
-  } else {
-    // Other side is empty — active side keeps resolving (auto-strike remaining) or stays if also empty
-    const myList = ktFight.turnSide === 'atk' ? ktFight.atk : ktFight.def;
-    if (ktFightPending(myList).length === 0) {
-      // both empty — done
-    }
-    // turnSide stays the same; UI will auto-strike remaining via "resolver restantes" flow
   }
   renderKTFightModal();
 
@@ -4702,30 +4762,51 @@ function ktFightAdvanceTurn() {
   }
 }
 
-// Auto-resolve all of the active side's remaining successes as strikes (used when opponent is empty)
+// Auto-resolve all of the active side's remaining successes as strikes, ONE AT A TIME,
+// stopping immediately if either operative is incapacitated along the way
 function ktFightAutoStrikeRemaining() {
   const list = ktFightActiveList();
-  ktFightPending(list).forEach(s => { s.resolved = true; s.action = 'strike'; });
-  SFX.hit();
-  renderKTFightModal();
-  if (ktFightIsDone()) setTimeout(() => ktFightFinalize(), 400);
+  const pending = ktFightPending(list);
+  let i = 0;
+  const strikeNext = () => {
+    if (i >= pending.length || ktFight.endedEarly) {
+      if (!ktFight.endedEarly) { renderKTFightModal(); if (ktFightIsDone()) setTimeout(() => ktFightFinalize(), 300); }
+      return;
+    }
+    const success = pending[i];
+    i++;
+    if (success.resolved) { strikeNext(); return; }
+    success.resolved = true;
+    success.action = 'strike';
+    const strikingWeapon = ktFight.turnSide === 'atk' ? ktFight.atkWeapon : ktFight.defWeapon;
+    const dmg = success.type === 'crit' ? strikingWeapon.CD : strikingWeapon.D;
+    if (ktFight.turnSide === 'atk') ktFight.defCurW = Math.max(0, ktFight.defCurW - dmg);
+    else ktFight.atkCurW = Math.max(0, ktFight.atkCurW - dmg);
+    SFX.hit();
+    if (ktFight.defCurW <= 0 || ktFight.atkCurW <= 0) {
+      ktFight.endedEarly = true;
+      renderKTFightModal();
+      setTimeout(() => ktFightFinalize(), 350);
+      return;
+    }
+    setTimeout(strikeNext, 220);
+  };
+  strikeNext();
 }
 
 function ktFightFinalize() {
-  // Tally damage
-  const atkLandedNormal = ktFight.atk.successes.filter(s => s.action === 'strike' && s.type === 'normal').length;
-  const atkLandedCrit   = ktFight.atk.successes.filter(s => s.action === 'strike' && s.type === 'crit').length;
-  const defLandedNormal = ktFight.def.successes.filter(s => s.action === 'strike' && s.type === 'normal').length;
-  const defLandedCrit   = ktFight.def.successes.filter(s => s.action === 'strike' && s.type === 'crit').length;
+  // Damage dealt = however much wounds actually dropped, tracked live throughout — never re-tallied after the fact
+  ktFight.finalDmgToDef = ktFight.defOp.curW - ktFight.defCurW;
+  ktFight.finalDmgToAtk = ktFight.atkOp.curW - ktFight.atkCurW;
 
-  const dmgToDef = ktFight.dmgToDef + atkLandedNormal * ktFight.atkWeapon.D + atkLandedCrit * ktFight.atkWeapon.CD;
-  const dmgToAtk = ktFight.dmgToAtk + defLandedNormal * ktFight.defWeapon.D + defLandedCrit * ktFight.defWeapon.CD;
-
-  ktFight.finalDmgToDef = dmgToDef;
-  ktFight.finalDmgToAtk = dmgToAtk;
-
-  if (ktFight.atk.hotSelfDmg) ktFight.finalDmgToAtk += ktFight.atk.hotSelfDmg;
-  if (ktFight.def.hotSelfDmg) ktFight.finalDmgToDef += ktFight.def.hotSelfDmg;
+  if (ktFight.atk.hotSelfDmg && ktFight.atkCurW > 0) {
+    ktFight.finalDmgToAtk += ktFight.atk.hotSelfDmg;
+    ktFight.atkCurW = Math.max(0, ktFight.atkCurW - ktFight.atk.hotSelfDmg);
+  }
+  if (ktFight.def.hotSelfDmg && ktFight.defCurW > 0) {
+    ktFight.finalDmgToDef += ktFight.def.hotSelfDmg;
+    ktFight.defCurW = Math.max(0, ktFight.defCurW - ktFight.def.hotSelfDmg);
+  }
 
   renderKTFightModal(); // final render shows results
 }
@@ -4904,6 +4985,7 @@ function renderKTFightResult() {
     fr.insertBefore(notesBox, fr.firstChild);
   }
   const notes = [...(log||[])];
+  if (ktFight.endedEarly) notes.push('⚡ Combate encerrado assim que um operativo foi incapacitado — sucessos restantes não foram resolvidos');
   if (finalDmgToAtk > 0) notes.push(`↩ ${atkOp.displayName} também sofreu ${finalDmgToAtk} de dano (revide)`);
   notesBox.innerHTML = notes.map(n => '📋 ' + n).join('<br>');
 
@@ -5259,8 +5341,8 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Retém 1 sucesso de defesa automático (se a arma não tiver Saturate)</div>
       </div>
       <label style="position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0">
-        <input type="checkbox" id="kt-cover-toggle" style="opacity:0;width:0;height:0">
-        <span id="kt-cover-toggle-track" onclick="ktToggleCover()" style="position:absolute;cursor:pointer;inset:0;background:var(--card2);border:1px solid var(--border2);border-radius:26px;transition:.2s"></span>
+        <input type="checkbox" id="kt-cover-toggle" onchange="SFX.click()" style="opacity:0;width:0;height:0">
+        <span id="kt-cover-toggle-track" style="position:absolute;cursor:pointer;inset:0;background:var(--card2);border:1px solid var(--border2);border-radius:26px;transition:.2s;pointer-events:none"></span>
       </label>
     </div>
     <button class="btn btn-primary" id="kt-btn-combat" onclick="ktOpenCombat()" disabled>⚔ RESOLVER COMBATE</button>
@@ -5755,6 +5837,190 @@ const KT_TEAMS = [
         ]},
     ]
   },
+
+  // ── DEATHWATCH (Space Marines) ──────────────────────
+  {
+    id:'kt-deathwatch', name:'Deathwatch', faction:'Space Marines',
+    color:'#166534', emoji:'🦅',
+    desc:'Elite de caçadores de xenos reunidos de vários Capítulos. Armas altamente especializadas e adaptáveis para qualquer inimigo alienígena.',
+    style:'Elite · Versátil',
+    limit: 5,
+    coreRule: {name:"Veteran Astartes", desc:"Cada operativo pode fazer 2 ações de Tiro ou 2 de Luta na mesma ativação. Pode contra-atacar independente da ordem, com 1 ação bônus de 1AP (desde que seja diferente da primeira)."},
+    ploys: {
+      strategy: [
+        {name:"Táticas de Missão", desc:"Escolha Conceal ou Engage — suas armas ganham Balanced contra inimigos com essa ordem."},
+        {name:"Vigília Eterna", desc:"Ao ser alvo dentro do seu território, re-rola 1 dado de defesa."},
+        {name:"Escudo que Mata", desc:"No território inimigo, dano normal de 4+ recebido é reduzido em 1."},
+        {name:"Eles Não Temem", desc:"Ignora mudanças de status por estar ferido."},
+      ],
+      firefight: [
+        {name:"Não Sofra o Alienígena", desc:"Contra inimigo sem palavra-chave Chaos/Imperium, re-rola qualquer dado de ataque."},
+        {name:"Rastreamento Auspicador", desc:"Ao contra-atacar, pode trocar a ordem antes de agir."},
+        {name:"Varredura Avançada", desc:"Ao atirar, arma ganha Saturate e inimigos não ficam obscurecidos até o fim da ação."},
+        {name:"Fisiologia Transumana", desc:"Ao ser alvo, transforma 1 sucesso normal de defesa em crítico."},
+      ],
+    },
+    operatives: [
+      { id:'kt-dw-sergeant', name:'Watch Sergeant', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'LÍDER. Comando Estratégico: 1x/batalha usa um Strategy Ploy de graça e 1x/batalha usa um Firefight Ploy de graça.',
+        weapons:[
+          { name:'Pistola de Plasma', range:'short', profiles:[
+            { name:'Padrão',      A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga',  A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
+          { name:'Arma de Poder',     A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-dw-aegis', name:'Aegis', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:2, W:15,
+        abilities:'Escudo Tempestade: Piora Piercing recebido em 1 (Piercing 1 é ignorado). Cada bloqueio pode bloquear 2 sucessos não resolvidos.',
+        weapons:[
+          { name:'Pistola Bolter',        A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Malho + Escudo Tempestade', A:5, skill:3, D:4, CD:6, range:'melee', tags:['Shock'] },
+        ]},
+      { id:'kt-dw-blademaster', name:'Blademaster', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'Esgrima Adaptativa: ignora mudanças no Hit da Lâmina Xenófase. Pode resolver 1 sucesso fora de ordem, mas deve ser usado para Bloquear.',
+        weapons:[
+          { name:'Pistola Bolter Especial', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing 1'] },
+          { name:'Lâmina Xenófase',         A:5, skill:3, D:4, CD:6, range:'melee', tags:['Brutal','Lethal 5+'] },
+        ]},
+      { id:'kt-dw-bombard', name:'Bombard', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
+        abilities:'GRAVIS (máx 1 no time). O mais resistente do time — 18 PV.',
+        weapons:[
+          { name:'Canhão de Estilhaço', A:4, skill:3, D:5, CD:7, range:'short', tags:['Piercing 1'] },
+          { name:'Punhos',              A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-breacher', name:'Breacher', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
+        abilities:'GRAVIS (máx 1 no time). Especialista em arrombamento com granadas krak.',
+        weapons:[
+          { name:'Lançador de Granadas (Krak)', A:4, skill:3, D:4, CD:5, range:'long', tags:['Piercing 1'] },
+          { name:'Punhos',                      A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-demolisher', name:'Demolisher', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'Força Agressiva: dano de 3+ recebido em CaC é reduzido em 1. Ao Cargar, o martelo ganha Ceaseless.',
+        weapons:[
+          { name:'Pistola Bolter',       A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Martelo Pesado do Trovão', A:5, skill:4, D:6, CD:7, range:'melee', tags:['Shock','Stun'] },
+        ]},
+      { id:'kt-dw-disruptor', name:'Disruptor', unique:true,
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:'Omni-Scrambler: 1x/turno pode travar a ativação de um inimigo visível a até 6" por alguns turnos.',
+        weapons:[
+          { name:'Carabina Marksman', A:4, skill:3, D:3, CD:4, range:'long', tags:['Lethal 5+'] },
+          { name:'Punhos',            A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-gunner', name:'Gunner', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'Especialista em armas pesadas de plasma.',
+        weapons:[
+          { name:'Incinerador de Plasma Pesado', A:5, skill:3, D:4, CD:6, range:'long', tags:['Piercing 1'] },
+          { name:'Punhos',                       A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-headtaker', name:'Headtaker', unique:true,
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:'Caçador Furtivo: pode Cargar mesmo com Conceal. Contra inimigo que não te viu, resolve 2 sucessos seguidos como golpe.',
+        weapons:[
+          { name:'Pistola Bolter Especial', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing 1'] },
+          { name:'Facas de Combate',        A:5, skill:3, D:4, CD:5, range:'melee' },
+        ]},
+      { id:'kt-dw-hordeslayer', name:'Horde-Slayer', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
+        abilities:'GRAVIS (máx 1 no time). Bolter pesado infernal, devastador contra grupos ou alvos únicos.',
+        weapons:[
+          { name:'Bolter Pesado Infernal (Focado)', A:5, skill:3, D:4, CD:5, range:'long', tags:['Piercing Crits 1'] },
+          { name:'Punhos',                          A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-marksman', name:'Marksman', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'Vigilância: pode usar Guard mesmo fora de zonas de combate próximo. Ótimo atirador de longa distância.',
+        weapons:[
+          { name:'Rifle Bolter Stalker', A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Punhos',               A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+    ]
+  },
+
+  // ── PLAGUE MARINES (Chaos - Death Guard) ────────────
+  {
+    id:'kt-plaguemarines', name:'Plague Marines', faction:'Chaos Space Marines',
+    color:'#4d7c0f', emoji:'🦠',
+    desc:'Filhos corrompidos de Mortarion, inchados de podridão e doença. Lentos mas horrivelmente resistentes, espalham contágio por onde passam.',
+    style:'Resistente · Veneno',
+    limit: 6,
+    coreRule: {name:"Disgustingly Resilient", desc:"Sempre que um dado de ataque causar 3+ de dano num Plague Marine, role 1D6: em 4+, reduz 1 do dano. Além disso, cada operativo pode fazer 2 ações de Tiro ou 2 de Luta por ativação (Astartes)."},
+    ploys: {
+      strategy: [
+        {name:"Nuvem de Moscas", desc:"Cria um marcador — Plague Marines a até 1\" dele ficam obscurecidos contra tiros de longe."},
+        {name:"Contágio", desc:"Inimigos com Poison ou perto do Icon Bearer têm -2\" de Move e pioram o Hit em 1."},
+        {name:"Morte Lenta", desc:"Se não se mover mais de 3\", suas armas ganham Ceaseless."},
+        {name:"Nurglings", desc:"Reduz o APL de um inimigo próximo em 1 até a próxima ativação dele."},
+      ],
+      firefight: [
+        {name:"Maldição da Podridão", desc:"Cada resultado de 3 que o inimigo rolar contra você causa 1 dano extra e não conta como sucesso."},
+        {name:"Morte Venenosa", desc:"Ao ser incapacitado, contamina inimigos próximos com veneno."},
+        {name:"Resiliência Nauseante", desc:"Reduz automaticamente 1 do dano recebido (sem precisar rolar)."},
+        {name:"Veneno Virulento", desc:"Contamina um inimigo próximo com um marcador de Poison."},
+      ],
+    },
+    operatives: [
+      { id:'kt-pm-champion', name:'Champion', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'LÍDER. Bênção do Avô: quando um inimigo envenenado perde PV perto dele, ele recupera até a mesma quantidade (máx 3/turno).',
+        weapons:[
+          { name:'Pistola de Plasma', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
+          { name:'Espada da Peste',   A:5, skill:3, D:4, CD:5, range:'melee', tags:['Severe'] },
+        ]},
+      { id:'kt-pm-plaguecaster', name:'Malignant Plaguecaster', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'PSYKER. Miasma Venenoso (1AP): envenena ou causa 3 dano num inimigo. Vitalidade Pútrida (1AP): cura um aliado perto.',
+        weapons:[
+          { name:'Entropia',       A:4, skill:3, D:3, CD:7, range:'long', tags:['Saturate','Severe'] },
+          { name:'Cajado Corrompido', A:4, skill:3, D:3, CD:4, range:'melee', tags:['Severe','Shock','Stun'] },
+        ]},
+      { id:'kt-pm-bombardier', name:'Bombardier', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Granadeiro: usa granadas de peste e krak com +1 no Hit.',
+        weapons:[
+          { name:'Boltgun', A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Punhos',  A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-pm-fighter', name:'Fighter', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Mangual (1AP): causa D3+2 dano em todos os operativos próximos e visíveis, envenenando inimigos.',
+        weapons:[
+          { name:'Pistola Bolter',  A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Mangual da Corrupção', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Brutal','Severe','Shock'] },
+        ]},
+      { id:'kt-pm-heavygunner', name:'Heavy Gunner', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Cuspidor de Peste — arma de área que sempre acerta.',
+        weapons:[
+          { name:'Cuspidor de Peste', A:5, skill:2, D:3, CD:3, range:'short', auto:true, tags:['Saturate','Severe'] },
+          { name:'Punhos',            A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-pm-iconbearer', name:'Icon Bearer', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Ícone da Contagião: perto do inimigo, o Ploy Contágio custa 0CP. Conta como APL +1 pra controlar marcadores.',
+        weapons:[
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Faca da Peste',  A:5, skill:3, D:3, CD:4, range:'melee', tags:['Severe'] },
+        ]},
+      { id:'kt-pm-warrior', name:'Warrior', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Fortitude Repulsiva: ao ser alvo, dados de defesa de 5+ são críticos.',
+        weapons:[
+          { name:'Boltgun',       A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Faca da Peste', A:4, skill:3, D:3, CD:4, range:'melee', tags:['Severe'] },
+        ]},
+    ]
+  },
 ];
 
 // ── KILL TEAM ACTIONS ────────────────────────────────
@@ -6008,7 +6274,10 @@ function renderKTRosterForPlayer(idx) {
         <div class="kt-osc-name">${op.name}</div>
         <div class="kt-osc-sub">APL:${op.APL} · DF:${op.DF} · Sv:${op.SV}+ · PV:${op.W}</div>
         <div class="kt-stats" style="margin-top:4px">
-          ${op.weapons.map(w=>`<span class="kt-stat"><s>${w.range==='melee'?'⚔':'🎯'}</s>${w.name} A:${w.A} D:${w.D}/C:${w.CD}</span>`).join('')}
+          ${op.weapons.map(w=>{
+            const profs = getWeaponProfiles(w);
+            return profs.map(p=>`<span class="kt-stat"><s>${p.melee?'⚔':'🎯'}</s>${w.name}${profs.length>1?` (${p.name})`:''} A:${p.A} D:${p.D}/C:${p.CD}</span>`).join('');
+          }).join('')}
         </div>
       </div>
       <div class="kt-osc-right">
@@ -6081,7 +6350,7 @@ function ktRosterNext() {
 }
 
 // ── BATTLE ───────────────────────────────────────────
-let ktActiveCombat = { atkTeamId:null, atkOpId:null, weapon:null, defTeamId:null, defOpId:null };
+let ktActiveCombat = { atkTeamId:null, atkOpId:null, weapon:null, profile:null, defTeamId:null, defOpId:null };
 let ktCombatHist = [];
 
 function initKTBattle() {
@@ -6207,6 +6476,7 @@ function renderKTOpCard(op, team, container, clickable) {
       <span class="kt-stat"><s>Sv</s>${op.SV}+</span>
       <span class="kt-stat"><s>DF</s>${op.DF}</span>
     </div>
+    <div class="kt-weapon-summary">${renderWeaponSummaryChips(op.weapons)}</div>
     ${!op.dead ? `
     <div class="kt-order-badge ${order}" onclick="ktToggleOrder('${team.playerId}','${op.instanceId}',event)" title="Toque para trocar a ordem">
       <div class="kt-order-icon"></div>${order === 'conceal' ? 'CONCEAL' : 'ENGAGE'} · toque p/ trocar
@@ -6220,7 +6490,7 @@ function renderKTOpCard(op, team, container, clickable) {
     </div>
     <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap">
       <button class="btn btn-sm btn-gold" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktActivateOp('${team.playerId}','${op.instanceId}')">✓ ATIVAR</button>
-      ${!KT_SIMPLE_MODE ? `<button class="btn btn-sm btn-secondary" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktSwitchTab('combat');SFX.click()">⚔ Combate</button>` : ''}
+      ${!KT_SIMPLE_MODE ? `<button class="btn btn-sm btn-secondary" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktQuickCombat('${team.playerId}','${op.instanceId}')">⚔ Combate</button>` : ''}
       <button class="info-btn" onclick="event.stopPropagation();showKTOpDetail('${team.playerId}','${op.instanceId}')" style="flex-shrink:0">ℹ</button>
     </div>` : ''}`;
   container.appendChild(card);
@@ -6325,21 +6595,24 @@ function showKTOpDetail(teamId, instanceId) {
     </div>
     ${op.abilities ? `<div class="udm-abilities"><div class="udm-section-title">⚡ Habilidade</div>${op.abilities}</div>` : ''}
     <div class="udm-section-title" style="margin-top:10px">🗡 Armas</div>
-    ${op.weapons.map(w => `
+    ${op.weapons.map(w => {
+      const profiles = getWeaponProfiles(w);
+      return profiles.map(p => `
       <div class="udm-weapon">
         <div class="udm-w-hdr">
-          <span class="udm-w-name">${w.name}</span>
-          <span class="wtag ${w.range==='melee'?'melee':'ranged'}">${w.range==='melee'?'Melee':'Tiro'}</span>
-          ${renderTagPills(w.tags)}
+          <span class="udm-w-name">${w.name}${profiles.length>1?` <span style="color:var(--gold)">(${p.name})</span>`:''}</span>
+          <span class="wtag ${p.melee?'melee':'ranged'}">${p.melee?'Melee':'Tiro'}</span>
+          ${renderTagPills(p.tags)}
         </div>
         <div class="udm-w-stats">
-          <span><s>A</s>${w.A}</span>
-          <span><s>Skill</s>${w.skill}+</span>
-          <span><s>D</s>${w.D}</span>
-          <span><s>Crit</s>${w.CD}</span>
+          <span><s>A</s>${p.A}</span>
+          <span><s>Skill</s>${p.skill}+</span>
+          <span><s>D</s>${p.D}</span>
+          <span><s>Crit</s>${p.CD}</span>
         </div>
-        <div class="udm-w-tip">💥 Normal: ${w.D} dano · 🎯 Critical (6): ${w.CD} dano + efeito especial</div>
-      </div>`).join('')}
+        <div class="udm-w-tip">💥 Normal: ${p.D} dano · 🎯 Critical (6): ${p.CD} dano + efeito especial</div>
+      </div>`).join('');
+    }).join('')}
     <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="document.getElementById('unit-detail-modal').classList.remove('open');setTimeout(()=>showKTTeamRulesModal('${team.teamId}'),200)">📖 Ver Regras do Time</button>
     <!-- Manual HP adjustment -->
     <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
@@ -6382,7 +6655,7 @@ function ktManualDmg(teamId, instanceId, delta) {
 
 // ── COMBAT TAB ───────────────────────────────────────
 function renderKTCombatTab() {
-  ktActiveCombat = { atkTeamId:null, atkOpId:null, weapon:null, defTeamId:null, defOpId:null };
+  ktActiveCombat = { atkTeamId:null, atkOpId:null, weapon:null, profile:null, defTeamId:null, defOpId:null };
   document.getElementById('kt-weapon-wrap').classList.add('hidden');
   document.getElementById('kt-btn-combat').disabled = true;
   document.getElementById('kt-combat-checklist').style.display = 'none';
@@ -6439,6 +6712,18 @@ function renderKTCombatSelector(containerId, role, ownTeamId) {
   });
 }
 
+// Jump straight to Combat tab with this operative already selected as attacker
+function ktQuickCombat(teamId, instanceId) {
+  SFX.click();
+  ktSwitchTab('combat');
+  // renderCombatTab() (called by ktSwitchTab) resets selectors first, so pick AFTER a tick
+  setTimeout(() => {
+    ktPickCombatOp('atk', teamId, instanceId);
+    const el = document.getElementById(`kt-cuc-atk-${teamId}-${instanceId}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 60);
+}
+
 function ktPickCombatOp(role, teamId, instanceId) {
   SFX.click();
   const team = KT_SESSION.teams.find(t => t.playerId === teamId);
@@ -6449,23 +6734,29 @@ function ktPickCombatOp(role, teamId, instanceId) {
     ktActiveCombat.atkTeamId = teamId;
     ktActiveCombat.atkOpId   = instanceId;
     ktActiveCombat.weapon    = null;
+    ktActiveCombat.profile   = null;
     document.querySelectorAll('[id^="kt-cuc-atk-"]').forEach(c => c.classList.remove('active'));
     document.getElementById(`kt-cuc-atk-${teamId}-${instanceId}`)?.classList.add('active');
-    // Weapon pills
+    // Weapon pills — one pill per weapon PROFILE (multi-mode weapons show each mode separately)
     const wp = document.getElementById('kt-weapon-pills');
     wp.innerHTML = '';
     op.weapons.forEach(w => {
-      const p = document.createElement('div');
-      p.className = 'weapon-pill';
-      p.innerHTML = `${w.name} <span style="font-size:10px;color:var(--muted)">(A:${w.A} D:${w.D}/C:${w.CD})</span>`;
-      p.onclick = () => {
-        ktActiveCombat.weapon = w.name;
-        document.querySelectorAll('#kt-weapon-pills .weapon-pill').forEach(x=>x.classList.remove('active'));
-        p.classList.add('active');
-        ktRefreshCombatUI();
-        SFX.click();
-      };
-      wp.appendChild(p);
+      const profiles = getWeaponProfiles(w);
+      profiles.forEach(prof => {
+        const p = document.createElement('div');
+        p.className = 'weapon-pill';
+        const label = profiles.length > 1 ? `${w.name} <span style="color:var(--gold)">(${prof.name})</span>` : w.name;
+        p.innerHTML = `${label} <span style="font-size:10px;color:var(--muted)">(A:${prof.A} ${prof.skill}+ D:${prof.D}/${prof.CD})</span>${prof.tags&&prof.tags.length?` <span style="font-size:9px;color:var(--muted)">${prof.tags.join(', ')}</span>`:''}`;
+        p.onclick = () => {
+          ktActiveCombat.weapon = w.name;
+          ktActiveCombat.profile = profiles.length > 1 ? prof.name : null;
+          document.querySelectorAll('#kt-weapon-pills .weapon-pill').forEach(x=>x.classList.remove('active'));
+          p.classList.add('active');
+          ktRefreshCombatUI();
+          SFX.click();
+        };
+        wp.appendChild(p);
+      });
     });
     document.getElementById('kt-weapon-wrap').classList.remove('hidden');
     // Now that we know the attacker's team, re-render defenders with own team minimized
@@ -6518,8 +6809,18 @@ function ktOpenCombat() {
   const defTeam = KT_SESSION.teams.find(t => t.playerId === ktActiveCombat.defTeamId);
   const atkOp   = atkTeam?.operatives.find(o => o.instanceId === ktActiveCombat.atkOpId);
   const defOp   = defTeam?.operatives.find(o => o.instanceId === ktActiveCombat.defOpId);
-  const weapon  = atkOp?.weapons.find(w => w.name === ktActiveCombat.weapon);
-  if (!atkOp || !defOp || !weapon) return;
+  const baseWeapon = atkOp?.weapons.find(w => w.name === ktActiveCombat.weapon);
+  if (!atkOp || !defOp || !baseWeapon) return;
+
+  // Resolve the chosen firing profile (if this weapon has multiple modes) into a flat effective weapon
+  const profiles = getWeaponProfiles(baseWeapon);
+  const chosenProfile = ktActiveCombat.profile ? profiles.find(p => p.name === ktActiveCombat.profile) : profiles[0];
+  const weapon = chosenProfile ? {
+    name: profiles.length > 1 ? `${baseWeapon.name} (${chosenProfile.name})` : baseWeapon.name,
+    A: chosenProfile.A, skill: chosenProfile.skill, D: chosenProfile.D, CD: chosenProfile.CD,
+    tags: chosenProfile.tags, range: chosenProfile.range, melee: chosenProfile.melee,
+    auto: baseWeapon.auto,
+  } : baseWeapon;
 
   ktFight = null; // clear any stale fight state
 
@@ -6854,6 +7155,7 @@ function renderKTStatus() {
           <span class="kt-stat"><s>M</s>${op.M}</span>
           <span class="kt-stat"><s>Sv</s>${op.SV}+</span>
         </div>
+        ${!op.dead ? `<div class="kt-weapon-summary">${renderWeaponSummaryChips(op.weapons)}</div>` : ''}
         ${!op.dead ? `
         <div class="kt-order-badge ${order}" onclick="ktToggleOrder('${team.playerId}','${op.instanceId}',event)" title="Toque para trocar a ordem">
           <div class="kt-order-icon"></div>${order === 'conceal' ? 'CONCEAL' : 'ENGAGE'} · toque p/ trocar

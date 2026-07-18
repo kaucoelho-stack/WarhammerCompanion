@@ -475,6 +475,184 @@ const KT_TEAMS = [
         ]},
     ]
   },
+
+  // ── DEATHWATCH (Space Marines) ──────────────────────
+  {
+    id:'kt-deathwatch', name:'Deathwatch', faction:'Space Marines',
+    color:'#166534', emoji:'🦅',
+    desc:'Elite de caçadores de xenos reunidos de vários Capítulos. Armas altamente especializadas e adaptáveis para qualquer inimigo alienígena.',
+    style:'Elite · Versátil',
+    limit: 5,
+    coreRule: {name:"Veteran Astartes", desc:"Cada operativo pode fazer 2 ações de Tiro ou 2 de Luta na mesma ativação. Pode contra-atacar independente da ordem, com 1 ação bônus de 1AP (desde que seja diferente da primeira)."},
+    ploys: {
+      strategy: [
+        {name:"Táticas de Missão", desc:"Escolha Conceal ou Engage — suas armas ganham Balanced contra inimigos com essa ordem."},
+        {name:"Vigília Eterna", desc:"Ao ser alvo dentro do seu território, re-rola 1 dado de defesa."},
+        {name:"Escudo que Mata", desc:"No território inimigo, dano normal de 4+ recebido é reduzido em 1."},
+        {name:"Eles Não Temem", desc:"Ignora mudanças de status por estar ferido."},
+      ],
+      firefight: [
+        {name:"Não Sofra o Alienígena", desc:"Contra inimigo sem palavra-chave Chaos/Imperium, re-rola qualquer dado de ataque."},
+        {name:"Rastreamento Auspicador", desc:"Ao contra-atacar, pode trocar a ordem antes de agir."},
+        {name:"Varredura Avançada", desc:"Ao atirar, arma ganha Saturate e inimigos não ficam obscurecidos até o fim da ação."},
+        {name:"Fisiologia Transumana", desc:"Ao ser alvo, transforma 1 sucesso normal de defesa em crítico."},
+      ],
+    },
+    operatives: [
+      { id:'kt-dw-sergeant', name:'Watch Sergeant', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'LÍDER. Comando Estratégico: 1x/batalha usa um Strategy Ploy de graça e 1x/batalha usa um Firefight Ploy de graça.',
+        weapons:[
+          { name:'Pistola de Plasma', A:4, skill:3, D:3, CD:5, range:'short', tags:['Piercing 1'] },
+          { name:'Arma de Poder',     A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-dw-aegis', name:'Aegis', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:2, W:15,
+        abilities:'Escudo Tempestade: Piora Piercing recebido em 1 (Piercing 1 é ignorado). Cada bloqueio pode bloquear 2 sucessos não resolvidos.',
+        weapons:[
+          { name:'Pistola Bolter',        A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Malho + Escudo Tempestade', A:5, skill:3, D:4, CD:6, range:'melee', tags:['Shock'] },
+        ]},
+      { id:'kt-dw-blademaster', name:'Blademaster', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'Esgrima Adaptativa: ignora mudanças no Hit da Lâmina Xenófase. Pode resolver 1 sucesso fora de ordem, mas deve ser usado para Bloquear.',
+        weapons:[
+          { name:'Pistola Bolter Especial', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing 1'] },
+          { name:'Lâmina Xenófase',         A:5, skill:3, D:4, CD:6, range:'melee', tags:['Brutal','Lethal 5+'] },
+        ]},
+      { id:'kt-dw-bombard', name:'Bombard', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
+        abilities:'GRAVIS (máx 1 no time). O mais resistente do time — 18 PV.',
+        weapons:[
+          { name:'Canhão de Estilhaço', A:4, skill:3, D:5, CD:7, range:'short', tags:['Piercing 1'] },
+          { name:'Punhos',              A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-breacher', name:'Breacher', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
+        abilities:'GRAVIS (máx 1 no time). Especialista em arrombamento com granadas krak.',
+        weapons:[
+          { name:'Lançador de Granadas (Krak)', A:4, skill:3, D:4, CD:5, range:'long', tags:['Piercing 1'] },
+          { name:'Punhos',                      A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-demolisher', name:'Demolisher', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'Força Agressiva: dano de 3+ recebido em CaC é reduzido em 1. Ao Cargar, o martelo ganha Ceaseless.',
+        weapons:[
+          { name:'Pistola Bolter',       A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Martelo Pesado do Trovão', A:5, skill:4, D:6, CD:7, range:'melee', tags:['Shock','Stun'] },
+        ]},
+      { id:'kt-dw-disruptor', name:'Disruptor', unique:true,
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:'Omni-Scrambler: 1x/turno pode travar a ativação de um inimigo visível a até 6" por alguns turnos.',
+        weapons:[
+          { name:'Carabina Marksman', A:4, skill:3, D:3, CD:4, range:'long', tags:['Lethal 5+'] },
+          { name:'Punhos',            A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-gunner', name:'Gunner', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'Especialista em armas pesadas de plasma.',
+        weapons:[
+          { name:'Incinerador de Plasma Pesado', A:5, skill:3, D:4, CD:6, range:'long', tags:['Piercing 1'] },
+          { name:'Punhos',                       A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-headtaker', name:'Headtaker', unique:true,
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:'Caçador Furtivo: pode Cargar mesmo com Conceal. Contra inimigo que não te viu, resolve 2 sucessos seguidos como golpe.',
+        weapons:[
+          { name:'Pistola Bolter Especial', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing 1'] },
+          { name:'Facas de Combate',        A:5, skill:3, D:4, CD:5, range:'melee' },
+        ]},
+      { id:'kt-dw-hordeslayer', name:'Horde-Slayer', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
+        abilities:'GRAVIS (máx 1 no time). Bolter pesado infernal, devastador contra grupos ou alvos únicos.',
+        weapons:[
+          { name:'Bolter Pesado Infernal (Focado)', A:5, skill:3, D:4, CD:5, range:'long', tags:['Piercing Crits 1'] },
+          { name:'Punhos',                          A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-dw-marksman', name:'Marksman', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'Vigilância: pode usar Guard mesmo fora de zonas de combate próximo. Ótimo atirador de longa distância.',
+        weapons:[
+          { name:'Rifle Bolter Stalker', A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Punhos',               A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+    ]
+  },
+
+  // ── PLAGUE MARINES (Chaos - Death Guard) ────────────
+  {
+    id:'kt-plaguemarines', name:'Plague Marines', faction:'Chaos Space Marines',
+    color:'#4d7c0f', emoji:'🦠',
+    desc:'Filhos corrompidos de Mortarion, inchados de podridão e doença. Lentos mas horrivelmente resistentes, espalham contágio por onde passam.',
+    style:'Resistente · Veneno',
+    limit: 6,
+    coreRule: {name:"Disgustingly Resilient", desc:"Sempre que um dado de ataque causar 3+ de dano num Plague Marine, role 1D6: em 4+, reduz 1 do dano. Além disso, cada operativo pode fazer 2 ações de Tiro ou 2 de Luta por ativação (Astartes)."},
+    ploys: {
+      strategy: [
+        {name:"Nuvem de Moscas", desc:"Cria um marcador — Plague Marines a até 1\" dele ficam obscurecidos contra tiros de longe."},
+        {name:"Contágio", desc:"Inimigos com Poison ou perto do Icon Bearer têm -2\" de Move e pioram o Hit em 1."},
+        {name:"Morte Lenta", desc:"Se não se mover mais de 3\", suas armas ganham Ceaseless."},
+        {name:"Nurglings", desc:"Reduz o APL de um inimigo próximo em 1 até a próxima ativação dele."},
+      ],
+      firefight: [
+        {name:"Maldição da Podridão", desc:"Cada resultado de 3 que o inimigo rolar contra você causa 1 dano extra e não conta como sucesso."},
+        {name:"Morte Venenosa", desc:"Ao ser incapacitado, contamina inimigos próximos com veneno."},
+        {name:"Resiliência Nauseante", desc:"Reduz automaticamente 1 do dano recebido (sem precisar rolar)."},
+        {name:"Veneno Virulento", desc:"Contamina um inimigo próximo com um marcador de Poison."},
+      ],
+    },
+    operatives: [
+      { id:'kt-pm-champion', name:'Champion', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'LÍDER. Bênção do Avô: quando um inimigo envenenado perde PV perto dele, ele recupera até a mesma quantidade (máx 3/turno).',
+        weapons:[
+          { name:'Pistola de Plasma', A:4, skill:3, D:3, CD:5, range:'short', tags:['Piercing 1'] },
+          { name:'Espada da Peste',   A:5, skill:3, D:4, CD:5, range:'melee', tags:['Severe'] },
+        ]},
+      { id:'kt-pm-plaguecaster', name:'Malignant Plaguecaster', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'PSYKER. Miasma Venenoso (1AP): envenena ou causa 3 dano num inimigo. Vitalidade Pútrida (1AP): cura um aliado perto.',
+        weapons:[
+          { name:'Entropia',       A:4, skill:3, D:3, CD:7, range:'long', tags:['Saturate','Severe'] },
+          { name:'Cajado Corrompido', A:4, skill:3, D:3, CD:4, range:'melee', tags:['Severe','Shock','Stun'] },
+        ]},
+      { id:'kt-pm-bombardier', name:'Bombardier', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Granadeiro: usa granadas de peste e krak com +1 no Hit.',
+        weapons:[
+          { name:'Boltgun', A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Punhos',  A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-pm-fighter', name:'Fighter', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Mangual (1AP): causa D3+2 dano em todos os operativos próximos e visíveis, envenenando inimigos.',
+        weapons:[
+          { name:'Pistola Bolter',  A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Mangual da Corrupção', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Brutal','Severe','Shock'] },
+        ]},
+      { id:'kt-pm-heavygunner', name:'Heavy Gunner', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Cuspidor de Peste — arma de área que sempre acerta.',
+        weapons:[
+          { name:'Cuspidor de Peste', A:5, skill:2, D:3, CD:3, range:'short', auto:true, tags:['Saturate','Severe'] },
+          { name:'Punhos',            A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-pm-iconbearer', name:'Icon Bearer', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Ícone da Contagião: perto do inimigo, o Ploy Contágio custa 0CP. Conta como APL +1 pra controlar marcadores.',
+        weapons:[
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Faca da Peste',  A:5, skill:3, D:3, CD:4, range:'melee', tags:['Severe'] },
+        ]},
+      { id:'kt-pm-warrior', name:'Warrior', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Fortitude Repulsiva: ao ser alvo, dados de defesa de 5+ são críticos.',
+        weapons:[
+          { name:'Boltgun',       A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Faca da Peste', A:4, skill:3, D:3, CD:4, range:'melee', tags:['Severe'] },
+        ]},
+    ]
+  },
 ];
 
 // ── KILL TEAM ACTIONS ────────────────────────────────
