@@ -4912,16 +4912,30 @@ const KT_SESSION = {
 
   resetActivations() {
     this.teams.forEach(t => t.operatives.forEach(op => op.activated = false));
-    // Randomize who goes first each turn
-    this.activeIdx = Math.floor(Math.random() * this.teams.length);
+    // Randomize who goes first among teams that still have living operatives
+    const aliveTeamIdxs = this.teams
+      .map((t, i) => ({ i, alive: t.operatives.some(op => !op.dead) }))
+      .filter(x => x.alive)
+      .map(x => x.i);
+    this.activeIdx = aliveTeamIdxs.length
+      ? aliveTeamIdxs[Math.floor(Math.random() * aliveTeamIdxs.length)]
+      : 0;
   },
 
   nextActivation() {
-    // Alternate between teams
-    this.activeIdx = (this.activeIdx + 1) % this.teams.length;
-    // Check if all activated
-    const anyLeft = this.teams.some(t => t.operatives.some(op => !op.dead && !op.activated));
-    if (!anyLeft) this.endTurn();
+    const n = this.teams.length;
+    const hasAvailable = (t) => t.operatives.some(op => !op.dead && !op.activated);
+
+    // Try to find the next team (in order) that still has an available operative
+    let tries = 0;
+    while (tries < n) {
+      this.activeIdx = (this.activeIdx + 1) % n;
+      if (hasAvailable(this.teams[this.activeIdx])) return;
+      tries++;
+    }
+
+    // No team has any operative left to activate — turn is over
+    this.endTurn();
   },
 
   endTurn() {
