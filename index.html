@@ -683,6 +683,74 @@ body::before{content:'';position:fixed;inset:0;
 .rules-btn:active{transform:scale(.9)}
 .rules-btn-sm{width:20px;height:20px;font-size:11px}
 
+
+/* ═══ CLICKABLE KEYWORD TAGS ═══ */
+.kw-tag{cursor:pointer;transition:all .15s}
+.kw-tag:active{transform:scale(.92);filter:brightness(1.3)}
+
+/* ═══ FLOATING GLOBAL RULES BUTTON ═══ */
+#global-rules-fab{
+  position:fixed; bottom:18px; right:14px; z-index:150;
+  width:48px; height:48px; border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  border:2px solid rgba(0,0,0,.3);
+  box-shadow:0 4px 16px rgba(0,0,0,.5), 0 0 0 3px rgba(232,184,75,.15);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; cursor:pointer; transition:all .2s;
+}
+#global-rules-fab:active{transform:scale(.9)}
+
+
+/* ═══ KT COVER TOGGLE ═══ */
+#kt-cover-toggle-track::before{content:'';position:absolute;height:20px;width:20px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:.2s}
+#kt-cover-toggle:checked + #kt-cover-toggle-track{background:rgba(6,182,212,.25);border-color:#06b6d4}
+#kt-cover-toggle:checked + #kt-cover-toggle-track::before{transform:translateX(20px);background:#06b6d4}
+
+
+/* ═══ KT FIGHT (MELEE) INTERACTIVE UI ═══ */
+.kt-fight-side{margin-bottom:14px}
+.kt-fight-side-hdr{font-family:var(--ff);font-size:15px;margin-bottom:8px}
+.kt-fight-chips{display:flex;flex-wrap:wrap;gap:8px}
+.kt-fight-chip{
+  width:64px; padding:8px 4px; border-radius:var(--rsm);
+  border:2px solid var(--border2); background:var(--card2);
+  text-align:center; transition:all .15s; cursor:default;
+}
+.kt-fight-chip.normal{border-color:rgba(59,130,246,.4)}
+.kt-fight-chip.crit{border-color:rgba(232,184,75,.5);background:rgba(232,184,75,.06)}
+.kt-fight-chip[onclick]{cursor:pointer}
+.kt-fight-chip[onclick]:active{transform:scale(.92)}
+.kfc-icon{font-size:18px;margin-bottom:2px}
+.kfc-label{font-family:var(--fu);font-size:10px;font-weight:700;color:var(--text2)}
+.kfc-status{font-family:var(--fu);font-size:9px;color:var(--gold);margin-top:3px;line-height:1.2}
+.kt-fight-chip.kt-fight-struck{border-color:var(--dmg);background:rgba(239,68,68,.1);opacity:.9}
+.kt-fight-chip.kt-fight-blocked-by{border-color:var(--save);background:rgba(59,130,246,.1);opacity:.9}
+.kt-fight-chip.kt-fight-was-blocked{border-color:var(--muted);opacity:.35;filter:grayscale(1)}
+.kt-fight-turn-banner{background:var(--card2);border:1px solid rgba(232,184,75,.3);border-radius:var(--r);padding:12px;margin-top:10px;text-align:center;font-size:13px}
+
+
+/* ═══ KT MODE SELECT ═══ */
+.kt-mode-card{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:18px 16px;margin-bottom:14px;cursor:pointer;transition:all .2s;position:relative}
+.kt-mode-card:active{transform:scale(.98)}
+.kt-mode-card.selected{border-color:#06b6d4;background:rgba(6,182,212,.06);box-shadow:0 0 16px rgba(6,182,212,.15)}
+.kt-mode-icon{font-size:32px;margin-bottom:8px}
+.kt-mode-name{font-family:var(--ff);font-size:20px;letter-spacing:1px;margin-bottom:6px;color:var(--text)}
+.kt-mode-card.selected .kt-mode-name{color:#06b6d4}
+.kt-mode-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.kt-mode-check{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;background:#06b6d4;color:#000;font-size:13px;display:none;align-items:center;justify-content:center;font-weight:900}
+.kt-mode-card.selected .kt-mode-check{display:flex}
+
+/* ═══ OPERATIVE ORDER (Conceal/Engage) ═══ */
+.kt-order-badge{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:14px;font-family:var(--fu);font-size:10px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .15s;border:1px solid transparent;flex-shrink:0}
+.kt-order-badge:active{transform:scale(.92)}
+.kt-order-badge.conceal{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:var(--save)}
+.kt-order-badge.engage{background:rgba(249,115,22,.15);border-color:rgba(249,115,22,.4);color:#f97316}
+.kt-order-icon{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.kt-order-badge.conceal .kt-order-icon{background:var(--save)}
+.kt-order-badge.engage .kt-order-icon{background:#f97316}
+.kt-op-card.order-conceal{border-left:3px solid var(--save)}
+.kt-op-card.order-engage{border-left:3px solid #f97316}
+
 </style>
 </head>
 <body>
@@ -4065,6 +4133,805 @@ function showKTTeamRulesModal(teamId) {
   document.getElementById('rules-modal').classList.add('open');
 }
 
+
+// ═══════════════════════════════════════════════════════
+// KILL TEAM — CORE RULES & WEAPON KEYWORD GLOSSARY
+// (Traduzido e resumido a partir das Lite Rules oficiais)
+// ═══════════════════════════════════════════════════════
+
+const KT_CORE_RULES = [
+  { section:'Preparação', items:[
+    { name:'Configuração', desc:'Cada jogador escolhe um Kill Team. Zona de jogo padrão: 30"x22". Jogador com iniciativa escolhe a zona de entrada (Drop Zone), dentro de 3" da borda.' },
+    { name:'Colocar Operativos', desc:'Alternando (quem tem iniciativa primeiro), cada jogador coloca 1/3 do time (arredondando pra cima) por vez, sempre com ordem Ocultar.' },
+  ]},
+  { section:'Estrutura do Turno', items:[
+    { name:'Fases', desc:'Cada Turning Point tem 2 fases: Strategy Phase (planejamento) e Firefight Phase (ativações).' },
+    { name:'Strategy Phase', desc:'Ambos rolam 1D6 — quem tira mais alto decide quem tem iniciativa (empate: quem não tem iniciativa decide). Cada jogador ganha CP (1CP no 1º turno; depois +1CP pra quem tem iniciativa, +2CP pra quem não tem). Ploys custam 1CP cada.' },
+    { name:'Firefight Phase', desc:'Jogadores alternam ativando operativos prontos, começando por quem tem iniciativa. Cada ativação: escolha ordem (Engage/Conceal) → gaste até o APL em ações → operativo fica "gasto".' },
+    { name:'Contra-ataque (Counteract)', desc:'Se todos os seus operativos já ativaram mas o adversário ainda tem, ao invés de ativar, um operativo gasto com ordem Engage pode fazer 1 ação de 1AP grátis (máx 2" de movimento), uma vez por turno.' },
+  ]},
+  { section:'Ordens', items:[
+    { name:'Engage (Avançar)', desc:'Pode fazer qualquer ação normalmente e contra-atacar.' },
+    { name:'Conceal (Ocultar)', desc:'Não é alvo válido se estiver em cobertura, mas NÃO pode Atirar ou Cargar.' },
+  ]},
+  { section:'Ações', items:[
+    { name:'Reposicionar — 1AP', desc:'Move até o Move stat. Não pode terminar dentro do alcance de controle de inimigo.' },
+    { name:'Dash — 1AP', desc:'Move até 3" (não pode escalar). Mesmas restrições do Reposicionar.' },
+    { name:'Recuar — 2AP', desc:'Como Reposicionar, mas pode passar pelo alcance de controle inimigo (não pode terminar lá). Só se estiver perto de inimigo.' },
+    { name:'Cargar — 1AP', desc:'Move +2" a mais. Deve terminar dentro do alcance de controle do alvo. Não pode ter ordem Ocultar.' },
+    { name:'Atirar — 1AP', desc:'Dispara uma arma de tiro. Não pode ter ordem Ocultar nem estar no alcance de controle de inimigo.' },
+    { name:'Lutar — 1AP', desc:'Luta corpo a corpo. Precisa ter inimigo no alcance de controle.' },
+  ]},
+  { section:'Alvo e Visibilidade', items:[
+    { name:'Alvo Válido (Engage)', desc:'Se o alvo tem ordem Engage, é válido se estiver Visível.' },
+    { name:'Alvo Válido (Conceal)', desc:'Se o alvo tem ordem Conceal, só é válido se estiver Visível E não estiver em Cobertura.' },
+    { name:'Visível', desc:'Deve haver linha reta desobstruída da cabeça do operativo até o alvo (olhando de trás do operativo).' },
+    { name:'Cobertura', desc:'Há terreno entre os dois operativos, dentro do alcance de controle do alvo. Não conta como cobertura se estiverem a menos de 2" um do outro.' },
+  ]},
+  { section:'Resolução de Tiro (Shoot)', items:[
+    { name:'1. Ataque', desc:'Atacante rola dados = Atk da arma. Resultado ≥ Hit da arma = sucesso normal. Resultado 6 = sempre sucesso crítico. Resultado 1 = sempre falha.' },
+    { name:'2. Defesa', desc:'Defensor rola sempre 3D6 (fixo, não depende de stat). Resultado ≥ Save do operativo = sucesso. Se o alvo estiver em cobertura, pode reter 1 sucesso normal automaticamente sem rolar.' },
+    { name:'3. Bloqueio', desc:'Defensor aloca sucessos de defesa pra bloquear sucessos de ataque: sucesso normal bloqueia normal · 2 normais bloqueiam 1 crítico · 1 crítico bloqueia normal OU crítico.' },
+    { name:'4. Dano', desc:'Cada sucesso de ataque não bloqueado causa dano: normal = Dano Normal da arma, crítico = Dano Crítico da arma.' },
+  ]},
+  { section:'Dano e Feridas', items:[
+    { name:'Ferido', desc:'Operativo com PV abaixo do máximo está "ferido" (sem efeito mecânico extra além do PV perdido).' },
+    { name:'Machucado (Injured)', desc:'Abaixo de metade dos PV: -2" no Move e piora o Hit das armas em 1.' },
+    { name:'Incapacitado', desc:'PV chega a 0 ou menos: operativo é removido do jogo.' },
+  ]},
+];
+
+const KT_WEAPON_KEYWORDS = {
+  'Accurate':   { name:'Accurate X', desc:'Retém até X dados de ataque como sucessos normais automáticos, sem rolar.' },
+  'Balanced':   { name:'Balanced', desc:'Pode re-rolar 1 dos seus dados de ataque.' },
+  'Blast':      { name:'Blast X', desc:'Atinge o alvo principal e todos os alvos secundários visíveis dentro de X do alvo principal (mesmo com ordem Ocultar).' },
+  'Brutal':     { name:'Brutal', desc:'O oponente só pode bloquear seus ataques com sucessos críticos (não pode usar sucessos normais para bloquear).' },
+  'Ceaseless':  { name:'Ceaseless', desc:'Pode re-rolar todos os dados de ataque que deram um resultado específico (ex: todos os 2s).' },
+  'Devastating':{ name:'Devastating X', desc:'Cada sucesso crítico retido causa X de dano imediato no alvo, sem poder ser bloqueado.' },
+  'Heavy':      { name:'Heavy', desc:'Não pode usar esta arma numa ativação em que se moveu, nem se mover numa ativação em que a usou.' },
+  'Hot':        { name:'Hot', desc:'Após usar, role 1D6 — se o resultado for menor que o Hit da arma, o próprio operativo sofre dano igual ao resultado x2.' },
+  'Lethal':     { name:'Lethal X+', desc:'Sucessos iguais ou maiores que X já contam como críticos (ex: Lethal 5+ = 5 e 6 são críticos).' },
+  'Limited':    { name:'Limited X', desc:'Após usar esta arma X vezes na batalha, ela não pode mais ser usada.' },
+  'Piercing':   { name:'Piercing X', desc:'O defensor rola X dados de defesa a menos. "Piercing Crits X" só funciona se você tiver retido algum crítico.' },
+  'Punishing':  { name:'Punishing', desc:'Se você retiver algum crítico, pode transformar uma das suas falhas em sucesso normal.' },
+  'Range':      { name:'Range X', desc:'Só operativos dentro de X do operativo ativo podem ser alvos válidos.' },
+  'Relentless': { name:'Relentless', desc:'Pode re-rolar qualquer um dos seus dados de ataque.' },
+  'Rending':    { name:'Rending', desc:'Se você retiver algum crítico, pode transformar um dos seus sucessos normais em crítico também.' },
+  'Saturate':   { name:'Saturate', desc:'O defensor não pode reter o sucesso automático de cobertura.' },
+  'Seek':       { name:'Seek', desc:'Operativos com ordem Ocultar não podem usar terreno como cobertura ao serem escolhidos como alvo. "Seek Light" só bloqueia cobertura de terreno Leve.' },
+  'Severe':     { name:'Severe', desc:'Se você não retiver nenhum crítico, pode transformar um sucesso normal em crítico.' },
+  'Shock':      { name:'Shock', desc:'Na primeira vez que você acertar com um crítico em cada sequência, também descarta um sucesso normal não resolvido do oponente.' },
+  'Silent':     { name:'Silent', desc:'Pode Atirar com esta arma mesmo estando com ordem Ocultar.' },
+  'Stun':       { name:'Stun', desc:'Se você retiver algum crítico, reduz o APL do alvo em 1 até o fim da próxima ativação dele.' },
+  'Torrent':    { name:'Torrent X', desc:'Escolhe o alvo principal normalmente, depois pode escolher qualquer número de alvos secundários dentro de X do primeiro (menos aliados do alvo). Atira em todos.' },
+};
+
+function findWeaponKeyword(tagText) {
+  if (!tagText) return null;
+  // Match keyword name ignoring numbers/plus signs, e.g. "Piercing 2" -> "Piercing", "Lethal 5+" -> "Lethal"
+  const base = tagText.replace(/[\d+]/g, '').trim();
+  for (const key in KT_WEAPON_KEYWORDS) {
+    if (base.toLowerCase().startsWith(key.toLowerCase())) {
+      return { ...KT_WEAPON_KEYWORDS[key], fullTag: tagText };
+    }
+  }
+  return null;
+}
+
+function showKeywordPopup(tagText) {
+  const kw = findWeaponKeyword(tagText);
+  SFX.click();
+  if (!kw) { showToast(`ℹ ${tagText}`, 2000); return; }
+  const modal = document.getElementById('rules-modal');
+  document.getElementById('rules-modal-title').textContent = `🔑 ${kw.fullTag}`;
+  document.getElementById('rules-modal-body').innerHTML = `
+    <div class="rule-card" style="margin-top:0">
+      <div class="rule-card-name" style="font-size:15px;color:var(--gold)">${kw.name}</div>
+      <div class="rule-card-desc" style="font-size:13px;margin-top:6px">${kw.desc}</div>
+    </div>
+    <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="showKTCoreRulesModal()">📖 Ver todas as regras e termos</button>`;
+  modal.classList.add('open');
+}
+
+function renderTagPills(tags) {
+  if (!tags || !tags.length) return '';
+  return tags.map(t => `<span class="wtag torrent kw-tag" onclick="event.stopPropagation();showKeywordPopup('${t.replace(/'/g,"\\'")}')">${t}</span>`).join('');
+}
+
+function showKTCoreRulesModal() {
+  SFX.click();
+  document.getElementById('rules-modal-title').textContent = '📖 Regras Gerais — Kill Team';
+  const body = document.getElementById('rules-modal-body');
+  let html = `<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Toque em qualquer termo de arma nas fichas para ver a explicação rápida. Aqui está a referência completa:</div>`;
+
+  KT_CORE_RULES.forEach(sec => {
+    html += `<div class="rules-section-title">${sec.section}</div>`;
+    sec.items.forEach(r => {
+      html += `<div class="rule-card"><div class="rule-card-name">${r.name}</div><div class="rule-card-desc">${r.desc}</div></div>`;
+    });
+  });
+
+  html += `<div class="rules-section-title">🔑 Termos de Armas (Weapon Rules)</div>`;
+  Object.values(KT_WEAPON_KEYWORDS).forEach(kw => {
+    html += `<div class="rule-card"><div class="rule-card-name">${kw.name}</div><div class="rule-card-desc">${kw.desc}</div></div>`;
+  });
+
+  body.innerHTML = html;
+  document.getElementById('rules-modal').classList.add('open');
+}
+
+
+function openGlobalRulesHub() {
+  SFX.click();
+  const current = NAV.current();
+
+  // Context-aware: in a KT battle, show quick access to both teams + core rules
+  if (current === 'screen-kt-battle' && KT_SESSION.teams && KT_SESSION.teams.length) {
+    document.getElementById('rules-modal-title').textContent = '📖 Regras — Kill Team';
+    let html = `<div class="rules-section-title">Times na Batalha</div>`;
+    KT_SESSION.teams.forEach(t => {
+      html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${t.color}" onclick="showKTTeamRulesModal('${t.teamId}')">
+        <div class="rule-card-name">${t.emoji} ${t.playerName} <span style="color:var(--muted);font-size:11px">→</span></div>
+        <div class="rule-card-desc">${t.name || ''}</div>
+      </div>`;
+    });
+    html += `<div class="rules-section-title">Referência Geral</div>
+      <div class="rule-card" style="cursor:pointer" onclick="showKTCoreRulesModal()">
+        <div class="rule-card-name">📘 Regras Gerais + Termos de Armas <span style="color:var(--muted);font-size:11px">→</span></div>
+        <div class="rule-card-desc">Setup, turnos, ações, tiro, dano e o glossário completo de palavras-chave.</div>
+      </div>`;
+    document.getElementById('rules-modal-body').innerHTML = html;
+    document.getElementById('rules-modal').classList.add('open');
+    return;
+  }
+
+  // In 40K battle, show quick access to both players' factions
+  if (current === 'screen-battle' && typeof SESSION !== 'undefined' && SESSION.players && SESSION.players.length) {
+    document.getElementById('rules-modal-title').textContent = '📖 Regras — Warhammer 40K';
+    let html = `<div class="rules-section-title">Jogadores na Batalha</div>`;
+    SESSION.players.forEach(p => {
+      const f = DB.getFaction(p.factionId);
+      html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${f?.color||'#888'}" onclick="showFactionRulesModal('${p.factionId}')">
+        <div class="rule-card-name">${f?.emoji||'⚔'} ${p.name} <span style="color:var(--muted);font-size:11px">→</span></div>
+        <div class="rule-card-desc">${f?.name||''}</div>
+      </div>`;
+    });
+    document.getElementById('rules-modal-body').innerHTML = html;
+    document.getElementById('rules-modal').classList.add('open');
+    return;
+  }
+
+  // Otherwise: generic hub — choose 40K faction, KT team rules, or KT core rules
+  document.getElementById('rules-modal-title').textContent = '📖 Regras e Referências';
+  let html = `
+    <div class="rules-section-title">🎯 Kill Team</div>
+    <div class="rule-card" style="cursor:pointer" onclick="showKTCoreRulesModal()">
+      <div class="rule-card-name">📘 Regras Gerais + Termos de Armas <span style="color:var(--muted);font-size:11px">→</span></div>
+      <div class="rule-card-desc">Setup, turnos, ações, sequência de tiro, dano e glossário de palavras-chave.</div>
+    </div>`;
+  KT_DB.getTeams().forEach(t => {
+    html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${t.color}" onclick="showKTTeamRulesModal('${t.id}')">
+      <div class="rule-card-name">${t.emoji} ${t.name} <span style="color:var(--muted);font-size:11px">→</span></div>
+      <div class="rule-card-desc">${t.style}</div>
+    </div>`;
+  });
+  html += `<div class="rules-section-title">⚔ Warhammer 40K</div>`;
+  DB.getFactions().forEach(f => {
+    html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${f.color}" onclick="showFactionRulesModal('${f.id}')">
+      <div class="rule-card-name">${f.emoji} ${f.name} <span style="color:var(--muted);font-size:11px">→</span></div>
+    </div>`;
+  });
+  document.getElementById('rules-modal-body').innerHTML = html;
+  document.getElementById('rules-modal').classList.add('open');
+}
+
+
+// ═══════════════════════════════════════════════════════
+// KT COMBAT ENGINE — Faithful to official Lite Rules
+// ═══════════════════════════════════════════════════════
+
+function ktParseTag(tagStr) {
+  const m = tagStr.match(/^([A-Za-z ]+?)\s*(\d+)?\+?$/);
+  if (!m) return { key: tagStr.trim(), value: null };
+  return { key: m[1].trim(), value: m[2] ? parseInt(m[2]) : null };
+}
+
+function ktHasTag(tags, key) {
+  return (tags || []).some(t => ktParseTag(t).key.toLowerCase() === key.toLowerCase());
+}
+function ktGetTagValue(tags, key) {
+  const t = (tags || []).find(t => ktParseTag(t).key.toLowerCase() === key.toLowerCase());
+  return t ? ktParseTag(t).value : null;
+}
+
+// Resolve a full Shoot/Fight sequence following official rules
+function ktResolveCombat(atkOp, defOp, weapon, inCover) {
+  const tags = weapon.tags || [];
+  const log = []; // human-readable steps for the UI
+
+  // ── 1. ATTACK DICE ──────────────────────────────────
+  let atkCount = weapon.A;
+  let guaranteedNormal = 0;
+
+  const accurateX = ktGetTagValue(tags, 'Accurate');
+  if (accurateX) { guaranteedNormal += Math.min(accurateX, atkCount); atkCount = Math.max(0, atkCount - accurateX); }
+
+  let atkRolls = Array.from({length: atkCount}, () => d6());
+
+  // Lethal X+ lowers the crit threshold
+  const lethalX = ktGetTagValue(tags, 'Lethal');
+  const critThreshold = lethalX || 6;
+
+  // Balanced / Relentless / Ceaseless: reroll support
+  if (ktHasTag(tags, 'Balanced')) {
+    // reroll the single worst die (a fail) once
+    const failIdx = atkRolls.findIndex(v => v < weapon.skill);
+    if (failIdx >= 0) atkRolls[failIdx] = d6();
+  }
+  if (ktHasTag(tags, 'Relentless')) {
+    atkRolls = atkRolls.map(v => v < weapon.skill ? d6() : v);
+  } else if (ktHasTag(tags, 'Ceaseless')) {
+    // reroll all 1s (most common beneficial application)
+    atkRolls = atkRolls.map(v => v === 1 ? d6() : v);
+  }
+
+  let atkNormal = guaranteedNormal;
+  let atkCrit = 0;
+  atkRolls.forEach(v => {
+    if (v === 1) return; // always fail
+    if (v >= critThreshold) atkCrit++;
+    else if (v >= weapon.skill) atkNormal++;
+  });
+
+  // Punishing: if any crit, convert 1 fail into normal (we approximate by adding 1 normal if there were rolled fails)
+  const atkFails = atkRolls.filter(v => v < weapon.skill && v < critThreshold).length;
+  if (ktHasTag(tags, 'Punishing') && atkCrit > 0 && atkFails > 0) {
+    atkNormal++;
+    log.push('Punishing: 1 falha virou sucesso normal');
+  }
+  // Rending: if any crit, convert 1 normal into crit
+  if (ktHasTag(tags, 'Rending') && atkCrit > 0 && atkNormal > 0) {
+    atkNormal--; atkCrit++;
+    log.push('Rending: 1 sucesso normal virou crítico');
+  }
+  // Severe: if no crit, convert 1 normal into crit
+  if (ktHasTag(tags, 'Severe') && atkCrit === 0 && atkNormal > 0) {
+    atkNormal--; atkCrit++;
+    log.push('Severe: 1 sucesso normal virou crítico (sem críticos originais)');
+  }
+
+  // Devastating X: crits deal auto unblockable damage immediately,
+  // but the success is NOT removed from the pool — it can still be resolved
+  // (blocked/landed) normally afterward, per official clarification.
+  const devX = ktGetTagValue(tags, 'Devastating');
+  let devastatingDmg = 0;
+  if (devX && atkCrit > 0) {
+    devastatingDmg = devX * atkCrit;
+    log.push(`Devastating ${devX}: ${atkCrit} crítico(s) causam ${devastatingDmg} dano direto (o sucesso continua na sequência normalmente)`);
+  }
+  const critsForBlocking = atkCrit;
+
+  // ── 2. DEFENSE DICE (always 3, minus Piercing) ──────
+  const saturate = ktHasTag(tags, 'Saturate');
+  const piercingX = ktGetTagValue(tags, 'Piercing');
+  const piercingCritsX = ktGetTagValue(tags, 'Piercing Crits');
+  let defPool = 3;
+  if (piercingX) defPool = Math.max(0, defPool - piercingX);
+  if (piercingCritsX && atkCrit > 0) defPool = Math.max(0, defPool - piercingCritsX);
+
+  let coverBonus = 0;
+  if (inCover && !saturate && defPool > 0) { coverBonus = 1; defPool -= 1; }
+
+  const defRolls = Array.from({length: defPool}, () => d6());
+  let defNormal = coverBonus;
+  let defCrit = 0;
+  defRolls.forEach(v => {
+    if (v === 1) return;
+    if (v === 6) defCrit++;
+    else if (v >= defOp.SV) defNormal++;
+  });
+
+  // Brutal: defender can only block with crits
+  if (ktHasTag(tags, 'Brutal')) {
+    defNormal = 0;
+    log.push('Brutal: o defensor só pode bloquear com sucessos críticos');
+  }
+
+  // Shock: discard 1 unresolved defender success (prioritize normal) if attacker landed any hit
+  if (ktHasTag(tags, 'Shock') && (critsForBlocking + atkNormal) > 0) {
+    if (defNormal > 0) { defNormal--; log.push('Shock: 1 sucesso de defesa normal descartado'); }
+    else if (defCrit > 0) { defCrit--; log.push('Shock: 1 sucesso de defesa crítico descartado'); }
+  }
+
+  // ── 3. BLOCKING (defender allocates optimally) ──────
+  let remAtkCrit = critsForBlocking, remAtkNormal = atkNormal;
+  let remDefCrit = defCrit, remDefNormal = defNormal;
+
+  // Crit-defense blocks attacker crit first (1:1)
+  let blocked = Math.min(remDefCrit, remAtkCrit);
+  remDefCrit -= blocked; remAtkCrit -= blocked;
+  // Remaining crit-defense blocks attacker normal (1:1)
+  blocked = Math.min(remDefCrit, remAtkNormal);
+  remDefCrit -= blocked; remAtkNormal -= blocked;
+  // Pairs of normal-defense block attacker crit (2:1)
+  blocked = Math.min(Math.floor(remDefNormal / 2), remAtkCrit);
+  remDefNormal -= blocked * 2; remAtkCrit -= blocked;
+  // Remaining normal-defense blocks attacker normal (1:1)
+  blocked = Math.min(remDefNormal, remAtkNormal);
+  remDefNormal -= blocked; remAtkNormal -= blocked;
+
+  const hitsLanded = remAtkNormal;
+  const critsLanded = remAtkCrit;
+  const normalDmg = hitsLanded * weapon.D;
+  const critDmg = critsLanded * weapon.CD;
+  const totalDmg = normalDmg + critDmg + devastatingDmg;
+
+  // Hot: risk of self-damage
+  let hotSelfDmg = 0;
+  if (ktHasTag(tags, 'Hot')) {
+    const hotRoll = d6();
+    if (hotRoll < weapon.skill) { hotSelfDmg = hotRoll * 2; log.push(`Hot: operativo sofreu ${hotSelfDmg} de dano próprio (rolou ${hotRoll})`); }
+  }
+
+  return {
+    atkRolls, defRolls, atkNormal: atkNormal, atkCrit, hits: atkNormal, crits: atkCrit,
+    defNormal: defNormal, defCrit, saves: defNormal, defCrits: defCrit,
+    hitsLanded, critsLanded, normalDmg, critDmg, devastatingDmg, hotSelfDmg,
+    totalDmg: totalDmg, log, inCover, defPoolRolled: defPool, coverBonus,
+    weapon, atkOp, defOp,
+  };
+}
+
+
+function ktToggleCover() {
+  const cb = document.getElementById('kt-cover-toggle');
+  cb.checked = !cb.checked;
+  SFX.click();
+}
+
+
+// ═══════════════════════════════════════════════════════
+// KT FIGHT ENGINE — Interactive Strike/Block resolution
+// Fight is mechanically different from Shoot:
+//  - BOTH sides roll with their OWN melee weapon (no fixed 3-dice defense)
+//  - Successes are resolved ONE AT A TIME, alternating (attacker first)
+//  - Each success: Strike (damage) or Block (cancel 1 opposing success)
+//  - Normal blocks only Normal. Critical blocks Normal OR Critical.
+//    (No "2 normals block 1 crit" — that rule is Shoot-only.)
+// ═══════════════════════════════════════════════════════
+
+let ktFight = null; // active fight state
+
+function ktRollFightSide(op, weapon) {
+  const tags = weapon.tags || [];
+  let count = weapon.A;
+  let guaranteedNormal = 0;
+
+  const accurateX = ktGetTagValue(tags, 'Accurate');
+  if (accurateX) { guaranteedNormal += Math.min(accurateX, count); count = Math.max(0, count - accurateX); }
+
+  let rolls = Array.from({length: count}, () => d6());
+  const lethalX = ktGetTagValue(tags, 'Lethal');
+  const critThreshold = lethalX || 6;
+
+  if (ktHasTag(tags, 'Balanced')) {
+    const failIdx = rolls.findIndex(v => v < weapon.skill);
+    if (failIdx >= 0) rolls[failIdx] = d6();
+  }
+  if (ktHasTag(tags, 'Relentless')) {
+    rolls = rolls.map(v => v < weapon.skill ? d6() : v);
+  } else if (ktHasTag(tags, 'Ceaseless')) {
+    rolls = rolls.map(v => v === 1 ? d6() : v);
+  }
+
+  let normal = guaranteedNormal, crit = 0;
+  rolls.forEach(v => {
+    if (v === 1) return;
+    if (v >= critThreshold) crit++;
+    else if (v >= weapon.skill) normal++;
+  });
+
+  const fails = rolls.filter(v => v < weapon.skill && v < critThreshold).length;
+  const log = [];
+  if (ktHasTag(tags, 'Punishing') && crit > 0 && fails > 0) { normal++; log.push('Punishing: 1 falha virou sucesso'); }
+  if (ktHasTag(tags, 'Rending') && crit > 0 && normal > 0) { normal--; crit++; log.push('Rending: normal virou crítico'); }
+  if (ktHasTag(tags, 'Severe') && crit === 0 && normal > 0) { normal--; crit++; log.push('Severe: normal virou crítico'); }
+
+  const devX = ktGetTagValue(tags, 'Devastating');
+  let devastatingDmg = 0;
+  if (devX && crit > 0) { devastatingDmg = devX * crit; log.push(`Devastating ${devX}: +${devastatingDmg} dano direto`); }
+
+  let hotSelfDmg = 0;
+  if (ktHasTag(tags, 'Hot')) {
+    const hotRoll = d6();
+    if (hotRoll < weapon.skill) { hotSelfDmg = hotRoll * 2; log.push(`Hot: ${hotSelfDmg} dano próprio`); }
+  }
+
+  // Build success token list: crits first (order doesn't affect rules, just display)
+  const successes = [];
+  for (let i = 0; i < crit; i++) successes.push({ id: `c${i}`, type: 'crit', resolved: false });
+  for (let i = 0; i < normal; i++) successes.push({ id: `n${i}`, type: 'normal', resolved: false });
+
+  return { rolls, normal, crit, successes, devastatingDmg, hotSelfDmg, log, brutal: ktHasTag(tags, 'Brutal'), shock: ktHasTag(tags, 'Shock') };
+}
+
+function ktOpenFightCombat(atkOp, defOp, atkWeapon, defWeapon, atkTeam, defTeam) {
+  const atkSide = ktRollFightSide(atkOp, atkWeapon);
+  const defSide = ktRollFightSide(defOp, defWeapon);
+
+  ktFight = {
+    atkOp, defOp, atkTeam, defTeam, atkWeapon, defWeapon,
+    atk: atkSide, def: defSide,
+    turnSide: 'atk', // attacker resolves first
+    dmgToDef: atkSide.devastatingDmg, // devastating pre-damage
+    dmgToAtk: defSide.devastatingDmg,
+    shockUsedAtk: false, shockUsedDef: false,
+    log: [...atkSide.log, ...defSide.log],
+    pendingBlockChoice: null, // {side, successId} when choosing what to block
+  };
+
+  // Reset modal chrome for a fresh Fight sequence
+  const btnPhase = document.getElementById('btn-phase');
+  if (btnPhase) btnPhase.style.display = 'none';
+  const fr = document.getElementById('final-result');
+  if (fr) fr.classList.remove('show');
+  const ab = document.getElementById('apply-dmg-btn');
+  if (ab) { ab.classList.remove('applied'); ab.disabled = false; }
+  const notesBox = document.getElementById('kt-rule-notes');
+  if (notesBox) notesBox.remove();
+
+  document.getElementById('battle-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  SFX.roll();
+
+  renderKTFightModal();
+}
+
+function ktFightActiveList() { return ktFight.turnSide === 'atk' ? ktFight.atk : ktFight.def; }
+function ktFightOtherList()  { return ktFight.turnSide === 'atk' ? ktFight.def : ktFight.atk; }
+function ktFightActiveOp()   { return ktFight.turnSide === 'atk' ? ktFight.atkOp : ktFight.defOp; }
+function ktFightOtherOp()    { return ktFight.turnSide === 'atk' ? ktFight.defOp : ktFight.atkOp; }
+
+function ktFightPending(list) { return list.successes.filter(s => !s.resolved); }
+
+function ktFightIsDone() {
+  return ktFightPending(ktFight.atk).length === 0 && ktFightPending(ktFight.def).length === 0;
+}
+
+// Pick a success to act on
+function ktFightSelectSuccess(successId) {
+  SFX.click();
+  ktFight.pendingBlockChoice = { successId, choosingTarget: false };
+  renderKTFightModal();
+}
+
+function ktFightCancelSelection() {
+  ktFight.pendingBlockChoice = null;
+  renderKTFightModal();
+}
+
+function ktFightStrike(successId) {
+  const list = ktFightActiveList();
+  const success = list.successes.find(s => s.id === successId);
+  if (!success || success.resolved) return;
+  success.resolved = true;
+  success.action = 'strike';
+  SFX.hit();
+  ktFight.pendingBlockChoice = null;
+  ktFightAdvanceTurn();
+}
+
+function ktFightWantBlock(successId) {
+  const list = ktFightActiveList();
+  const mySuccess = list.successes.find(s => s.id === successId);
+  if (!mySuccess) return;
+  const opponent = ktFightOtherList();
+  const validTargets = ktFightPending(opponent).filter(t => {
+    if (mySuccess.type === 'normal') return t.type === 'normal';
+    return true; // crit can block normal or crit
+  }).filter(t => {
+    // Respect Brutal: if the OPPONENT's weapon has Brutal, active side can only block with crits
+    const opponentWeaponHasBrutal = ktFight.turnSide === 'atk' ? ktFight.def.brutal : ktFight.atk.brutal;
+    if (opponentWeaponHasBrutal && mySuccess.type !== 'crit') return false;
+    return true;
+  });
+  if (!validTargets.length) { showToast('⚠ Nenhum alvo válido para bloquear'); return; }
+  if (validTargets.length === 1) {
+    ktFightDoBlock(successId, validTargets[0].id);
+  } else {
+    ktFight.pendingBlockChoice = { successId, choosingTarget: true };
+    renderKTFightModal();
+  }
+}
+
+function ktFightDoBlock(mySuccessId, targetId) {
+  const list = ktFightActiveList();
+  const opponent = ktFightOtherList();
+  const mySuccess = list.successes.find(s => s.id === mySuccessId);
+  const target = opponent.successes.find(s => s.id === targetId);
+  if (!mySuccess || !target) return;
+  mySuccess.resolved = true;
+  mySuccess.action = 'block';
+  target.resolved = true;
+  target.action = 'blocked';
+  SFX.save();
+  ktFight.pendingBlockChoice = null;
+  ktFightAdvanceTurn();
+}
+
+function ktFightAdvanceTurn() {
+  // Check Shock: first strike with a crit in a sequence discards 1 opposing unresolved success
+  // (approximated: triggers once per side, the first time that side lands a crit strike)
+  const justActed = ktFight.turnSide;
+  const list = justActed === 'atk' ? ktFight.atk : ktFight.def;
+  const lastResolved = [...list.successes].reverse().find(s => s.resolved);
+  if (lastResolved && lastResolved.action === 'strike' && lastResolved.type === 'crit') {
+    const shockFlag = justActed === 'atk' ? 'shockUsedAtk' : 'shockUsedDef';
+    const shockActive = justActed === 'atk' ? ktFight.atk.shock : ktFight.def.shock;
+    if (shockActive && !ktFight[shockFlag]) {
+      ktFight[shockFlag] = true;
+      const otherList = justActed === 'atk' ? ktFight.def : ktFight.atk;
+      const otherPending = ktFightPending(otherList);
+      // Prefer discarding a normal, else a crit
+      const discardTarget = otherPending.find(s => s.type === 'normal') || otherPending[0];
+      if (discardTarget) {
+        discardTarget.resolved = true;
+        discardTarget.action = 'shocked';
+        showToast('⚡ Shock: 1 sucesso do oponente descartado!');
+      }
+    }
+  }
+
+  // Flip turn — but only to a side that still has pending successes
+  const otherSide = ktFight.turnSide === 'atk' ? 'def' : 'atk';
+  const otherList2 = otherSide === 'atk' ? ktFight.atk : ktFight.def;
+  if (ktFightPending(otherList2).length > 0) {
+    ktFight.turnSide = otherSide;
+  } else {
+    // Other side is empty — active side keeps resolving (auto-strike remaining) or stays if also empty
+    const myList = ktFight.turnSide === 'atk' ? ktFight.atk : ktFight.def;
+    if (ktFightPending(myList).length === 0) {
+      // both empty — done
+    }
+    // turnSide stays the same; UI will auto-strike remaining via "resolver restantes" flow
+  }
+  renderKTFightModal();
+
+  if (ktFightIsDone()) {
+    setTimeout(() => ktFightFinalize(), 400);
+  }
+}
+
+// Auto-resolve all of the active side's remaining successes as strikes (used when opponent is empty)
+function ktFightAutoStrikeRemaining() {
+  const list = ktFightActiveList();
+  ktFightPending(list).forEach(s => { s.resolved = true; s.action = 'strike'; });
+  SFX.hit();
+  renderKTFightModal();
+  if (ktFightIsDone()) setTimeout(() => ktFightFinalize(), 400);
+}
+
+function ktFightFinalize() {
+  // Tally damage
+  const atkLandedNormal = ktFight.atk.successes.filter(s => s.action === 'strike' && s.type === 'normal').length;
+  const atkLandedCrit   = ktFight.atk.successes.filter(s => s.action === 'strike' && s.type === 'crit').length;
+  const defLandedNormal = ktFight.def.successes.filter(s => s.action === 'strike' && s.type === 'normal').length;
+  const defLandedCrit   = ktFight.def.successes.filter(s => s.action === 'strike' && s.type === 'crit').length;
+
+  const dmgToDef = ktFight.dmgToDef + atkLandedNormal * ktFight.atkWeapon.D + atkLandedCrit * ktFight.atkWeapon.CD;
+  const dmgToAtk = ktFight.dmgToAtk + defLandedNormal * ktFight.defWeapon.D + defLandedCrit * ktFight.defWeapon.CD;
+
+  ktFight.finalDmgToDef = dmgToDef;
+  ktFight.finalDmgToAtk = dmgToAtk;
+
+  if (ktFight.atk.hotSelfDmg) ktFight.finalDmgToAtk += ktFight.atk.hotSelfDmg;
+  if (ktFight.def.hotSelfDmg) ktFight.finalDmgToDef += ktFight.def.hotSelfDmg;
+
+  renderKTFightModal(); // final render shows results
+}
+
+function ktApplyFightDamage() {
+  if (!ktFight || ktFight.finalDmgToDef === undefined) return;
+  const btn = document.getElementById('apply-dmg-btn');
+  if (btn && btn.classList.contains('applied')) return;
+
+  ktPushUndo(`Combate CaC: ${ktFight.atkOp.displayName} vs ${ktFight.defOp.displayName}`);
+
+  if (ktFight.finalDmgToDef > 0) KT_SESSION.applyDamage(ktFight.defTeam.playerId, ktFight.defOp.instanceId, ktFight.finalDmgToDef);
+  if (ktFight.finalDmgToAtk > 0) KT_SESSION.applyDamage(ktFight.atkTeam.playerId, ktFight.atkOp.instanceId, ktFight.finalDmgToAtk);
+
+  if (btn) { btn.classList.add('applied'); btn.textContent = '✅ DANO APLICADO'; }
+  SFX.objective();
+  if (ktFight.finalDmgToDef > 0 || ktFight.finalDmgToAtk > 0) VFX.deathEffect();
+
+  ktCombatHist.unshift({
+    atkName: ktFight.atkOp.displayName, defName: ktFight.defOp.displayName,
+    weapon: `${ktFight.atkWeapon.name} vs ${ktFight.defWeapon.name}`,
+    hits: ktFight.atk.normal, crits: ktFight.atk.crit, saves: 0,
+    totalDmg: ktFight.finalDmgToDef,
+  });
+  renderKTHist();
+
+  setTimeout(() => {
+    closeBattle();
+    ktSwitchTab('status');
+    renderKTActivation();
+    ktFight = null;
+  }, 900);
+}
+
+
+// ═══════════════════════════════════════════════════════
+// KT FIGHT UI — Renders the interactive strike/block modal
+// ═══════════════════════════════════════════════════════
+
+function renderKTFightModal() {
+  if (!ktFight) return;
+  const { atkOp, defOp, atkTeam, defTeam, atkWeapon, defWeapon, atk, def, turnSide } = ktFight;
+
+  const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  const setStyle = (id, prop, val) => { const el = document.getElementById(id); if (el) el.style[prop] = val; };
+
+  setText('vs-atk-name', atkOp.displayName);
+  setText('vs-atk-player', atkTeam.playerName);
+  setStyle('vs-atk-player', 'color', atkTeam.color);
+  setText('vs-weapon', `⚔ ${atkWeapon.name} vs ${defWeapon.name}`);
+  setText('vs-atk-qty', `Skill: ${atkWeapon.skill}+`);
+  setText('vs-def-name', defOp.displayName);
+  setText('vs-def-player', defTeam.playerName);
+  setStyle('vs-def-player', 'color', defTeam.color);
+  setText('vs-def-qty', `Skill: ${defWeapon.skill}+`);
+
+  const phaseStrip = document.querySelector('.phase-strip');
+  if (phaseStrip) phaseStrip.style.display = 'none';
+
+  const diceArea = document.getElementById('dice-area');
+  const finalResult = document.getElementById('final-result');
+  if (!diceArea) return;
+
+  // If finalized, show results screen instead
+  if (ktFight.finalDmgToDef !== undefined) {
+    diceArea.style.display = 'none';
+    finalResult.classList.add('show');
+    renderKTFightResult();
+    return;
+  }
+
+  diceArea.style.display = 'block';
+  finalResult.classList.remove('show');
+
+  const done = ktFightIsDone();
+  const activeSide = turnSide;
+  const activeOp = ktFightActiveOp();
+  const activeList = ktFightActiveList();
+  const otherList = ktFightOtherList();
+  const activePending = ktFightPending(activeList);
+  const otherPending = ktFightPending(otherList);
+
+  const successChip = (s, clickable, extraClass) => {
+    const icon = s.type === 'crit' ? '🎯' : '⚔';
+    const label = s.type === 'crit' ? 'Crítico' : 'Normal';
+    let statusClass = '';
+    if (s.resolved) {
+      if (s.action === 'strike') statusClass = 'kt-fight-struck';
+      else if (s.action === 'block') statusClass = 'kt-fight-blocked-by';
+      else if (s.action === 'blocked') statusClass = 'kt-fight-was-blocked';
+      else if (s.action === 'shocked') statusClass = 'kt-fight-was-blocked';
+    }
+    return `<div class="kt-fight-chip ${s.type} ${statusClass} ${extraClass||''}" ${clickable && !s.resolved ? `onclick="ktFightSelectSuccess('${s.id}')"` : ''}>
+      <div class="kfc-icon">${icon}</div>
+      <div class="kfc-label">${label}</div>
+      ${s.resolved ? `<div class="kfc-status">${s.action==='strike'?'⚔ Golpeou':s.action==='block'?'🛡 Bloqueou':s.action==='blocked'?'❌ Bloqueado':'⚡ Chocado'}</div>` : ''}
+    </div>`;
+  };
+
+  let html = `
+    <div class="kt-fight-side">
+      <div class="kt-fight-side-hdr" style="color:${atkTeam.color}">${atkOp.displayName} <span style="color:var(--muted);font-size:11px">(${atkWeapon.name})</span></div>
+      <div class="kt-fight-chips">${atk.successes.length ? atk.successes.map(s => successChip(s, false)).join('') : '<div style="font-size:12px;color:var(--muted)">Nenhum sucesso</div>'}</div>
+    </div>
+    <div class="kt-fight-side">
+      <div class="kt-fight-side-hdr" style="color:${defTeam.color}">${defOp.displayName} <span style="color:var(--muted);font-size:11px">(${defWeapon.name})</span></div>
+      <div class="kt-fight-chips">${def.successes.length ? def.successes.map(s => successChip(s, false)).join('') : '<div style="font-size:12px;color:var(--muted)">Nenhum sucesso</div>'}</div>
+    </div>`;
+
+  diceArea.innerHTML = html;
+
+  // Re-render with clickability on the ACTIVE side's pending chips
+  const activeContainer = activeSide === 'atk' ? diceArea.children[0] : diceArea.children[1];
+  const chipsDiv = activeContainer.querySelector('.kt-fight-chips');
+
+  if (!done) {
+    if (otherPending.length === 0 && activePending.length > 0) {
+      // Other side empty — auto-strike remaining
+      chipsDiv.innerHTML = activeList.successes.map(s => successChip(s, false)).join('');
+      const banner = document.createElement('div');
+      banner.className = 'kt-fight-turn-banner';
+      banner.innerHTML = `<div style="color:${activeSide==='atk'?atkTeam.color:defTeam.color}">${activeOp.displayName} resolve os ${activePending.length} sucesso(s) restantes automaticamente (oponente sem sucessos pendentes)</div>
+        <button class="btn btn-gold btn-sm" style="margin-top:8px" onclick="ktFightAutoStrikeRemaining()">⚔ RESOLVER TODOS COMO GOLPE</button>`;
+      diceArea.appendChild(banner);
+    } else if (activePending.length > 0) {
+      chipsDiv.innerHTML = activeList.successes.map(s => successChip(s, true)).join('');
+      const banner = document.createElement('div');
+      banner.className = 'kt-fight-turn-banner';
+
+      if (ktFight.pendingBlockChoice) {
+        const { successId, choosingTarget } = ktFight.pendingBlockChoice;
+        const mySuccess = activeList.successes.find(s => s.id === successId);
+        if (choosingTarget) {
+          const validTargets = otherPending.filter(t => mySuccess.type === 'crit' || t.type === 'normal');
+          banner.innerHTML = `<div style="color:var(--gold)">Escolha qual sucesso de ${activeSide==='atk'?defOp.displayName:atkOp.displayName} bloquear:</div>
+            <div class="kt-fight-chips" style="margin-top:8px">${validTargets.map(t => `<div class="kt-fight-chip ${t.type}" onclick="ktFightDoBlock('${successId}','${t.id}')"><div class="kfc-icon">${t.type==='crit'?'🎯':'⚔'}</div><div class="kfc-label">${t.type==='crit'?'Crítico':'Normal'}</div></div>`).join('')}</div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="ktFightCancelSelection()">↩ Cancelar</button>`;
+        } else {
+          banner.innerHTML = `<div style="color:var(--gold)">${activeSide==='atk'?atkOp.displayName:defOp.displayName}: o que fazer com este sucesso ${mySuccess.type==='crit'?'🎯 Crítico':'⚔ Normal'}?</div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn btn-primary btn-sm" style="flex:1" onclick="ktFightStrike('${successId}')">⚔ GOLPEAR</button>
+              <button class="btn btn-secondary btn-sm" style="flex:1" onclick="ktFightWantBlock('${successId}')">🛡 BLOQUEAR</button>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="margin-top:6px;opacity:.7" onclick="ktFightCancelSelection()">↩ Escolher outro sucesso</button>`;
+        }
+      } else {
+        banner.innerHTML = `<div style="color:${activeSide==='atk'?atkTeam.color:defTeam.color};font-family:var(--fu);font-weight:700">Vez de ${activeOp.displayName} — toque em um sucesso acima para resolver</div>`;
+      }
+      diceArea.appendChild(banner);
+    }
+  }
+}
+
+function renderKTFightResult() {
+  const { atkOp, defOp, finalDmgToDef, finalDmgToAtk, atkWeapon, defWeapon, log } = ktFight;
+
+  document.getElementById('r-atk').textContent = ktFight.atk.successes.length;
+  document.getElementById('r-hit').textContent = ktFight.atk.successes.filter(s=>s.action==='strike').length;
+  document.getElementById('r-wnd').textContent = ktFight.def.successes.length;
+  document.getElementById('r-sv').textContent = ktFight.def.successes.filter(s=>s.action==='strike').length;
+  document.getElementById('r-dmg').textContent = finalDmgToDef;
+
+  const fr = document.getElementById('final-result');
+  const rows = fr.querySelectorAll('.sb-row .sb-label');
+  if (rows[0]) rows[0].textContent = `🎯 Sucessos ${atkOp.displayName}`;
+  if (rows[1]) rows[1].textContent = `⚔ Golpes de ${atkOp.displayName}`;
+  if (rows[2]) rows[2].textContent = `🎯 Sucessos ${defOp.displayName}`;
+  if (rows[3]) rows[3].textContent = `⚔ Golpes de ${defOp.displayName}`;
+  if (rows[4]) rows[4].textContent = `💥 Dano em ${defOp.displayName}`;
+
+  let notesBox = document.getElementById('kt-rule-notes');
+  if (!notesBox) {
+    notesBox = document.createElement('div');
+    notesBox.id = 'kt-rule-notes';
+    notesBox.style.cssText = 'font-size:11px;color:var(--gold);line-height:1.6;margin-bottom:9px';
+    fr.insertBefore(notesBox, fr.firstChild);
+  }
+  const notes = [...(log||[])];
+  if (finalDmgToAtk > 0) notes.push(`↩ ${atkOp.displayName} também sofreu ${finalDmgToAtk} de dano (revide)`);
+  notesBox.innerHTML = notes.map(n => '📋 ' + n).join('<br>');
+
+  const db  = document.getElementById('db');
+  const dbi = document.getElementById('db-icon');
+  const dbt = document.getElementById('db-title');
+  const dbs = document.getElementById('db-sub');
+  if (finalDmgToDef >= defOp.curW && finalDmgToDef > 0) {
+    db.className = 'death-banner'; dbi.textContent = '💀';
+    dbt.textContent = `${defOp.displayName} ELIMINADO!`;
+    dbs.textContent = `${finalDmgToDef} dano recebido` + (finalDmgToAtk > 0 ? ` · ${atkOp.displayName} sofreu ${finalDmgToAtk}` : '');
+  } else if (finalDmgToDef > 0 || finalDmgToAtk > 0) {
+    db.className = 'death-banner dmg'; dbi.textContent = '🩸';
+    dbt.textContent = `${defOp.displayName}: ${finalDmgToDef} dano`;
+    dbs.textContent = finalDmgToAtk > 0 ? `${atkOp.displayName} sofreu ${finalDmgToAtk} de revide` : 'Sem revide';
+  } else {
+    db.className = 'death-banner safe'; dbi.textContent = '🛡';
+    dbt.textContent = 'NINGUÉM FERIDO';
+    dbs.textContent = 'Todos os golpes foram bloqueados';
+  }
+
+  const ab = document.getElementById('apply-dmg-btn');
+  ab.disabled = (finalDmgToDef === 0 && finalDmgToAtk === 0);
+  ab.classList.remove('applied');
+  ab.textContent = (finalDmgToDef > 0 || finalDmgToAtk > 0) ? '⚡ APLICAR DANO (AMBOS OS LADOS)' : '✅ Sem dano';
+  ab.onclick = ktApplyFightDamage;
+}
+
 let volMuted = false;
 function toggleVolume() {
   volMuted = !volMuted;
@@ -4274,10 +5141,37 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 </div>
 
 
+<!-- ═══ KT: MODE SELECT ═══ -->
+<div class="screen" id="screen-kt-mode-select">
+  <div class="hdr">
+    <button class="hdr-back" onclick="SFX.click();NAV.back(initHome)">←</button>
+    <div class="hdr-info"><div class="hdr-eyebrow">Kill Team · Passo 0</div><div class="hdr-title">⚙ <span>ESCOLHA O MODO</span></div></div>
+  </div>
+  <div class="screen-body">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Como vocês querem jogar?</div>
+
+    <div class="kt-mode-card" id="kt-mode-full" onclick="ktPickMode(false)">
+      <div class="kt-mode-icon">🎮</div>
+      <div class="kt-mode-name">MODO COMPLETO</div>
+      <div class="kt-mode-desc">O app rola os dados, resolve o combate (Tiro e CaC) e cuida de tudo — Ativação, Combate e Status.</div>
+      <div class="kt-mode-check">✓</div>
+    </div>
+
+    <div class="kt-mode-card" id="kt-mode-simple" onclick="ktPickMode(true)">
+      <div class="kt-mode-icon">📋</div>
+      <div class="kt-mode-name">MODO SIMPLES</div>
+      <div class="kt-mode-desc">Vocês rolam os dados físicos na mesa. O app só ajuda a lembrar de quem ativou, ordens (Conceal/Engage) e os PVs de cada operativo.</div>
+      <div class="kt-mode-check">✓</div>
+    </div>
+
+    <div style="height:8px"></div>
+  </div>
+</div>
+
 <!-- ═══ KT: TEAM SELECT ═══ -->
 <div class="screen" id="screen-kt-team-select">
   <div class="hdr">
-    <button class="hdr-back" onclick="SFX.click();NAV.back(initHome)">←</button>
+    <button class="hdr-back" onclick="SFX.click();NAV.back(initKTModeSelect)">←</button>
     <div class="hdr-info"><div class="hdr-eyebrow">Kill Team · Passo 1</div><div class="hdr-title">🎯 <span>ESCOLHA OS TIMES</span></div></div>
   </div>
   <div class="screen-body">
@@ -4339,7 +5233,10 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
     <div class="divider"></div>
     <div class="sec-label">Todos os operativos:</div>
     <div id="kt-all-teams-overview"></div>
-    <button class="btn btn-gold" style="margin-top:8px" onclick="ktEndTurn();SFX.click()" id="kt-end-turn-btn">⏭ FINALIZAR TURNO</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-gold" style="flex:3" onclick="ktEndTurn();SFX.click()" id="kt-end-turn-btn">⏭ FINALIZAR TURNO</button>
+      <button id="kt-undo-btn" class="btn btn-secondary" style="flex:1;font-size:16px;padding:12px" onclick="ktUndoLastAction()" disabled title="Nada para desfazer">↩</button>
+    </div>
   </div>
 
   <!-- COMBAT TAB -->
@@ -4355,6 +5252,16 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
     <div id="kt-combat-checklist" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-bottom:12px">
       <div style="font-family:var(--fu);font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:8px">FALTA:</div>
       <div id="kt-checklist-items"></div>
+    </div>
+    <div class="cp-card" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;padding:11px 13px">
+      <div>
+        <div style="font-family:var(--fu);font-size:13px;font-weight:700">🛡 Defensor está em cobertura?</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Retém 1 sucesso de defesa automático (se a arma não tiver Saturate)</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0">
+        <input type="checkbox" id="kt-cover-toggle" style="opacity:0;width:0;height:0">
+        <span id="kt-cover-toggle-track" onclick="ktToggleCover()" style="position:absolute;cursor:pointer;inset:0;background:var(--card2);border:1px solid var(--border2);border-radius:26px;transition:.2s"></span>
+      </label>
     </div>
     <button class="btn btn-primary" id="kt-btn-combat" onclick="ktOpenCombat()" disabled>⚔ RESOLVER COMBATE</button>
     <div id="kt-hist-section" class="hist-section hidden" style="margin-top:14px">
@@ -4893,6 +5800,7 @@ const KT_SESSION = {
             dead: false,
             activated: false,
             hidden: false,
+            order: 'conceal', // starts hidden, per official setup rules
             tokens: [], // Engaged, Reloading, etc.
           });
         }
@@ -4968,7 +5876,24 @@ let ktRosterIdx = 0;
 
 function onStartKillTeam() {
   SFX.buttonPress();
-  VFX.warpTransition(() => NAV.go('screen-kt-team-select', initKTTeamSelect));
+  VFX.warpTransition(() => NAV.go('screen-kt-mode-select', initKTModeSelect));
+}
+
+let KT_SIMPLE_MODE = false;
+
+function initKTModeSelect() {
+  const fullCard = document.getElementById('kt-mode-full');
+  const simpleCard = document.getElementById('kt-mode-simple');
+  if (fullCard) fullCard.classList.toggle('selected', !KT_SIMPLE_MODE);
+  if (simpleCard) simpleCard.classList.toggle('selected', KT_SIMPLE_MODE);
+}
+
+function ktPickMode(simple) {
+  SFX.click();
+  KT_SIMPLE_MODE = simple;
+  document.getElementById('kt-mode-full')?.classList.toggle('selected', !simple);
+  document.getElementById('kt-mode-simple')?.classList.toggle('selected', simple);
+  setTimeout(() => NAV.go('screen-kt-team-select', initKTTeamSelect), 200);
 }
 
 // ── TEAM SELECT ──────────────────────────────────────
@@ -5162,11 +6087,21 @@ let ktCombatHist = [];
 function initKTBattle() {
   document.getElementById('kt-turn-num').textContent = KT_SESSION.turn;
   ktCombatHist = [];
+  KT_UNDO_STACK.length = 0;
+  ktUpdateUndoBtn();
+
+  // Simple Mode: hide the Combat tab entirely — players roll physical dice
+  const combatTabBtn = document.getElementById('kt-tab-combat');
+  if (combatTabBtn) combatTabBtn.style.display = KT_SIMPLE_MODE ? 'none' : '';
+  const eyebrow = document.querySelector('#screen-kt-battle .hdr-eyebrow');
+  if (eyebrow) eyebrow.textContent = KT_SIMPLE_MODE ? 'Kill Team · Modo Simples' : 'Kill Team · Em andamento';
+
   ktSwitchTab('activation');
   renderKTActivation();
 }
 
 function ktSwitchTab(tab) {
+  if (tab === 'combat' && KT_SIMPLE_MODE) tab = 'activation'; // no dice-rolling in Simple Mode
   ['activation','combat','status'].forEach(t => {
     const panel = document.getElementById(`kt-tab-${t}-panel`);
     const btn   = document.getElementById(`kt-tab-${t}`);
@@ -5226,7 +6161,8 @@ function renderKTActivation() {
       <div class="kt-mini-ops">
         ${team.operatives.map(op => `
           <div class="kt-mini-op ${op.dead?'dead':op.activated?'activated':''}"
-            onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')" title="${op.displayName}">
+            style="border-color:${op.dead?'':(op.order==='engage'?'#f97316':'#3b82f6')}"
+            onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')" title="${op.displayName} — ${op.order==='engage'?'Engage':'Conceal'}">
             <span style="font-size:13px">${team.emoji}</span>
             <div class="kt-mini-op-hp">${op.dead?'💀':op.curW}</div>
           </div>`).join('')}
@@ -5247,10 +6183,10 @@ function renderKTOpCard(op, team, container, clickable) {
   const pct = op.W > 0 ? op.curW / op.W : 0;
   const barColor = pct > .6 ? 'var(--hit)' : pct > .3 ? 'var(--wound)' : 'var(--dmg)';
   const hpEmoji = op.dead ? '💀' : pct > .6 ? '🟢' : pct > .3 ? '🟡' : '🔴';
+  const order = op.order || 'conceal';
 
   const card = document.createElement('div');
-  card.className = `kt-op-card${op.activated?' activated':''}${op.dead?' dead':''}`;
-  card.style.borderLeft = `3px solid ${team.color}`;
+  card.className = `kt-op-card order-${order}${op.activated?' activated':''}${op.dead?' dead':''}`;
   card.innerHTML = `
     ${op.activated && !op.dead ? '<div class="kt-activated-badge">✓ ATIVADO</div>' : ''}
     ${op.dead ? '<div class="kt-dead-badge">💀 MORTO</div>' : ''}
@@ -5267,9 +6203,14 @@ function renderKTOpCard(op, team, container, clickable) {
     </div>
     <div class="kt-stats">
       <span class="kt-stat"><s>APL</s>${op.APL}</span>
-      <span class="kt-stat"><s>DF</s>${op.DF}</span>
+      <span class="kt-stat"><s>M</s>${op.M}</span>
       <span class="kt-stat"><s>Sv</s>${op.SV}+</span>
+      <span class="kt-stat"><s>DF</s>${op.DF}</span>
     </div>
+    ${!op.dead ? `
+    <div class="kt-order-badge ${order}" onclick="ktToggleOrder('${team.playerId}','${op.instanceId}',event)" title="Toque para trocar a ordem">
+      <div class="kt-order-icon"></div>${order === 'conceal' ? 'CONCEAL' : 'ENGAGE'} · toque p/ trocar
+    </div>` : ''}
     ${!op.dead && !op.activated && clickable ? `
     <div class="kt-apl-row">
       <div class="kt-apl-label">Ações:</div>
@@ -5279,10 +6220,41 @@ function renderKTOpCard(op, team, container, clickable) {
     </div>
     <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap">
       <button class="btn btn-sm btn-gold" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktActivateOp('${team.playerId}','${op.instanceId}')">✓ ATIVAR</button>
-      <button class="btn btn-sm btn-secondary" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktSwitchTab('combat');SFX.click()">⚔ Combate</button>
+      ${!KT_SIMPLE_MODE ? `<button class="btn btn-sm btn-secondary" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktSwitchTab('combat');SFX.click()">⚔ Combate</button>` : ''}
       <button class="info-btn" onclick="event.stopPropagation();showKTOpDetail('${team.playerId}','${op.instanceId}')" style="flex-shrink:0">ℹ</button>
     </div>` : ''}`;
   container.appendChild(card);
+}
+
+// ── KT UNDO SYSTEM ───────────────────────────────────
+const KT_UNDO_STACK = [];
+const KT_MAX_UNDO = 10;
+
+function ktPushUndo(description) {
+  KT_UNDO_STACK.push({ description, state: JSON.stringify(KT_SESSION) });
+  if (KT_UNDO_STACK.length > KT_MAX_UNDO) KT_UNDO_STACK.shift();
+  ktUpdateUndoBtn();
+}
+
+function ktUndoLastAction() {
+  if (!KT_UNDO_STACK.length) return;
+  const entry = KT_UNDO_STACK.pop();
+  try {
+    const restored = JSON.parse(entry.state);
+    Object.assign(KT_SESSION, restored);
+    document.getElementById('kt-turn-num').textContent = KT_SESSION.turn;
+    renderKTActivation();
+    SFX.click();
+    showToast(`↩ Desfeito: ${entry.description}`);
+  } catch(e) {}
+  ktUpdateUndoBtn();
+}
+
+function ktUpdateUndoBtn() {
+  const btn = document.getElementById('kt-undo-btn');
+  if (!btn) return;
+  btn.disabled = KT_UNDO_STACK.length === 0;
+  btn.title = KT_UNDO_STACK.length ? `Desfazer: ${KT_UNDO_STACK[KT_UNDO_STACK.length-1].description}` : 'Nada para desfazer';
 }
 
 function ktActivateOp(teamId, instanceId) {
@@ -5290,6 +6262,7 @@ function ktActivateOp(teamId, instanceId) {
   const team = KT_SESSION.teams.find(t => t.playerId === teamId);
   const op = team?.operatives.find(o => o.instanceId === instanceId);
   if (!op || op.activated || op.dead) return;
+  ktPushUndo(`Ativação de ${op.displayName}`);
   op.activated = true;
   SFX.objective();
   // Pass to next team
@@ -5357,7 +6330,7 @@ function showKTOpDetail(teamId, instanceId) {
         <div class="udm-w-hdr">
           <span class="udm-w-name">${w.name}</span>
           <span class="wtag ${w.range==='melee'?'melee':'ranged'}">${w.range==='melee'?'Melee':'Tiro'}</span>
-          ${(w.tags||[]).map(t=>`<span class="wtag torrent">${t}</span>`).join('')}
+          ${renderTagPills(w.tags)}
         </div>
         <div class="udm-w-stats">
           <span><s>A</s>${w.A}</span>
@@ -5378,10 +6351,23 @@ function showKTOpDetail(teamId, instanceId) {
   document.getElementById('unit-detail-modal').classList.add('open');
 }
 
+function ktToggleOrder(teamId, instanceId, evt) {
+  if (evt) evt.stopPropagation();
+  const team = KT_SESSION.teams.find(t => t.playerId === teamId);
+  const op = team?.operatives.find(o => o.instanceId === instanceId);
+  if (!op || op.dead) return;
+  ktPushUndo(`Ordem de ${op.displayName}: ${op.order === 'conceal' ? 'Engage' : 'Conceal'}`);
+  op.order = op.order === 'conceal' ? 'engage' : 'conceal';
+  SFX.click();
+  renderKTActivation();
+  renderKTStatus();
+}
+
 function ktManualDmg(teamId, instanceId, delta) {
   const team = KT_SESSION.teams.find(t => t.playerId === teamId);
   const op = team?.operatives.find(o => o.instanceId === instanceId);
   if (!op) return;
+  ktPushUndo(`PV manual em ${op.displayName}`);
   op.curW = Math.max(0, Math.min(op.W, op.curW + delta));
   if (op.curW === 0 && delta < 0) { op.dead = true; SFX.death(); VFX.deathEffect(); }
   else if (delta < 0) SFX.wound();
@@ -5400,6 +6386,8 @@ function renderKTCombatTab() {
   document.getElementById('kt-weapon-wrap').classList.add('hidden');
   document.getElementById('kt-btn-combat').disabled = true;
   document.getElementById('kt-combat-checklist').style.display = 'none';
+  const coverCb = document.getElementById('kt-cover-toggle');
+  if (coverCb) coverCb.checked = false;
 
   // Build selectors — defender list has no "own team" to hide yet (attacker not chosen)
   renderKTCombatSelector('kt-atk-selector', 'atk', null);
@@ -5530,38 +6518,73 @@ function ktOpenCombat() {
   const defTeam = KT_SESSION.teams.find(t => t.playerId === ktActiveCombat.defTeamId);
   const atkOp   = atkTeam?.operatives.find(o => o.instanceId === ktActiveCombat.atkOpId);
   const defOp   = defTeam?.operatives.find(o => o.instanceId === ktActiveCombat.defOpId);
-  const ktTeam  = KT_DB.getTeam(atkTeam.teamId);
   const weapon  = atkOp?.weapons.find(w => w.name === ktActiveCombat.weapon);
   if (!atkOp || !defOp || !weapon) return;
 
-  // Pre-roll attack dice
-  const atkRolls = Array.from({length: weapon.A}, () => d6());
-  const hits   = atkRolls.filter(v => v >= weapon.skill && v < 6).length;
-  const crits  = atkRolls.filter(v => v === 6).length;
+  ktFight = null; // clear any stale fight state
 
-  // Pre-roll defense dice
-  const defRolls = Array.from({length: defOp.DF}, () => d6());
-  const saves    = defRolls.filter(v => v >= defOp.SV).length;
-  const defCrits = defRolls.filter(v => v === 6).length;
+  if (weapon.range === 'melee') {
+    // FIGHT — both sides use their own melee weapon
+    const defMeleeWeapons = defOp.weapons.filter(w => w.range === 'melee');
+    if (defMeleeWeapons.length === 0) {
+      // No melee weapon to retaliate with — treat as a single unarmed-ish weapon (rare edge case)
+      showToast('⚠ Defensor sem arma corpo a corpo — usando a primeira arma disponível');
+    }
+    const defWeaponChoices = defMeleeWeapons.length ? defMeleeWeapons : defOp.weapons;
 
-  // Saves cancel normal hits first (not crits)
-  const savesLeft = saves + defCrits;
-  const hitsBlocked  = Math.min(hits, savesLeft);
-  const hitsLanded   = hits - hitsBlocked;
-  const normalDmg    = hitsLanded * weapon.D;
-  const critDmg      = crits * weapon.CD;
-  const totalDmg     = normalDmg + critDmg;
+    if (defWeaponChoices.length > 1) {
+      ktPendingFightSetup = { atkOp, defOp, atkWeapon: weapon, atkTeam, defTeam, defWeaponChoices };
+      ktShowDefWeaponPicker();
+      return;
+    }
+    ktBS = {};
+    ktOpenFightCombat(atkOp, defOp, weapon, defWeaponChoices[0], atkTeam, defTeam);
+    return;
+  }
 
-  ktBS = { atkRolls, defRolls, hits, crits, saves, defCrits, hitsLanded, normalDmg, critDmg, totalDmg,
-           weapon, atkOp, defOp, atkTeam, defTeam };
+  // SHOOT — fixed 3 defense dice
+  const ab0 = document.getElementById('apply-dmg-btn');
+  if (ab0) ab0.onclick = applyDamageFromBattle;
+  const staleNotes = document.getElementById('kt-rule-notes');
+  if (staleNotes) staleNotes.remove();
+  const btnPhase0 = document.getElementById('btn-phase');
+  if (btnPhase0) btnPhase0.style.display = 'none';
 
-  // Open battle modal with KT layout
+  const inCover = !!document.getElementById('kt-cover-toggle')?.checked;
+  const result = ktResolveCombat(atkOp, defOp, weapon, inCover);
+  ktBS = { ...result, weapon, atkOp, defOp, atkTeam, defTeam };
   renderKTCombatModal();
+}
+
+let ktPendingFightSetup = null;
+
+function ktShowDefWeaponPicker() {
+  const { defOp, defWeaponChoices } = ktPendingFightSetup;
+  document.getElementById('rules-modal-title').textContent = `🛡 Arma de Defesa — ${defOp.displayName}`;
+  const body = document.getElementById('rules-modal-body');
+  body.innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${defOp.displayName} tem mais de uma arma corpo a corpo. Escolha qual usar para revidar:</div>
+    ${defWeaponChoices.map((w,i) => `
+      <div class="rule-card" style="cursor:pointer" onclick="ktConfirmDefWeapon(${i})">
+        <div class="rule-card-name">${w.name}</div>
+        <div class="rule-card-desc">A:${w.A} · Skill:${w.skill}+ · D:${w.D}/C:${w.CD}${w.tags&&w.tags.length?' · '+w.tags.join(', '):''}</div>
+      </div>`).join('')}`;
+  document.getElementById('rules-modal').classList.add('open');
+}
+
+function ktConfirmDefWeapon(idx) {
+  document.getElementById('rules-modal').classList.remove('open');
+  const { atkOp, defOp, atkWeapon, atkTeam, defTeam, defWeaponChoices } = ktPendingFightSetup;
+  const defWeapon = defWeaponChoices[idx];
+  ktPendingFightSetup = null;
+  ktBS = {};
+  setTimeout(() => ktOpenFightCombat(atkOp, defOp, atkWeapon, defWeapon, atkTeam, defTeam), 250);
 }
 
 function renderKTCombatModal() {
   ktClearPendingTimeouts();
-  const { atkRolls, defRolls, hits, crits, saves, defCrits, hitsLanded, normalDmg, critDmg, totalDmg,
+  const { atkRolls, defRolls, hits, crits, saves, defCrits, hitsLanded, critsLanded, normalDmg, critDmg,
+          devastatingDmg, hotSelfDmg, totalDmg, log: ruleLog, inCover, coverBonus,
           weapon, atkOp, defOp, atkTeam, defTeam } = ktBS;
   if (!atkOp || !defOp || !weapon || !atkTeam || !defTeam) return;
 
@@ -5572,11 +6595,11 @@ function renderKTCombatModal() {
   setText('vs-atk-player', atkTeam.playerName);
   setStyle('vs-atk-player', 'color', atkTeam.color);
   setText('vs-weapon', `🗡 ${weapon.name} (A:${weapon.A} D:${weapon.D}/C:${weapon.CD})`);
-  setText('vs-atk-qty', `Skill: ${weapon.skill}+`);
+  setText('vs-atk-qty', `Skill: ${weapon.skill}+${(weapon.tags&&weapon.tags.length)?' · '+weapon.tags.join(', '):''}`);
   setText('vs-def-name', defOp.displayName);
   setText('vs-def-player', defTeam.playerName);
   setStyle('vs-def-player', 'color', defTeam.color);
-  setText('vs-def-qty', `DF:${defOp.DF} Sv:${defOp.SV}+`);
+  setText('vs-def-qty', `Sv:${defOp.SV}+${inCover?' · 🛡 Em cobertura':''}`);
 
   // Hide phase strip (KT resolves in one go)
   const phaseStrip = document.querySelector('.phase-strip');
@@ -5623,7 +6646,7 @@ function renderKTCombatModal() {
   // Defense dice section
   const defSection = document.createElement('div');
   defSection.style.marginTop = '14px';
-  defSection.innerHTML = `<div class="da-title" style="margin-bottom:6px">🛡 DADOS DE DEFESA (${defRolls.length} dados · Sv ${defOp.SV}+)</div>`;
+  defSection.innerHTML = `<div class="da-title" style="margin-bottom:6px">🛡 DADOS DE DEFESA (${defRolls.length} dados${coverBonus?' + 1 automático (cobertura)':''} · Sv ${defOp.SV}+)</div>`;
   const defGrid = document.createElement('div');
   defGrid.className = 'log-dice';
   defRolls.forEach((v, i) => {
@@ -5710,6 +6733,30 @@ function renderKTCombatModal() {
       ab.textContent = totalDmg > 0 ? '⚡ APLICAR DANO' : '✅ Sem dano';
     }
 
+    // Rule application log + extra damage breakdown
+    const extraNotes = [];
+    if (devastatingDmg > 0) extraNotes.push(`⚡ +${devastatingDmg} dano Devastating (direto, ignora bloqueio)`);
+    if (hotSelfDmg > 0) extraNotes.push(`🔥 ${atkOp.displayName} sofreu ${hotSelfDmg} de dano próprio (Hot)`);
+    if (ruleLog && ruleLog.length) ruleLog.forEach(l => extraNotes.push('📋 ' + l));
+    let notesBox = document.getElementById('kt-rule-notes');
+    if (!notesBox) {
+      notesBox = document.createElement('div');
+      notesBox.id = 'kt-rule-notes';
+      notesBox.style.cssText = 'font-size:11px;color:var(--gold);line-height:1.6;margin-bottom:9px';
+      const fr2 = document.getElementById('final-result');
+      if (fr2) fr2.insertBefore(notesBox, fr2.firstChild);
+    }
+    notesBox.innerHTML = extraNotes.length ? extraNotes.join('<br>') : '';
+    if (hotSelfDmg > 0) {
+      // Apply self-damage to the attacker immediately
+      ktPushUndo && ktPushUndo(`Dano próprio (Hot) em ${atkOp.displayName}`);
+      const realAtkOp = atkTeam.operatives.find(o => o.instanceId === atkOp.instanceId);
+      if (realAtkOp) {
+        realAtkOp.curW = Math.max(0, realAtkOp.curW - hotSelfDmg);
+        if (realAtkOp.curW === 0) { realAtkOp.dead = true; SFX.death(); }
+      }
+    }
+
     // History
     ktCombatHist.unshift({ atkName:atkOp.displayName, defName:defOp.displayName,
       weapon:weapon.name, hits, crits, saves, totalDmg });
@@ -5753,6 +6800,7 @@ function applyDamageFromBattle() {
   if (Object.keys(ktBS).length && ktActiveCombat.defOpId) {
     const { totalDmg, defOp, defTeam } = ktBS;
     if (totalDmg <= 0) return;
+    ktPushUndo(`Dano de combate em ${defOp.displayName}`);
     const deaths = KT_SESSION.applyDamage(defTeam.playerId, defOp.instanceId, totalDmg);
     const ab = document.getElementById('apply-dmg-btn');
     ab.classList.add('applied');
@@ -5785,10 +6833,10 @@ function renderKTStatus() {
       const pct = op.W > 0 ? op.curW/op.W : 0;
       const barColor = pct>.6?'var(--hit)':pct>.3?'var(--wound)':'var(--dmg)';
       const hpEmoji = op.dead?'💀':pct>.6?'🟢':pct>.3?'🟡':'🔴';
+      const order = op.order || 'conceal';
       const div = document.createElement('div');
-      div.className = 'kt-op-card' + (op.dead?' dead':'') + (op.activated&&!op.dead?' activated':'');
+      div.className = `kt-op-card order-${order}` + (op.dead?' dead':'') + (op.activated&&!op.dead?' activated':'');
       div.style.marginBottom = '6px';
-      div.style.borderLeft = `3px solid ${team.color}`;
       div.innerHTML = `
         <div class="kt-op-hdr">
           <span style="font-size:18px">${hpEmoji}</span>
@@ -5801,7 +6849,16 @@ function renderKTStatus() {
             <div class="kt-op-bar"><div class="kt-op-bar-fill" style="width:${pct*100}%;background:${barColor}"></div></div>
           </div>
         </div>
-        ${!op.dead ? `<div class="mini-btns" style="margin-top:6px">
+        <div class="kt-stats">
+          <span class="kt-stat"><s>APL</s>${op.APL}</span>
+          <span class="kt-stat"><s>M</s>${op.M}</span>
+          <span class="kt-stat"><s>Sv</s>${op.SV}+</span>
+        </div>
+        ${!op.dead ? `
+        <div class="kt-order-badge ${order}" onclick="ktToggleOrder('${team.playerId}','${op.instanceId}',event)" title="Toque para trocar a ordem">
+          <div class="kt-order-icon"></div>${order === 'conceal' ? 'CONCEAL' : 'ENGAGE'} · toque p/ trocar
+        </div>
+        <div class="mini-btns" style="margin-top:6px">
           <button class="mini-btn dmg" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',-1)">−1 PV</button>
           <button class="mini-btn heal" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',1)">+1 PV</button>
           <button class="info-btn" onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')" style="margin-left:4px">ℹ</button>
@@ -5825,6 +6882,10 @@ function renderKTStatus() {
   <div class="sheet-body" id="rules-modal-body"></div>
 </div>
 </div>
+
+
+<!-- ═══ GLOBAL RULES FLOATING BUTTON ═══ -->
+<div id="global-rules-fab" onclick="openGlobalRulesHub()" title="Regras e Termos">📖</div>
 
 </body>
 </html>
