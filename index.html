@@ -4326,7 +4326,10 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
     <!-- Turn header -->
     <div class="kt-turn-banner" id="kt-turn-banner">
       <div class="ktb-label">VEZ DE ATIVAR</div>
-      <div class="ktb-team" id="ktb-team-name">—</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <div class="ktb-team" id="ktb-team-name">—</div>
+        <button class="rules-btn" id="ktb-rules-btn" onclick="showKTTeamRulesModal(window._ktActiveTeamId)" title="Ver regras e equipamentos do time">📖</button>
+      </div>
       <div class="ktb-sub" id="ktb-sub">Escolha um operativo</div>
     </div>
     <!-- Active player operatives -->
@@ -5073,8 +5076,8 @@ function renderKTRosterForPlayer(idx) {
         ${isUnique ? `<span class="kt-osc-unique">ÚNICO</span>` : ''}
         <div style="display:flex;align-items:center;gap:5px">
           ${!isUnique && selected > 0 ? `<button class="kt-osc-toggle" onclick="ktChangeOp(${idx},'${op.id}',-1)">−</button>` : ''}
-          ${selected > 0 ? `<span style="font-family:var(--ff);font-size:18px;color:var(--gold);min-width:18px;text-align:center">${selected}</span>` : ''}
-          <button class="kt-osc-toggle ${selected>0?'active':''}" onclick="ktChangeOp(${idx},'${op.id}',1)">${selected>0?'✓':'+'}</button>
+          ${!isUnique && selected > 0 ? `<span style="font-family:var(--ff);font-size:18px;color:var(--gold);min-width:18px;text-align:center">${selected}</span>` : ''}
+          <button class="kt-osc-toggle ${selected>0?'active':''}" onclick="${isUnique ? `ktToggleUniqueOp(${idx},'${op.id}')` : `ktChangeOp(${idx},'${op.id}',1)`}">${selected>0?'✓':'+'}</button>
         </div>
       </div>`;
     list.appendChild(card);
@@ -5103,6 +5106,26 @@ function ktChangeOp(pidx, opId, delta) {
   const next = Math.max(0, Math.min(maxCount, cur + delta));
   if (next === 0) delete p.selectedOps[opId];
   else p.selectedOps[opId] = next;
+  renderKTRosterForPlayer(pidx);
+}
+
+function ktToggleUniqueOp(pidx, opId) {
+  SFX.click();
+  const p = ktPendingPlayers[pidx];
+  const team = KT_DB.getTeam(p.teamId);
+  const totalSelected = Object.values(p.selectedOps).reduce((s,v)=>s+v,0);
+
+  if (p.selectedOps[opId]) {
+    // Already selected — deselect it
+    delete p.selectedOps[opId];
+  } else {
+    // Not selected — try to select it
+    if (totalSelected >= team.limit) {
+      showToast(`⚠ Limite de ${team.limit} operativos atingido!`);
+      return;
+    }
+    p.selectedOps[opId] = 1;
+  }
   renderKTRosterForPlayer(pidx);
 }
 
@@ -5153,6 +5176,9 @@ function renderKTActivation() {
   const label  = document.getElementById('kt-active-label');
 
   if (banner) { banner.textContent = activeTeam.playerName; banner.style.color = activeTeam.color; }
+  window._ktActiveTeamId = activeTeam.teamId;
+  const rulesBtn = document.getElementById('ktb-rules-btn');
+  if (rulesBtn) { rulesBtn.style.borderColor = activeTeam.color + '66'; rulesBtn.style.color = activeTeam.color; rulesBtn.style.background = activeTeam.color + '1a'; }
 
   const aliveOps = activeTeam.operatives.filter(op => !op.dead);
   const availOps = aliveOps.filter(op => !op.activated);
