@@ -2534,7 +2534,7 @@ function renderCombatTab() {
   buildPlayerUnitSelector('def-selector', 'def');
 }
 
-function buildPlayerUnitSelector(containerId, role) {
+function buildPlayerUnitSelector(containerId, role, ownPlayerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
   if (!window._combatAccOpen) window._combatAccOpen = {};
@@ -2547,7 +2547,8 @@ function buildPlayerUnitSelector(containerId, role) {
     const faction = DB.getFaction(p.factionId);
     const color = faction?.color || '#888';
     const units = SESSION.getPlayerUnits(p.id);
-    const isOpen = window._combatAccOpen[role+p.id] !== false;
+    const isOwnTeam = role === 'def' && ownPlayerId && p.id === ownPlayerId;
+    const isOpen = isOwnTeam ? false : (window._combatAccOpen[role+p.id] !== false);
 
     const acc = document.createElement('div');
     acc.className = 'combat-acc';
@@ -2555,7 +2556,10 @@ function buildPlayerUnitSelector(containerId, role) {
     const hdr = document.createElement('div');
     hdr.className = 'combat-acc-hdr' + (isOpen?' open':'');
     hdr.style.setProperty('--pcolor', color);
-    hdr.innerHTML = `
+    hdr.innerHTML = isOwnTeam ? `
+      <div class="fah-emoji" style="font-size:16px">⚠</div>
+      <div class="cah-name" style="color:var(--wound)">${p.name} (seu time)</div>
+      <div class="cah-arrow">▾</div>` : `
       <div class="fah-emoji" style="font-size:16px">${faction?.emoji||'⚔'}</div>
       <div class="cah-name" style="color:${color}">${p.name}</div>
       <div style="font-size:11px;color:var(--muted);font-family:var(--fu);margin-right:6px">${units.length} unidade${units.length!==1?'s':''}</div>
@@ -2566,11 +2570,17 @@ function buildPlayerUnitSelector(containerId, role) {
       const nowOpen = !hdr.classList.contains('open');
       hdr.classList.toggle('open', nowOpen);
       body.classList.toggle('open', nowOpen);
-      window._combatAccOpen[role+p.id] = nowOpen;
+      if (!isOwnTeam) window._combatAccOpen[role+p.id] = nowOpen;
     };
 
     const body = document.createElement('div');
     body.className = 'combat-acc-body' + (isOpen?' open':'');
+    if (isOwnTeam) {
+      const warn = document.createElement('div');
+      warn.style.cssText = 'font-size:11px;color:var(--wound);font-family:var(--fu);padding:6px 2px 8px';
+      warn.textContent = '⚠ Normalmente você não ataca suas próprias unidades. Toque para expandir se realmente precisar.';
+      body.appendChild(warn);
+    }
     const grid = document.createElement('div');
     grid.className = 'combat-unit-grid';
     grid.style.padding = '4px 0';
@@ -2645,6 +2655,10 @@ function pickCombatUnit(role, playerId, unitId) {
     });
     document.getElementById('weapon-wrap').classList.remove('hidden');
     document.querySelectorAll('.weapon-pill').forEach(x=>x.classList.remove('active'));
+    // Now that we know the attacker's player, re-render defenders with own team minimized
+    COMBAT.defPlayerId = null;
+    COMBAT.defUnitId = null;
+    buildPlayerUnitSelector('def-selector', 'def', playerId);
   } else {
     COMBAT.defPlayerId=playerId; COMBAT.defUnitId=unitId; COMBAT.qtyDef=1;
     document.querySelectorAll('[id^="cuc-def-"]').forEach(c=>c.classList.remove('active'));
@@ -4908,8 +4922,11 @@ function ktManualDmg(teamId, instanceId, delta) {
   else if (delta < 0) SFX.wound();
   renderKTActivation();
   renderKTStatus();
-  // Refresh the detail modal
-  showKTOpDetail(teamId, instanceId);
+  // Only refresh the detail modal if it's already open (don't force-open it)
+  const detailModal = document.getElementById('unit-detail-modal');
+  if (detailModal && detailModal.classList.contains('open')) {
+    showKTOpDetail(teamId, instanceId);
+  }
 }
 
 // ── COMBAT TAB ───────────────────────────────────────
@@ -4919,23 +4936,35 @@ function renderKTCombatTab() {
   document.getElementById('kt-btn-combat').disabled = true;
   document.getElementById('kt-combat-checklist').style.display = 'none';
 
-  // Build selectors
-  renderKTCombatSelector('kt-atk-selector', 'atk');
-  renderKTCombatSelector('kt-def-selector', 'def');
+  // Build selectors — defender list has no "own team" to hide yet (attacker not chosen)
+  renderKTCombatSelector('kt-atk-selector', 'atk', null);
+  renderKTCombatSelector('kt-def-selector', 'def', null);
 }
 
-function renderKTCombatSelector(containerId, role) {
+function renderKTCombatSelector(containerId, role, ownTeamId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
   KT_SESSION.teams.forEach(team => {
+    const isOwnTeam = role === 'def' && ownTeamId && team.playerId === ownTeamId;
+
     const acc = document.createElement('div');
     acc.className = 'combat-acc';
     const hdr = document.createElement('div');
-    hdr.className = 'combat-acc-hdr';
+    hdr.className = 'combat-acc-hdr' + (isOwnTeam ? '' : ' open');
     hdr.style.setProperty('--pcolor', team.color);
-    hdr.innerHTML = `<div class="fah-emoji">${team.emoji}</div><div class="cah-name" style="color:${team.color}">${team.playerName}</div><div class="cah-arrow">▾</div>`;
+    hdr.innerHTML = isOwnTeam
+      ? `<div class="fah-emoji">⚠</div><div class="cah-name" style="color:var(--wound)">${team.playerName} (seu time)</div><div class="cah-arrow">▾</div>`
+      : `<div class="fah-emoji">${team.emoji}</div><div class="cah-name" style="color:${team.color}">${team.playerName}</div><div class="cah-arrow">▾</div>`;
+
     const body = document.createElement('div');
-    body.className = 'combat-acc-body open';
+    body.className = 'combat-acc-body' + (isOwnTeam ? '' : ' open');
+    if (isOwnTeam) {
+      const warn = document.createElement('div');
+      warn.style.cssText = 'font-size:11px;color:var(--wound);font-family:var(--fu);padding:6px 2px 8px';
+      warn.textContent = '⚠ Normalmente você não ataca suas próprias unidades. Toque para expandir se realmente precisar (ex: fogo amigo).';
+      body.appendChild(warn);
+    }
+
     const grid = document.createElement('div');
     grid.className = 'combat-unit-grid';
     team.operatives.filter(op => !op.dead).forEach(op => {
@@ -4986,6 +5015,10 @@ function ktPickCombatOp(role, teamId, instanceId) {
       wp.appendChild(p);
     });
     document.getElementById('kt-weapon-wrap').classList.remove('hidden');
+    // Now that we know the attacker's team, re-render defenders with own team minimized
+    ktActiveCombat.defTeamId = null;
+    ktActiveCombat.defOpId   = null;
+    renderKTCombatSelector('kt-def-selector', 'def', teamId);
   } else {
     ktActiveCombat.defTeamId = teamId;
     ktActiveCombat.defOpId   = instanceId;
