@@ -4457,6 +4457,7 @@ const KT_SESSION = {
         }
       });
       return { playerId: `p${i}`, playerName: p.name, teamId: p.teamId,
+               name: team?.name || '', emoji: team?.emoji || '⚔',
                color: team?.color || '#888', operatives, cp: 2, score: 0 };
     });
     this.turn = 1;
