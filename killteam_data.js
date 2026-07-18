@@ -16,6 +16,8 @@ const KT_TEAMS = [
     desc:'Intercessors do Primaris — versáteis, resistentes e adaptáveis. Bom para iniciantes.',
     style:'Tiro · Versátil',
     limit: 6, // max operatives
+    coreRule:{name:"Astartes",desc:"Cada operativo pode fazer 2 ações de Tiro OU 2 de Luta na mesma ativação (nunca uma de cada)."},
+    ploys:{strategy:[{name:"Doutrina de Combate",desc:"Escolha uma doutrina no turno — Devastador (tiro longe), Tático (tiro perto) ou Assalto (CaC) — unidades ganham re-roll de 1 dado na situação escolhida."},{name:"Eles Não Temem",desc:"Ignora penalidades de status por estar ferido."}],firefight:[{name:"Fisiologia Transumana",desc:"Ao ser alvo de tiro, transforma um sucesso normal de defesa em crítico."},{name:"Assalto de Choque",desc:"Após uma Carga bem sucedida, o primeiro golpe em CaC causa +1 dano."}]},
     operatives: [
       { id:'kt-intercessor-sgt', name:'Sargento Intercessor', unique:true,
         M:'3"', APL:2, GA:1, DF:3, SV:3, W:14,
@@ -48,6 +50,8 @@ const KT_TEAMS = [
     desc:'Seres híbridos entre comandante e soldado. Synapse psíquica controla o enxame.',
     style:'Melee · Synapse',
     limit: 5,
+    coreRule:{name:"Synapse",desc:"Operativos Tyranid a 6\" de um Warrior podem re-rolar 1 dado de Defesa por ativação."},
+    ploys:{strategy:[{name:"Fome Insaciável",desc:"Armas corpo a corpo ganham a regra Rending (retêm 1 sucesso normal como crítico extra)."},{name:"Instinto de Enxame",desc:"Operativos a 6\" de um Warrior incapacitado ganham +1 no próximo ataque, por vingança."}],firefight:[{name:"Fúria Predatória",desc:"Após uma Carga, pode se mover +3\" antes de lutar."},{name:"Casca Reforçada",desc:"Re-rola 1s nos dados de Defesa uma vez por ativação."}]},
     operatives: [
       { id:'kt-warrior-prime', name:'Warrior Prime', unique:true,
         M:'3"', APL:2, GA:1, DF:3, SV:4, W:18,
@@ -73,6 +77,8 @@ const KT_TEAMS = [
     desc:'Orks furtivos especializados em infiltração e emboscadas. Time completo com 11 tipos de especialista — do Boss Nob ao Bomb Squig suicida.',
     style:'Furtivo · Melee',
     limit: 10, // 1 Boss Nob + 9 tropas
+    coreRule:{name:"Throat Slittas",desc:"Todo Kommando (exceto Bomb Squig) pode Cargar mesmo com ordem de Ocultar."},
+    ploys:{strategy:[{name:"DAKKA! DAKKA! DAKKA!",desc:"Armas de tiro ganham Punishing — retém uma falha como sucesso normal se já reteve algum crítico."},{name:"Skulk About",desc:"Operativo com ordem Ocultar retém 1 sucesso de defesa sem rolar dado."},{name:"SSSSHHHH!",desc:"Operativos ocultos e fora de alcance de visão podem fazer um Dash grátis (não no 1º turno)."},{name:"WAAAGH!",desc:"Armas corpo a corpo ganham Balanced — pode re-rolar 1 dado de ataque."}],firefight:[{name:"Só um Arranhão",desc:"Ignora um dano normal recebido (exceto Bomb Squig e Grot)."},{name:"Kunnin\' Mas Brutal",desc:"Ao Cargar oculto, o primeiro golpe normal em CaC vira crítico."},{name:"Krump \'Em",desc:"No fim da Firefight Phase, um Kommando faz uma ação de Luta grátis."},{name:"Aguenta Firme",desc:"Ignora mudanças no APL até o início do próximo turno."}]},
     operatives: [
       { id:'kt-kommando-boss', name:'Boss Nob', unique:true,
         M:'6"', APL:3, GA:1, DF:4, SV:5, W:14,
@@ -160,6 +166,8 @@ const KT_TEAMS = [
     desc:'Os caçadores mais temidos da Great Company dos Space Wolves. Operam sozinhos e sem apoio atrás das linhas inimigas, envoltos em tempestades e névoa. Vêm com um Lobo Fenrisiano de caça.',
     style:'Infiltração · Tempestade',
     limit: 6, // 1 Lobo Fenrisiano + 5 operativos
+    coreRule:{name:"Tempestade Elemental",desc:"Como ação estratégica, reposiciona um marcador de Tempestade — operativos dentro dela ganham bônus (Carga oculta, dano extra, etc)."},
+    ploys:{strategy:[{name:"Encoberto pela Tempestade",desc:"Ao ser alvo dentro da Tempestade, re-rola 1 dado de defesa."},{name:"Fúria Tempestuosa",desc:"Armas corpo a corpo ganham Balanced se estiver (ou esteve) na Tempestade neste turno."},{name:"Mordida da Tempestade",desc:"Contra inimigo dentro da Tempestade em CaC, reduz o Ataque dele em 1."},{name:"Lutadores Selvagens",desc:"Ao revidar sem ser incapacitado, causa D3+1 dano extra no atacante."}],firefight:[{name:"Sentidos Aguçados",desc:"Ao atirar, ganha alcance 6\" extra e o alvo não pode ficar obscurecido."},{name:"Contra-Ataque",desc:"Após o inimigo lutar ou terminar ativação, um Wolf Scout luta de graça."},{name:"Tocado por Lokyar",desc:"Ao lutar longe de aliados (5\"+), re-rola qualquer dado de ataque."},{name:"Fisiologia Transumana",desc:"Ao ser alvo de tiro, transforma 1 sucesso normal de defesa em crítico."}]},
     operatives: [
       { id:'kt-ws-packleader', name:'Pack Leader', unique:true,
         M:'7"', APL:2, GA:1, DF:3, SV:3, W:13,
@@ -226,6 +234,8 @@ const KT_TEAMS = [
     desc:'Soldados fanáticos da Guarda Imperial sem medo da morte. Força em números e determinação.',
     style:'Tiro · Horda',
     limit: 14,
+    coreRule:{name:"Ordens da Guarda",desc:"O Watchmaster pode dar uma Ordem a todos os Krieg a 6\" — bônus temporário até o fim do turno (ex: Fogo a Vontade, Firme!, Avançar)."},
+    ploys:{strategy:[{name:"Disciplina Fatalista",desc:"Ignora testes de moral e mudanças de status por estar ferido."},{name:"Barragem de Morteiro",desc:"Uma vez por batalha, ataque de área remoto contra um marcador visível."}],firefight:[{name:"Firme Sob Fogo",desc:"Ao ser alvo, retém um sucesso normal de defesa extra se não se moveu neste turno."},{name:"Baioneta Calada",desc:"Após Cargar, arma corpo a corpo ganha Lethal 5+ até o fim da ativação."}]},
     operatives: [
       { id:'kt-krieg-watchmaster', name:'Watchmaster', unique:true,
         M:'3"', APL:2, GA:1, DF:3, SV:5, W:10,
@@ -265,6 +275,8 @@ const KT_TEAMS = [
     desc:'Ex-Space Marines corrompidos pelo Caos. Versáteis e implacáveis, com bênçãos sombrias.',
     style:'Melee · Versátil',
     limit: 6,
+    coreRule:{name:"Bênção do Caos",desc:"No início de cada ativação, escolha 1 bônus: +1 Ataque, re-rolar Hits, ou +1 Dano — dependendo do Deus do Caos escolhido antes da batalha."},
+    ploys:{strategy:[{name:"Marca do Caos",desc:"Escolha uma Marca (Khorne, Nurgle, Slaanesh ou Tzeentch) — cada uma dá um bônus passivo diferente ao time."},{name:"Fúria Implacável",desc:"Ignora as primeiras mudanças de status por ferimento na batalha."}],firefight:[{name:"Sede de Sangue",desc:"Contra inimigo ferido em CaC, re-rola 1 dado de ataque."},{name:"Escudo Sombrio",desc:"Retém 1 defesa extra como crítico uma vez por turno."}]},
     operatives: [
       { id:'kt-legionary-aspiring', name:'Aspiring Champion', unique:true,
         M:'3"', APL:2, GA:1, DF:3, SV:3, W:16,
@@ -290,6 +302,8 @@ const KT_TEAMS = [
     desc:"Batedores T'au com tecnologia avançada de reconhecimento. Marcar alvos para aliados.",
     style:'Tiro · Suporte',
     limit: 10,
+    coreRule:{name:"Marcar Alvo",desc:"Ação de 1 AP: alvo a até 9\" fica Marcado — todos os T'au do time re-rolam 1 dado de Hit contra ele até o fim do turno."},
+    ploys:{strategy:[{name:"Protocolo de Fogo",desc:"Escolha Montagem de Fuego (+1 Ataque), Retrocesso (melhora PA) ou Perseguição (+alcance) no início do turno."},{name:"Retirada Tática",desc:"Um operativo pode recuar sem gastar AP extra uma vez por turno."}],firefight:[{name:"Disciplina de Fogo",desc:"Contra alvo Marcado, retém 1 falha como sucesso normal."},{name:"Escudo de Drone",desc:"Um Drone próximo pode \"sacrificar-se\" para anular 1 dano recebido."}]},
     operatives: [
       { id:'kt-pathfinder-shas', name:"Shas'ui Pathfinder", unique:true,
         M:'3"', APL:2, GA:1, DF:3, SV:5, W:10,
@@ -322,6 +336,8 @@ const KT_TEAMS = [
     desc:'Esquadrão genérico de Space Marines Primaris, adaptável a qualquer capítulo. Combina tiro preciso de bolter com poder de combate corpo a corpo — flexível e resistente.',
     style:'Versátil · Tiro/Melee',
     limit: 6, // 1 líder + 5 tropas
+    coreRule:{name:"Astartes",desc:"Cada operativo pode fazer 2 ações de Tiro OU 2 de Luta na mesma ativação, nunca uma de cada."},
+    ploys:{strategy:[{name:"Doutrina de Combate",desc:"Escolha Devastador, Tático ou Assalto — unidades ganham re-roll de 1 dado de ataque na situação escolhida neste turno."},{name:"Eles Não Temem",desc:"Ignora mudanças de status (inclusive de armas) por estar ferido."},{name:"Táticas Adaptativas",desc:"Troca a Chapter Tactic secundária até o fim do turno."},{name:"Indomitus",desc:"Se o inimigo errar 2+ dados ao te atirar, descarta uma falha e transforma outra em sucesso."}],firefight:[{name:"Ajustar Doutrina",desc:"Muda a Doutrina de Combate escolhida antes, durante a ativação de uma unidade."},{name:"Fisiologia Transumana",desc:"Ao ser alvo de tiro, transforma 1 sucesso normal de defesa em crítico."},{name:"Assalto de Choque",desc:"Após Carga, primeiro golpe em CaC ganha Shock e +1 dano (máx 7)."},{name:"Ira da Vingança",desc:"Ao contra-atacar, faz uma ação extra de 1 AP grátis (diferente da primeira)."}]},
     operatives: [
       // Leaders — escolha apenas 1
       { id:'kt-aod-captain', name:'Space Marine Captain', unique:true,
@@ -398,6 +414,8 @@ const KT_TEAMS = [
     desc:'Night Lords mestres do terror — usam medo e escuridão como armas antes mesmo do combate começar. Punem operativos feridos com brutalidade extra.',
     style:'Terror · Versátil',
     limit: 6, // 1 líder + 5 tropas
+    coreRule:{name:"Vestidos de Meia-Noite",desc:"Fica obscurecido ao ser alvo se estiver a mais de 8\" do inimigo E perto de terreno pesado — furtividade natural dos Night Lords."},
+    ploys:{strategy:[{name:"Visão da Presa",desc:"Ao atirar, arma ganha alcance 6\" extra e ignora a regra Seek Light."},{name:"Retorno às Trevas",desc:"Um operativo recua/reposiciona grátis, terminando perto de terreno pesado."},{name:"A Caçada Negra",desc:"Contra inimigo ferido, re-rola 1 dado de ataque em qualquer ação."},{name:"Viemos Buscar Você",desc:"Se a primeira ação da ativação for Carga, causa D3 dano extra ao terminar o movimento."}],firefight:[{name:"Lutador Sujo",desc:"Ao revidar, resolve 1 sucesso antes da ordem normal."},{name:"Morte ao Falso Imperador",desc:"Contra alvo Imperium, ganha Ceaseless (ou Relentless se for Astartes) na sequência."},{name:"Propensão ao Assassinato",desc:"Após incapacitar um inimigo, faz Carga ou Dash grátis."},{name:"Grito de Vox",desc:"Rola 1D6 contra o APL do próximo inimigo a ativar — se vencer, ele não pode ativar neste turno."}]},
     operatives: [
       { id:'kt-nc-visionary', name:'Visionary', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
