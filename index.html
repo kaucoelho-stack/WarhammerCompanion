@@ -3205,6 +3205,7 @@ function openBattle() {
   SFX.roll();
 }
 function closeBattle() {
+  if (typeof ktClearPendingTimeouts === 'function') ktClearPendingTimeouts();
   document.getElementById('battle-modal').classList.remove('open');
   document.body.style.overflow='';
   // DON'T touch NAV or other screens
@@ -5020,6 +5021,11 @@ function ktRefreshCombatUI() {
 
 // ── KT COMBAT RESOLUTION ────────────────────────────
 let ktBS = {};
+let ktPendingTimeouts = [];
+function ktClearPendingTimeouts() {
+  ktPendingTimeouts.forEach(id => clearTimeout(id));
+  ktPendingTimeouts = [];
+}
 
 function ktOpenCombat() {
   const atkTeam = KT_SESSION.teams.find(t => t.playerId === ktActiveCombat.atkTeamId);
@@ -5056,18 +5062,23 @@ function ktOpenCombat() {
 }
 
 function renderKTCombatModal() {
+  ktClearPendingTimeouts();
   const { atkRolls, defRolls, hits, crits, saves, defCrits, hitsLanded, normalDmg, critDmg, totalDmg,
           weapon, atkOp, defOp, atkTeam, defTeam } = ktBS;
+  if (!atkOp || !defOp || !weapon || !atkTeam || !defTeam) return;
 
-  document.getElementById('vs-atk-name').textContent   = atkOp.displayName;
-  document.getElementById('vs-atk-player').textContent = atkTeam.playerName;
-  document.getElementById('vs-atk-player').style.color = atkTeam.color;
-  document.getElementById('vs-weapon').textContent     = `🗡 ${weapon.name} (A:${weapon.A} D:${weapon.D}/C:${weapon.CD})`;
-  document.getElementById('vs-atk-qty').textContent    = `Skill: ${weapon.skill}+`;
-  document.getElementById('vs-def-name').textContent   = defOp.displayName;
-  document.getElementById('vs-def-player').textContent = defTeam.playerName;
-  document.getElementById('vs-def-player').style.color = defTeam.color;
-  document.getElementById('vs-def-qty').textContent    = `DF:${defOp.DF} Sv:${defOp.SV}+`;
+  const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  const setStyle = (id, prop, val) => { const el = document.getElementById(id); if (el) el.style[prop] = val; };
+
+  setText('vs-atk-name', atkOp.displayName);
+  setText('vs-atk-player', atkTeam.playerName);
+  setStyle('vs-atk-player', 'color', atkTeam.color);
+  setText('vs-weapon', `🗡 ${weapon.name} (A:${weapon.A} D:${weapon.D}/C:${weapon.CD})`);
+  setText('vs-atk-qty', `Skill: ${weapon.skill}+`);
+  setText('vs-def-name', defOp.displayName);
+  setText('vs-def-player', defTeam.playerName);
+  setStyle('vs-def-player', 'color', defTeam.color);
+  setText('vs-def-qty', `DF:${defOp.DF} Sv:${defOp.SV}+`);
 
   // Hide phase strip (KT resolves in one go)
   const phaseStrip = document.querySelector('.phase-strip');
@@ -5075,6 +5086,7 @@ function renderKTCombatModal() {
 
   // Build dice area
   const diceArea = document.getElementById('dice-area');
+  if (!diceArea) return;
   diceArea.innerHTML = '';
 
   // Attack dice section
@@ -5083,30 +5095,30 @@ function renderKTCombatModal() {
   const atkGrid = document.createElement('div');
   atkGrid.className = 'log-dice';
   atkRolls.forEach((v, i) => {
-    setTimeout(() => {
+    ktPendingTimeouts.push(setTimeout(() => {
       const die = document.createElement('div');
       die.className = `die rolling`;
       die.textContent = v;
       atkGrid.appendChild(die);
-      setTimeout(() => {
+      ktPendingTimeouts.push(setTimeout(() => {
         die.classList.remove('rolling');
         if (v === 6) { die.classList.add('kt-die-crit'); SFX.mortal(); }
         else if (v >= weapon.skill) { die.classList.add('kt-die-atk'); SFX.hit(); }
         else die.classList.add('hit-fail');
-      }, 350);
-    }, i * 80);
+      }, 350));
+    }, i * 80));
   });
   atkSection.appendChild(atkGrid);
   const atkBadges = document.createElement('div');
   atkBadges.className = 'log-badges';
   atkBadges.style.marginTop = '6px';
-  setTimeout(() => {
+  ktPendingTimeouts.push(setTimeout(() => {
     atkBadges.innerHTML = [
       hits > 0  ? `<div class="badge b-hit">✅ ${hits} Hit${hits!==1?'s':''}</div>` : '',
       crits > 0 ? `<div class="badge b-mortal">🎯 ${crits} Critical${crits!==1?'s':''}</div>` : '',
       hits+crits===0 ? '<div class="badge b-note">Nenhum acerto</div>' : '',
     ].join('');
-  }, atkRolls.length * 80 + 400);
+  }, atkRolls.length * 80 + 400));
   atkSection.appendChild(atkBadges);
   diceArea.appendChild(atkSection);
 
@@ -5117,48 +5129,49 @@ function renderKTCombatModal() {
   const defGrid = document.createElement('div');
   defGrid.className = 'log-dice';
   defRolls.forEach((v, i) => {
-    setTimeout(() => {
+    ktPendingTimeouts.push(setTimeout(() => {
       const die = document.createElement('div');
       die.className = 'die rolling';
       die.textContent = v;
       defGrid.appendChild(die);
-      setTimeout(() => {
+      ktPendingTimeouts.push(setTimeout(() => {
         die.classList.remove('rolling');
         if (v === 6) { die.classList.add('kt-die-crit'); }
         else if (v >= defOp.SV) { die.classList.add('kt-die-def-ok'); SFX.save(); }
         else die.classList.add('kt-die-def-fail');
-      }, 350);
-    }, i * 80);
+      }, 350));
+    }, i * 80));
   });
   defSection.appendChild(defGrid);
   const defBadges = document.createElement('div');
   defBadges.className = 'log-badges';
   defBadges.style.marginTop = '6px';
-  setTimeout(() => {
+  ktPendingTimeouts.push(setTimeout(() => {
     defBadges.innerHTML = [
       saves > 0    ? `<div class="badge b-save">🛡 ${saves} Save${saves!==1?'s':''}</div>` : '',
       defCrits > 0 ? `<div class="badge b-mortal">⭐ ${defCrits} Crit Save</div>` : '',
     ].join('') || '<div class="badge b-note">Nenhuma defesa</div>';
-  }, defRolls.length * 80 + 400);
+  }, defRolls.length * 80 + 400));
   defSection.appendChild(defBadges);
   diceArea.appendChild(defSection);
 
   // Final result - show after all dice
   const totalDelay = (Math.max(atkRolls.length, defRolls.length) * 80) + 900;
-  setTimeout(() => {
-    document.getElementById('dice-area').style.display = 'none';
+  ktPendingTimeouts.push(setTimeout(() => {
+    const da = document.getElementById('dice-area');
+    if (da) da.style.display = 'none';
     const fr = document.getElementById('final-result');
+    if (!fr) return;
     fr.classList.add('show');
 
     // Scoreboard
-    document.getElementById('r-atk').textContent = atkRolls.length;
-    document.getElementById('r-hit').textContent = hits;
-    document.getElementById('r-wnd').textContent = crits;
-    document.getElementById('r-sv').textContent  = saves + defCrits;
-    document.getElementById('r-dmg').textContent = totalDmg;
+    setText('r-atk', atkRolls.length);
+    setText('r-hit', hits);
+    setText('r-wnd', crits);
+    setText('r-sv', saves + defCrits);
+    setText('r-dmg', totalDmg);
 
     // Labels for KT
-    fr.querySelector('[class="sb-label"]:nth-child(1)') && null; // handled below
     const rows = fr.querySelectorAll('.sb-row .sb-label');
     if (rows[0]) rows[0].textContent = '🎯 Dados Ataque';
     if (rows[1]) rows[1].textContent = '✅ Hits Normais';
@@ -5167,52 +5180,57 @@ function renderKTCombatModal() {
     if (rows[4]) rows[4].textContent = '💥 Dano Total';
 
     // Death banner
-    const db = document.getElementById('db');
+    const db  = document.getElementById('db');
     const dbi = document.getElementById('db-icon');
     const dbt = document.getElementById('db-title');
     const dbs = document.getElementById('db-sub');
-    if (totalDmg >= defOp.curW) {
-      db.className = 'death-banner';
-      dbi.textContent = '💀';
-      dbt.textContent = `${defOp.displayName} ELIMINADO!`;
-      dbs.textContent = `${totalDmg} dano · ${defOp.curW} PV restantes`;
-      SFX.death(); VFX.deathEffect();
-    } else if (totalDmg > 0) {
-      db.className = 'death-banner dmg';
-      dbi.textContent = '🩹';
-      dbt.textContent = `${totalDmg} DANO`;
-      dbs.textContent = `${defOp.curW - totalDmg} PV restantes em ${defOp.displayName}`;
-      SFX.wound();
-    } else {
-      db.className = 'death-banner safe';
-      dbi.textContent = '🛡';
-      dbt.textContent = 'BLOQUEADO COMPLETAMENTE!';
-      dbs.textContent = 'Os saves anularam todo o dano';
+    if (db && dbi && dbt && dbs) {
+      if (totalDmg >= defOp.curW) {
+        db.className = 'death-banner';
+        dbi.textContent = '💀';
+        dbt.textContent = `${defOp.displayName} ELIMINADO!`;
+        dbs.textContent = `${totalDmg} dano · ${defOp.curW} PV restantes`;
+        SFX.death(); VFX.deathEffect();
+      } else if (totalDmg > 0) {
+        db.className = 'death-banner dmg';
+        dbi.textContent = '🩹';
+        dbt.textContent = `${totalDmg} DANO`;
+        dbs.textContent = `${defOp.curW - totalDmg} PV restantes em ${defOp.displayName}`;
+        SFX.wound();
+      } else {
+        db.className = 'death-banner safe';
+        dbi.textContent = '🛡';
+        dbt.textContent = 'BLOQUEADO COMPLETAMENTE!';
+        dbs.textContent = 'Os saves anularam todo o dano';
+      }
     }
 
     const ab = document.getElementById('apply-dmg-btn');
-    ab.disabled = totalDmg === 0;
-    ab.classList.remove('applied');
-    ab.textContent = totalDmg > 0 ? '⚡ APLICAR DANO' : '✅ Sem dano';
+    if (ab) {
+      ab.disabled = totalDmg === 0;
+      ab.classList.remove('applied');
+      ab.textContent = totalDmg > 0 ? '⚡ APLICAR DANO' : '✅ Sem dano';
+    }
 
     // History
     ktCombatHist.unshift({ atkName:atkOp.displayName, defName:defOp.displayName,
       weapon:weapon.name, hits, crits, saves, totalDmg });
     renderKTHist();
-  }, totalDelay);
+  }, totalDelay));
 
-  // Phase strip hide
-  document.getElementById('ph0')?.parentElement && (document.querySelector('.phase-strip').style.display='none');
-  document.getElementById('dice-area').style.display = 'block';
-  document.getElementById('final-result').classList.remove('show');
-  document.getElementById('btn-phase').style.display = 'none';
-  document.getElementById('apply-dmg-btn').classList.remove('applied');
+  // Reset modal chrome for this fresh combat
+  setStyle('dice-area', 'display', 'block');
+  const fr0 = document.getElementById('final-result');
+  if (fr0) fr0.classList.remove('show');
+  setStyle('btn-phase', 'display', 'none');
+  const ab0 = document.getElementById('apply-dmg-btn');
+  if (ab0) ab0.classList.remove('applied');
 
-  document.getElementById('battle-modal').classList.add('open');
+  const bm = document.getElementById('battle-modal');
+  if (bm) bm.classList.add('open');
   document.body.style.overflow = 'hidden';
   SFX.roll();
 }
-
 function renderKTHist() {
   const sec = document.getElementById('kt-hist-section');
   const list = document.getElementById('kt-hist-list');
