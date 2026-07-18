@@ -193,6 +193,149 @@ const KT_TEAMS = [
         ]},
     ]
   },
+
+  // ── ANGELS OF DEATH (Space Marines) ─────────────────
+  {
+    id:'kt-angelsofdeath', name:'Angels of Death', faction:'Space Marines',
+    color:'#4a7fd4', emoji:'👼',
+    desc:'Esquadrão genérico de Space Marines Primaris, adaptável a qualquer capítulo. Combina tiro preciso de bolter com poder de combate corpo a corpo — flexível e resistente.',
+    style:'Versátil · Tiro/Melee',
+    limit: 6, // 1 líder + 5 tropas
+    operatives: [
+      // Leaders — escolha apenas 1
+      { id:'kt-aod-captain', name:'Space Marine Captain', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:3, W:15,
+        abilities:'LÍDER. Heroic Leader: 1x/turno usa um Firefight Ploy grátis ou ativa Combat Doctrine de graça. Iron Halo: 1x/batalha ignora um dano normal sofrido.',
+        weapons:[
+          { name:'Pistola de Plasma', A:4, skill:3, D:3, CD:5, range:'short' },
+          { name:'Punho de Força',    A:5, skill:3, D:5, CD:7, range:'melee', tags:['Brutal'] },
+        ]},
+      { id:'kt-aod-asgt', name:'Assault Intercessor Sergeant', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:3, W:15,
+        abilities:'LÍDER. Astartes: 2 ações de Tiro ou 2 de Luta por ativação. Escolha um item entre Lança-chamas de mão ou Pistola Bolter Pesada, mais uma arma corpo a corpo.',
+        weapons:[
+          { name:'Lança-chamas de Mão', A:4, skill:2, D:3, CD:3, range:'short', tags:['Torrent'] },
+          { name:'Martelo do Trovão',   A:5, skill:4, D:5, CD:6, range:'melee', tags:['Shock'] },
+        ]},
+      { id:'kt-aod-isgt', name:'Intercessor Sergeant', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:3, W:15,
+        abilities:'LÍDER. Astartes: 2 ações de Tiro ou 2 de Luta por ativação. Combina bolt rifle preciso com armas corpo a corpo pesadas.',
+        weapons:[
+          { name:'Bolt Rifle', A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Punho de Força', A:4, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
+        ]},
+      // Troopers
+      { id:'kt-aod-eliminator', name:'Eliminator Sniper', unique:true,
+        M:'7"', APL:2, GA:1, DF:3, SV:3, W:12,
+        abilities:'Camo Cloak + Stealthy: melhora saves em cobertura. Optics (1AP): inimigos não ficam obscurecidos até a próxima ativação.',
+        weapons:[
+          { name:'Bolt Sniper Rifle', A:4, skill:2, D:3, CD:4, range:'long', tags:['Silent','Heavy'] },
+          { name:'Pistola Bolter',    A:4, skill:3, D:3, CD:4, range:'short' },
+        ]},
+      { id:'kt-aod-grenadier', name:'Assault Intercessor Grenadier', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:3, W:14,
+        abilities:'Grenadier: pode usar granadas frag/krak sem gastar usos limitados, com +1 no Hit.',
+        weapons:[
+          { name:'Pistola Bolter Pesada', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Espada de Força',       A:5, skill:3, D:4, CD:5, range:'melee' },
+        ]},
+      { id:'kt-aod-heavygunner', name:'Heavy Intercessor Gunner', unique:true,
+        M:'5"', APL:2, GA:1, DF:3, SV:3, W:18,
+        abilities:'O operativo mais resistente do time — 18 PV. Bolter pesado focado causa dano extra em alvos únicos.',
+        weapons:[
+          { name:'Bolter Pesado (Focado)', A:5, skill:3, D:4, CD:5, range:'long' },
+          { name:'Pistola Bolter',         A:4, skill:3, D:3, CD:4, range:'short' },
+        ]},
+      { id:'kt-aod-gunner', name:'Intercessor Gunner', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:3, W:14,
+        abilities:'Carrega lançador de granadas auxiliar — versátil contra grupos e alvos blindados.',
+        weapons:[
+          { name:'Bolt Rifle',              A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Lançador de Granadas (Krak)', A:4, skill:3, D:4, CD:5, range:'long' },
+        ]},
+      { id:'kt-aod-awarrior', name:'Assault Intercessor Warrior', unique:false, count:5,
+        M:'6"', APL:2, GA:2, DF:3, SV:3, W:14,
+        abilities:'Astartes: 2 ações de Tiro ou 2 de Luta por ativação. Combatente corpo a corpo equilibrado.',
+        weapons:[
+          { name:'Pistola Bolter Pesada', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Espada Sierra',         A:5, skill:3, D:4, CD:5, range:'melee' },
+        ]},
+      { id:'kt-aod-iwarrior', name:'Intercessor Warrior', unique:false, count:5,
+        M:'6"', APL:2, GA:2, DF:3, SV:3, W:14,
+        abilities:'Astartes: 2 ações de Tiro ou 2 de Luta por ativação. O soldado padrão, confiável a médio e longo alcance.',
+        weapons:[
+          { name:'Bolt Rifle', A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Punhos',     A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+    ]
+  },
+
+  // ── NEMESIS CLAW (Night Lords - Chaos Space Marines) ─
+  {
+    id:'kt-nemesisclaw', name:'Nemesis Claw', faction:'Chaos Space Marines',
+    color:'#8b5cf6', emoji:'🦇',
+    desc:'Night Lords mestres do terror — usam medo e escuridão como armas antes mesmo do combate começar. Punem operativos feridos com brutalidade extra.',
+    style:'Terror · Versátil',
+    limit: 6, // 1 líder + 5 tropas
+    operatives: [
+      { id:'kt-nc-visionary', name:'Visionary', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:'LÍDER · PSYKER. In Midnight Clad: fica obscurecido se longe e perto de terreno pesado. Premonition (1AP): gasta ponto de Presciência para ganhar 1CP.',
+        weapons:[
+          { name:'Pistola Bolter',        A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Lâmina Nostramana',     A:5, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Punho de Força',        A:5, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
+        ]},
+      { id:'kt-nc-fearmonger', name:'Fearmonger', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Terrorchem: críticos envenenam o alvo — ele sofre 1D3 dano extra ao ser ativado. Poison Objective (1AP): envenena objetivo controlado.',
+        weapons:[
+          { name:'Pistola Bolter Mirada', A:4, skill:3, D:3, CD:4, range:'short', tags:['Lethal 5+'] },
+          { name:'Lâmina Envenenada',     A:5, skill:3, D:3, CD:5, range:'melee' },
+        ]},
+      { id:'kt-nc-gunner', name:'Gunner', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Astartes: 2 ações de Tiro ou 2 de Luta por ativação. Especialista em armas de assalto pesadas.',
+        weapons:[
+          { name:'Meltagun',       A:4, skill:3, D:6, CD:3, range:'short', tags:['Melta'] },
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+        ]},
+      { id:'kt-nc-heavygunner', name:'Heavy Gunner', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Bolter pesado focado é devastador contra alvos únicos a longa distância.',
+        weapons:[
+          { name:'Bolter Pesado (Focado)', A:5, skill:3, D:4, CD:5, range:'long' },
+          { name:'Pistola Bolter',         A:4, skill:3, D:3, CD:4, range:'short' },
+        ]},
+      { id:'kt-nc-screecher', name:'Screecher', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Appetite For Cruelty: contra inimigos feridos, garras relâmpago ficam ainda mais letais. Screecher: inimigos próximos não podem re-rolar dados de ataque.',
+        weapons:[
+          { name:'Garras Relâmpago', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Ceaseless','Lethal 5+'] },
+        ]},
+      { id:'kt-nc-skinthief', name:'Skinthief', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'Tyrant Of The Skinning Pits: reduz em 1 dano de ataques de 3+ contra ele em combate. Flay Them Alive: incapacita e impede objetivo inimigo próximo.',
+        weapons:[
+          { name:'Foice Nostramana', A:5, skill:3, D:4, CD:6, range:'melee' },
+          { name:'Pistola Bolter',   A:4, skill:3, D:3, CD:4, range:'short' },
+        ]},
+      { id:'kt-nc-ventrilokar', name:'Ventrilokar', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:'PSYKER. Disconcerting Mimicry (1AP): reduz APL de inimigo, muda sua ordem, ou força um dash. Icon Bearer: conta como +1 APL para controlar marcadores.',
+        weapons:[
+          { name:'Espada Sierra',  A:5, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+        ]},
+      { id:'kt-nc-warrior', name:'Warrior', unique:false, count:5,
+        M:'6"', APL:3, GA:2, DF:3, SV:3, W:14,
+        abilities:'Cruel Tormentor: contra inimigos feridos ou frágeis (7 PV ou menos), armas ganham Lethal 5+.',
+        weapons:[
+          { name:'Boltgun',   A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Espada Sierra', A:5, skill:3, D:4, CD:5, range:'melee' },
+        ]},
+    ]
+  },
 ];
 
 // ── KILL TEAM ACTIONS ────────────────────────────────
