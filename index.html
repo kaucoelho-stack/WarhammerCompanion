@@ -5334,6 +5334,14 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
     </div>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Padrão oficial: 4 turnos. O app avisa quando começar o último.</div>
 
+    <div class="sec-label" style="margin-top:18px">Quantos jogadores?</div>
+    <div class="kt-turns-stepper">
+      <button class="kt-turns-btn" onclick="ktChangePlayerCount(-1)">−</button>
+      <div class="kt-turns-val" id="kt-players-val">2</div>
+      <button class="kt-turns-btn" onclick="ktChangePlayerCount(1)">+</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Padrão oficial: 2. Suportamos até 6 pra mesas com mais gente (regras adaptadas por vocês).</div>
+
     <div style="height:8px"></div>
   </div>
 </div>
@@ -6663,16 +6671,19 @@ const KT_SESSION = {
 
   getTeamByPlayer(playerId) { return this.teams.find(t => t.playerId === playerId); },
 
-  resetActivations() {
+  resetActivations(forcedIdx) {
     this.teams.forEach(t => t.operatives.forEach(op => op.activated = false));
-    // Randomize who goes first among teams that still have living operatives
     const aliveTeamIdxs = this.teams
       .map((t, i) => ({ i, alive: t.operatives.some(op => !op.dead) }))
       .filter(x => x.alive)
       .map(x => x.i);
-    this.activeIdx = aliveTeamIdxs.length
-      ? aliveTeamIdxs[Math.floor(Math.random() * aliveTeamIdxs.length)]
-      : 0;
+    if (!aliveTeamIdxs.length) { this.activeIdx = 0; return; }
+    if (forcedIdx !== undefined && aliveTeamIdxs.includes(forcedIdx)) {
+      this.activeIdx = forcedIdx;
+    } else {
+      // Fallback: random among alive teams (used only if no choice was given)
+      this.activeIdx = aliveTeamIdxs[Math.floor(Math.random() * aliveTeamIdxs.length)];
+    }
   },
 
   nextActivation() {
@@ -6691,9 +6702,9 @@ const KT_SESSION = {
     this.endTurn();
   },
 
-  endTurn() {
+  endTurn(forcedIdx) {
     this.turn++;
-    this.resetActivations();
+    this.resetActivations(forcedIdx);
   },
 
   getActiveTeam() { return this.teams[this.activeIdx]; },
@@ -6726,10 +6737,17 @@ function onStartKillTeam() {
 
 let KT_SIMPLE_MODE = false;
 let KT_TOTAL_TURNS = 4;
+let KT_PLAYER_COUNT = 2;
 
 function ktChangeTurnCount(delta) {
   KT_TOTAL_TURNS = Math.max(1, Math.min(10, KT_TOTAL_TURNS + delta));
   document.getElementById('kt-turns-val').textContent = KT_TOTAL_TURNS;
+  SFX.click();
+}
+
+function ktChangePlayerCount(delta) {
+  KT_PLAYER_COUNT = Math.max(2, Math.min(6, KT_PLAYER_COUNT + delta));
+  document.getElementById('kt-players-val').textContent = KT_PLAYER_COUNT;
   SFX.click();
 }
 
@@ -6740,6 +6758,8 @@ function initKTModeSelect() {
   if (simpleCard) simpleCard.classList.toggle('selected', KT_SIMPLE_MODE);
   const turnsVal = document.getElementById('kt-turns-val');
   if (turnsVal) turnsVal.textContent = KT_TOTAL_TURNS;
+  const playersVal = document.getElementById('kt-players-val');
+  if (playersVal) playersVal.textContent = KT_PLAYER_COUNT;
 }
 
 function ktPickMode(simple) {
@@ -6752,7 +6772,7 @@ function ktPickMode(simple) {
 
 // ── TEAM SELECT ──────────────────────────────────────
 function initKTTeamSelect() {
-  const numPlayers = 2; // Kill Team is always 2 players
+  const numPlayers = KT_PLAYER_COUNT; // configurable on the mode-select screen
   ktPendingPlayers = Array.from({length: numPlayers}, (_, i) => ({
     name: `Jogador ${i+1}`, teamId: null, selectedOps: {}, cp: 2,
   }));
@@ -6958,7 +6978,26 @@ function initKTBattle() {
   renderKTCPStrip();
 
   ktSwitchTab('activation');
+  ktShowFirstInitiativePrompt();
+}
+
+function ktShowFirstInitiativePrompt() {
+  document.getElementById('rules-modal-title').textContent = '🎲 Quem ativa primeiro?';
+  const body = document.getElementById('rules-modal-body');
+  body.innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Cada jogador rola 1D6 — quem tirar mais alto tem iniciativa e ativa primeiro neste turno (empate: decidam entre vocês).</div>
+    ${KT_SESSION.teams.map((t,i) => `
+      <button class="btn btn-secondary" style="margin-bottom:8px;border-left:4px solid ${t.color};text-align:left" onclick="ktSetFirstActivator(${i})">${t.emoji} ${t.playerName} tem iniciativa</button>
+    `).join('')}
+  `;
+  document.getElementById('rules-modal').classList.add('open');
+}
+
+function ktSetFirstActivator(idx) {
+  document.getElementById('rules-modal').classList.remove('open');
+  KT_SESSION.resetActivations(idx);
   renderKTActivation();
+  SFX.click();
 }
 
 function ktUpdateTurnDisplay() {
@@ -7234,6 +7273,7 @@ function ktShowInitiativePrompt() {
 
 function ktApplyTurnCP(initiativePlayerId) {
   document.getElementById('rules-modal').classList.remove('open');
+  const initiativeIdx = initiativePlayerId ? KT_SESSION.teams.findIndex(t => t.playerId === initiativePlayerId) : undefined;
   if (initiativePlayerId) {
     KT_SESSION.teams.forEach(t => {
       t.cp = Math.min(12, t.cp + (t.playerId === initiativePlayerId ? 1 : 2));
@@ -7242,7 +7282,7 @@ function ktApplyTurnCP(initiativePlayerId) {
     showToast('⚡ CP do turno aplicado!');
   }
   setTimeout(() => {
-    KT_SESSION.endTurn();
+    KT_SESSION.endTurn(initiativeIdx >= 0 ? initiativeIdx : undefined);
     ktUpdateTurnDisplay();
     renderKTActivation();
     showToast(`🎯 Turno ${KT_SESSION.turn} iniciado!`);
