@@ -772,6 +772,13 @@ body::before{content:'';position:fixed;inset:0;
 
 .ability-ap-badge{display:inline-block;font-family:var(--fu);font-size:9px;letter-spacing:1px;padding:1px 6px;border-radius:3px;background:rgba(232,184,75,.15);color:var(--gold);border:1px solid rgba(232,184,75,.3);vertical-align:middle;margin-left:4px}
 
+
+/* ═══ KT TURN COUNT STEPPER ═══ */
+.kt-turns-stepper{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:8px}
+.kt-turns-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--border2);background:var(--card2);color:var(--gold);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.kt-turns-btn:active{transform:scale(.9);background:var(--card3)}
+.kt-turns-val{font-family:var(--ff);font-size:32px;color:var(--gold);min-width:50px;text-align:center}
+
 </style>
 </head>
 <body>
@@ -5319,6 +5326,14 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
       <div class="kt-mode-check">✓</div>
     </div>
 
+    <div class="sec-label" style="margin-top:18px">Quantos turnos a partida terá?</div>
+    <div class="kt-turns-stepper">
+      <button class="kt-turns-btn" onclick="ktChangeTurnCount(-1)">−</button>
+      <div class="kt-turns-val" id="kt-turns-val">4</div>
+      <button class="kt-turns-btn" onclick="ktChangeTurnCount(1)">+</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Padrão oficial: 4 turnos. O app avisa quando começar o último.</div>
+
     <div style="height:8px"></div>
   </div>
 </div>
@@ -5363,6 +5378,10 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
       <div class="hdr-val" id="kt-turn-num">1</div>
     </div>
   </div>
+  <div id="kt-last-turn-banner" style="display:none;background:linear-gradient(135deg,rgba(239,68,68,.25),rgba(239,68,68,.08));border:1px solid rgba(239,68,68,.5);border-radius:var(--r);padding:10px;margin:10px 14px 0;text-align:center;font-family:var(--ff);font-size:16px;color:#fca5a5;letter-spacing:1px">
+    🔥 ÚLTIMO TURNO!
+  </div>
+  <div class="cp-strip" id="kt-cp-strip" style="margin:12px 14px 0"></div>
   <!-- KT Tab bar -->
   <div class="battle-tab-bar">
     <div class="battle-tab active" id="kt-tab-activation" onclick="ktSwitchTab('activation');SFX.click()">⚡ ATIVAR</div>
@@ -6706,12 +6725,21 @@ function onStartKillTeam() {
 }
 
 let KT_SIMPLE_MODE = false;
+let KT_TOTAL_TURNS = 4;
+
+function ktChangeTurnCount(delta) {
+  KT_TOTAL_TURNS = Math.max(1, Math.min(10, KT_TOTAL_TURNS + delta));
+  document.getElementById('kt-turns-val').textContent = KT_TOTAL_TURNS;
+  SFX.click();
+}
 
 function initKTModeSelect() {
   const fullCard = document.getElementById('kt-mode-full');
   const simpleCard = document.getElementById('kt-mode-simple');
   if (fullCard) fullCard.classList.toggle('selected', !KT_SIMPLE_MODE);
   if (simpleCard) simpleCard.classList.toggle('selected', KT_SIMPLE_MODE);
+  const turnsVal = document.getElementById('kt-turns-val');
+  if (turnsVal) turnsVal.textContent = KT_TOTAL_TURNS;
 }
 
 function ktPickMode(simple) {
@@ -6914,7 +6942,7 @@ let ktActiveCombat = { atkTeamId:null, atkOpId:null, weapon:null, profile:null, 
 let ktCombatHist = [];
 
 function initKTBattle() {
-  document.getElementById('kt-turn-num').textContent = KT_SESSION.turn;
+  ktUpdateTurnDisplay();
   ktCombatHist = [];
   KT_UNDO_STACK.length = 0;
   ktUpdateUndoBtn();
@@ -6925,8 +6953,84 @@ function initKTBattle() {
   const eyebrow = document.querySelector('#screen-kt-battle .hdr-eyebrow');
   if (eyebrow) eyebrow.textContent = KT_SIMPLE_MODE ? 'Kill Team · Modo Simples' : 'Kill Team · Em andamento';
 
+  // 1st Strategy Phase: both players gain +1CP (on top of the starting 2CP)
+  KT_SESSION.teams.forEach(t => { t.cp = (t.cp ?? 2) + 1; });
+  renderKTCPStrip();
+
   ktSwitchTab('activation');
   renderKTActivation();
+}
+
+function ktUpdateTurnDisplay() {
+  const el = document.getElementById('kt-turn-num');
+  if (el) el.textContent = `${KT_SESSION.turn}/${KT_TOTAL_TURNS}`;
+  const banner = document.getElementById('kt-last-turn-banner');
+  if (banner) banner.style.display = (KT_SESSION.turn >= KT_TOTAL_TURNS) ? 'block' : 'none';
+}
+
+function renderKTCPStrip() {
+  const strip = document.getElementById('kt-cp-strip');
+  if (!strip || !KT_SESSION.teams) return;
+  strip.innerHTML = '';
+  KT_SESSION.teams.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'cp-card';
+    div.style.setProperty('--pcolor', t.color);
+    div.innerHTML = `
+      <div class="cp-top" style="cursor:pointer" onclick="showCPExplainer()">
+        <span class="cp-name">${t.playerName} <span style="color:var(--muted);font-size:10px">ⓘ</span></span>
+        <span class="cp-val">${t.cp}</span>
+      </div>
+      <div class="cp-btns">
+        <button class="cp-btn spend" onclick="ktChangeCP('${t.playerId}',-1)">− Gastar</button>
+        <button class="cp-btn gain"  onclick="ktChangeCP('${t.playerId}',1)">+ Ganhar</button>
+      </div>
+      <div class="cp-bar-wrap"><div class="cp-bar" style="width:${Math.min(100,(t.cp/6)*100)}%"></div></div>`;
+    strip.appendChild(div);
+  });
+}
+
+function showCPExplainer() {
+  SFX.click();
+  document.getElementById('rules-modal-title').textContent = '⚡ O que é CP?';
+  document.getElementById('rules-modal-body').innerHTML = `
+    <div class="rule-card" style="margin-top:0">
+      <div class="rule-card-name">Command Points (Pontos de Comando)</div>
+      <div class="rule-card-desc">É a "moeda" que você gasta pra usar os Ploys — tanto os de Strategy quanto os de Firefight. Cada Ploy custa 1CP (a menos que uma habilidade dê ele de graça).</div>
+    </div>
+    <div class="rules-section-title">Quanto você ganha</div>
+    <div class="rule-card">
+      <div class="rule-card-name">Início da batalha</div>
+      <div class="rule-card-desc">2CP cada jogador.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-card-name">1ª Strategy Phase (turno 1)</div>
+      <div class="rule-card-desc">+1CP pra cada um — o app já aplica isso sozinho ao começar a batalha, então vocês começam o turno 1 com 3CP.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-card-name">A partir do turno 2</div>
+      <div class="rule-card-desc">Quem tem iniciativa ganha +1CP, quem não tem ganha +2CP. O app pergunta isso automaticamente quando você toca em "Finalizar Turno".</div>
+    </div>
+    <div class="rules-section-title">Quando usar</div>
+    <div class="rule-card">
+      <div class="rule-card-name">Strategy Ploys</div>
+      <div class="rule-card-desc">Só no início do turno (Strategy Phase). Cada um só pode ser usado 1x por turno.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-card-name">Firefight Ploys</div>
+      <div class="rule-card-desc">Durante a ativação ou contra-ataque de um operativo, no momento que a regra indicar. Também 1x por turno cada — exceto Command Re-roll, que pode ser usado quantas vezes você tiver CP.</div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">💡 Toque em 📖 no time pra ver os Ploys específicos dele.</div>
+  `;
+  document.getElementById('rules-modal').classList.add('open');
+}
+
+function ktChangeCP(playerId, delta) {
+  const t = KT_SESSION.teams.find(x => x.playerId === playerId);
+  if (!t) return;
+  t.cp = Math.max(0, Math.min(12, (t.cp ?? 0) + delta));
+  SFX.click();
+  renderKTCPStrip();
 }
 
 function ktSwitchTab(tab) {
@@ -7045,7 +7149,7 @@ function renderKTOpCard(op, team, container, clickable) {
     <div class="kt-apl-row">
       <div class="kt-apl-label">Ações:</div>
       <div class="kt-apl-pips">
-        ${Array.from({length:op.APL},(_,i)=>`<div class="kt-apl-pip" onclick="event.stopPropagation();ktUseAPL('${team.playerId}','${op.instanceId}',${i})">⚡</div>`).join('')}
+        ${Array.from({length:op.APL},(_,i)=>`<div class="kt-apl-pip" id="aplpip-${team.playerId}-${op.instanceId}-${i}" onclick="event.stopPropagation();ktUseAPL('${team.playerId}','${op.instanceId}',${i})">⚡</div>`).join('')}
       </div>
     </div>
     <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap">
@@ -7072,7 +7176,8 @@ function ktUndoLastAction() {
   try {
     const restored = JSON.parse(entry.state);
     Object.assign(KT_SESSION, restored);
-    document.getElementById('kt-turn-num').textContent = KT_SESSION.turn;
+    ktUpdateTurnDisplay();
+    renderKTCPStrip();
     renderKTActivation();
     SFX.click();
     showToast(`↩ Desfeito: ${entry.description}`);
@@ -7097,7 +7202,7 @@ function ktActivateOp(teamId, instanceId) {
   SFX.objective();
   // Pass to next team
   KT_SESSION.nextActivation();
-  document.getElementById('kt-turn-num').textContent = KT_SESSION.turn;
+  ktUpdateTurnDisplay();
   renderKTActivation();
   showToast(`✓ ${op.displayName} ativado!`);
 }
@@ -7105,17 +7210,44 @@ function ktActivateOp(teamId, instanceId) {
 function ktUseAPL(teamId, instanceId, pipIdx) {
   SFX.cp();
   // Visual feedback only — APL tracking is conceptual in this version
-  const pips = document.querySelectorAll('.kt-apl-pip');
-  if (pips[pipIdx]) pips[pipIdx].classList.toggle('used');
+  const pip = document.getElementById(`aplpip-${teamId}-${instanceId}-${pipIdx}`);
+  if (pip) pip.classList.toggle('used');
 }
 
 function ktEndTurn() {
   SFX.turn();
-  KT_SESSION.endTurn();
-  document.getElementById('kt-turn-num').textContent = KT_SESSION.turn;
-  renderKTActivation();
-  showToast(`🎯 Turno ${KT_SESSION.turn} iniciado!`);
-  VFX.flash('rgba(6,182,212,0.2)', 300);
+  ktShowInitiativePrompt();
+}
+
+function ktShowInitiativePrompt() {
+  document.getElementById('rules-modal-title').textContent = '🎲 Quem tem iniciativa?';
+  const body = document.getElementById('rules-modal-body');
+  body.innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Cada jogador rola 1D6 fisicamente — quem tirar mais alto tem iniciativa neste turno (empate: quem não tinha iniciativa decide). Quem tem iniciativa ganha +1CP; o outro ganha +2CP.</div>
+    ${KT_SESSION.teams.map(t => `
+      <button class="btn btn-secondary" style="margin-bottom:8px;border-left:4px solid ${t.color};text-align:left" onclick="ktApplyTurnCP('${t.playerId}')">${t.emoji} ${t.playerName} tem iniciativa</button>
+    `).join('')}
+    <button class="btn btn-secondary btn-sm" style="opacity:.7;margin-top:4px" onclick="ktApplyTurnCP(null)">Pular (não ajustar CP agora)</button>
+  `;
+  document.getElementById('rules-modal').classList.add('open');
+}
+
+function ktApplyTurnCP(initiativePlayerId) {
+  document.getElementById('rules-modal').classList.remove('open');
+  if (initiativePlayerId) {
+    KT_SESSION.teams.forEach(t => {
+      t.cp = Math.min(12, t.cp + (t.playerId === initiativePlayerId ? 1 : 2));
+    });
+    renderKTCPStrip();
+    showToast('⚡ CP do turno aplicado!');
+  }
+  setTimeout(() => {
+    KT_SESSION.endTurn();
+    ktUpdateTurnDisplay();
+    renderKTActivation();
+    showToast(`🎯 Turno ${KT_SESSION.turn} iniciado!`);
+    VFX.flash('rgba(6,182,212,0.2)', 300);
+  }, initiativePlayerId ? 300 : 0);
 }
 
 // ── OPERATIVE DETAIL ─────────────────────────────────
