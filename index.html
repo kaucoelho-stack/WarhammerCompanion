@@ -760,6 +760,18 @@ body::before{content:'';position:fixed;inset:0;
 .kwc-profile{color:var(--gold);font-weight:600}
 .kwc-stats{font-family:var(--fu);font-weight:700;color:var(--muted);white-space:nowrap}
 
+
+/* ═══ EXPANDABLE MULTI-PROFILE WEAPON CARDS ═══ */
+.kt-weapon-chip-expandable{cursor:pointer}
+.kt-weapon-chip-expandable:active{background:var(--card3)}
+.kwc-chevron{margin-left:auto;color:var(--gold);font-size:9px}
+.kt-weapon-profiles-list{display:none;flex-direction:column;gap:3px;margin:2px 0 2px 14px;border-left:2px solid rgba(232,184,75,.3);padding-left:6px}
+.kt-weapon-profiles-list.kt-weapon-expanded{display:flex}
+.kt-weapon-chip-sub{background:rgba(232,184,75,.04)}
+
+
+.ability-ap-badge{display:inline-block;font-family:var(--fu);font-size:9px;letter-spacing:1px;padding:1px 6px;border-radius:3px;background:rgba(232,184,75,.15);color:var(--gold);border:1px solid rgba(232,184,75,.3);vertical-align:middle;margin-left:4px}
+
 </style>
 </head>
 <body>
@@ -4133,7 +4145,11 @@ function showKTTeamRulesModal(teamId) {
     team.operatives.forEach(op => {
       html += `<div class="rule-card" style="cursor:pointer" onclick="document.getElementById('rules-modal').classList.remove('open');setTimeout(()=>{const _t=KT_SESSION&&KT_SESSION.teams&&KT_SESSION.teams.length?KT_SESSION.teams.find(t=>t.teamId==='${team.id}'):null; if(_t){const _op=_t.operatives.find(o=>o.id==='${op.id}'||o.name==='${op.name.replace(/'/g,"\\'")}'); if(_op) return showKTOpDetail(_t.playerId,_op.instanceId);} alert('Selecione este time numa batalha para ver detalhes completos do operativo.');},200)">
         <div class="rule-card-name">${op.name}${op.unique?' <span style="color:var(--gold);font-size:10px">(único)</span>':''} <span style="color:var(--muted);font-size:11px">→</span></div>
-        ${op.abilities ? `<div class="rule-card-desc">${op.abilities.substring(0,90)}${op.abilities.length>90?'...':''}</div>` : ''}
+        ${op.abilities ? `<div class="rule-card-desc">${
+            Array.isArray(op.abilities)
+              ? op.abilities.map(a=>a.name).join(' · ')
+              : (op.abilities.substring(0,90) + (op.abilities.length>90?'...':''))
+          }</div>` : ''}
       </div>`;
     });
   }
@@ -4191,6 +4207,8 @@ const KT_CORE_RULES = [
 ];
 
 const KT_WEAPON_KEYWORDS = {
+  'Poison':     { name:'Poison', desc:'Se causar dano com algum sucesso, o alvo ganha um marcador de Poison (se não tiver um). Operativo marcado sofre 1 dano extra ao ser ativado.' },
+  'Toxic':      { name:'Toxic', desc:'Contra um alvo já marcado com Poison, essa arma tem +1 em ambos os valores de Dano (normal e crítico).' },
   'Accurate':   { name:'Accurate X', desc:'Retém até X dados de ataque como sucessos normais automáticos, sem rolar.' },
   'Balanced':   { name:'Balanced', desc:'Pode re-rolar 1 dos seus dados de ataque.' },
   'Blast':      { name:'Blast X', desc:'Atinge o alvo principal e todos os alvos secundários visíveis dentro de X do alvo principal (mesmo com ordem Ocultar).' },
@@ -4244,7 +4262,7 @@ function showKeywordPopup(tagText) {
 
 function renderTagPills(tags) {
   if (!tags || !tags.length) return '';
-  return tags.map(t => `<span class="wtag torrent kw-tag" onclick="event.stopPropagation();showKeywordPopup('${t.replace(/'/g,"\\'")}')">${t}</span>`).join('');
+  return tags.map(t => `<span class="wtag torrent kw-tag" data-kw="${t.replace(/"/g,'&quot;')}" onclick="event.stopPropagation();showKeywordPopup(this.dataset.kw)">${t}</span>`).join('');
 }
 
 function showKTCoreRulesModal() {
@@ -4358,13 +4376,35 @@ function renderWeaponSummaryChips(weapons) {
   return weapons.map(w => {
     const profiles = getWeaponProfiles(w);
     const hasMultiple = profiles.length > 1;
-    return profiles.map(p => `
+
+    if (!hasMultiple) {
+      const p = profiles[0];
+      return `
       <div class="kt-weapon-chip">
         <span class="kwc-icon">${p.melee ? '⚔' : '🎯'}</span>
-        <span class="kwc-name">${w.name}${hasMultiple ? ` <span class="kwc-profile">(${p.name})</span>` : ''}</span>
+        <span class="kwc-name">${w.name}</span>
+        <span class="kwc-stats">A${p.A} ${p.skill}+ D${p.D}/${p.CD}</span>
+        ${renderTagPills(p.tags)}
+      </div>`;
+    }
+
+    // Multi-profile weapon: collapsible — tap header to reveal all firing modes
+    const allProfilesHtml = profiles.map(p => `
+      <div class="kt-weapon-chip kt-weapon-chip-sub">
+        <span class="kwc-icon">${p.melee ? '⚔' : '🎯'}</span>
+        <span class="kwc-name"><span class="kwc-profile">${p.name}</span></span>
         <span class="kwc-stats">A${p.A} ${p.skill}+ D${p.D}/${p.CD}</span>
         ${renderTagPills(p.tags)}
       </div>`).join('');
+
+    return `
+      <div class="kt-weapon-chip kt-weapon-chip-expandable" onclick="this.nextElementSibling.classList.toggle('kt-weapon-expanded');this.querySelector('.kwc-chevron').textContent=this.nextElementSibling.classList.contains('kt-weapon-expanded')?'▲':'▼'">
+        <span class="kwc-icon">${profiles[0].melee ? '⚔' : '🎯'}</span>
+        <span class="kwc-name">${w.name}</span>
+        <span class="kwc-stats">${profiles.length} modos de tiro</span>
+        <span class="kwc-chevron">▼</span>
+      </div>
+      <div class="kt-weapon-profiles-list">${allProfilesHtml}</div>`;
   }).join('');
 }
 
@@ -4846,6 +4886,38 @@ function ktApplyFightDamage() {
 // KT FIGHT UI — Renders the interactive strike/block modal
 // ═══════════════════════════════════════════════════════
 
+function ktFightChipHtml(s, clickable) {
+  const icon = s.type === 'crit' ? '🎯' : '⚔';
+  const label = s.type === 'crit' ? 'Crítico' : 'Normal';
+  let statusClass = '';
+  if (s.resolved) {
+    if (s.action === 'strike') statusClass = 'kt-fight-struck';
+    else if (s.action === 'block') statusClass = 'kt-fight-blocked-by';
+    else if (s.action === 'blocked') statusClass = 'kt-fight-was-blocked';
+    else if (s.action === 'shocked') statusClass = 'kt-fight-was-blocked';
+  }
+  return `<div class="kt-fight-chip ${s.type} ${statusClass}" ${clickable && !s.resolved ? `onclick="ktFightSelectSuccess('${s.id}')"` : ''}>
+    <div class="kfc-icon">${icon}</div>
+    <div class="kfc-label">${label}</div>
+    ${s.resolved ? `<div class="kfc-status">${s.action==='strike'?'⚔ Golpeou':s.action==='block'?'🛡 Bloqueou':s.action==='blocked'?'❌ Bloqueado':'⚡ Chocado'}</div>` : ''}
+  </div>`;
+}
+
+function renderKTFightChipsOnly() {
+  const { atkOp, defOp, atkTeam, defTeam, atkWeapon, defWeapon, atk, def } = ktFight;
+  const diceArea = document.getElementById('dice-area');
+  if (!diceArea) return;
+  diceArea.innerHTML = `
+    <div class="kt-fight-side">
+      <div class="kt-fight-side-hdr" style="color:${atkTeam.color}">${atkOp.displayName} <span style="color:var(--muted);font-size:11px">(${atkWeapon.name})</span></div>
+      <div class="kt-fight-chips">${atk.successes.length ? atk.successes.map(s => ktFightChipHtml(s, false)).join('') : '<div style="font-size:12px;color:var(--muted)">Nenhum sucesso</div>'}</div>
+    </div>
+    <div class="kt-fight-side">
+      <div class="kt-fight-side-hdr" style="color:${defTeam.color}">${defOp.displayName} <span style="color:var(--muted);font-size:11px">(${defWeapon.name})</span></div>
+      <div class="kt-fight-chips">${def.successes.length ? def.successes.map(s => ktFightChipHtml(s, false)).join('') : '<div style="font-size:12px;color:var(--muted)">Nenhum sucesso</div>'}</div>
+    </div>`;
+}
+
 function renderKTFightModal() {
   if (!ktFight) return;
   const { atkOp, defOp, atkTeam, defTeam, atkWeapon, defWeapon, atk, def, turnSide } = ktFight;
@@ -4870,9 +4942,10 @@ function renderKTFightModal() {
   const finalResult = document.getElementById('final-result');
   if (!diceArea) return;
 
-  // If finalized, show results screen instead
+  // If finalized, show results screen — but KEEP the resolved success chips visible above it
   if (ktFight.finalDmgToDef !== undefined) {
-    diceArea.style.display = 'none';
+    diceArea.style.display = 'block';
+    renderKTFightChipsOnly(); // render the final chip state (all resolved) without interactive controls
     finalResult.classList.add('show');
     renderKTFightResult();
     return;
@@ -5438,152 +5511,247 @@ const KT_TEAMS = [
     color:'#f59e0b', emoji:'🟡',
     desc:'Orks furtivos especializados em infiltração e emboscadas. Time completo com 11 tipos de especialista — do Boss Nob ao Bomb Squig suicida.',
     style:'Furtivo · Melee',
-    limit: 10, // 1 Boss Nob + 9 tropas
-    coreRule:{name:"Throat Slittas",desc:"Todo Kommando (exceto Bomb Squig) pode Cargar mesmo com ordem de Ocultar."},
-    ploys:{strategy:[{name:"DAKKA! DAKKA! DAKKA!",desc:"Armas de tiro ganham Punishing — retém uma falha como sucesso normal se já reteve algum crítico."},{name:"Skulk About",desc:"Operativo com ordem Ocultar retém 1 sucesso de defesa sem rolar dado."},{name:"SSSSHHHH!",desc:"Operativos ocultos e fora de alcance de visão podem fazer um Dash grátis (não no 1º turno)."},{name:"WAAAGH!",desc:"Armas corpo a corpo ganham Balanced — pode re-rolar 1 dado de ataque."}],firefight:[{name:"Só um Arranhão",desc:"Ignora um dano normal recebido (exceto Bomb Squig e Grot)."},{name:"Kunnin\' Mas Brutal",desc:"Ao Cargar oculto, o primeiro golpe normal em CaC vira crítico."},{name:"Krump \'Em",desc:"No fim da Firefight Phase, um Kommando faz uma ação de Luta grátis."},{name:"Aguenta Firme",desc:"Ignora mudanças no APL até o início do próximo turno."}]},
+    limit: 10,
+    coreRule: {name:"Throat Slittas", desc:"Todo Kommando (exceto Bomb Squig) pode Cargar mesmo com ordem de Ocultar."},
+    ploys: {
+      strategy: [
+        {name:"DAKKA! DAKKA! DAKKA!", desc:"Armas de tiro ganham Punishing — retém uma falha como sucesso normal se já reteve algum crítico."},
+        {name:"Skulk About", desc:"Operativo com ordem Ocultar retém 1 sucesso de defesa sem rolar dado."},
+        {name:"SSSSHHHH!", desc:"Operativos ocultos e fora de alcance de visão podem fazer um Dash grátis (não no 1º turno)."},
+        {name:"WAAAGH!", desc:"Armas corpo a corpo ganham Balanced — pode re-rolar 1 dado de ataque."},
+      ],
+      firefight: [
+        {name:"Só um Arranhão", desc:"Ignora um dano normal recebido (exceto Bomb Squig e Grot)."},
+        {name:"Kunnin' Mas Brutal", desc:"Ao Cargar oculto, o primeiro golpe normal em CaC vira crítico."},
+        {name:"Krump 'Em", desc:"No fim da Firefight Phase, um Kommando faz uma ação de Luta grátis."},
+        {name:"Aguenta Firme", desc:"Ignora mudanças no APL até o início do próximo turno."},
+      ],
+    },
     operatives: [
       { id:'kt-kommando-boss', name:'Boss Nob', unique:true,
         M:'6"', APL:3, GA:1, DF:4, SV:5, W:14,
-        abilities:'Get it Dun (1AP): dá +1 APL a um Kommando aliado a 6". Krumpin\' Time: pode fazer 2 ações de Luta na mesma ativação. Throat Slittas: pode Cargar mesmo com ordem de Ocultar.',
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:"Krumpin' Time", desc:'Pode fazer 2 ações de Luta na mesma ativação.'},
+          {name:'Get It Dun!', ap:'1AP', desc:'Apoio: escolha outro Kommando aliado visível a até 6" (exceto Bomb Squig). Até o fim da próxima ativação dele, +1 no APL. Não pode ser feito perto de inimigo ou contra-atacando.'},
+        ],
         weapons:[
           { name:'Slugga',       A:4, skill:4, D:3, CD:4, range:'short' },
+          { name:'Big Choppa',   A:5, skill:3, D:5, CD:6, range:'melee' },
           { name:'Klaw de Força',A:4, skill:3, D:5, CD:7, range:'melee', tags:['Brutal','Shock'] },
         ]},
       { id:'kt-kommando-boy', name:'Kommando Boy', unique:false, count:9,
         M:'6"', APL:2, GA:2, DF:4, SV:5, W:10,
-        abilities:'Tactical Wot-Notz: pode usar granada de fumaça ou atordoante 1x/turno sem gastar uso limitado. Throat Slittas: pode Cargar com ordem de Ocultar.',
+        abilities:[
+          {name:'Taktical Wot-notz', desc:'1x por turno: um Kommando Boy pode fazer a ação Granada de Fumaça. 1x por turno: um Kommando Boy pode fazer a ação Granada Atordoante. Nenhuma das duas conta para o limite de uso desses itens de equipamento.'},
+        ],
         weapons:[
           { name:'Slugga', A:4, skill:4, D:3, CD:4, range:'short' },
           { name:'Choppa', A:4, skill:3, D:4, CD:5, range:'melee' },
         ]},
+      { id:'kt-kommando-bombsquig', name:'Bomb Squig', unique:true,
+        M:'6"', APL:2, GA:1, DF:4, SV:5, W:5,
+        abilities:[
+          {name:'Explosive', desc:'Pode fazer a ação Atirar mesmo dentro do alcance de controle de um inimigo. Nesse caso não escolhe alvo — este operativo é sempre o alvo principal e nunca conta como em cobertura.'},
+          {name:'Boom!', desc:'Se for incapacitado numa batalha em que não usou os explosivos, role 1D6 (ou 2D6 se quiser): em 4+, faz um Tiro grátis com os explosivos antes de sair de campo.'},
+          {name:'Stoopid', desc:'Não pode escolher ordem Conceal. Só pode fazer as ações Charge, Dash, Fight, Reposition e Shoot, e só com as armas da própria ficha.'},
+          {name:'Expendable', desc:'Ignorado para as condições de vitória do oponente e para a contagem inicial de operativos, inclusive se for incapacitado.'},
+        ],
+        weapons:[
+          { name:'Explosivos', A:6, skill:4, D:4, CD:5, range:'short', tags:['Blast 1"','Limited 1'] },
+          { name:'Mordida',    A:3, skill:4, D:4, CD:5, range:'melee' },
+        ]},
+      { id:'kt-kommando-breacha', name:'Breacha Boy', unique:true,
+        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
+        abilities:[
+          {name:'Breach', ap:'1AP', desc:'Coloca um marcador de Arrombamento o mais perto possível de um terreno dentro do alcance de controle. Terreno de até 1" de espessura dentro de 1" do marcador vira terreno Acessível. Pode fazer essa ação durante Charge ou Reposition por 1 AP a menos. Não pode ser feito perto de inimigo ou sem terreno no alcance de controle.'},
+        ],
+        weapons:[
+          { name:'Slugga',        A:4, skill:4, D:3, CD:4, range:'short' },
+          { name:'Aríete Breacha',A:4, skill:4, D:5, CD:5, range:'melee', tags:['Brutal','Severe','Shock'] },
+        ]},
+      { id:'kt-kommando-burna', name:'Burna Boy', unique:true,
+        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
+        abilities:[
+          {name:'Duas Configurações', desc:'A Burna tem modo Padrão (alcance maior, mais alvos secundários) ou Dilúvio (alcance curto, ignora cobertura via Seek, sem alvos secundários mas mantém a regra Torrent para outros efeitos).'},
+        ],
+        weapons:[
+          { name:'Burna (Padrão)', A:4, skill:2, D:3, CD:3, range:'short', tags:['Saturate','Torrent 2"'] },
+          { name:'Burna (Dilúvio)',A:4, skill:2, D:3, CD:3, range:'short', tags:['Saturate','Seek','Torrent 0"'] },
+          { name:'Punhos',         A:3, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-kommando-comms', name:'Comms Boy', unique:true,
+        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
+        abilities:[
+          {name:'I Got a Plan, Ladz', desc:'1x em cada ativação deste operativo, as ações Pegar Marcador, Colocar Marcador ou uma ação de missão custam 1 AP a menos.'},
+          {name:'Listen In', ap:'1AP', desc:'Apoio: escolha outro Kommando aliado visível a até 6". Até o fim da próxima ativação dele, +1 no APL. Não pode ser feito perto de inimigo.'},
+        ],
+        weapons:[
+          { name:'Pistola Shokka', A:6, skill:4, D:1, CD:0, range:'short', tags:['Devastating 2','Severe','Stun'] },
+          { name:'Punhos',         A:3, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-kommando-dakka', name:'Dakka Boy', unique:true,
+        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
+        abilities:[
+          {name:'Dakka Dash', ap:'1AP', desc:'Faz uma ação Dash grátis e uma ação Atirar grátis nesta ordem, mas o Tiro só pode ser com a Dakka Shoota. Não pode ser feito com ordem Conceal nem perto de inimigo.'},
+        ],
+        weapons:[
+          { name:'Dakka Shoota (Curto)', A:5, skill:4, D:3, CD:4, range:'short', tags:['Range 9"','Ceaseless'] },
+          { name:'Dakka Shoota (Longo)', A:5, skill:4, D:3, CD:4, range:'long' },
+          { name:'Punhos',               A:3, skill:3, D:3, CD:4, range:'melee' },
+        ]},
       { id:'kt-kommando-grot', name:'Grot', unique:true,
         M:'6"', APL:2, GA:1, DF:4, SV:5, W:5,
-        abilities:'Grappling Hook (1AP): teleporta para outro ponto de terreno visível. Sneaky Zogger: não pode ter ordem Engage; em cobertura, quase impossível de ser alvo.',
+        abilities:[
+          {name:'Sneaky Zogger', desc:'Não pode ter ordem Engage. Enquanto em cobertura, nunca é um alvo válido — isso vale mesmo contra Seek ou terreno Vantage — exceto se o atacante estiver a até 2".'},
+          {name:'Grappling Hook', ap:'1AP', desc:'Escolhe um ponto visível de terreno, remove este operativo do campo e recoloca a até 1" horizontal daquele ponto, fora do alcance de controle inimigo. Conta como ação Reposition. Não pode ser feito perto de inimigo, nem na mesma ativação de Charge/Fall Back.'},
+        ],
         weapons:[
           { name:'Machadinha Grot', A:3, skill:5, D:1, CD:4, range:'melee' },
         ]},
+      { id:'kt-kommando-rokkit', name:'Rokkit Boy', unique:true,
+        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
+        abilities:'Duas configurações: mirada (fixo, mais confiável) ou móvel (pode se mover antes).',
+        weapons:[
+          { name:'Rokkit Launcha (Mirada)', A:6, skill:4, D:4, CD:5, range:'long', tags:['Blast 1"','Ceaseless','Heavy (Dash only)'] },
+          { name:'Rokkit Launcha (Móvel)',  A:6, skill:4, D:4, CD:5, range:'long', tags:['Blast 1"'] },
+          { name:'Punhos',                  A:3, skill:3, D:3, CD:4, range:'melee' },
+        ]},
       { id:'kt-kommando-slasha', name:'Slasha Boy', unique:true,
         M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:'Dat All You Got?: após lutar sem ser incapacitado, causa 1D3 dano extra no inimigo.',
+        abilities:[
+          {name:'Dat All You Got?', desc:'Depois deste operativo lutar ou revidar, se não foi incapacitado, pode causar D3 de dano extra no inimigo daquela sequência.'},
+        ],
         weapons:[
           { name:'Facas de Arremesso', A:4, skill:3, D:2, CD:5, range:'short', tags:['Silent'] },
           { name:'Choppas Gêmeas',     A:4, skill:3, D:4, CD:5, range:'melee', tags:['Ceaseless','Lethal 5+'] },
         ]},
-      { id:'kt-kommando-breacha', name:'Breacha Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:'Breach (1AP): abre passagem em terreno, permitindo atravessar paredes finas.',
-        weapons:[
-          { name:'Slugga',       A:4, skill:4, D:3, CD:4, range:'short' },
-          { name:'Aríete Breacha',A:4, skill:4, D:5, CD:5, range:'melee', tags:['Brutal','Severe','Shock'] },
-        ]},
       { id:'kt-kommando-snipa', name:'Kommando Snipa', unique:true,
         M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:'Concealed Position: primeiro tiro da batalha ignora cobertura e é silencioso.',
+        abilities:[
+          {name:'Três Configurações', desc:'A Big Shoota com Mira tem modo Oculta (só pode ser usado na primeira vez que este operativo Atirar na batalha), Estacionária, ou Varredura.'},
+        ],
         weapons:[
-          { name:'Big Shoota com Mira', A:5, skill:3, D:3, CD:3, range:'long', tags:['Silent','Heavy'] },
-          { name:'Punhos',              A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-dakka', name:'Dakka Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:'Dakka Dash (1AP): faz um Dash grátis + um tiro grátis com a Dakka Shoota.',
-        weapons:[
-          { name:'Dakka Shoota', A:5, skill:4, D:3, CD:4, range:'short', tags:['Ceaseless'] },
-          { name:'Punhos',       A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-comms', name:'Comms Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:'I Got A Plan Ladz: ações de objetivo custam -1 AP. Listen In (1AP): dá +1 APL a um aliado a 6".',
-        weapons:[
-          { name:'Shokka',  A:6, skill:4, D:1, CD:1, range:'short', tags:['Stun','Severe'] },
-          { name:'Punhos',  A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-burna', name:'Burna Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:'Torrent: a Burna sempre acerta — não rola dado de Hit.',
-        weapons:[
-          { name:'Burna',  A:4, skill:2, D:3, CD:3, range:'short', auto:true, tags:['Saturate'] },
-          { name:'Punhos', A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-rokkit', name:'Rokkit Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:'Rokkit Launcha causa dano de área — ótimo contra grupos.',
-        weapons:[
-          { name:'Rokkit Launcha', A:6, skill:4, D:4, CD:5, range:'long', tags:['Blast','Ceaseless'] },
-          { name:'Punhos',         A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-bombsquig', name:'Bomb Squig', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:5,
-        abilities:'Boom!: se for incapacitado sem detonar, em 4+ explode automaticamente antes de sair de campo. Expendable: não conta para condições de vitória do inimigo.',
-        weapons:[
-          { name:'Explosivos', A:6, skill:4, D:4, CD:5, range:'short', tags:['Blast','Limited 1'] },
-          { name:'Mordida',    A:3, skill:4, D:4, CD:5, range:'melee' },
+          { name:'Big Shoota c/ Mira (Oculta)',      A:5, skill:3, D:3, CD:3, range:'long', tags:['Devastating 2','Heavy','Silent'] },
+          { name:'Big Shoota c/ Mira (Estacionária)',A:5, skill:3, D:3, CD:3, range:'long', tags:['Devastating 2','Heavy'] },
+          { name:'Big Shoota c/ Mira (Varredura)',   A:5, skill:3, D:3, CD:4, range:'long', tags:['Heavy (Dash only)','Torrent 1"'] },
+          { name:'Punhos',                           A:3, skill:3, D:3, CD:4, range:'melee' },
         ]},
     ]
   },
-
   // ── WOLF SCOUTS (Space Wolves) ───────────────────────
   {
     id:'kt-wolfscouts', name:'Wolf Scouts', faction:'Space Marines',
     color:'#7dd3fc', emoji:'🐺',
     desc:'Os caçadores mais temidos da Great Company dos Space Wolves. Operam sozinhos e sem apoio atrás das linhas inimigas, envoltos em tempestades e névoa. Vêm com um Lobo Fenrisiano de caça.',
     style:'Infiltração · Tempestade',
-    limit: 6, // 1 Lobo Fenrisiano + 5 operativos
-    coreRule:{name:"Tempestade Elemental",desc:"Como ação estratégica, reposiciona um marcador de Tempestade — operativos dentro dela ganham bônus (Carga oculta, dano extra, etc)."},
-    ploys:{strategy:[{name:"Encoberto pela Tempestade",desc:"Ao ser alvo dentro da Tempestade, re-rola 1 dado de defesa."},{name:"Fúria Tempestuosa",desc:"Armas corpo a corpo ganham Balanced se estiver (ou esteve) na Tempestade neste turno."},{name:"Mordida da Tempestade",desc:"Contra inimigo dentro da Tempestade em CaC, reduz o Ataque dele em 1."},{name:"Lutadores Selvagens",desc:"Ao revidar sem ser incapacitado, causa D3+1 dano extra no atacante."}],firefight:[{name:"Sentidos Aguçados",desc:"Ao atirar, ganha alcance 6\" extra e o alvo não pode ficar obscurecido."},{name:"Contra-Ataque",desc:"Após o inimigo lutar ou terminar ativação, um Wolf Scout luta de graça."},{name:"Tocado por Lokyar",desc:"Ao lutar longe de aliados (5\"+), re-rola qualquer dado de ataque."},{name:"Fisiologia Transumana",desc:"Ao ser alvo de tiro, transforma 1 sucesso normal de defesa em crítico."}]},
+    limit: 6,
+    coreRule: {name:"Tempestade Elemental", desc:"Como Strategic Gambit, reposiciona o marcador de Tempestade — operativos dentro dela ganham bônus conforme cada um (ver habilidades)."},
+    ploys: {
+      strategy: [
+        {name:"Encoberto pela Tempestade", desc:"Ao ser alvo dentro da Tempestade, re-rola 1 dado de defesa."},
+        {name:"Fúria Tempestuosa", desc:"Armas corpo a corpo ganham Balanced se esteve na Tempestade neste turno."},
+        {name:"Mordida da Tempestade", desc:"Contra inimigo dentro da Tempestade em CaC, reduz o Ataque dele em 1."},
+        {name:"Lutadores Selvagens", desc:"Ao revidar sem ser incapacitado, causa D3+1 dano extra no atacante."},
+      ],
+      firefight: [
+        {name:"Sentidos Aguçados", desc:"Ao atirar, ganha alcance 6\" extra e o alvo não pode ficar obscurecido."},
+        {name:"Contra-Ataque", desc:"Após o inimigo lutar ou terminar ativação, um Wolf Scout luta de graça."},
+        {name:"Tocado por Lokyar", desc:"Ao lutar longe de aliados (5\"+), re-rola qualquer dado de ataque."},
+        {name:"Fisiologia Transumana", desc:"Ao ser alvo de tiro, transforma 1 sucesso normal de defesa em crítico."},
+      ],
+    },
     operatives: [
       { id:'kt-ws-packleader', name:'Pack Leader', unique:true,
-        M:'7"', APL:2, GA:1, DF:3, SV:3, W:13,
-        abilities:'LÍDER. Grizzled Veteran: a primeira vez que seria incapacitado na batalha, sobrevive com 1 PV. Lupine Guile: 1x/batalha re-rola o dado de iniciativa.',
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:'Lupine Guile', desc:'1x por batalha, depois de rolar pra decidir iniciativa, se este operativo estiver em campo, pode re-rolar seu dado.'},
+          {name:'Grizzled Veteran', desc:'A primeira vez que seria incapacitado na batalha, não é: fica com 1 PV e não pode ser incapacitado pelo resto daquela ação. Todos os dados de ataque restantes são descartados (inclusive os seus, se estava lutando/revidando). Não pode usar o Ploy Counterattack nem causar dano de Savage Fighters no fim daquela ação.'},
+        ],
         weapons:[
-          { name:'Pistola de Plasma', A:4, skill:3, D:3, CD:5, range:'short' },
-          { name:'Arma de Poder',     A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+          { name:'Pistola de Plasma', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
+          { name:'Arma de Poder', A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
         ]},
       { id:'kt-ws-fangbearer', name:'Fangbearer', unique:true,
-        M:'7"', APL:2, GA:1, DF:3, SV:3, W:13,
-        abilities:'Healing Balms (1AP): cura D3+3 PV de um aliado próximo. Spiritual Chirurgy: time ignora penalidades por ferimentos.',
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:[
+          {name:'Spiritual Chirurgy', desc:'Ignora mudanças de status por ferimento em operativos Wolf Scout (exceto o Lobo Fenrisiano) — vale pro time todo desde que este operativo tenha sido selecionado pra batalha, mesmo se for incapacitado depois.'},
+          {name:'Healing Balms', ap:'1AP', desc:'Escolhe um Wolf Scout aliado no alcance de controle pra recuperar até D3+3 PV perdidos. Não pode ser feito perto de inimigo.'},
+        ],
         weapons:[
-          { name:'Pistola Bolter Absolver', A:4, skill:3, D:4, CD:5, range:'short' },
+          { name:'Pistola Bolter Absolver', A:4, skill:3, D:4, CD:5, range:'short', tags:['Range 9"','Piercing Crits 1'] },
           { name:'Lâmina de Combate',       A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-ws-frosteye', name:'Frosteye', unique:true,
-        M:'7"', APL:2, GA:1, DF:3, SV:3, W:13,
-        abilities:'Hunter\'s Senses (1AP): melhora a carabina até a próxima ativação. Storm-Veiled Execution: dentro da Tempestade, pode Guard mesmo oculto.',
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:[
+          {name:'Storm-Veiled Execution', desc:'Dentro da Tempestade: pode usar Guard independente do tipo de zona de jogo, e pode usar Guard mesmo com ordem Conceal.'},
+          {name:"Hunter's Senses", ap:'1AP', desc:'Escolhe Severe OU Saturate (e nesse caso inimigos não ficam obscurecidos ao ser alvo) pra Carabina Instigator, até a próxima ativação. Não pode ser feito perto de inimigo.'},
+        ],
         weapons:[
-          { name:'Carabina Instigator', A:4, skill:3, D:3, CD:4, range:'long', tags:['Silent'] },
+          { name:'Carabina Instigator', A:4, skill:3, D:3, CD:4, range:'long', tags:['Piercing Crits 1','Silent'] },
           { name:'Lâmina de Combate',   A:4, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-ws-gunner', name:'Gunner', unique:true,
-        M:'7"', APL:2, GA:1, DF:3, SV:3, W:13,
-        abilities:'Tempest\'s Fury: dentro da Tempestade, a plasma gun ganha regra Punishing e nunca superaquece.',
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:[
+          {name:"Tempest's Fury", desc:'Dentro da Tempestade: todos os modos da Plasma Gun ganham Punishing. O modo Sobrecarga perde a regra Hot (sem risco de dano próprio).'},
+        ],
         weapons:[
-          { name:'Plasma Gun',        A:4, skill:3, D:4, CD:6, range:'short' },
+          { name:'Plasma Gun', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:4, CD:6, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:5, CD:6, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
           { name:'Lâmina de Combate', A:4, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-ws-hunter', name:'Hunter', unique:false, count:2,
-        M:'7"', APL:2, GA:2, DF:3, SV:3, W:13,
-        abilities:'Fierce Temperament: dentro da Tempestade, suas armas ganham a regra Severe.',
+        M:'7"', APL:3, GA:2, DF:3, SV:3, W:13,
+        abilities:[
+          {name:'Fierce Temperament', desc:'Dentro da Tempestade, todas as armas deste operativo ganham a regra Severe.'},
+        ],
         weapons:[
-          { name:'Pistola de Plasma', A:4, skill:3, D:3, CD:5, range:'short' },
+          { name:'Pistola de Plasma', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
           { name:'Lâmina de Combate', A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-ws-skjald', name:'Rune Priest Skjald', unique:true,
-        M:'7"', APL:2, GA:1, DF:3, SV:3, W:13,
-        abilities:'PSYKER. Call the Storm (1AP): reposiciona a Tempestade ou obscurece um aliado. Cast the Runes: sorteia bônus de CP e re-rolls antes da batalha.',
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:[
+          {name:'PSYKER', desc:'Este operativo tem palavra-chave Psyker.'},
+          {name:'Cast the Runes', desc:'Depois de escolher este operativo, antes da batalha, role 3D6 e separe-os. Cada resultado 1-4 dá um uso grátis do Ploy Command Re-roll no turno correspondente. Cada resultado 5-6 dá +1CP.'},
+          {name:'Call the Storm', ap:'1AP', desc:'Psychic. Remove o marcador de Tempestade do campo (se houver) e recoloca em outro lugar. Alternativamente, escolhe um Wolf Scout aliado — até a próxima ativação dele, sempre que estiver na Tempestade e a mais de 3" do operativo ativo, fica obscurecido. Não pode ser feito perto de inimigo.'},
+        ],
         weapons:[
           { name:'Pistola Bolter',  A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Mandíbulas do Mundo Lobo', A:5, skill:3, D:3, CD:5, range:'long', tags:['Blast','Severe'] },
+          { name:'Mandíbulas do Mundo Lobo', A:5, skill:3, D:3, CD:5, range:'long', tags:['Blast 2"','Severe'] },
+          { name:'Thunderclap',     A:5, skill:2, D:2, CD:2, range:'short', tags:['Range 6"','Saturate','Seek Light','Stun','Torrent 2"'] },
           { name:'Bastão Rúnico',   A:5, skill:3, D:4, CD:6, range:'melee', tags:['Shock'] },
         ]},
       { id:'kt-ws-trapmaster', name:'Trapmaster', unique:true,
-        M:'7"', APL:2, GA:1, DF:3, SV:3, W:13,
-        abilities:'Proximity Mine: carrega uma mina que causa 2D3+3 dano (ou D3+6 dentro da Tempestade) e reduz APL do inimigo que pisar nela.',
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:[
+          {name:'Haywire Mine', desc:'Carrega o marcador de Mina Haywire e pode fazer a ação Pegar Marcador nele — mas o marcador não pode ser colocado no alcance de controle de outro operativo. Se este operativo for incapacitado carregando a mina e ela não puder ser colocada, ela é removida junto.'},
+          {name:'Proximity Mine', desc:'A primeira vez que a Mina Haywire entrar no alcance de controle de outro operativo, remove o marcador, reduz o APL dele em 1 até o fim da próxima ativação, e causa 2D3+3 de dano (ou D3+6 se a mina estiver a até 6" horizontal da Tempestade). Se não for incapacitado, a ação dele termina ali mesmo.'},
+        ],
         weapons:[
-          { name:'Pistola de Plasma', A:4, skill:3, D:3, CD:5, range:'short' },
+          { name:'Pistola de Plasma', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
           { name:'Lâmina de Combate', A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-ws-wolf', name:'Lobo Fenrisiano', unique:true,
         M:'8"', APL:2, GA:1, DF:3, SV:5, W:9,
-        abilities:'Instinctive Predator: só pode Cargar, Dash, Recuar, Lutar ou Guard — nada mais. Pounce: 1x/batalha faz Carga/Recuo/Reposição grátis.',
+        abilities:[
+          {name:'Instinctive Predator', desc:'Só pode fazer as ações Charge, Dash, Fall Back, Fight, Guard e Reposition, e só com as armas da própria ficha. Pode Cargar mesmo com ordem Conceal.'},
+          {name:'Pounce', desc:'Strategic Gambit, 1x por batalha. Se o APL deste operativo for 2 ou mais, faz uma ação grátis de Charge, Fall Back ou Reposition. Se fizer isso, -1 no APL até o fim da próxima ativação e não pode repetir nenhuma dessas ações nesse período.'},
+        ],
         weapons:[
           { name:'Presas', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
         ]},
@@ -5697,147 +5865,287 @@ const KT_TEAMS = [
     color:'#4a7fd4', emoji:'👼',
     desc:'Esquadrão genérico de Space Marines Primaris, adaptável a qualquer capítulo. Combina tiro preciso de bolter com poder de combate corpo a corpo — flexível e resistente.',
     style:'Versátil · Tiro/Melee',
-    limit: 6, // 1 líder + 5 tropas
-    coreRule:{name:"Astartes",desc:"Cada operativo pode fazer 2 ações de Tiro OU 2 de Luta na mesma ativação, nunca uma de cada."},
-    ploys:{strategy:[{name:"Doutrina de Combate",desc:"Escolha Devastador, Tático ou Assalto — unidades ganham re-roll de 1 dado de ataque na situação escolhida neste turno."},{name:"Eles Não Temem",desc:"Ignora mudanças de status (inclusive de armas) por estar ferido."},{name:"Táticas Adaptativas",desc:"Troca a Chapter Tactic secundária até o fim do turno."},{name:"Indomitus",desc:"Se o inimigo errar 2+ dados ao te atirar, descarta uma falha e transforma outra em sucesso."}],firefight:[{name:"Ajustar Doutrina",desc:"Muda a Doutrina de Combate escolhida antes, durante a ativação de uma unidade."},{name:"Fisiologia Transumana",desc:"Ao ser alvo de tiro, transforma 1 sucesso normal de defesa em crítico."},{name:"Assalto de Choque",desc:"Após Carga, primeiro golpe em CaC ganha Shock e +1 dano (máx 7)."},{name:"Ira da Vingança",desc:"Ao contra-atacar, faz uma ação extra de 1 AP grátis (diferente da primeira)."}]},
+    limit: 6,
+    coreRule: {name:"Astartes", desc:"Cada operativo pode fazer 2 ações de Tiro ou 2 de Luta na mesma ativação. Se forem 2 de Tiro, uma arma bolter deve ser usada em pelo menos uma; se for bolt sniper rifle ou heavy bolter, a segunda ação custa +1 AP. Pode contra-atacar independente da ordem."},
+    ploys: {
+      strategy: [
+        {name:"Doutrina de Combate", desc:"Escolha Devastador, Tático ou Assalto — unidades ganham re-roll de 1 dado de ataque na situação escolhida neste turno."},
+        {name:"Eles Não Temem", desc:"Ignora mudanças de status (inclusive de armas) por estar ferido."},
+        {name:"Táticas Adaptativas", desc:"Troca a Chapter Tactic secundária até o fim do turno."},
+        {name:"Indomitus", desc:"Se o inimigo errar 2+ dados ao te atirar, descarta uma falha e transforma outra em sucesso."},
+      ],
+      firefight: [
+        {name:"Ajustar Doutrina", desc:"Muda a Doutrina de Combate escolhida antes, durante a ativação de uma unidade."},
+        {name:"Fisiologia Transumana", desc:"Ao ser alvo de tiro, transforma 1 sucesso normal de defesa em crítico."},
+        {name:"Assalto de Choque", desc:"Após Carga, primeiro golpe em CaC ganha Shock e +1 dano (máx 7)."},
+        {name:"Ira da Vingança", desc:"Ao contra-atacar, faz uma ação extra de 1 AP grátis (diferente da primeira)."},
+      ],
+    },
     operatives: [
-      // Leaders — escolha apenas 1
       { id:'kt-aod-captain', name:'Space Marine Captain', unique:true,
-        M:'6"', APL:2, GA:1, DF:3, SV:3, W:15,
-        abilities:'LÍDER. Heroic Leader: 1x/turno usa um Firefight Ploy grátis ou ativa Combat Doctrine de graça. Iron Halo: 1x/batalha ignora um dano normal sofrido.',
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:'Heroic Leader', desc:'1x por turno, pode fazer um dos três: usar um Firefight Ploy de graça (exceto Command Re-roll) se for o operativo específico; usar o Ploy Doutrina de Combate de graça se estiver em campo e longe de inimigos (não pode repetir se já usou esse ploy no turno); usar o Ploy Ajustar Doutrina de graça na mesma condição.'},
+          {name:'Iron Halo', desc:'1x por batalha, quando um dado de ataque causar dano Normal neste operativo, pode ignorar aquele dano.'},
+        ],
         weapons:[
-          { name:'Pistola de Plasma', A:4, skill:3, D:3, CD:5, range:'short' },
-          { name:'Punho de Força',    A:5, skill:3, D:5, CD:7, range:'melee', tags:['Brutal'] },
+          { name:'Pistola de Plasma', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
+          { name:'Punho de Força', A:5, skill:3, D:5, CD:7, range:'melee', tags:['Brutal'] },
         ]},
       { id:'kt-aod-asgt', name:'Assault Intercessor Sergeant', unique:true,
-        M:'6"', APL:2, GA:1, DF:3, SV:3, W:15,
-        abilities:'LÍDER. Astartes: 2 ações de Tiro ou 2 de Luta por ativação. Escolha um item entre Lança-chamas de mão ou Pistola Bolter Pesada, mais uma arma corpo a corpo.',
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:'Doctrine Warfare', desc:'1x por batalha cada: ao usar o Ploy Doutrina de Combate e escolher Assalto, custa 0CP se este operativo estiver em campo; o mesmo vale pra escolher Tático.'},
+          {name:'Chapter Veteran', desc:'No fim da etapa de seleção de operativos, se este for escolhido pra batalha, ganha uma Chapter Tactic adicional (não precisa ser a mesma em toda campanha/torneio).'},
+        ],
         weapons:[
-          { name:'Lança-chamas de Mão', A:4, skill:2, D:3, CD:3, range:'short', tags:['Torrent'] },
-          { name:'Martelo do Trovão',   A:5, skill:4, D:5, CD:6, range:'melee', tags:['Shock'] },
+          { name:'Lança-chamas de Mão', A:4, skill:2, D:3, CD:3, range:'short', tags:['Range 6"','Saturate','Torrent 1"'] },
+          { name:'Pistola Bolter Pesada', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing Crits 1'] },
+          { name:'Pistola de Plasma', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
+          { name:'Espada Sierra',     A:5, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Punho de Força',    A:5, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
+          { name:'Arma de Poder',     A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+          { name:'Martelo do Trovão', A:5, skill:4, D:5, CD:6, range:'melee', tags:['Shock','Stun'] },
         ]},
       { id:'kt-aod-isgt', name:'Intercessor Sergeant', unique:true,
-        M:'6"', APL:2, GA:1, DF:3, SV:3, W:15,
-        abilities:'LÍDER. Astartes: 2 ações de Tiro ou 2 de Luta por ativação. Combina bolt rifle preciso com armas corpo a corpo pesadas.',
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:'Doctrine Warfare', desc:'1x por batalha cada: ao usar o Ploy Doutrina de Combate e escolher Devastador, custa 0CP se este operativo estiver em campo; o mesmo vale pra escolher Tático.'},
+          {name:'Chapter Veteran', desc:'No fim da etapa de seleção de operativos, se este for escolhido pra batalha, ganha uma Chapter Tactic adicional.'},
+        ],
         weapons:[
-          { name:'Bolt Rifle', A:4, skill:3, D:3, CD:4, range:'long' },
-          { name:'Punho de Força', A:4, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
-        ]},
-      // Troopers
-      { id:'kt-aod-eliminator', name:'Eliminator Sniper', unique:true,
-        M:'7"', APL:2, GA:1, DF:3, SV:3, W:12,
-        abilities:'Camo Cloak + Stealthy: melhora saves em cobertura. Optics (1AP): inimigos não ficam obscurecidos até a próxima ativação.',
-        weapons:[
-          { name:'Bolt Sniper Rifle', A:4, skill:2, D:3, CD:4, range:'long', tags:['Silent','Heavy'] },
-          { name:'Pistola Bolter',    A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Bolter Automático', A:4, skill:3, D:3, CD:4, range:'long', tags:['Torrent 1"'] },
+          { name:'Bolt Rifle',        A:4, skill:3, D:3, CD:4, range:'long', tags:['Piercing Crits 1'] },
+          { name:'Rifle Bolter Stalker', range:'long', profiles:[
+            { name:'Pesado', A:4, skill:3, D:3, CD:5, tags:['Heavy (Dash only)','Lethal 5+','Piercing Crits 1'] },
+            { name:'Móvel',  A:4, skill:3, D:3, CD:4, tags:[] },
+          ]},
+          { name:'Espada Sierra',     A:4, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Punhos',            A:4, skill:3, D:3, CD:4, range:'melee' },
+          { name:'Punho de Força',    A:4, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
+          { name:'Arma de Poder',     A:4, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+          { name:'Martelo do Trovão', A:4, skill:4, D:5, CD:6, range:'melee', tags:['Shock','Stun'] },
         ]},
       { id:'kt-aod-grenadier', name:'Assault Intercessor Grenadier', unique:true,
-        M:'6"', APL:2, GA:1, DF:3, SV:3, W:14,
-        abilities:'Grenadier: pode usar granadas frag/krak sem gastar usos limitados, com +1 no Hit.',
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Grenadier', desc:'Pode usar granadas frag e krak (equipamento universal) sem contar pro limite de usos (mesmo se outro operativo também as escolheu). Ao usar, o Hit dessa arma melhora em 1.'},
+        ],
         weapons:[
-          { name:'Pistola Bolter Pesada', A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Espada de Força',       A:5, skill:3, D:4, CD:5, range:'melee' },
-        ]},
-      { id:'kt-aod-heavygunner', name:'Heavy Intercessor Gunner', unique:true,
-        M:'5"', APL:2, GA:1, DF:3, SV:3, W:18,
-        abilities:'O operativo mais resistente do time — 18 PV. Bolter pesado focado causa dano extra em alvos únicos.',
-        weapons:[
-          { name:'Bolter Pesado (Focado)', A:5, skill:3, D:4, CD:5, range:'long' },
-          { name:'Pistola Bolter',         A:4, skill:3, D:3, CD:4, range:'short' },
-        ]},
-      { id:'kt-aod-gunner', name:'Intercessor Gunner', unique:true,
-        M:'6"', APL:2, GA:1, DF:3, SV:3, W:14,
-        abilities:'Carrega lançador de granadas auxiliar — versátil contra grupos e alvos blindados.',
-        weapons:[
-          { name:'Bolt Rifle',              A:4, skill:3, D:3, CD:4, range:'long' },
-          { name:'Lançador de Granadas (Krak)', A:4, skill:3, D:4, CD:5, range:'long' },
-        ]},
-      { id:'kt-aod-awarrior', name:'Assault Intercessor Warrior', unique:false, count:5,
-        M:'6"', APL:2, GA:2, DF:3, SV:3, W:14,
-        abilities:'Astartes: 2 ações de Tiro ou 2 de Luta por ativação. Combatente corpo a corpo equilibrado.',
-        weapons:[
-          { name:'Pistola Bolter Pesada', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Pistola Bolter Pesada', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing Crits 1'] },
           { name:'Espada Sierra',         A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
-      { id:'kt-aod-iwarrior', name:'Intercessor Warrior', unique:false, count:5,
-        M:'6"', APL:2, GA:2, DF:3, SV:3, W:14,
-        abilities:'Astartes: 2 ações de Tiro ou 2 de Luta por ativação. O soldado padrão, confiável a médio e longo alcance.',
+      { id:'kt-aod-awarrior', name:'Assault Intercessor Warrior', unique:false, count:5,
+        M:'6"', APL:3, GA:2, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Astartes', desc:'Em cada ativação, pode fazer 2 ações de Tiro ou 2 de Luta (não uma de cada).'},
+        ],
         weapons:[
-          { name:'Bolt Rifle', A:4, skill:3, D:3, CD:4, range:'long' },
-          { name:'Punhos',     A:4, skill:3, D:3, CD:4, range:'melee' },
+          { name:'Pistola Bolter Pesada', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing Crits 1'] },
+          { name:'Espada Sierra',         A:5, skill:3, D:4, CD:5, range:'melee' },
+        ]},
+      { id:'kt-aod-heavygunner', name:'Heavy Intercessor Gunner', unique:true,
+        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
+        abilities:[
+          {name:'Resistência Pesada', desc:'Com 18 PV, é o operativo mais resistente do time.'},
+        ],
+        weapons:[
+          { name:'Pistola Bolter',    A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Bolter Pesado',     range:'long', profiles:[
+            { name:'Focado',    A:5, skill:3, D:4, CD:5, tags:['Piercing Crits 1'] },
+            { name:'Varredura', A:4, skill:3, D:4, CD:5, tags:['Piercing Crits 1','Torrent 1"'] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-aod-gunner', name:'Intercessor Gunner', unique:true,
+        M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Lançador de Granadas Auxiliar', desc:'Carrega granadas frag (área) e krak (perfurante) — versátil contra grupos e alvos blindados.'},
+        ],
+        weapons:[
+          { name:'Bolter Automático', A:4, skill:3, D:3, CD:4, range:'long', tags:['Torrent 1"'] },
+          { name:'Lançador de Granadas Auxiliar', range:'long', profiles:[
+            { name:'Frag', A:4, skill:3, D:2, CD:4, tags:['Blast 2"'] },
+            { name:'Krak', A:4, skill:3, D:4, CD:5, tags:['Piercing 1'] },
+          ]},
+          { name:'Bolt Rifle', A:4, skill:3, D:3, CD:4, range:'long', tags:['Piercing Crits 1'] },
+          { name:'Rifle Bolter Stalker', range:'long', profiles:[
+            { name:'Pesado', A:4, skill:3, D:3, CD:5, tags:['Heavy (Dash only)','Lethal 5+','Piercing Crits 1'] },
+            { name:'Móvel',  A:4, skill:3, D:3, CD:4, tags:[] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-aod-iwarrior', name:'Intercessor Warrior', unique:false, count:5,
+        M:'6"', APL:3, GA:2, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Astartes', desc:'Em cada ativação, pode fazer 2 ações de Tiro ou 2 de Luta (não uma de cada).'},
+        ],
+        weapons:[
+          { name:'Bolter Automático', A:4, skill:3, D:3, CD:4, range:'long', tags:['Torrent 1"'] },
+          { name:'Bolt Rifle',        A:4, skill:3, D:3, CD:4, range:'long', tags:['Piercing Crits 1'] },
+          { name:'Rifle Bolter Stalker', range:'long', profiles:[
+            { name:'Pesado', A:4, skill:3, D:3, CD:5, tags:['Heavy (Dash only)','Lethal 5+','Piercing Crits 1'] },
+            { name:'Móvel',  A:4, skill:3, D:3, CD:4, tags:[] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-aod-eliminator', name:'Eliminator Sniper', unique:true,
+        M:'7"', APL:3, GA:1, DF:3, SV:3, W:12,
+        abilities:[
+          {name:'Camo Cloak', desc:'Ao ser alvo de tiro, ignora a regra Saturate. Este operativo tem a Chapter Tactic Stealthy; se você a escolheu, pode usar as duas opções dela ao mesmo tempo (retém 2 saves de cobertura — 1 normal e 1 crítico).'},
+          {name:'Optics', ap:'1AP', desc:'Até o início da próxima ativação deste operativo, sempre que ele estiver atirando, inimigos não podem ficar obscurecidos. Não pode ser feito perto de inimigo.'},
+        ],
+        weapons:[
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Bolt Sniper Rifle', range:'long', profiles:[
+            { name:'Executioner', A:4, skill:2, D:3, CD:4, tags:['Heavy (Dash only)','Saturate','Seek Light','Silent'] },
+            { name:'Hyperfrag',   A:4, skill:2, D:2, CD:4, tags:['Blast 1"','Heavy (Dash only)','Silent'] },
+            { name:'Mortis',      A:4, skill:2, D:3, CD:3, tags:['Devastating 3','Heavy (Dash only)','Piercing 1','Silent'] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
     ]
   },
-
   // ── NEMESIS CLAW (Night Lords - Chaos Space Marines) ─
   {
     id:'kt-nemesisclaw', name:'Nemesis Claw', faction:'Chaos Space Marines',
     color:'#8b5cf6', emoji:'🦇',
     desc:'Night Lords mestres do terror — usam medo e escuridão como armas antes mesmo do combate começar. Punem operativos feridos com brutalidade extra.',
     style:'Terror · Versátil',
-    limit: 6, // 1 líder + 5 tropas
-    coreRule:{name:"Vestidos de Meia-Noite",desc:"Fica obscurecido ao ser alvo se estiver a mais de 8\" do inimigo E perto de terreno pesado — furtividade natural dos Night Lords."},
-    ploys:{strategy:[{name:"Visão da Presa",desc:"Ao atirar, arma ganha alcance 6\" extra e ignora a regra Seek Light."},{name:"Retorno às Trevas",desc:"Um operativo recua/reposiciona grátis, terminando perto de terreno pesado."},{name:"A Caçada Negra",desc:"Contra inimigo ferido, re-rola 1 dado de ataque em qualquer ação."},{name:"Viemos Buscar Você",desc:"Se a primeira ação da ativação for Carga, causa D3 dano extra ao terminar o movimento."}],firefight:[{name:"Lutador Sujo",desc:"Ao revidar, resolve 1 sucesso antes da ordem normal."},{name:"Morte ao Falso Imperador",desc:"Contra alvo Imperium, ganha Ceaseless (ou Relentless se for Astartes) na sequência."},{name:"Propensão ao Assassinato",desc:"Após incapacitar um inimigo, faz Carga ou Dash grátis."},{name:"Grito de Vox",desc:"Rola 1D6 contra o APL do próximo inimigo a ativar — se vencer, ele não pode ativar neste turno."}]},
+    limit: 6,
+    coreRule: {name:"Vestidos de Meia-Noite", desc:"Fica obscurecido ao ser alvo se estiver a mais de 8\" do inimigo E perto de terreno pesado — furtividade natural dos Night Lords."},
+    ploys: {
+      strategy: [
+        {name:"Visão da Presa", desc:"Ao atirar, arma ganha alcance 6\" extra e ignora a regra Seek Light."},
+        {name:"Retorno às Trevas", desc:"Um operativo recua/reposiciona grátis, terminando perto de terreno pesado."},
+        {name:"A Caçada Negra", desc:"Contra inimigo ferido, re-rola 1 dado de ataque em qualquer ação."},
+        {name:"Viemos Buscar Você", desc:"Se a primeira ação da ativação for Carga, causa D3 dano extra ao terminar o movimento."},
+      ],
+      firefight: [
+        {name:"Lutador Sujo", desc:"Ao revidar, resolve 1 sucesso antes da ordem normal."},
+        {name:"Morte ao Falso Imperador", desc:"Contra alvo Imperium, ganha Ceaseless (ou Relentless se for Astartes) na sequência."},
+        {name:"Propensão ao Assassinato", desc:"Após incapacitar um inimigo, faz Carga ou Dash grátis."},
+        {name:"Grito de Vox", desc:"Rola 1D6 contra o APL do próximo inimigo a ativar — se vencer, ele não pode ativar neste turno."},
+      ],
+    },
     operatives: [
       { id:'kt-nc-visionary', name:'Visionary', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:'LÍDER · PSYKER. In Midnight Clad: fica obscurecido se longe e perto de terreno pesado. Premonition (1AP): gasta ponto de Presciência para ganhar 1CP.',
+        abilities:[
+          {name:'LÍDER · PSYKER', desc:'Este operativo é o líder do time e tem palavra-chave Psyker.'},
+          {name:'Prescience', desc:'No início de cada Strategy Phase, ganha D3 pontos de Presciência (descartados no fim do turno). Foreboding: gasta 1 ponto pra pular a ativação de um operativo inimigo. Portent: gasta 1 ponto pra ignorar um dano Normal recebido. Cada regra só pode ser usada 1x por turno, e nenhuma funciona se este operativo estiver incapacitado.'},
+          {name:'Premonition', ap:'1AP', desc:'Psychic. Gasta 1 ponto de Presciência pra ganhar 1CP. Não pode ser feito perto de inimigo, nem mais de 1x por turno.'},
+        ],
         weapons:[
-          { name:'Pistola Bolter',        A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Lâmina Nostramana',     A:5, skill:3, D:4, CD:5, range:'melee' },
-          { name:'Punho de Força',        A:5, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Pistola de Plasma', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
+          { name:'Lâmina Nostramana', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
+          { name:'Punho de Força',    A:5, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
+          { name:'Malho de Poder',    A:5, skill:3, D:4, CD:6, range:'melee', tags:['Shock'] },
+          { name:'Arma de Poder',     A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
         ]},
       { id:'kt-nc-fearmonger', name:'Fearmonger', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Terrorchem: críticos envenenam o alvo — ele sofre 1D3 dano extra ao ser ativado. Poison Objective (1AP): envenena objetivo controlado.',
+        abilities:[
+          {name:'Terrorchem', desc:'Se causar dano com algum sucesso crítico (inclusive via Devastating), o alvo ganha um marcador de Terrorchem (se ainda não tiver um).'},
+          {name:'Terrorchem Poison', desc:'Sempre que um operativo marcado com Terrorchem for ativado, sofre D3 de dano.'},
+          {name:'Poison Objective', ap:'1AP', desc:'Escolhe um marcador de objetivo que este operativo controla pra ganhar um marcador de Terrorchem. Não pode ser um objetivo no alcance de controle inimigo, nem um que já tenha o marcador. A primeira vez que um inimigo sem Terrorchem disputar aquele objetivo, ele ganha o marcador e sofre 2D3 de dano. Não pode ser feito perto de inimigo.'},
+        ],
         weapons:[
-          { name:'Pistola Bolter Mirada', A:4, skill:3, D:3, CD:4, range:'short', tags:['Lethal 5+'] },
-          { name:'Lâmina Envenenada',     A:5, skill:3, D:3, CD:5, range:'melee' },
+          { name:'Pistola Bolter Mirada', range:'short', profiles:[
+            { name:'Curto Alcance', A:4, skill:3, D:3, CD:4, tags:['Range 8"','Lethal 5+'] },
+            { name:'Longo Alcance', A:4, skill:3, D:3, CD:4, tags:[] },
+          ]},
+          { name:'Vial de Terrorchem', A:5, skill:3, D:2, CD:0, range:'short', tags:['Range 6"','Blast 2"','Devastating 3','Limited 1','Saturate','Terrorchem'] },
+          { name:'Lâmina Contaminada', A:5, skill:3, D:3, CD:5, range:'melee', tags:['Terrorchem'] },
         ]},
       { id:'kt-nc-gunner', name:'Gunner', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Astartes: 2 ações de Tiro ou 2 de Luta por ativação. Especialista em armas de assalto pesadas.',
+        abilities:[
+          {name:'Astartes', desc:'Em cada ativação, pode fazer 2 ações de Tiro ou 2 de Luta (não uma de cada). Especialista em armas de assalto pesadas.'},
+        ],
         weapons:[
-          { name:'Meltagun',       A:4, skill:3, D:6, CD:3, range:'short', tags:['Melta'] },
           { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Lança-chamas',   A:4, skill:2, D:3, CD:3, range:'short', tags:['Range 8"','Saturate','Torrent 2"'] },
+          { name:'Meltagun',       A:4, skill:3, D:6, CD:3, range:'short', tags:['Range 6"','Devastating 4','Piercing 2'] },
+          { name:'Plasma Gun', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:4, CD:6, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:5, CD:6, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
       { id:'kt-nc-heavygunner', name:'Heavy Gunner', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Bolter pesado focado é devastador contra alvos únicos a longa distância.',
+        abilities:[
+          {name:'Armamento Pesado', desc:'Bolter pesado e lançador de mísseis — devastador contra alvos únicos ou grupos a longa distância.'},
+        ],
         weapons:[
-          { name:'Bolter Pesado (Focado)', A:5, skill:3, D:4, CD:5, range:'long' },
-          { name:'Pistola Bolter',         A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Bolter Pesado', range:'long', profiles:[
+            { name:'Focado',    A:5, skill:3, D:4, CD:5, tags:['Heavy (Reposition only)','Piercing Crits 1'] },
+            { name:'Varredura', A:4, skill:3, D:4, CD:5, tags:['Heavy (Reposition only)','Piercing Crits 1','Torrent 1"'] },
+          ]},
+          { name:'Lançador de Mísseis', range:'long', profiles:[
+            { name:'Frag', A:4, skill:3, D:3, CD:5, tags:['Blast 2"','Heavy (Reposition only)'] },
+            { name:'Krak', A:4, skill:3, D:5, CD:7, tags:['Heavy (Reposition only)','Piercing 1'] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
       { id:'kt-nc-screecher', name:'Screecher', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Appetite For Cruelty: contra inimigos feridos, garras relâmpago ficam ainda mais letais. Screecher: inimigos próximos não podem re-rolar dados de ataque.',
+        abilities:[
+          {name:'Screecher', desc:'Sempre que um operativo inimigo a até 3" deste estiver atirando, lutando ou revidando, o oponente não pode re-rolar seus dados de ataque.'},
+          {name:'Appetite for Cruelty', desc:'Ao lutar contra um inimigo ferido, as garras relâmpago ganham a regra Lethal 4+.'},
+        ],
         weapons:[
           { name:'Garras Relâmpago', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Ceaseless','Lethal 5+'] },
         ]},
       { id:'kt-nc-skinthief', name:'Skinthief', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Tyrant Of The Skinning Pits: reduz em 1 dano de ataques de 3+ contra ele em combate. Flay Them Alive: incapacita e impede objetivo inimigo próximo.',
+        abilities:[
+          {name:'Flay Them Alive', desc:'1x por turno, ao incapacitar um inimigo no alcance de controle, escolhe outro inimigo visível a até 6" — até o início do próximo turno, ele não pode controlar marcadores nem fazer as ações Pegar Marcador ou de missão.'},
+          {name:'Tyrant of the Skinning Pits', desc:'Ao lutar ou revidar, dano Normal ou Crítico de 3+ recebido é reduzido em 1.'},
+        ],
         weapons:[
-          { name:'Foice Nostramana', A:5, skill:3, D:4, CD:6, range:'melee' },
-          { name:'Pistola Bolter',   A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Pistola Bolter',     A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Foice Nostramana',   A:5, skill:3, D:4, CD:6, range:'melee', tags:['Rending'] },
         ]},
       { id:'kt-nc-ventrilokar', name:'Ventrilokar', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'PSYKER. Disconcerting Mimicry (1AP): reduz APL de inimigo, muda sua ordem, ou força um dash. Icon Bearer: conta como +1 APL para controlar marcadores.',
+        abilities:[
+          {name:'PSYKER', desc:'Este operativo tem palavra-chave Psyker.'},
+          {name:'Icon Bearer', desc:'Ao determinar controle de marcador, o APL deste operativo é tratado como 1 a mais (cumulativo com outras mudanças).'},
+          {name:'Disconcerting Mimicry', ap:'1AP', desc:'Psychic. Escolhe um inimigo a até 6": -1 no APL dele até o fim da próxima ativação; OU troca a ordem dele; OU faz um Dash grátis com ele (você escolhe o destino). Cada opção só 1x por batalha. Não pode ser feito perto de inimigo.'},
+        ],
         weapons:[
-          { name:'Espada Sierra',  A:5, skill:3, D:4, CD:5, range:'melee' },
           { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Espada Sierra',  A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-nc-warrior', name:'Warrior', unique:false, count:5,
         M:'6"', APL:3, GA:2, DF:3, SV:3, W:14,
-        abilities:'Cruel Tormentor: contra inimigos feridos ou frágeis (7 PV ou menos), armas ganham Lethal 5+.',
+        abilities:[
+          {name:'Cruel Tormenter', desc:'Ao atirar, lutar ou revidar contra um inimigo ferido, ou com PV total de 7 ou menos, as armas deste operativo ganham Lethal 5+.'},
+        ],
         weapons:[
-          { name:'Boltgun',   A:4, skill:3, D:3, CD:4, range:'long' },
-          { name:'Espada Sierra', A:5, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Boltgun',        A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Espada Sierra',  A:5, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Punhos',         A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
     ]
   },
-
   // ── DEATHWATCH (Space Marines) ──────────────────────
   {
     id:'kt-deathwatch', name:'Deathwatch', faction:'Space Marines',
@@ -5845,7 +6153,7 @@ const KT_TEAMS = [
     desc:'Elite de caçadores de xenos reunidos de vários Capítulos. Armas altamente especializadas e adaptáveis para qualquer inimigo alienígena.',
     style:'Elite · Versátil',
     limit: 5,
-    coreRule: {name:"Veteran Astartes", desc:"Cada operativo pode fazer 2 ações de Tiro ou 2 de Luta na mesma ativação. Pode contra-atacar independente da ordem, com 1 ação bônus de 1AP (desde que seja diferente da primeira)."},
+    coreRule: {name:"Veteran Astartes", desc:"Cada operativo pode fazer 2 ações de Tiro ou 2 de Luta na mesma ativação. Pode contra-atacar independente da ordem."},
     ploys: {
       strategy: [
         {name:"Táticas de Missão", desc:"Escolha Conceal ou Engage — suas armas ganham Balanced contra inimigos com essa ordem."},
@@ -5863,87 +6171,142 @@ const KT_TEAMS = [
     operatives: [
       { id:'kt-dw-sergeant', name:'Watch Sergeant', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:'LÍDER. Comando Estratégico: 1x/batalha usa um Strategy Ploy de graça e 1x/batalha usa um Firefight Ploy de graça.',
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:'Adaptable Armoury', desc:'Pode escolher 1 opção adicional de equipamento.'},
+          {name:'Strategic Command', desc:'1x por batalha cada, se este operativo estiver em campo: usa um Strategy Ploy Deathwatch de graça; usa um Firefight Ploy Deathwatch de graça.'},
+        ],
         weapons:[
           { name:'Pistola de Plasma', range:'short', profiles:[
-            { name:'Padrão',      A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
-            { name:'Sobrecarga',  A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
           ]},
-          { name:'Arma de Poder',     A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+          { name:'Arma de Poder', A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
         ]},
-      { id:'kt-dw-aegis', name:'Aegis', unique:true,
+      { id:'kt-dw-aegis', name:'Aegis Veteran', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:2, W:15,
-        abilities:'Escudo Tempestade: Piora Piercing recebido em 1 (Piercing 1 é ignorado). Cada bloqueio pode bloquear 2 sucessos não resolvidos.',
+        abilities:[
+          {name:'Shield', desc:'Ao lutar ou revidar com o Malho + Escudo Tempestade, cada bloqueio pode ser usado pra bloquear 2 sucessos não resolvidos (em vez de 1).'},
+          {name:'Storm Shield', desc:'Ao ser alvo de tiro, piora o valor X da regra Piercing em 1 (então Piercing 1 é totalmente ignorado).'},
+        ],
         weapons:[
-          { name:'Pistola Bolter',        A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Malho + Escudo Tempestade', A:5, skill:3, D:4, CD:6, range:'melee', tags:['Shock'] },
+          { name:'Pistola Bolter',            A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Malho + Escudo Tempestade',  A:5, skill:3, D:4, CD:6, range:'melee', tags:['Shock'] },
         ]},
-      { id:'kt-dw-blademaster', name:'Blademaster', unique:true,
+      { id:'kt-dw-blademaster', name:'Blademaster Veteran', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:'Esgrima Adaptativa: ignora mudanças no Hit da Lâmina Xenófase. Pode resolver 1 sucesso fora de ordem, mas deve ser usado para Bloquear.',
+        abilities:[
+          {name:'Adaptive Swordsmanship', desc:'Ignora mudanças no Hit da Lâmina Xenófase. Ao lutar ou revidar, pode resolver um dos seus sucessos antes da ordem normal — mas nesse caso ele deve ser usado pra Bloquear.'},
+          {name:'Phase Sweep', desc:'Ao lutar com o perfil Varredura de Fase, se não for incapacitado, pode fazer outra ação de Luta grátis logo em seguida — mas só contra cada inimigo no alcance de controle 1x por ativação ou contra-ataque com esse perfil. Continua fazendo ações grátis até ser incapacitado ou ter lutado contra todos os inimigos no alcance.'},
+        ],
         weapons:[
           { name:'Pistola Bolter Especial', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing 1'] },
-          { name:'Lâmina Xenófase',         A:5, skill:3, D:4, CD:6, range:'melee', tags:['Brutal','Lethal 5+'] },
+          { name:'Lâmina Xenófase', range:'melee', profiles:[
+            { name:'Duelo',        A:5, skill:3, D:4, CD:6, tags:['Brutal','Lethal 5+'] },
+            { name:'Varredura de Fase', A:4, skill:3, D:4, CD:6, tags:['Brutal','Lethal 5+'] },
+          ]},
         ]},
-      { id:'kt-dw-bombard', name:'Bombard', unique:true,
+      { id:'kt-dw-bombard', name:'Bombard Veteran', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
-        abilities:'GRAVIS (máx 1 no time). O mais resistente do time — 18 PV.',
+        abilities:[
+          {name:'GRAVIS', desc:'Armadura pesada Gravis — máximo 1 operativo Gravis por time. Com 18 PV, é um dos mais resistentes do time.'},
+        ],
         weapons:[
-          { name:'Canhão de Estilhaço', A:4, skill:3, D:5, CD:7, range:'short', tags:['Piercing 1'] },
-          { name:'Punhos',              A:4, skill:3, D:3, CD:4, range:'melee' },
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Canhão de Estilhaço', range:'short', profiles:[
+            { name:'Concha',    A:4, skill:3, D:5, CD:7, tags:['Piercing 1'] },
+            { name:'Estilhaço', A:5, skill:3, D:4, CD:5, tags:['Torrent 2"'] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
-      { id:'kt-dw-breacher', name:'Breacher', unique:true,
+      { id:'kt-dw-breacher', name:'Breacher Veteran', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
-        abilities:'GRAVIS (máx 1 no time). Especialista em arrombamento com granadas krak.',
+        abilities:[
+          {name:'GRAVIS', desc:'Armadura pesada Gravis — máximo 1 operativo Gravis por time.'},
+          {name:'Especialista em Arrombamento', desc:'Carrega granadas auxiliares e uma bomba de melta devastadora contra alvos blindados.'},
+        ],
         weapons:[
-          { name:'Lançador de Granadas (Krak)', A:4, skill:3, D:4, CD:5, range:'long', tags:['Piercing 1'] },
-          { name:'Punhos',                      A:4, skill:3, D:3, CD:4, range:'melee' },
+          { name:'Lançador de Granadas Auxiliar', range:'long', profiles:[
+            { name:'Frag', A:4, skill:3, D:2, CD:4, tags:['Blast 2"'] },
+            { name:'Krak', A:4, skill:3, D:4, CD:5, tags:['Piercing 1'] },
+          ]},
+          { name:'Rifle Bolter Hellstorm', A:4, skill:3, D:4, CD:5, range:'long', tags:['Torrent 1"'] },
+          { name:'Bomba de Melta', A:4, skill:3, D:5, CD:3, range:'short', tags:['Range 3"','Devastating 3','Heavy (Reposition only)','Limited 1','Piercing 2'] },
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
-      { id:'kt-dw-demolisher', name:'Demolisher', unique:true,
+      { id:'kt-dw-demolisher', name:'Demolisher Veteran', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:'Força Agressiva: dano de 3+ recebido em CaC é reduzido em 1. Ao Cargar, o martelo ganha Ceaseless.',
+        abilities:[
+          {name:'Brutal Assault', desc:'Ao lutar, o Martelo Pesado do Trovão ganha a regra Brutal. Ao fazer a ação Charge, ganha a regra Ceaseless até o fim da ativação/contra-ataque.'},
+          {name:'Aggressive Force', desc:'Ao lutar ou revidar, dano Normal ou Crítico de 3+ recebido é reduzido em 1. Não acumula com o Ploy Shield That Slays.'},
+        ],
         weapons:[
           { name:'Pistola Bolter',       A:4, skill:3, D:3, CD:4, range:'short' },
           { name:'Martelo Pesado do Trovão', A:5, skill:4, D:6, CD:7, range:'melee', tags:['Shock','Stun'] },
         ]},
-      { id:'kt-dw-disruptor', name:'Disruptor', unique:true,
+      { id:'kt-dw-disruptor', name:'Disruptor Veteran', unique:true,
         M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
-        abilities:'Omni-Scrambler: 1x/turno pode travar a ativação de um inimigo visível a até 6" por alguns turnos.',
+        abilities:[
+          {name:'Advanced Omni-Scrambler', desc:'Strategic Gambit. Escolhe um inimigo visível ou a até 6" e rola 1D6. Na Firefight Phase deste turno, aquele inimigo não pode ativar nem agir até que X inimigos tenham sido ativados (X = resultado do dado) ou até ser o último a ativar.'},
+          {name:'Auspex Triangulation', desc:'O Ploy Advanced Auspex Scan custa 0CP quando este operativo não está no alcance de controle de inimigo E o alvo do Tiro é visível a ele.'},
+        ],
         weapons:[
           { name:'Carabina Marksman', A:4, skill:3, D:3, CD:4, range:'long', tags:['Lethal 5+'] },
           { name:'Punhos',            A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
-      { id:'kt-dw-gunner', name:'Gunner', unique:true,
+      { id:'kt-dw-gunner', name:'Gunner Veteran', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:'Especialista em armas pesadas de plasma.',
+        abilities:[
+          {name:'Especialista em Plasma', desc:'Carrega o Incinerador de Plasma Pesado, com modo padrão e sobrecarga.'},
+        ],
         weapons:[
-          { name:'Incinerador de Plasma Pesado', A:5, skill:3, D:4, CD:6, range:'long', tags:['Piercing 1'] },
-          { name:'Punhos',                       A:4, skill:3, D:3, CD:4, range:'melee' },
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Incinerador de Plasma Pesado', range:'long', profiles:[
+            { name:'Padrão',     A:5, skill:3, D:4, CD:6, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:5, skill:3, D:5, CD:6, tags:['Hot','Lethal 5+','Piercing 1'] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
-      { id:'kt-dw-headtaker', name:'Headtaker', unique:true,
+      { id:'kt-dw-headtaker', name:'Headtaker Veteran', unique:true,
         M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
-        abilities:'Caçador Furtivo: pode Cargar mesmo com Conceal. Contra inimigo que não te viu, resolve 2 sucessos seguidos como golpe.',
+        abilities:[
+          {name:'Grav-chute e Lançador de Grapnel', desc:'Ao escalar, a distância vertical é sempre tratada como 2" (não importa a altura real). Ao cair, ignora a distância vertical.'},
+          {name:'Clandestine Headtaker', desc:'Pode fazer a ação Charge mesmo com ordem Conceal. Ao lutar contra um inimigo que não via no início da ativação/contra-ataque, na primeira vez que golpear naquela sequência, pode resolver outro dos seus sucessos como golpe imediatamente (antes do oponente agir).'},
+        ],
         weapons:[
           { name:'Pistola Bolter Especial', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing 1'] },
           { name:'Facas de Combate',        A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
-      { id:'kt-dw-hordeslayer', name:'Horde-Slayer', unique:true,
+      { id:'kt-dw-hordeslayer', name:'Horde-Slayer Veteran', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
-        abilities:'GRAVIS (máx 1 no time). Bolter pesado infernal, devastador contra grupos ou alvos únicos.',
+        abilities:[
+          {name:'GRAVIS', desc:'Armadura pesada Gravis — máximo 1 operativo Gravis por time. Com 18 PV, é um dos mais resistentes do time.'},
+          {name:'Bolter Pesado Infernal', desc:'Três modos de disparo — devastador contra grupos ou alvos únicos, a curta ou longa distância.'},
+        ],
         weapons:[
-          { name:'Bolter Pesado Infernal (Focado)', A:5, skill:3, D:4, CD:5, range:'long', tags:['Piercing Crits 1'] },
-          { name:'Punhos',                          A:4, skill:3, D:3, CD:4, range:'melee' },
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Bolter Pesado Infernal', range:'long', profiles:[
+            { name:'Chama',           A:5, skill:2, D:3, CD:3, tags:['Range 8"','Saturate','Torrent 2"'] },
+            { name:'Bolt Focado',     A:5, skill:3, D:4, CD:5, tags:['Piercing Crits 1'] },
+            { name:'Bolt Varredura',  A:4, skill:3, D:4, CD:5, tags:['Piercing Crits 1','Torrent 1"'] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
-      { id:'kt-dw-marksman', name:'Marksman', unique:true,
+      { id:'kt-dw-marksman', name:'Marksman Veteran', unique:true,
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:'Vigilância: pode usar Guard mesmo fora de zonas de combate próximo. Ótimo atirador de longa distância.',
+        abilities:[
+          {name:'Vigilant Marksman', desc:'Pode fazer a ação Guard durante sua ativação independente do tipo de zona de jogo (ver regras de combate próximo).'},
+          {name:'Guard Extra', desc:'Usando regras de combate próximo, 1x por turno, depois que este operativo fizer um Tiro grátis via Guard, pode imediatamente fazer outra ação Guard grátis — mas nesse caso não pode contra-atacar naquele turno (nem fazer Guard duas vezes se for contra-atacado).'},
+        ],
         weapons:[
-          { name:'Rifle Bolter Stalker', A:4, skill:3, D:3, CD:4, range:'long' },
-          { name:'Punhos',               A:4, skill:3, D:3, CD:4, range:'melee' },
+          { name:'Rifle Bolter Stalker', range:'long', profiles:[
+            { name:'Móvel',  A:4, skill:3, D:3, CD:4, tags:[] },
+            { name:'Pesado', A:4, skill:2, D:3, CD:5, tags:['Heavy (Dash only)','Lethal 5+','Piercing Crits 1'] },
+          ]},
+          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
     ]
   },
-
   // ── PLAGUE MARINES (Chaos - Death Guard) ────────────
   {
     id:'kt-plaguemarines', name:'Plague Marines', faction:'Chaos Space Marines',
@@ -5951,73 +6314,270 @@ const KT_TEAMS = [
     desc:'Filhos corrompidos de Mortarion, inchados de podridão e doença. Lentos mas horrivelmente resistentes, espalham contágio por onde passam.',
     style:'Resistente · Veneno',
     limit: 6,
-    coreRule: {name:"Disgustingly Resilient", desc:"Sempre que um dado de ataque causar 3+ de dano num Plague Marine, role 1D6: em 4+, reduz 1 do dano. Além disso, cada operativo pode fazer 2 ações de Tiro ou 2 de Luta por ativação (Astartes)."},
+    coreRule: {name:"Disgustingly Resilient", desc:"Sempre que um dado de ataque causar 3+ de dano num Plague Marine, role 1D6: em 4+, reduz 1 do dano. Astartes: cada operativo pode fazer 2 ações de Tiro ou 2 de Luta; se forem 2 de Tiro, pelo menos uma deve usar pistola bolter, boltgun ou arma Psíquica. Pode contra-atacar independente da ordem. Poison: armas com essa regra aplicam um marcador no alvo atingido — operativo marcado sofre 1 dano ao ser ativado."},
     ploys: {
       strategy: [
-        {name:"Nuvem de Moscas", desc:"Cria um marcador — Plague Marines a até 1\" dele ficam obscurecidos contra tiros de longe."},
-        {name:"Contágio", desc:"Inimigos com Poison ou perto do Icon Bearer têm -2\" de Move e pioram o Hit em 1."},
-        {name:"Morte Lenta", desc:"Se não se mover mais de 3\", suas armas ganham Ceaseless."},
-        {name:"Nurglings", desc:"Reduz o APL de um inimigo próximo em 1 até a próxima ativação dele."},
+        {name:"Contágio", desc:"Inimigo no alcance de controle de Plague Marines, ou visível e a até 3\" de um Icon Bearer, ou marcado com Poison e perto do time: -2\" de Move e piora o Hit em 1 (não acumula com ferimento)."},
+        {name:"Morte Lenta", desc:"Se não se moveu mais de 3\" na ativação (ou ao revidar), suas armas ganham Ceaseless."},
+        {name:"Nuvem de Moscas", desc:"Cria um marcador — Plague Marine totalmente dentro de 3\" dele fica obscurecido contra tiros de mais de 3\". Remove no próximo turno."},
+        {name:"Nurglings", desc:"Reduz o APL de um inimigo próximo (ou marcado com Poison a até 7\") em 1 até o fim da próxima ativação dele."},
       ],
       firefight: [
-        {name:"Maldição da Podridão", desc:"Cada resultado de 3 que o inimigo rolar contra você causa 1 dano extra e não conta como sucesso."},
-        {name:"Morte Venenosa", desc:"Ao ser incapacitado, contamina inimigos próximos com veneno."},
-        {name:"Resiliência Nauseante", desc:"Reduz automaticamente 1 do dano recebido (sem precisar rolar)."},
-        {name:"Veneno Virulento", desc:"Contamina um inimigo próximo com um marcador de Poison."},
+        {name:"Veneno Virulento", desc:"Antes ou depois de uma ação, aplica marcador de Poison num inimigo a até 3\"; ou rola 2D6 (7+) pra aplicar num inimigo a até 7\"."},
+        {name:"Morte Venenosa", desc:"Ao ser incapacitado, inimigos visíveis a até 3\" ganham marcador de Poison (ou sofrem 1 dano se já tinham)."},
+        {name:"Resiliência Nauseante", desc:"Ao sofrer dano, garante -1 no dano daquela sequência (mínimo 2) sem precisar rolar o D6 do Disgustingly Resilient."},
+        {name:"Maldição da Podridão", desc:"Contra inimigo próximo (3\", ou 7\" se marcado com Poison), cada resultado 3 que ele rolar em ataque/defesa vira falha e causa 1 dano nele, sem re-roll."},
       ],
     },
     operatives: [
       { id:'kt-pm-champion', name:'Champion', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:'LÍDER. Bênção do Avô: quando um inimigo envenenado perde PV perto dele, ele recupera até a mesma quantidade (máx 3/turno).',
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:"Grandfather's Blessing", desc:'Sempre que um inimigo marcado com Poison perder PV a até 7" deste operativo, ele recupera 1 PV perdido (máx 3 por turno, e só se não estiver incapacitado).'},
+          {name:'Toxic', desc:'A Espada da Peste: contra inimigo marcado com Poison, +1 em ambos os valores de Dano.'},
+        ],
         weapons:[
           { name:'Pistola de Plasma', range:'short', profiles:[
             { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
             { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
           ]},
-          { name:'Espada da Peste',   A:5, skill:3, D:4, CD:5, range:'melee', tags:['Severe'] },
+          { name:'Espada da Peste', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Severe','Poison','Toxic'] },
         ]},
       { id:'kt-pm-plaguecaster', name:'Malignant Plaguecaster', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'PSYKER. Miasma Venenoso (1AP): envenena ou causa 3 dano num inimigo. Vitalidade Pútrida (1AP): cura um aliado perto.',
+        abilities:[
+          {name:'PSYKER', desc:'Este operativo tem palavra-chave Psyker.'},
+          {name:'Miasma Venenoso', ap:'1AP', desc:'Psychic. Escolhe um inimigo visível a até 7" (ou alvo válido). Ele ganha um marcador de Poison; se já tinha um, sofre 3 dano em vez disso. Não pode ser feito perto de inimigo.'},
+          {name:'Vitalidade Pútrida', ap:'1AP', desc:'Psychic. Escolhe um aliado visível a até 3". Rola 2D6: se der 7, recupera 7 PV perdidos; senão, recupera PV igual ao maior D6. Não pode ser feito perto de inimigo.'},
+        ],
         weapons:[
-          { name:'Entropia',       A:4, skill:3, D:3, CD:7, range:'long', tags:['Saturate','Severe'] },
-          { name:'Cajado Corrompido', A:4, skill:3, D:3, CD:4, range:'melee', tags:['Severe','Shock','Stun'] },
+          { name:'Entropia',          A:4, skill:3, D:3, CD:7, range:'long', tags:['Range 7"','Saturate','Severe','Poison'] },
+          { name:'Vento da Peste',    A:6, skill:3, D:2, CD:3, range:'short', tags:['Saturate','Severe','Torrent 1"','Poison'] },
+          { name:'Cajado Corrompido', A:4, skill:3, D:3, CD:4, range:'melee', tags:['Severe','Shock','Stun','Poison'] },
         ]},
       { id:'kt-pm-bombardier', name:'Bombardier', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Granadeiro: usa granadas de peste e krak com +1 no Hit.',
+        abilities:[
+          {name:'Grenadier', desc:'Pode usar granadas de peste (blight) e krak sem contar pro limite de usos. Ao usar, o Hit dessa arma melhora em 1, e as granadas de peste ganham a regra Toxic.'},
+        ],
         weapons:[
           { name:'Boltgun', A:4, skill:3, D:3, CD:4, range:'long' },
           { name:'Punhos',  A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
       { id:'kt-pm-fighter', name:'Fighter', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Mangual (1AP): causa D3+2 dano em todos os operativos próximos e visíveis, envenenando inimigos.',
+        abilities:[
+          {name:'Mangual', ap:'1AP', desc:'Causa D3+2 dano em cada operativo visível e a até 2" deste (role separado pra cada). Se for inimigo, em resultado 3 também ganha marcador de Poison. Não pode ser feito com Conceal, nem numa ativação com mais de 1 ação de Luta — e essa ação impede outra ação de Luta na mesma ativação.'},
+        ],
         weapons:[
-          { name:'Pistola Bolter',  A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Mangual da Corrupção', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Brutal','Severe','Shock'] },
+          { name:'Mangual da Corrupção', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Brutal','Severe','Shock','Poison'] },
         ]},
       { id:'kt-pm-heavygunner', name:'Heavy Gunner', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Cuspidor de Peste — arma de área que sempre acerta.',
+        abilities:[
+          {name:'Cuspidor de Peste', desc:'Arma de área que envenena tudo ao redor do alvo.'},
+        ],
         weapons:[
-          { name:'Cuspidor de Peste', A:5, skill:2, D:3, CD:3, range:'short', auto:true, tags:['Saturate','Severe'] },
+          { name:'Cuspidor de Peste', A:5, skill:2, D:3, CD:3, range:'short', tags:['Range 7"','Saturate','Severe','Torrent 2"','Poison'] },
           { name:'Punhos',            A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
       { id:'kt-pm-iconbearer', name:'Icon Bearer', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Ícone da Contagião: perto do inimigo, o Ploy Contágio custa 0CP. Conta como APL +1 pra controlar marcadores.',
+        abilities:[
+          {name:'Icon Bearer', desc:'Ao determinar controle de marcador, o APL deste operativo é tratado como 1 a mais (cumulativo com outras mudanças).'},
+          {name:'Icon of Contagion', desc:'Enquanto este operativo estiver em campo, o Ploy Contágio custa 0CP.'},
+        ],
         weapons:[
           { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Faca da Peste',  A:5, skill:3, D:3, CD:4, range:'melee', tags:['Severe'] },
+          { name:'Faca da Peste',  A:5, skill:3, D:3, CD:4, range:'melee', tags:['Severe','Poison'] },
         ]},
       { id:'kt-pm-warrior', name:'Warrior', unique:true,
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
-        abilities:'Fortitude Repulsiva: ao ser alvo, dados de defesa de 5+ são críticos.',
+        abilities:[
+          {name:'Repulsive Fortitude', desc:'Ao ser alvo de tiro, dados de defesa com resultado 5+ são sucessos críticos.'},
+          {name:'Toxic', desc:'O Boltgun: contra inimigo marcado com Poison, +1 em ambos os valores de Dano.'},
+        ],
         weapons:[
+          { name:'Boltgun',       A:4, skill:3, D:3, CD:4, range:'long', tags:['Toxic'] },
+          { name:'Faca da Peste', A:4, skill:3, D:3, CD:4, range:'melee', tags:['Severe','Poison'] },
+        ]},
+    ]
+  },
+  // ── BLOODED (Chaos - Traitor Guard) ─────────────────
+  {
+    id:'kt-blooded', name:'Blooded', faction:'Chaos',
+    color:'#991b1b', emoji:'🩸',
+    desc:'Guardas Imperiais renegados que se entregaram ao Caos. Buscam a atenção dos Deuses Sombrios matando os inimigos mais fortes — até seus próprios aliados são sacrificáveis.',
+    style:'Horda · Sacrifício',
+    limit: 14,
+    coreRule: {name:"Marcadores Blooded", desc:"Ganha 1 marcador Blooded: no início de cada turno; na 1ª vez que um inimigo for incapacitado no turno; na 1ª vez que um aliado for incapacitado a até 6\" de inimigo no turno. Como Strategic Gambit, atribui marcadores livres a operativos Blooded (máx 1 cada). Se 4+ operativos em campo tiverem marcador, escolha 1 pra ficar sob o OLHAR DOS DEUSES até o fim do turno. Operativo com marcador: armas ganham Accurate 1 (e se estiver sob o Olhar, pode reter esse sucesso como crítico)."},
+    ploys: {
+      strategy: [
+        {name:"Glory Kill", desc:"Escolhe um inimigo visível — até o fim do turno, Blooded que atirar/lutar/revidar contra ele ganha Ceaseless (ou Relentless se tiver marcador)."},
+        {name:"Reckless Aspirant", desc:"Blooded sem marcador totalmente no território inimigo ganha Accurate 1 ao atirar/lutar. Com marcador, ganha Punishing em vez disso."},
+        {name:"Malevolent Grit", desc:"Ao ser alvo de tiro, se tiver marcador ou estiver no território inimigo, re-rola 1 dado de defesa."},
+        {name:"Bitter Demise", desc:"Ao ser incapacitado, rola 1D3: em 3 (ou 2+ com marcador), causa esse tanto de dano num inimigo visível a até 2\"."},
+      ],
+      firefight: [
+        {name:"Callous Disregard", desc:"Ao escolher alvo pra Atirar, ignora a proteção de aliados Blooded no alcance de controle do inimigo — mas cada falha descartada causa dano num aliado seu perto do alvo."},
+        {name:"Moment of Repute", desc:"Durante a ativação de um Blooded sob o Olhar dos Deuses, +1 no APL até o fim da ativação."},
+        {name:"Reward Earned", desc:"Ao incapacitar um inimigo com um Blooded marcado a até 2\", ganha 1 marcador Blooded."},
+        {name:"Dark Favour", desc:"Se um Blooded marcado for escolhido como alvo, troca por outro Blooded aliado visível a até 3\" (não funciona contra Blast/Torrent)."},
+      ],
+    },
+    operatives: [
+      { id:'kt-bl-chieftain', name:'Traitor Chieftain', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:8,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:'Blooded Icon', desc:'1x por turno, quando um Blooded aliado marcado for incapacitado a até 6" deste operativo, pode recuperar aquele marcador.'},
+          {name:'Lead With Strength', desc:'Enquanto tiver marcador Blooded e estiver totalmente no território inimigo, é tratado como se estivesse sob o Olhar dos Deuses.'},
+        ],
+        weapons:[
+          { name:'Autopistola',   A:4, skill:3, D:2, CD:3, range:'short' },
+          { name:'Pistola Laser', A:4, skill:3, D:2, CD:3, range:'short' },
+          { name:'Pistola Bolter',A:4, skill:3, D:3, CD:4, range:'short' },
           { name:'Boltgun',       A:4, skill:3, D:3, CD:4, range:'long' },
-          { name:'Faca da Peste', A:4, skill:3, D:3, CD:4, range:'melee', tags:['Severe'] },
+          { name:'Pistola de Plasma', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
+          { name:'Baioneta',        A:3, skill:3, D:2, CD:3, range:'melee' },
+          { name:'Espada Sierra',   A:4, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Lâmina Improvisada', A:4, skill:3, D:2, CD:3, range:'melee' },
+          { name:'Arma de Poder',   A:4, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-bl-grenadier', name:'Brimstone Grenadier', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:7,
+        abilities:[
+          {name:'Grenadier', desc:'Pode usar granadas frag/krak sem contar pro limite de usos. Ao usar, o Hit dessa arma melhora em 1.'},
+          {name:'Explosive Demise', desc:'Se for incapacitado, pode rolar 2D6 (ou 1D6 se estiver no alcance de controle inimigo): em 4+, causa D3+2 dano em todos visíveis e a até 2". Se ainda não usou a bomba diabolyk na batalha, causa D6+2 em vez disso.'},
+        ],
+        weapons:[
+          { name:'Bomba Diabolyk', A:4, skill:3, D:4, CD:3, range:'short', tags:['Range 6"','Blast 2"','Devastating 2','Limited 1','Heavy (Reposition only)','Piercing 1','Saturate'] },
+          { name:'Lasgun',   A:4, skill:4, D:2, CD:3, range:'long' },
+          { name:'Baioneta', A:3, skill:4, D:2, CD:3, range:'melee' },
+        ]},
+      { id:'kt-bl-butcher', name:'Butcher', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:8,
+        abilities:[
+          {name:'Unholy Sustenance', desc:'Ao lutar ou revidar, se incapacitar o inimigo naquela sequência, recupera até D3 PV perdidos.'},
+          {name:'Blood Offering', desc:'Ao lutar ou revidar com a arma, na primeira vez que golpear com crítico naquela sequência, ganha 1 marcador Blooded.'},
+        ],
+        weapons:[
+          { name:'Arma de Poder e Facão', A:4, skill:3, D:4, CD:6, range:'melee', tags:['Ceaseless','Lethal 5+'] },
+        ]},
+      { id:'kt-bl-commsman', name:'Commsman', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:7,
+        abilities:[
+          {name:'Signal', ap:'1AP', desc:'Apoio: escolhe outro Blooded aliado visível a até 6" (exceto Ogryn). Até o fim da próxima ativação dele, +1 no APL. Não pode ser feito perto de inimigo.'},
+          {name:'Sacrilegious Actuation', ap:'1AP', desc:'Ganha 1 marcador Blooded. Não pode ser feito perto de inimigo, nem sem ter um marcador Blooded.'},
+        ],
+        weapons:[
+          { name:'Lasgun',   A:4, skill:4, D:2, CD:3, range:'long' },
+          { name:'Baioneta', A:3, skill:4, D:2, CD:3, range:'melee' },
+        ]},
+      { id:'kt-bl-corpseman', name:'Corpseman', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:7,
+        abilities:[
+          {name:'Regular Dosage', desc:'No fim da seleção de operativos, se escolhido pra batalha, pode dar a outro Blooded aliado uma regra STIMM pra batalha (exceto Rejuvenado).'},
+          {name:'Stimms', ap:'1AP', desc:'Escolhe um Blooded aliado no alcance de controle: Rejuvenado (recupera 2D3 PV) ou outra regra STIMM (Enraivecido: armas CaC ganham Relentless; Fortificado: dano de 3+ recebido, em 5+ no D6, reduz 1). Cada regra só 1x por operativo por batalha. Não pode ser feito perto de inimigo.'},
+        ],
+        weapons:[
+          { name:'Lasgun',        A:4, skill:4, D:2, CD:3, range:'long' },
+          { name:'Baioneta',      A:3, skill:4, D:2, CD:3, range:'melee' },
+          { name:'Agulha Stimm',  A:3, skill:5, D:1, CD:4, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-bl-enforcer', name:'Enforcer', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:4, W:9,
+        abilities:[
+          {name:'Conta como 2 seleções', desc:'Ocupa 2 vagas do grupo de suporte na composição do time.'},
+          {name:'Gruelling Disciplinarian', desc:'Blooded aliados a até 6" ignoram mudanças de status por ferimento (inclusive das armas).'},
+          {name:'Enforce', ap:'1AP', desc:'Escolhe outro Blooded aliado visível a até 3": ele faz uma ação de 1AP grátis na hora (máx 2" de movimento). Se for um Commsman, não pode usar Sacrilegious Actuation nem Signal nessa ação. Não pode ser feito perto de inimigo.'},
+        ],
+        weapons:[
+          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
+          { name:'Punho de Força', A:4, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
+        ]},
+      { id:'kt-bl-flenser', name:'Flenser', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:7,
+        abilities:[
+          {name:'Stalk', desc:'Ao lutar ou revidar com as lâminas, se houver terreno Leve ou Pesado no alcance de controle, a arma ganha Lethal 5+.'},
+          {name:'Wretched', desc:'Pode Cargar mesmo com ordem Conceal. Se for incapacitado durante uma ação de Luta, pode golpear o inimigo daquela sequência com um sucesso não resolvido antes de sair de campo.'},
+        ],
+        weapons:[
+          { name:'Lâminas de Esfola', A:4, skill:3, D:3, CD:4, range:'melee', tags:['Ceaseless'] },
+        ]},
+      { id:'kt-bl-gunner', name:'Gunner', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:7,
+        abilities:[
+          {name:'Arsenal Roubado', desc:'Carrega uma arma pesada roubada de vítimas — lança-chamas, lançador de granadas, meltagun ou plasma gun (escolha 1 pra batalha; só 1 operativo do time pode ter arma de plasma).'},
+        ],
+        weapons:[
+          { name:'Lança-chamas', A:4, skill:2, D:3, CD:3, range:'short', tags:['Range 8"','Saturate','Torrent 2"'] },
+          { name:'Lançador de Granadas', range:'short', profiles:[
+            { name:'Frag', A:4, skill:4, D:2, CD:4, tags:['Blast 2"'] },
+            { name:'Krak', A:4, skill:4, D:4, CD:5, tags:['Piercing 1'] },
+          ]},
+          { name:'Meltagun', A:4, skill:4, D:6, CD:3, range:'short', tags:['Range 6"','Devastating 4','Piercing 2'] },
+          { name:'Plasma Gun', range:'short', profiles:[
+            { name:'Padrão',     A:4, skill:4, D:4, CD:6, tags:['Piercing 1'] },
+            { name:'Sobrecarga', A:4, skill:4, D:5, CD:6, tags:['Piercing 1','Hot','Lethal 5+'] },
+          ]},
+          { name:'Baioneta', A:3, skill:4, D:2, CD:3, range:'melee' },
+        ]},
+      { id:'kt-bl-ogryn', name:'Ogryn', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:16,
+        abilities:[
+          {name:'Conta como 2 seleções', desc:'Ocupa 2 vagas do grupo de suporte na composição do time. Com 16 PV, é o mais resistente do time.'},
+          {name:'Avalanche of Muscle', desc:'Ao terminar o movimento de uma Carga, pode causar D3 dano num inimigo no alcance de controle.'},
+          {name:'Chem-enhanced', desc:'Ignora mudanças no APL; não é afetado pelas regras Shock e Stun de armas inimigas.'},
+          {name:'Brute', desc:'Se estiver com ordem Conceal, não pode usar terreno Leve como cobertura ao ser escolhido como alvo (mas mantém o save de cobertura se tiver outro).'},
+          {name:'Slow-witted', desc:'Gasta 1 AP a mais nas ações Pegar Marcador e ações de missão (exceto Operar Escotilha).'},
+        ],
+        weapons:[
+          { name:'Malho de Poder e Garra Mutante', A:4, skill:3, D:5, CD:6, range:'melee', tags:['Rending','Shock'] },
+        ]},
+      { id:'kt-bl-sharpshooter', name:'Sharpshooter', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:7,
+        abilities:[
+          {name:'Camo Cloak', desc:'Ao ser alvo de tiro, se puder reter save de cobertura, pode reter um adicional (não acumula com terreno Vantage).'},
+          {name:'A Name Whispered In Blood', desc:'Strategic Gambit no 1º turno: escolhe um inimigo — sempre que atirar nele, este operativo é tratado como se tivesse marcador Blooded e estivesse sob o Olhar dos Deuses.'},
+        ],
+        weapons:[
+          { name:'Long-las', range:'long', profiles:[
+            { name:'Móvel',       A:4, skill:3, D:3, CD:4, tags:[] },
+            { name:'Estacionária',A:4, skill:2, D:3, CD:3, tags:['Devastating 1','Heavy (Dash only)','Silent'] },
+          ]},
+          { name:'Baioneta', A:3, skill:4, D:2, CD:3, range:'melee' },
+        ]},
+      { id:'kt-bl-thug', name:'Thug', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:4, W:7,
+        abilities:[
+          {name:'Tough', desc:'Ao lutar, revidar, ou ser alvo de tiro, dano Normal de 3+ recebido é reduzido em 1.'},
+        ],
+        weapons:[
+          { name:'Cassetete Pesado', A:4, skill:3, D:4, CD:4, range:'melee', tags:['Brutal'] },
+        ]},
+      { id:'kt-bl-trenchsweeper', name:'Trench Sweeper', unique:true,
+        M:'6"', APL:2, GA:1, DF:3, SV:4, W:9,
+        abilities:[
+          {name:'Shield', desc:'Ao lutar ou revidar com baioneta e escudo, cada bloqueio pode bloquear 2 sucessos não resolvidos.'},
+          {name:'Shielding', desc:'Ao ser ativado, pode escolher: até a próxima ativação, -2" no Move, mas re-rola qualquer dado de defesa ao ser alvo de tiro.'},
+        ],
+        weapons:[
+          { name:'Shotgun',            A:4, skill:3, D:3, CD:3, range:'short', tags:['Range 6"'] },
+          { name:'Baioneta e Escudo',  A:3, skill:3, D:2, CD:3, range:'melee', tags:['Shield'] },
+        ]},
+      { id:'kt-bl-trooper', name:'Trooper', unique:false, count:9,
+        M:'6"', APL:2, GA:2, DF:3, SV:5, W:7,
+        abilities:[
+          {name:'Group Activation', desc:'Sempre que este operativo terminar sua ativação, você deve ativar outro Trooper Blooded pronto em seguida (se houver), antes do oponente ativar. Ao terminar aquele segundo, o oponente ativa normalmente (não pode encadear mais de 2).'},
+        ],
+        weapons:[
+          { name:'Lasgun',   A:4, skill:4, D:2, CD:3, range:'long' },
+          { name:'Baioneta', A:3, skill:4, D:2, CD:3, range:'melee' },
         ]},
     ]
   },
@@ -6036,7 +6596,7 @@ const KT_ACTIONS = [
 
 // ── KILL TEAM DB ─────────────────────────────────────
 const KT_DB = {
-  getTeams()   { return KT_TEAMS; },
+  getTeams()   { return [...KT_TEAMS].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')); },
   getTeam(id)  { return KT_TEAMS.find(t => t.id === id); },
   getActions() { return KT_ACTIONS; },
 };
@@ -6593,7 +7153,11 @@ function showKTOpDetail(teamId, instanceId) {
       <div class="udm-stat"><div class="udm-sk">Sv</div><div class="udm-sv">${op.SV}+</div></div>
       <div class="udm-stat"><div class="udm-sk">PV</div><div class="udm-sv">${op.W}</div></div>
     </div>
-    ${op.abilities ? `<div class="udm-abilities"><div class="udm-section-title">⚡ Habilidade</div>${op.abilities}</div>` : ''}
+    ${op.abilities ? `<div class="udm-abilities"><div class="udm-section-title">⚡ Habilidades</div>${
+        Array.isArray(op.abilities)
+          ? op.abilities.map(a => `<div class="rule-card"><div class="rule-card-name">${a.name}${a.ap?` <span class="ability-ap-badge">${a.ap}</span>`:''}</div><div class="rule-card-desc">${a.desc}</div></div>`).join('')
+          : `<div class="rule-card"><div class="rule-card-desc">${op.abilities}</div></div>`
+      }</div>` : ''}
     <div class="udm-section-title" style="margin-top:10px">🗡 Armas</div>
     ${op.weapons.map(w => {
       const profiles = getWeaponProfiles(w);
@@ -6977,11 +7541,9 @@ function renderKTCombatModal() {
   defSection.appendChild(defBadges);
   diceArea.appendChild(defSection);
 
-  // Final result - show after all dice
+  // Final result - show after all dice, KEEPING the dice visible above the summary
   const totalDelay = (Math.max(atkRolls.length, defRolls.length) * 80) + 900;
   ktPendingTimeouts.push(setTimeout(() => {
-    const da = document.getElementById('dice-area');
-    if (da) da.style.display = 'none';
     const fr = document.getElementById('final-result');
     if (!fr) return;
     fr.classList.add('show');
