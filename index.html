@@ -595,7 +595,10 @@ body::before{content:'';position:fixed;inset:0;
 .ktb-sub{font-size:12px;color:var(--muted);font-family:var(--fu);margin-top:3px}
 
 /* Operative cards */
-.kt-op-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative}
+.kt-op-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;isolation:isolate}
+.kt-op-portrait{position:absolute;top:-15%;right:-15%;width:70%;height:130%;object-fit:cover;object-position:center 25%;z-index:0;opacity:.85;pointer-events:none}
+.kt-op-portrait-fade{position:absolute;inset:0;z-index:1;background:linear-gradient(115deg,var(--card) 0%,var(--card) 32%,rgba(21,21,27,.75) 48%,rgba(21,21,27,.3) 68%,transparent 88%);pointer-events:none}
+.kt-op-card>*:not(.kt-op-portrait):not(.kt-op-portrait-fade){position:relative;z-index:2}
 .kt-op-card:active{transform:scale(.98)}
 .kt-op-card.activated{opacity:.45;filter:grayscale(.5)}
 .kt-op-card.dead{opacity:.25;filter:grayscale(1);cursor:default}
@@ -778,6 +781,27 @@ body::before{content:'';position:fixed;inset:0;
 .kt-turns-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--border2);background:var(--card2);color:var(--gold);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .kt-turns-btn:active{transform:scale(.9);background:var(--card3)}
 .kt-turns-val{font-family:var(--ff);font-size:32px;color:var(--gold);min-width:50px;text-align:center}
+
+
+/* ═══ KT PLOY CHECKLIST ═══ */
+.kt-ploy-btn{width:100%;margin-top:8px;background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.3);border-radius:6px;padding:7px;color:var(--gold);font-family:var(--fu);font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.kt-ploy-btn:active{transform:scale(.97)}
+.kt-ploy-used-badge{background:rgba(232,184,75,.2);padding:1px 6px;border-radius:8px;font-size:9px}
+.kt-ploy-row{display:flex;align-items:flex-start;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:var(--rsm);padding:10px;margin-bottom:7px;cursor:pointer;transition:all .15s}
+.kt-ploy-row:active{transform:scale(.98)}
+.kt-ploy-row.used{opacity:.55;background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.3)}
+.kt-ploy-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#22c55e;margin-top:1px}
+.kt-ploy-row.used .kt-ploy-check{border-color:#22c55e;background:rgba(34,197,94,.15)}
+.kt-ploy-info{flex:1}
+.kt-ploy-name{font-family:var(--fu);font-size:13px;font-weight:700;color:var(--text)}
+.kt-ploy-row.used .kt-ploy-name{text-decoration:line-through}
+.kt-ploy-desc{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4}
+
+
+/* ═══ KT OPERATIVE DETAIL — HERO PORTRAIT ═══ */
+.kt-udm-hero-wrap{position:relative;width:calc(100% + 28px);margin:-14px -14px 14px;aspect-ratio:1/1;overflow:hidden;background:var(--card2)}
+.kt-udm-hero-img{width:100%;height:100%;object-fit:cover;object-position:center 28%;display:block}
+.kt-udm-hero-fade{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 55%,var(--bg) 96%)}
 
 </style>
 </head>
@@ -2287,7 +2311,7 @@ function renderPlayerPV(playerId) {
   // Group minis by unitId
   const groups = {};
   tp.minis.forEach(m => { if (!groups[m.unitId]) groups[m.unitId] = []; groups[m.unitId].push(m); });
-  panel.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="rules-btn" onclick="showFactionRulesModal('${tp.factionId}')" title="Ver regras da facção">📖</button></div>`;
+  panel.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="rules-btn" onclick="showFactionRulesModal('${tp.factionId}')" title="Ver regras da facção">ℹ️</button></div>`;
   Object.entries(groups).forEach(([unitId, minis]) => {
     const u = DB.getUnit(unitId);
     const alive = minis.filter(m=>!m.dead).length;
@@ -2932,7 +2956,7 @@ function initLibrary() {
       <div class="fah-emoji">${f.emoji}</div>
       <div class="fah-name" style="color:${f.color}">${f.name}</div>
       <div class="fah-count">${units.length} unidade${units.length!==1?'s':''}</div>
-      <button class="rules-btn rules-btn-sm" style="margin-right:2px" onclick="event.stopPropagation();showFactionRulesModal('${f.id}')" title="Ver regras da facção">📖</button>
+      <button class="rules-btn rules-btn-sm" style="margin-right:2px" onclick="event.stopPropagation();showFactionRulesModal('${f.id}')" title="Ver regras da facção">ℹ️</button>
       <div class="fah-arrow">▾</div>`;
     hdr.onclick = () => {
       SFX.click();
@@ -4001,7 +4025,7 @@ function showUnitDetail(unitId) {
     <div class="udm-section-title" style="margin-top:12px">🗡 Armas</div>
     ${weaponsHtml}
     ${u.sheetImageData ? `<button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="viewSheet('${u.id}')">📋 Ver Ficha Original</button>` : ''}
-    <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="document.getElementById('unit-detail-modal').classList.remove('open');setTimeout(()=>showFactionRulesModal('${u.factionId}'),200)">📖 Ver Regras da Facção</button>
+    <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="document.getElementById('unit-detail-modal').classList.remove('open');setTimeout(()=>showFactionRulesModal('${u.factionId}'),200)">ℹ️ Ver Regras da Facção</button>
     <div style="height:8px"></div>
   `;
   document.getElementById('unit-detail-modal').classList.add('open');
@@ -4073,6 +4097,29 @@ function showToast(msg, duration=2000) {
 // RULES REFERENCE — Faction rules (40K) & Team rules (KT)
 // ═══════════════════════════════════════════════════════
 
+// ── RULES MODAL BACK NAVIGATION ──────────────────────
+let ktRulesBackStack = [];
+
+function ktRulesNavigate(renderFn) {
+  // Call this INSTEAD of directly calling a rules-render function when the
+  // navigation originates from inside an already-open rules-modal view.
+  const backBtn = document.getElementById('rules-modal-back');
+  if (backBtn) backBtn.style.display = 'flex';
+  renderFn();
+}
+
+function ktRulesPushCurrent(currentRenderFn) {
+  ktRulesBackStack.push(currentRenderFn);
+}
+
+function ktRulesGoBack() {
+  SFX.click();
+  const fn = ktRulesBackStack.pop();
+  const backBtn = document.getElementById('rules-modal-back');
+  if (backBtn) backBtn.style.display = ktRulesBackStack.length ? 'flex' : 'none';
+  if (fn) fn();
+}
+
 function showFactionRulesModal(factionId) {
   const f = DB.getFaction(factionId);
   if (!f) return;
@@ -4110,6 +4157,55 @@ function showFactionRulesModal(factionId) {
 
   body.innerHTML = html;
   document.getElementById('rules-modal').classList.add('open');
+}
+
+function showKTPloyChecklist(playerId) {
+  SFX.click();
+  const t = KT_SESSION.teams.find(x => x.playerId === playerId);
+  const team = KT_DB.getTeam(t?.teamId);
+  if (!t || !team) return;
+
+  document.getElementById('rules-modal-title').textContent = `🎴 Ploys — ${t.playerName}`;
+  const body = document.getElementById('rules-modal-body');
+
+  const ployRow = (p, kind, usedList) => {
+    const used = usedList.includes(p.name);
+    return `<div class="kt-ploy-row ${used?'used':''}" onclick="ktTogglePloy('${playerId}','${kind}','${p.name.replace(/'/g,"\\'")}')">
+      <div class="kt-ploy-check">${used?'✓':''}</div>
+      <div class="kt-ploy-info">
+        <div class="kt-ploy-name">${p.name}</div>
+        <div class="kt-ploy-desc">${p.desc}</div>
+      </div>
+    </div>`;
+  };
+
+  let html = `<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Toque num Ploy pra marcar como usado neste turno. A lista reseta sozinha a cada novo turno.</div>`;
+
+  if (team.ploys?.strategy?.length) {
+    html += `<div class="rules-section-title">🎯 Strategy Ploys</div>`;
+    html += team.ploys.strategy.map(p => ployRow(p, 'strategy', t.usedStrategyPloys)).join('');
+  }
+  if (team.ploys?.firefight?.length) {
+    html += `<div class="rules-section-title">⚔ Firefight Ploys</div>`;
+    html += team.ploys.firefight.map(p => ployRow(p, 'firefight', t.usedFirefightPloys)).join('');
+  }
+
+  body.innerHTML = html;
+  document.getElementById('rules-modal').classList.add('open');
+}
+
+function ktTogglePloy(playerId, kind, ployName) {
+  const t = KT_SESSION.teams.find(x => x.playerId === playerId);
+  if (!t) return;
+  const list = kind === 'strategy' ? t.usedStrategyPloys : t.usedFirefightPloys;
+  const idx = list.indexOf(ployName);
+  const wasUsed = idx >= 0;
+  ktPushUndo(`Ploy "${ployName}" ${wasUsed?'desmarcado':'marcado'} (${t.playerName})`);
+  if (wasUsed) list.splice(idx, 1);
+  else list.push(ployName);
+  SFX.click();
+  showKTPloyChecklist(playerId); // re-render checklist with updated state
+  renderKTCPStrip(); // refresh the used-count badge
 }
 
 function showKTTeamRulesModal(teamId) {
@@ -4263,7 +4359,7 @@ function showKeywordPopup(tagText) {
       <div class="rule-card-name" style="font-size:15px;color:var(--gold)">${kw.name}</div>
       <div class="rule-card-desc" style="font-size:13px;margin-top:6px">${kw.desc}</div>
     </div>
-    <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="showKTCoreRulesModal()">📖 Ver todas as regras e termos</button>`;
+    <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="ktRulesPushCurrent(openGlobalRulesHub);ktRulesNavigate(()=>showKTCoreRulesModal())">ℹ️ Ver todas as regras e termos</button>`;
   modal.classList.add('open');
 }
 
@@ -4274,7 +4370,7 @@ function renderTagPills(tags) {
 
 function showKTCoreRulesModal() {
   SFX.click();
-  document.getElementById('rules-modal-title').textContent = '📖 Regras Gerais — Kill Team';
+  document.getElementById('rules-modal-title').textContent = 'ℹ️ Regras Gerais — Kill Team';
   const body = document.getElementById('rules-modal-body');
   let html = `<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Toque em qualquer termo de arma nas fichas para ver a explicação rápida. Aqui está a referência completa:</div>`;
 
@@ -4297,20 +4393,23 @@ function showKTCoreRulesModal() {
 
 function openGlobalRulesHub() {
   SFX.click();
+  ktRulesBackStack.length = 0;
+  const backBtn0 = document.getElementById('rules-modal-back');
+  if (backBtn0) backBtn0.style.display = 'none';
   const current = NAV.current();
 
   // Context-aware: in a KT battle, show quick access to both teams + core rules
   if (current === 'screen-kt-battle' && KT_SESSION.teams && KT_SESSION.teams.length) {
-    document.getElementById('rules-modal-title').textContent = '📖 Regras — Kill Team';
+    document.getElementById('rules-modal-title').textContent = 'ℹ️ Regras — Kill Team';
     let html = `<div class="rules-section-title">Times na Batalha</div>`;
     KT_SESSION.teams.forEach(t => {
-      html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${t.color}" onclick="showKTTeamRulesModal('${t.teamId}')">
+      html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${t.color}" onclick="ktRulesPushCurrent(openGlobalRulesHub);ktRulesNavigate(()=>showKTTeamRulesModal('${t.teamId}'))">
         <div class="rule-card-name">${t.emoji} ${t.playerName} <span style="color:var(--muted);font-size:11px">→</span></div>
         <div class="rule-card-desc">${t.name || ''}</div>
       </div>`;
     });
     html += `<div class="rules-section-title">Referência Geral</div>
-      <div class="rule-card" style="cursor:pointer" onclick="showKTCoreRulesModal()">
+      <div class="rule-card" style="cursor:pointer" onclick="ktRulesPushCurrent(openGlobalRulesHub);ktRulesNavigate(()=>showKTCoreRulesModal())">
         <div class="rule-card-name">📘 Regras Gerais + Termos de Armas <span style="color:var(--muted);font-size:11px">→</span></div>
         <div class="rule-card-desc">Setup, turnos, ações, tiro, dano e o glossário completo de palavras-chave.</div>
       </div>`;
@@ -4321,11 +4420,11 @@ function openGlobalRulesHub() {
 
   // In 40K battle, show quick access to both players' factions
   if (current === 'screen-battle' && typeof SESSION !== 'undefined' && SESSION.players && SESSION.players.length) {
-    document.getElementById('rules-modal-title').textContent = '📖 Regras — Warhammer 40K';
+    document.getElementById('rules-modal-title').textContent = 'ℹ️ Regras — Warhammer 40K';
     let html = `<div class="rules-section-title">Jogadores na Batalha</div>`;
     SESSION.players.forEach(p => {
       const f = DB.getFaction(p.factionId);
-      html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${f?.color||'#888'}" onclick="showFactionRulesModal('${p.factionId}')">
+      html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${f?.color||'#888'}" onclick="ktRulesPushCurrent(openGlobalRulesHub);ktRulesNavigate(()=>showFactionRulesModal('${p.factionId}'))">
         <div class="rule-card-name">${f?.emoji||'⚔'} ${p.name} <span style="color:var(--muted);font-size:11px">→</span></div>
         <div class="rule-card-desc">${f?.name||''}</div>
       </div>`;
@@ -4336,22 +4435,22 @@ function openGlobalRulesHub() {
   }
 
   // Otherwise: generic hub — choose 40K faction, KT team rules, or KT core rules
-  document.getElementById('rules-modal-title').textContent = '📖 Regras e Referências';
+  document.getElementById('rules-modal-title').textContent = 'ℹ️ Regras e Referências';
   let html = `
     <div class="rules-section-title">🎯 Kill Team</div>
-    <div class="rule-card" style="cursor:pointer" onclick="showKTCoreRulesModal()">
+    <div class="rule-card" style="cursor:pointer" onclick="ktRulesPushCurrent(openGlobalRulesHub);ktRulesNavigate(()=>showKTCoreRulesModal())">
       <div class="rule-card-name">📘 Regras Gerais + Termos de Armas <span style="color:var(--muted);font-size:11px">→</span></div>
       <div class="rule-card-desc">Setup, turnos, ações, sequência de tiro, dano e glossário de palavras-chave.</div>
     </div>`;
   KT_DB.getTeams().forEach(t => {
-    html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${t.color}" onclick="showKTTeamRulesModal('${t.id}')">
+    html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${t.color}" onclick="ktRulesPushCurrent(openGlobalRulesHub);ktRulesNavigate(()=>showKTTeamRulesModal('${t.id}'))">
       <div class="rule-card-name">${t.emoji} ${t.name} <span style="color:var(--muted);font-size:11px">→</span></div>
       <div class="rule-card-desc">${t.style}</div>
     </div>`;
   });
   html += `<div class="rules-section-title">⚔ Warhammer 40K</div>`;
   DB.getFactions().forEach(f => {
-    html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${f.color}" onclick="showFactionRulesModal('${f.id}')">
+    html += `<div class="rule-card" style="cursor:pointer;border-left:3px solid ${f.color}" onclick="ktRulesPushCurrent(openGlobalRulesHub);ktRulesNavigate(()=>showFactionRulesModal('${f.id}'))">
       <div class="rule-card-name">${f.emoji} ${f.name} <span style="color:var(--muted);font-size:11px">→</span></div>
     </div>`;
   });
@@ -5404,7 +5503,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
       <div class="ktb-label">VEZ DE ATIVAR</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:8px">
         <div class="ktb-team" id="ktb-team-name">—</div>
-        <button class="rules-btn" id="ktb-rules-btn" onclick="showKTTeamRulesModal(window._ktActiveTeamId)" title="Ver regras e equipamentos do time">📖</button>
+        <button class="rules-btn" id="ktb-rules-btn" onclick="showKTTeamRulesModal(window._ktActiveTeamId)" title="Ver regras e equipamentos do time">ℹ️</button>
       </div>
       <div class="ktb-sub" id="ktb-sub">Escolha um operativo</div>
     </div>
@@ -6660,7 +6759,8 @@ const KT_SESSION = {
       });
       return { playerId: `p${i}`, playerName: p.name, teamId: p.teamId,
                name: team?.name || '', emoji: team?.emoji || '⚔',
-               color: team?.color || '#888', operatives, cp: 2, score: 0 };
+               color: team?.color || '#888', operatives, cp: 2, score: 0,
+               usedStrategyPloys: [], usedFirefightPloys: [] };
     });
     this.turn = 1;
     this.phase = 'strategy';
@@ -6672,7 +6772,11 @@ const KT_SESSION = {
   getTeamByPlayer(playerId) { return this.teams.find(t => t.playerId === playerId); },
 
   resetActivations(forcedIdx) {
-    this.teams.forEach(t => t.operatives.forEach(op => op.activated = false));
+    this.teams.forEach(t => {
+      t.operatives.forEach(op => op.activated = false);
+      t.usedStrategyPloys = [];
+      t.usedFirefightPloys = [];
+    });
     const aliveTeamIdxs = this.teams
       .map((t, i) => ({ i, alive: t.operatives.some(op => !op.dead) }))
       .filter(x => x.alive)
@@ -6776,8 +6880,11 @@ function initKTTeamSelect() {
   ktPendingPlayers = Array.from({length: numPlayers}, (_, i) => ({
     name: `Jogador ${i+1}`, teamId: null, selectedOps: {}, cp: 2,
   }));
+  ktEditingPlayerIdx = null;
   renderKTPlayerForms();
 }
+
+let ktEditingPlayerIdx = null;
 
 function renderKTPlayerForms() {
   const container = document.getElementById('kt-player-forms');
@@ -6787,6 +6894,7 @@ function renderKTPlayerForms() {
   ktPendingPlayers.forEach((p, i) => {
     const section = document.createElement('div');
     section.style.marginBottom = '18px';
+    section.id = `kt-player-section-${i}`;
 
     // Player name input
     const nameRow = document.createElement('div');
@@ -6796,6 +6904,30 @@ function renderKTPlayerForms() {
       <input class="setup-name-input" style="flex:1" value="${p.name}" placeholder="Nome do jogador"
         oninput="ktPendingPlayers[${i}].name=this.value">`;
     section.appendChild(nameRow);
+
+    const isExpanded = !p.teamId || ktEditingPlayerIdx === i;
+
+    if (!isExpanded) {
+      // Collapsed summary — team already chosen and not being edited
+      const team = KT_DB.getTeam(p.teamId);
+      const summary = document.createElement('div');
+      summary.className = 'kt-team-card selected';
+      summary.style.setProperty('--pcolor', team.color);
+      summary.style.cursor = 'default';
+      summary.innerHTML = `
+        <div class="kt-tc-hdr">
+          <div class="kt-tc-emoji">${team.emoji}</div>
+          <div class="kt-tc-info">
+            <div class="kt-tc-name" style="color:${team.color}">${team.name}</div>
+            <div class="kt-tc-faction">${team.faction}</div>
+          </div>
+          <div class="kt-tc-check" style="background:${team.color};border-color:${team.color};color:#000">✓</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="ktEditingPlayerIdx=${i};renderKTPlayerForms()">↩ Trocar time</button>`;
+      section.appendChild(summary);
+      container.appendChild(section);
+      return;
+    }
 
     const label = document.createElement('div');
     label.className = 'sec-label';
@@ -6814,7 +6946,7 @@ function renderKTPlayerForms() {
             <div class="kt-tc-faction">${team.faction}</div>
             <div class="kt-tc-style" style="color:${team.color}">${team.style}</div>
           </div>
-          <button class="rules-btn" onclick="event.stopPropagation();showKTTeamRulesModal('${team.id}')" title="Ver regras completas">📖</button>
+          <button class="rules-btn" onclick="event.stopPropagation();showKTTeamRulesModal('${team.id}')" title="Ver regras completas">ℹ️</button>
           <div class="kt-tc-check" style="${p.teamId===team.id?`background:${team.color};border-color:${team.color};color:#000`:''}">${p.teamId===team.id?'✓':''}</div>
         </div>
         <div class="kt-tc-desc">${team.desc}</div>`;
@@ -6822,8 +6954,17 @@ function renderKTPlayerForms() {
         SFX.click();
         ktPendingPlayers[i].teamId = team.id;
         ktPendingPlayers[i].selectedOps = {};
+        ktEditingPlayerIdx = null; // collapse this player's section
         renderKTPlayerForms();
         updateKTSetupBtn();
+        // Auto-advance: scroll to the next player still needing a team, or to the confirm button if done
+        setTimeout(() => {
+          const nextIdx = ktPendingPlayers.findIndex(pp => !pp.teamId);
+          const target = nextIdx >= 0
+            ? document.getElementById(`kt-player-section-${nextIdx}`)
+            : document.getElementById('btn-kt-to-roster');
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 150);
       };
       section.appendChild(card);
     });
@@ -7015,6 +7156,9 @@ function renderKTCPStrip() {
     const div = document.createElement('div');
     div.className = 'cp-card';
     div.style.setProperty('--pcolor', t.color);
+    const team = KT_DB.getTeam(t.teamId);
+    const totalPloys = (team?.ploys?.strategy?.length || 0) + (team?.ploys?.firefight?.length || 0);
+    const usedCount = (t.usedStrategyPloys?.length || 0) + (t.usedFirefightPloys?.length || 0);
     div.innerHTML = `
       <div class="cp-top" style="cursor:pointer" onclick="showCPExplainer()">
         <span class="cp-name">${t.playerName} <span style="color:var(--muted);font-size:10px">ⓘ</span></span>
@@ -7024,7 +7168,8 @@ function renderKTCPStrip() {
         <button class="cp-btn spend" onclick="ktChangeCP('${t.playerId}',-1)">− Gastar</button>
         <button class="cp-btn gain"  onclick="ktChangeCP('${t.playerId}',1)">+ Ganhar</button>
       </div>
-      <div class="cp-bar-wrap"><div class="cp-bar" style="width:${Math.min(100,(t.cp/6)*100)}%"></div></div>`;
+      <div class="cp-bar-wrap"><div class="cp-bar" style="width:${Math.min(100,(t.cp/6)*100)}%"></div></div>
+      ${totalPloys ? `<button class="kt-ploy-btn" onclick="showKTPloyChecklist('${t.playerId}')">🎴 Ploys ${usedCount>0?`<span class="kt-ploy-used-badge">${usedCount} usado${usedCount!==1?'s':''}</span>`:''}</button>` : ''}`;
     strip.appendChild(div);
   });
 }
@@ -7059,7 +7204,7 @@ function showCPExplainer() {
       <div class="rule-card-name">Firefight Ploys</div>
       <div class="rule-card-desc">Durante a ativação ou contra-ataque de um operativo, no momento que a regra indicar. Também 1x por turno cada — exceto Command Re-roll, que pode ser usado quantas vezes você tiver CP.</div>
     </div>
-    <div style="font-size:11px;color:var(--muted);margin-top:8px">💡 Toque em 📖 no time pra ver os Ploys específicos dele.</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">💡 Toque em ℹ️ no time pra ver os Ploys específicos dele.</div>
   `;
   document.getElementById('rules-modal').classList.add('open');
 }
@@ -7160,6 +7305,8 @@ function renderKTOpCard(op, team, container, clickable) {
   const card = document.createElement('div');
   card.className = `kt-op-card order-${order}${op.activated?' activated':''}${op.dead?' dead':''}`;
   card.innerHTML = `
+    <img class="kt-op-portrait" src="images/${op.id}.jpg" onerror="this.remove()">
+    <div class="kt-op-portrait-fade"></div>
     ${op.activated && !op.dead ? '<div class="kt-activated-badge">✓ ATIVADO</div>' : ''}
     ${op.dead ? '<div class="kt-dead-badge">💀 MORTO</div>' : ''}
     <div class="kt-op-hdr">
@@ -7303,6 +7450,10 @@ function showKTOpDetail(teamId, instanceId) {
   document.getElementById('udm-title').textContent = op.displayName;
   const body = document.getElementById('udm-body');
   body.innerHTML = `
+    <div class="kt-udm-hero-wrap" id="kt-udm-hero-wrap">
+      <img class="kt-udm-hero-img" src="images/${op.id}.jpg" onerror="document.getElementById('kt-udm-hero-wrap').remove()">
+      <div class="kt-udm-hero-fade"></div>
+    </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <div style="font-size:36px">${team.emoji}</div>
       <div style="flex:1">
@@ -7349,7 +7500,7 @@ function showKTOpDetail(teamId, instanceId) {
         <div class="udm-w-tip">💥 Normal: ${p.D} dano · 🎯 Critical (6): ${p.CD} dano + efeito especial</div>
       </div>`).join('');
     }).join('')}
-    <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="document.getElementById('unit-detail-modal').classList.remove('open');setTimeout(()=>showKTTeamRulesModal('${team.teamId}'),200)">📖 Ver Regras do Time</button>
+    <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="document.getElementById('unit-detail-modal').classList.remove('open');setTimeout(()=>showKTTeamRulesModal('${team.teamId}'),200)">ℹ️ Ver Regras do Time</button>
     <!-- Manual HP adjustment -->
     <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
       <div style="flex:1;font-family:var(--fu);font-size:12px;color:var(--muted)">Ajustar PV manualmente:</div>
@@ -7863,7 +8014,7 @@ function renderKTStatus() {
     const section = document.createElement('div');
     section.style.marginBottom = '14px';
     const alive = team.operatives.filter(o=>!o.dead).length;
-    section.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)"><div style="flex:1;font-family:var(--ff);font-size:18px;color:${team.color}">${team.emoji} ${team.playerName} — ${alive}/${team.operatives.length} vivos</div><button class="rules-btn" onclick="showKTTeamRulesModal('${team.teamId}')" title="Ver regras do time">📖</button></div>`;
+    section.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)"><div style="flex:1;font-family:var(--ff);font-size:18px;color:${team.color}">${team.emoji} ${team.playerName} — ${alive}/${team.operatives.length} vivos</div><button class="rules-btn" onclick="showKTTeamRulesModal('${team.teamId}')" title="Ver regras do time">ℹ️</button></div>`;
     team.operatives.forEach(op => {
       const pct = op.W > 0 ? op.curW/op.W : 0;
       const barColor = pct>.6?'var(--hit)':pct>.3?'var(--wound)':'var(--dmg)';
@@ -7873,6 +8024,8 @@ function renderKTStatus() {
       div.className = `kt-op-card order-${order}` + (op.dead?' dead':'') + (op.activated&&!op.dead?' activated':'');
       div.style.marginBottom = '6px';
       div.innerHTML = `
+        <img class="kt-op-portrait" src="images/${op.id}.jpg" onerror="this.remove()">
+        <div class="kt-op-portrait-fade"></div>
         <div class="kt-op-hdr">
           <span style="font-size:18px">${hpEmoji}</span>
           <div class="kt-op-info">
@@ -7912,8 +8065,9 @@ function renderKTStatus() {
 <div class="modal-sheet" style="max-height:88vh">
   <div class="sheet-handle"></div>
   <div class="sheet-hdr">
-    <div class="sheet-title" id="rules-modal-title">📖 REGRAS</div>
-    <button class="sheet-close" onclick="document.getElementById('rules-modal').classList.remove('open')">✕</button>
+    <button class="hdr-back" id="rules-modal-back" style="display:none;flex-shrink:0;margin-right:4px" onclick="ktRulesGoBack()">←</button>
+    <div class="sheet-title" id="rules-modal-title">ℹ️ REGRAS</div>
+    <button class="sheet-close" onclick="ktRulesBackStack.length=0;document.getElementById('rules-modal').classList.remove('open')">✕</button>
   </div>
   <div class="sheet-body" id="rules-modal-body"></div>
 </div>
@@ -7921,7 +8075,7 @@ function renderKTStatus() {
 
 
 <!-- ═══ GLOBAL RULES FLOATING BUTTON ═══ -->
-<div id="global-rules-fab" onclick="openGlobalRulesHub()" title="Regras e Termos">📖</div>
+<div id="global-rules-fab" onclick="openGlobalRulesHub()" title="Regras e Termos">ℹ️</div>
 
 </body>
 </html>

@@ -1,0 +1,7 @@
+Coloque aqui as imagens dos operativos.
+
+Nome do arquivo = ID do operativo + .jpg
+Exemplo: kt-aod-captain.jpg
+
+Formato: quadrado (ex: 800x800), JPG.
+Se o arquivo não existir, o app usa o emoji normalmente (nada quebra).
