@@ -689,6 +689,8 @@ body::before{content:'';position:fixed;inset:0;
 
 /* ═══ CLICKABLE KEYWORD TAGS ═══ */
 .kw-tag{cursor:pointer;transition:all .15s}
+.kw-inline{color:var(--gold);font-weight:700;text-decoration:underline;text-decoration-style:dotted;text-decoration-thickness:1.5px;text-underline-offset:2px}
+.kw-inline:active{opacity:.6}
 .kw-tag:active{transform:scale(.92);filter:brightness(1.3)}
 
 /* ═══ FLOATING GLOBAL RULES BUTTON ═══ */
@@ -802,6 +804,9 @@ body::before{content:'';position:fixed;inset:0;
 .kt-udm-hero-wrap{position:relative;width:calc(100% + 28px);margin:-14px -14px 14px;aspect-ratio:1/1;overflow:hidden;background:var(--card2)}
 .kt-udm-hero-img{width:100%;height:100%;object-fit:cover;object-position:center 28%;display:block}
 .kt-udm-hero-fade{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 55%,var(--bg) 96%)}
+
+
+.preview-mode-badge{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.35);color:var(--save);font-family:var(--fu);font-size:10px;letter-spacing:1px;padding:5px 10px;border-radius:6px;margin-bottom:10px;display:inline-block}
 
 </style>
 </head>
@@ -1028,6 +1033,20 @@ const VFX = {
   <div class="screen-body">
     <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Selecione quantos jogadores vão participar desta batalha:</div>
     <div class="count-grid" id="player-count-grid"></div>
+
+    <div class="sec-label" style="margin-top:22px">Como vocês querem jogar?</div>
+    <div class="kt-mode-card" id="w40k-mode-full" onclick="w40kPickMode(false)">
+      <div class="kt-mode-icon">🎮</div>
+      <div class="kt-mode-name">MODO COMPLETO</div>
+      <div class="kt-mode-desc">O app rola os dados e resolve o combate. Tracker, Combate e PV disponíveis.</div>
+      <div class="kt-mode-check">✓</div>
+    </div>
+    <div class="kt-mode-card" id="w40k-mode-simple" onclick="w40kPickMode(true)">
+      <div class="kt-mode-icon">📋</div>
+      <div class="kt-mode-name">MODO SIMPLES</div>
+      <div class="kt-mode-desc">Vocês rolam os dados físicos na mesa. O app só ajuda com Tracker (turnos, CP, objetivos) e PV.</div>
+      <div class="kt-mode-check">✓</div>
+    </div>
   </div>
 </div>
 
@@ -1095,7 +1114,7 @@ const VFX = {
       <button class="btn btn-gold" style="flex:3" onclick="endTurn();SFX.click()">⏭ FINALIZAR TURNO</button>
       <button id="undo-btn" class="btn btn-secondary" style="flex:1;font-size:16px;padding:12px" onclick="undoLastAction()" disabled title="Nada para desfazer">↩</button>
     </div>
-    <button class="btn btn-secondary btn-sm" onclick="switchTab('combat');SFX.click()">⚔ IR PARA COMBATE</button>
+    <button class="btn btn-secondary btn-sm" id="btn-goto-combat" onclick="switchTab('combat');SFX.click()">⚔ IR PARA COMBATE</button>
   </div>
 
   <!-- COMBAT TAB -->
@@ -2433,6 +2452,15 @@ function onStartBattle() {
 // ══════════════════════════════════════════════
 // SCREEN: PLAYER COUNT
 // ══════════════════════════════════════════════
+let W40K_SIMPLE_MODE = false;
+
+function w40kPickMode(simple) {
+  SFX.click();
+  W40K_SIMPLE_MODE = simple;
+  document.getElementById('w40k-mode-full')?.classList.toggle('selected', !simple);
+  document.getElementById('w40k-mode-simple')?.classList.toggle('selected', simple);
+}
+
 function initPlayerCount() {
   const grid = document.getElementById('player-count-grid');
   grid.innerHTML = '';
@@ -2447,6 +2475,8 @@ function initPlayerCount() {
     };
     grid.appendChild(btn);
   });
+  document.getElementById('w40k-mode-full')?.classList.toggle('selected', !W40K_SIMPLE_MODE);
+  document.getElementById('w40k-mode-simple')?.classList.toggle('selected', W40K_SIMPLE_MODE);
 }
 
 // ══════════════════════════════════════════════
@@ -2663,10 +2693,20 @@ function initBattleScreen() {
   COMBAT.atkPlayerId=null; COMBAT.atkUnitId=null; COMBAT.weapon=null;
   COMBAT.defPlayerId=null; COMBAT.defUnitId=null; COMBAT.qtyAtk=1; COMBAT.qtyDef=1; COMBAT.attackNum=1;
   document.getElementById('attack-counter').textContent = 1;
+
+  // Simple Mode: hide the Combat tab entirely — players roll physical dice
+  const combatTabBtn = document.getElementById('tabn-combat');
+  if (combatTabBtn) combatTabBtn.style.display = W40K_SIMPLE_MODE ? 'none' : '';
+  const gotoCombatBtn = document.getElementById('btn-goto-combat');
+  if (gotoCombatBtn) gotoCombatBtn.style.display = W40K_SIMPLE_MODE ? 'none' : '';
+  const eyebrow = document.querySelector('#screen-battle .hdr-eyebrow');
+  if (eyebrow) eyebrow.textContent = W40K_SIMPLE_MODE ? 'Modo Simples' : 'Em andamento';
+
   switchTab('tracker');
 }
 
 function switchTab(tab) {
+  if (tab === 'combat' && W40K_SIMPLE_MODE) tab = 'tracker'; // no dice-rolling in Simple Mode
   activeBattleTab = tab;
   ['tracker','combat','pv'].forEach(t => {
     const panel = document.getElementById(`tab-${t}`);
@@ -3563,7 +3603,7 @@ function finalizeBattle(){
   renderHist();
 }
 
-function applyDamageFromBattle(){
+function applyDamageFromBattle40K(){
   if(BS.dmg<=0)return;
   const ab=document.getElementById('apply-dmg-btn');
   if(ab.classList.contains('applied'))return;
@@ -3970,6 +4010,9 @@ function showUnitDetail(unitId) {
   const f = DB.getFaction(u.factionId);
   SFX.click();
 
+  const backBtn = document.getElementById('udm-back-btn');
+  if (backBtn) backBtn.style.display = udmReturnTo ? 'flex' : 'none';
+
   document.getElementById('udm-title').textContent = u.name;
 
   const body = document.getElementById('udm-body');
@@ -4148,7 +4191,7 @@ function showFactionRulesModal(factionId) {
   if (units.length) {
     html += `<div class="rules-section-title">📋 Unidades (${units.length})</div>`;
     units.forEach(u => {
-      html += `<div class="rule-card" style="cursor:pointer" onclick="document.getElementById('rules-modal').classList.remove('open');setTimeout(()=>showUnitDetail('${u.id}'),200)">
+      html += `<div class="rule-card" style="cursor:pointer" onclick="udmReturnTo=()=>showFactionRulesModal('${factionId}');document.getElementById('rules-modal').classList.remove('open');setTimeout(()=>showUnitDetail('${u.id}'),200)">
         <div class="rule-card-name">${u.name} <span style="color:var(--muted);font-size:11px">→</span></div>
         ${u.abilities ? `<div class="rule-card-desc">${u.abilities.substring(0,90)}${u.abilities.length>90?'...':''}</div>` : ''}
       </div>`;
@@ -4174,7 +4217,7 @@ function showKTPloyChecklist(playerId) {
       <div class="kt-ploy-check">${used?'✓':''}</div>
       <div class="kt-ploy-info">
         <div class="kt-ploy-name">${p.name}</div>
-        <div class="kt-ploy-desc">${p.desc}</div>
+        <div class="kt-ploy-desc">${linkifyKeywords(p.desc)}</div>
       </div>
     </div>`;
   };
@@ -4224,20 +4267,20 @@ function showKTTeamRulesModal(teamId) {
 
   if (team.coreRule) {
     html += `<div class="rules-section-title">⚡ Regra Principal</div>
-      <div class="rule-card"><div class="rule-card-name">${team.coreRule.name}</div><div class="rule-card-desc">${team.coreRule.desc}</div></div>`;
+      <div class="rule-card"><div class="rule-card-name">${team.coreRule.name}</div><div class="rule-card-desc">${linkifyKeywords(team.coreRule.desc)}</div></div>`;
   }
 
   if (team.ploys) {
     if (team.ploys.strategy && team.ploys.strategy.length) {
       html += `<div class="rules-section-title">🎯 Strategy Ploys <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">— usados no início do turno</span></div>`;
       team.ploys.strategy.forEach(p => {
-        html += `<div class="rule-card"><div class="rule-card-name">${p.name}<span class="ploy-tag strategy">Strategy</span></div><div class="rule-card-desc">${p.desc}</div></div>`;
+        html += `<div class="rule-card"><div class="rule-card-name">${p.name}<span class="ploy-tag strategy">Strategy</span></div><div class="rule-card-desc">${linkifyKeywords(p.desc)}</div></div>`;
       });
     }
     if (team.ploys.firefight && team.ploys.firefight.length) {
       html += `<div class="rules-section-title">⚔ Firefight Ploys <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">— usados durante o turno</span></div>`;
       team.ploys.firefight.forEach(p => {
-        html += `<div class="rule-card"><div class="rule-card-name">${p.name}<span class="ploy-tag firefight">Firefight</span></div><div class="rule-card-desc">${p.desc}</div></div>`;
+        html += `<div class="rule-card"><div class="rule-card-name">${p.name}<span class="ploy-tag firefight">Firefight</span></div><div class="rule-card-desc">${linkifyKeywords(p.desc)}</div></div>`;
       });
     }
   }
@@ -4246,7 +4289,7 @@ function showKTTeamRulesModal(teamId) {
   if (team.operatives && team.operatives.length) {
     html += `<div class="rules-section-title">👤 Operativos (${team.operatives.length})</div>`;
     team.operatives.forEach(op => {
-      html += `<div class="rule-card" style="cursor:pointer" onclick="document.getElementById('rules-modal').classList.remove('open');setTimeout(()=>{const _t=KT_SESSION&&KT_SESSION.teams&&KT_SESSION.teams.length?KT_SESSION.teams.find(t=>t.teamId==='${team.id}'):null; if(_t){const _op=_t.operatives.find(o=>o.id==='${op.id}'||o.name==='${op.name.replace(/'/g,"\\'")}'); if(_op) return showKTOpDetail(_t.playerId,_op.instanceId);} alert('Selecione este time numa batalha para ver detalhes completos do operativo.');},200)">
+      html += `<div class="rule-card" style="cursor:pointer" onclick="udmReturnTo=()=>showKTTeamRulesModal('${team.id}');document.getElementById('rules-modal').classList.remove('open');setTimeout(()=>{const _t=KT_SESSION&&KT_SESSION.teams&&KT_SESSION.teams.length?KT_SESSION.teams.find(t=>t.teamId==='${team.id}'):null; if(_t){const _op=_t.operatives.find(o=>o.id==='${op.id}'||o.name==='${op.name.replace(/'/g,"\\'")}'); if(_op) return showKTOpDetail(_t.playerId,_op.instanceId);} showKTOpDetailPreview('${team.id}','${op.id}');},200)">
         <div class="rule-card-name">${op.name}${op.unique?' <span style="color:var(--gold);font-size:10px">(único)</span>':''} <span style="color:var(--muted);font-size:11px">→</span></div>
         ${op.abilities ? `<div class="rule-card-desc">${
             Array.isArray(op.abilities)
@@ -4346,6 +4389,21 @@ function findWeaponKeyword(tagText) {
     }
   }
   return null;
+}
+
+// Scans free-text (ability/ploy descriptions) for known weapon-rule keywords and
+// wraps them in the same clickable style used for weapon tag pills, so terms like
+// "Saturate" mentioned inside a sentence become tappable too.
+const KT_KEYWORD_LINK_REGEX = new RegExp(
+  '\\b(' + Object.keys(KT_WEAPON_KEYWORDS).sort((a,b)=>b.length-a.length).join('|') + ')\\b',
+  'g'
+);
+function linkifyKeywords(text) {
+  if (!text) return text;
+  return text.replace(KT_KEYWORD_LINK_REGEX, (match) => {
+    const encoded = match.replace(/"/g, '&quot;');
+    return `<span class="kw-tag kw-inline" data-kw="${encoded}" onclick="event.stopPropagation();showKeywordPopup(this.dataset.kw)">${match}</span>`;
+  });
 }
 
 function showKeywordPopup(tagText) {
@@ -5351,8 +5409,9 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 <div class="modal-sheet" style="max-height:88vh">
   <div class="sheet-handle"></div>
   <div class="sheet-hdr">
+    <button class="hdr-back" id="udm-back-btn" style="display:none;flex-shrink:0;margin-right:4px" onclick="udmGoBack()">←</button>
     <div class="sheet-title" id="udm-title">Detalhes da Unidade</div>
-    <button class="sheet-close" onclick="document.getElementById('unit-detail-modal').classList.remove('open')">✕</button>
+    <button class="sheet-close" onclick="udmReturnTo=null;document.getElementById('unit-detail-modal').classList.remove('open')">✕</button>
   </div>
   <div class="sheet-body" id="udm-body"></div>
 </div>
@@ -7438,14 +7497,42 @@ function ktApplyTurnCP(initiativePlayerId) {
 }
 
 // ── OPERATIVE DETAIL ─────────────────────────────────
+let udmReturnTo = null;
+function udmGoBack() {
+  SFX.click();
+  const fn = udmReturnTo;
+  udmReturnTo = null;
+  document.getElementById('unit-detail-modal').classList.remove('open');
+  if (fn) setTimeout(fn, 200);
+}
+
 function showKTOpDetail(teamId, instanceId) {
   const team = KT_SESSION.teams.find(t => t.playerId === teamId);
   const op   = team?.operatives.find(o => o.instanceId === instanceId);
   if (!op) return;
   SFX.click();
+  renderKTOpDetailBody(op, team, true);
+}
 
+// Preview mode — used when browsing a team's roster OUTSIDE of an active battle
+// (e.g. from the home screen or the rules reference). Shows full stats/abilities/weapons
+// at full health, with no live-battle controls (PV adjustment, order toggle, etc).
+function showKTOpDetailPreview(teamId, opId) {
+  const team = KT_DB.getTeam(teamId);
+  const op = team?.operatives.find(o => o.id === opId);
+  if (!team || !op) return;
+  SFX.click();
+  const fakeOp = { ...op, curW: op.W, dead: false, activated: false, instanceId: 'preview', displayName: op.name, order: 'conceal' };
+  const fakeTeam = { playerId: 'preview', playerName: team.name, teamId: team.id, name: team.name, color: team.color, emoji: team.emoji };
+  renderKTOpDetailBody(fakeOp, fakeTeam, false);
+}
+
+function renderKTOpDetailBody(op, team, isLive) {
   const pct = op.W > 0 ? op.curW / op.W : 0;
   const barColor = pct>.6?'var(--hit)':pct>.3?'var(--wound)':'var(--dmg)';
+
+  const backBtn = document.getElementById('udm-back-btn');
+  if (backBtn) backBtn.style.display = udmReturnTo ? 'flex' : 'none';
 
   document.getElementById('udm-title').textContent = op.displayName;
   const body = document.getElementById('udm-body');
@@ -7454,6 +7541,7 @@ function showKTOpDetail(teamId, instanceId) {
       <img class="kt-udm-hero-img" src="images/${op.id}.jpg" onerror="document.getElementById('kt-udm-hero-wrap').remove()">
       <div class="kt-udm-hero-fade"></div>
     </div>
+    ${!isLive ? `<div class="preview-mode-badge">👁 MODO CONSULTA — sem batalha ativa</div>` : ''}
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <div style="font-size:36px">${team.emoji}</div>
       <div style="flex:1">
@@ -7478,8 +7566,8 @@ function showKTOpDetail(teamId, instanceId) {
     </div>
     ${op.abilities ? `<div class="udm-abilities"><div class="udm-section-title">⚡ Habilidades</div>${
         Array.isArray(op.abilities)
-          ? op.abilities.map(a => `<div class="rule-card"><div class="rule-card-name">${a.name}${a.ap?` <span class="ability-ap-badge">${a.ap}</span>`:''}</div><div class="rule-card-desc">${a.desc}</div></div>`).join('')
-          : `<div class="rule-card"><div class="rule-card-desc">${op.abilities}</div></div>`
+          ? op.abilities.map(a => `<div class="rule-card"><div class="rule-card-name">${a.name}${a.ap?` <span class="ability-ap-badge">${a.ap}</span>`:''}</div><div class="rule-card-desc">${linkifyKeywords(a.desc)}</div></div>`).join('')
+          : `<div class="rule-card"><div class="rule-card-desc">${linkifyKeywords(op.abilities)}</div></div>`
       }</div>` : ''}
     <div class="udm-section-title" style="margin-top:10px">🗡 Armas</div>
     ${op.weapons.map(w => {
@@ -7501,12 +7589,13 @@ function showKTOpDetail(teamId, instanceId) {
       </div>`).join('');
     }).join('')}
     <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="document.getElementById('unit-detail-modal').classList.remove('open');setTimeout(()=>showKTTeamRulesModal('${team.teamId}'),200)">ℹ️ Ver Regras do Time</button>
+    ${isLive ? `
     <!-- Manual HP adjustment -->
     <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
       <div style="flex:1;font-family:var(--fu);font-size:12px;color:var(--muted)">Ajustar PV manualmente:</div>
-      <button class="qty-btn" onclick="ktManualDmg('${teamId}','${instanceId}',-1)">−1</button>
-      <button class="qty-btn" onclick="ktManualDmg('${teamId}','${instanceId}',1)">+1</button>
-    </div>
+      <button class="qty-btn" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',-1)">−1</button>
+      <button class="qty-btn" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',1)">+1</button>
+    </div>` : ''}
     <div style="height:8px"></div>`;
   document.getElementById('unit-detail-modal').classList.add('open');
 }
@@ -7980,7 +8069,6 @@ function renderKTHist() {
 }
 
 // Override apply damage for KT
-const _origApplyDmg = typeof applyDamageFromBattle === 'function' ? applyDamageFromBattle : null;
 function applyDamageFromBattle() {
   // Check if we're in KT mode
   if (Object.keys(ktBS).length && ktActiveCombat.defOpId) {
@@ -8002,7 +8090,7 @@ function applyDamageFromBattle() {
     return;
   }
   // Otherwise fall through to 40K version
-  if (_origApplyDmg) _origApplyDmg();
+  applyDamageFromBattle40K();
 }
 
 // ── STATUS TAB ───────────────────────────────────────
