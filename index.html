@@ -6766,6 +6766,1333 @@ const KT_TEAMS = [
         ]},
     ]
   },
+  // ── MANDRAKES (Aeldari / Drukhari) ─────────────────
+  {
+    id: 'kt-mandrakes',
+    name: 'Mandrakes',
+    faction: 'Aeldari (Drukhari)',
+    color: '#7b4fb0',
+    emoji: '🌑',
+    desc: 'Entidades de sombra de Aelindrach, mercenárias dos Drukhari. Movem-se pela escuridão, teleportam por sombras (Shadow Passage) e queimam a alma dos alvos com balefire gélido. Frágeis, mas quase intocáveis quando WITHIN SHADOW.',
+    style: 'Sombra · Emboscada · Infiltração',
+    limit: 9,
+    coreRule: {
+      name: 'Regras de Facção + Equipamento',
+      desc: '<strong>Soulstrike (regra de arma).</strong> Os dados de defesa bem-sucedidos são determinados de forma diferente. Cada resultado igual ou menor que o APL do alvo é sucesso e é retido. Cada resultado maior que o APL do alvo é falha e é descartado. Todo resultado 1 é sempre um sucesso crítico. Todo outro sucesso é normal. Todo resultado 6 é sempre falha. (APL considerado é o do momento em que a regra tem efeito, incluindo alterações.)<br><br><strong>Within Shadow.</strong> Um operativo está WITHIN SHADOW se qualquer: estiver a 1" de terreno Heavy que não seja mais baixo que ele; qualquer parte da base estiver sob terreno Vantage; ou um marcador Shadow Portal estiver no seu control range (ver Shadeweaver).<br><br><strong>Umbral Entities.</strong> Sempre que um operativo atira em um MANDRAKE amigo, ignore a regra Piercing. Sempre que um MANDRAKE amigo está WITHIN SHADOW, melhore o Save dele em 1.<br><br><strong>Shadow Passage.</strong> Uma vez por turno, um MANDRAKE amigo WITHIN SHADOW pode usar um SHADOW PASSAGE ao fazer a ação Reposition. Se usar, não o mova: remova-o do killzone e recoloque-o WITHIN SHADOW em local válido. Ao recolocar, ele não pode: estar no control range de inimigo; ser alvo válido de inimigo; fazer Shoot ou Fight até o começo do próximo turno.<br><br><strong>EQUIP — Chain Snare.</strong> Quando um inimigo faria Fall Back dentro do control range de um MANDRAKE amigo, se nenhum outro inimigo estiver no control range desse amigo, role 2D6 (ou 1D6 se o inimigo tiver Wounds maior). Se qualquer resultado for 4+, esse inimigo não pode fazer a ação (sem gastar AP), e você não pode usar isto de novo neste turno.<br><br><strong>EQUIP — Shadow Glyph.</strong> Uma vez por turno, quando um MANDRAKE amigo é ativado WITHIN SHADOW, até o começo da próxima ativação dele, enquanto tiver ordem Conceal e estiver em cover, não pode ser alvo válido (precede Seek, Vantage) exceto estar a 2".<br><br><strong>EQUIP — Soul Gem.</strong> Uma vez por turno, quando um MANDRAKE amigo faz Shoot e você seleciona um baleblast, até o fim da ação esse baleblast ganha Blast 1".<br><br><strong>EQUIP — Bone Darts.</strong> Uma vez por turno, um MANDRAKE amigo pode usar: Bone dart — A4, 3+, D2/4, Range 6", Rending, Silent.'
+    },
+    ploys: {
+      strategy: [
+        {
+          name: 'Creeping Horror',
+          desc: 'Depois da ativação de cada inimigo, antes do próximo operativo ser ativado, um MANDRAKE amigo com ordem Conceal pode fazer um Dash gratuito se começar e terminar essa ação WITHIN SHADOW. Não pode no primeiro turno, e não pode selecionar o mesmo operativo mais de uma vez por turno.'
+        },
+        {
+          name: 'Gloaming Shroud',
+          desc: 'Sempre que um operativo atira em um MANDRAKE amigo que está WITHIN SHADOW, você pode reter um dos seus dados de defesa como sucesso normal sem rolar (além do cover save, se houver).'
+        },
+        {
+          name: 'Blade in the Dark',
+          desc: 'Cada MANDRAKE amigo pode fazer a ação Charge mesmo com ordem Conceal se começar ou terminar essa ação WITHIN SHADOW.'
+        },
+        {
+          name: 'Inescapable Nightmare',
+          desc: 'Sempre que um MANDRAKE amigo está atirando, lutando ou retaliando, se estiver WITHIN SHADOW, você pode re-rolar um dos seus dados de ataque.'
+        }
+      ],
+      firefight: [
+        {
+          name: 'Slither Out of Sight',
+          desc: 'Use no fim da ativação de qualquer operativo. Selecione um MANDRAKE amigo com ordem Engage e WITHIN SHADOW. Mude a ordem dele para Conceal.'
+        },
+        {
+          name: 'Soul Feast',
+          desc: 'Use quando um MANDRAKE amigo está atirando/lutando/retaliando contra um inimigo a 6" dele, no fim do passo Resolve Attack Dice. Esse amigo recupera Wounds perdidos = APL do inimigo × número dos seus dados de ataque que causaram dano nessa sequência. Excesso ignorado. Não pode usar se esse MANDRAKE estiver incapacitado.'
+        },
+        {
+          name: 'Nowhere to Hide',
+          desc: 'Use durante a ativação de um MANDRAKE amigo, quando ele faz uma ação em que se move. Até o fim da ativação, ele pode se mover através de partes de terreno como se não estivessem lá, mas não pode se mover mais que o Move dele se for Charge e deve terminar em local válido.'
+        },
+        {
+          name: 'Shadow\'s Bite',
+          desc: 'Use quando um inimigo faz a ação Fight numa ativação em que fez Charge, e seleciona um MANDRAKE amigo WITHIN SHADOW para lutar. No passo Resolve Attack Dice dessa sequência, você resolve o primeiro dado de ataque (defensor em vez do atacante).'
+        }
+      ]
+    },
+    operatives: [
+      {
+        id: 'kt-mand-nightfiend',
+        name: 'Nightfiend',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 9,
+        abilities: [
+          {
+            name: 'LÍDER',
+            desc: 'Este operativo é o líder do time.'
+          },
+          {
+            name: 'Harrowing Whispers',
+            desc: 'Quando o oponente for ativar um inimigo a 6" deste operativo, você pode rolar 1D6 (não pode se já interrompeu a ativação desse inimigo com esta regra ou com a Haunting Focus do DIRGEMAW neste turno): se o resultado for maior que o APL desse inimigo, o oponente não pode ativá-lo nesta ativação. Se não houver outro inimigo elegível, esta regra não tem efeito.'
+          },
+          {
+            name: 'Oubliex',
+            desc: 'Quando este operativo é readied, ou se incapacita um inimigo com a huskblade, seu oubliex fica ativo. Enquanto o oubliex estiver ativo e um dado de ataque fosse causar dano neste operativo, role 1D6: em 5+, ignore o dano desse dado e o oubliex deixa de estar ativo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Baleblast',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Soulstrike'
+            ]
+          },
+          {
+            name: 'Huskblade',
+            A: 5,
+            skill: 3,
+            D: 4,
+            CD: 6,
+            range: 'melee',
+            tags: [
+              'Lethal 5+',
+              'Shock'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-mand-abyssal',
+        name: 'Abyssal',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 8,
+        abilities: [
+          {
+            name: 'Balefire',
+            desc: 'Quando um MANDRAKE amigo atira em um inimigo que tem um dos seus Balefire tokens, some 1 a ambos os Dmg das armas ranged desse amigo, e essas armas ganham Saturate. Quando um operativo atira em um MANDRAKE amigo que tem um dos seus Balefire tokens, subtraia 1 de ambos os Dmg das armas ranged desse operativo (mínimo 1).'
+          },
+          {
+            name: 'Wreathe in Balefire',
+            ap: '1AP',
+            desc: 'Selecione um operativo visível a este que não tenha um Balefire token seu. Até o começo da próxima ativação deste operativo, até ele ser incapacitado, ou até refazer esta ação (o que vier primeiro), o selecionado ganha um Balefire token seu. Não pode fazer esta ação no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Balesurge',
+            range: 'long',
+            profiles: [
+              {
+                name: 'blast',
+                A: 5,
+                skill: 3,
+                D: 3,
+                CD: 4,
+                tags: [
+                  'Blast 2"',
+                  'Soulstrike'
+                ]
+              },
+              {
+                name: 'burn',
+                A: 5,
+                skill: 3,
+                D: 3,
+                CD: 4,
+                tags: [
+                  'Lethal 5+',
+                  'Soulstrike'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Glimmersteel blade',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Lethal 5+'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-mand-chooser',
+        name: 'Chooser of the Flesh',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 8,
+        abilities: [
+          {
+            name: 'Soul Harvest',
+            desc: 'Quando um inimigo é incapacitado pela regra Part Collector deste operativo ou pela baleblade, ganhe 1 Soul Harvest point, ou 2 se esse inimigo tinha APL 3+. Quando um MANDRAKE amigo é ativado, você pode gastar 1 Soul Harvest point para: somar 1 ao APL dele até o fim da batalha, ou recuperar até 2D3 Wounds perdidos. Você pode gastar mesmo que este operativo esteja incapacitado.'
+          },
+          {
+            name: 'Part Collector',
+            desc: 'Quando um inimigo faz Fall Back dentro do control range deste operativo, você pode usar esta regra. Se usar, cause 2D3 de dano nesse inimigo antes dele se mover.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Baleblast',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Soulstrike'
+            ]
+          },
+          {
+            name: 'Baleblade',
+            A: 4,
+            skill: 3,
+            D: 5,
+            CD: 6,
+            range: 'melee',
+            tags: [
+              'Brutal',
+              'Lethal 5+'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-mand-dirgemaw',
+        name: 'Dirgemaw',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 8,
+        abilities: [
+          {
+            name: 'Haunting Focus',
+            desc: 'STRATEGIC GAMBIT. Selecione um inimigo. Até o passo Ready da próxima Strategy phase, ele ganha seu Haunting Focus token. Na próxima vez que o oponente for ativar um inimigo com esse token, se este operativo estiver ready, você pode ativá-lo primeiro (não pode se também rolou para impedir a ativação desse inimigo com a Harrowing Whispers do NIGHTFIEND neste turno). Se ativar, nesta ativação ele deve atirar/lutar contra esse inimigo e não pode contra outros até fazê-lo (se impossível, a ativação é cancelada). Ao completar, o oponente ativa esse inimigo (se possível), ou outro inimigo se não puder.'
+          },
+          {
+            name: 'Pareidolic Projection',
+            ap: '1AP',
+            desc: 'Selecione um inimigo que seja alvo válido para este operativo ou que esteja WITHIN SHADOW. Até o começo da próxima ativação deste, até ele ser incapacitado, ou até refazer esta ação (o que vier primeiro), piore o Hit das armas desse inimigo em 1 e subtraia 2" do Move dele (não cumulativo com estar injured). Não pode fazer esta ação no control range de inimigo, a menos que o único inimigo no control range seja o selecionado.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Baleblast',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Soulstrike'
+            ]
+          },
+          {
+            name: 'Horrifying scream',
+            A: 5,
+            skill: 2,
+            D: 2,
+            CD: 2,
+            range: 'short',
+            tags: [
+              'Range 6"',
+              'Devastating 2',
+              'Seek Light',
+              'Stun',
+              'Soulstrike'
+            ]
+          },
+          {
+            name: 'Glimmersteel blade',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Lethal 5+'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-mand-shadeweaver',
+        name: 'Shadeweaver',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 8,
+        abilities: [
+          {
+            name: 'Shadow Portal',
+            desc: 'Quando este operativo faz Reposition usando um SHADOW PASSAGE, você pode usar esta regra. Se usar, remova seus marcadores Shadow Portal do killzone (se houver), depois coloque um marcador no control range deste operativo antes dele ser removido e outro no control range dele depois de recolocado. Cada MANDRAKE amigo pode usar um SHADOW PASSAGE por turno (isto tem precedência sobre o limite de um por turno) se um marcador Shadow Portal estiver no control range dele ao ser removido e o outro ao ser recolocado. Funciona mesmo que este operativo esteja incapacitado, e não impede um operativo de usar SHADOW PASSAGE do modo normal.'
+          },
+          {
+            name: 'Weave Darkness',
+            ap: '1AP',
+            desc: 'Remova seu marcador Weave Darkness do killzone (se houver). Depois coloque-o visível a este operativo, ou em terreno Vantage visível a ele. Esse marcador cria uma área de smoke com tamanho e efeitos de uma smoke grenade, exceto que você não o remove no turno seguinte. Se este operativo for incapacitado, remova o marcador. Não pode fazer esta ação no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Baleblast',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Soulstrike'
+            ]
+          },
+          {
+            name: 'Glimmersteel blade',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Lethal 5+'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-mand-warrior',
+        name: 'Warrior',
+        unique: false,
+        count: 8,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 8,
+        abilities: [
+          {
+            name: 'Shadow Warrior',
+            desc: 'Sempre que este operativo estiver WITHIN SHADOW, some 1 ao Critical Dmg da glimmersteel blade dele.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Baleblast',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Soulstrike'
+            ]
+          },
+          {
+            name: 'Glimmersteel blade',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Lethal 5+'
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  // ── VESPID STINGWINGS (T'au Empire) ─────────────────
+  {
+    id: 'kt-vespid',
+    name: 'Vespid Stingwings',
+    faction: 'T\'au Empire',
+    color: '#e07b39',
+    emoji: '🐝',
+    desc: 'Xenos alados do Império T\'au, controlados via Communion points. Voam (FLY) ignorando terreno, carregam armas neutron ao se mover e sempre priorizam o inimigo mais próximo — a menos que você gaste Communion para controlá-los.',
+    style: 'Tiro · Mobilidade · Voo',
+    limit: 11,
+    coreRule: {
+      name: 'Regras de Facção + Equipamento',
+      desc: '<strong>Communion.</strong> No passo Ready de cada Strategy phase, remova todos os Communion points do turno anterior, depois ganhe D3 Communion points, +1 se um OVERSIGHT DRONE amigo estiver no killzone. Usos (DRONE não é afetado):<br>1. Ao fazer Shoot, um VESPID só pode mirar no inimigo mais próximo a 8" (excluindo inimigos no control range de outros VESPID amigos) a menos que gaste 1 Communion. Blast/Torrent: só o primeiro alvo precisa ser escolhido assim.<br>2. Ao fazer Charge, um VESPID (exceto DRONE) deve terminar no control range do inimigo mais próximo possível a menos que gaste 1 Communion.<br>3. Ao fazer Pick Up Marker ou ação de missão (exceto Operate Hatch) com um VESPID, gaste também 1 Communion.<br>4. Ao atirar com um VESPID, você pode gastar 1 (e só 1) Communion para re-rolar um dado de ataque.<br><br><strong>Neutron Charge.</strong> Armas neutron são quaisquer com \'neutron\' no nome. Sempre que um VESPID amigo se move ou usa FLY, suas armas neutron ganham Piercing 1 até o fim do turno.<br><br><strong>Fly.</strong> Quando um VESPID amigo faz uma ação em que se move, ele pode FLY: não o mova; remova-o e recoloque-o totalmente a uma distância = Move (ou 3" se foi Dash) horizontalmente do local original. Não ganha distância extra no Charge. Deve ser colocado em local válido e, exceto no Charge, não pode ser colocado no control range de inimigo.<br><br><strong>EQUIP — Neurostimulant.</strong> No passo Ready de cada Strategy phase, ao determinar Communion points, você pode rolar 2D3 e escolher 1D3 para usar.<br><br><strong>EQUIP — Convergence Stimulant.</strong> Uma vez por turno, um VESPID amigo pode fazer Pick Up Marker ou ação de missão sem gastar Communion.<br><br><strong>EQUIP — Accelerant Stimulant.</strong> Quando um VESPID (exceto OVERSIGHT DRONE) faz Charge ou Dash, pode mover +1". Se usar FLY, pode ser recolocado 1" mais longe.<br><br><strong>EQUIP — Aggression Stimulant.</strong> Quando um VESPID (exceto OVERSIGHT DRONE) está lutando, suas armas melee ganham Ceaseless.'
+    },
+    ploys: {
+      strategy: [
+        {
+          name: 'Hardened Exoskeleton',
+          desc: 'Quando um VESPID amigo (exceto OVERSIGHT DRONE) está lutando ou retaliando, Normal Dmg de 4+ causa 1 de dano a menos nele.'
+        },
+        {
+          name: 'Aerial Agility',
+          desc: 'Quando um operativo atira num VESPID amigo enquanto counteracting, ou numa ativação em que o atirador se moveu ou foi colocado, role 1D6 sempre que um dado de ataque fosse causar Normal Dmg: em 5+, ignore esse dano. Não pode ignorar mais de um dado por sequência de Shoot.'
+        },
+        {
+          name: 'Airborne Predators',
+          desc: 'Quando um VESPID amigo se move ou usa FLY na ativação dele, suas armas ganham Balanced até o fim dessa ativação.'
+        },
+        {
+          name: 'Sting',
+          desc: 'Melhore o Hit das claws dos VESPID amigos em 1, e essas armas ganham Lethal 5+ e Shock.'
+        }
+      ],
+      firefight: [
+        {
+          name: 'Ocelli',
+          desc: 'Use quando um VESPID amigo faz Shoot numa ativação em que usou FLY. Até o fim da ação, ele ganha os benefícios das duas primeiras características de terreno Vantage. Ao determinar diferença de altura para Vantage, trate-o como 3" mais alto (mas não ao determinar distância para Communion).'
+        },
+        {
+          name: 'Darting Flight',
+          desc: 'Use quando um VESPID amigo faz Reposition. Até o fim da ação, ele pode mover +D3", ou ser colocado +D3" longe se usar FLY. Em qualquer caso, não pode fazer Shoot ou Fight pelo resto do turno.'
+        },
+        {
+          name: 'Neutron Overload',
+          desc: 'Use ao resolver um sucesso crítico de um VESPID amigo atirando com arma neutron numa ativação em que se moveu ou usou FLY. Se o alvo estiver a 4" dele, cause D3 de dano adicional.'
+        },
+        {
+          name: 'Vicious Venom',
+          desc: 'Use quando um VESPID amigo (exceto OVERSIGHT DRONE) está lutando e você acerta com sucesso crítico. Cause D3 de dano adicional.'
+        }
+      ]
+    },
+    operatives: [
+      {
+        id: 'kt-vesp-strainleader',
+        name: 'Strain Leader',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 10,
+        abilities: [
+          {
+            name: 'LÍDER',
+            desc: 'Este operativo é o líder do time.'
+          },
+          {
+            name: 'Communion Helm',
+            desc: 'Uma vez em cada ativação deste operativo, você pode gastar 1 Communion point de graça.'
+          },
+          {
+            name: 'Commune',
+            desc: 'Ao selecionar seus operativos para a batalha, selecione também um Strategy Ploy dos VESPID. Sempre que este operativo estiver no killzone e não no control range de inimigos, esse ploy custa 0CP.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Neutron blaster',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 3,
+            range: 'long',
+            tags: [
+              'Devastating 2'
+            ]
+          },
+          {
+            name: 'Claws',
+            A: 3,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-vesp-oversightdrone',
+        name: 'Oversight Drone',
+        unique: true,
+        M: '8"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 2,
+        W: 5,
+        abilities: [
+          {
+            name: 'Evasive Drone',
+            desc: 'Não pode fazer ações além de Aerial Guidance, Charge, Dash, Fall Back, Fight e Reposition. Ao determinar controle de objetivo, trate o APL dele como 1 menor (não é mudança de APL, então é cumulativo). Ao determinar visibilidade a partir dele, o disco no topo da miniatura é a cabeça. Com ordem Conceal e em cover, não pode ser alvo válido (precede tudo exceto estar a 2"). Quando atirado, ignore Piercing.'
+          },
+          {
+            name: 'Aerial Guidance',
+            ap: '1AP',
+            desc: 'SUPPORT. Até o começo da próxima ativação deste operativo, sempre que outro VESPID amigo visível a e a 6" deste operativo atira num inimigo visível a este operativo, as armas ranged desse amigo ganham Lethal 5+ e Saturate. Sem efeito enquanto este operativo estiver no control range de inimigo. Não pode fazer esta ação no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Ram',
+            A: 3,
+            skill: 5,
+            D: 1,
+            CD: 2,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-vesp-longsting',
+        name: 'Longsting',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 9,
+        abilities: [
+          {
+            name: 'Neutron Fragment',
+            desc: 'Se o alvo desta arma não for incapacitado mas você resolver qualquer dado de ataque, ele ganha um Neutron Fragment token seu. Sempre que um operativo com Neutron Fragment token é ativado, cause D3 de dano nele para cada token (role separadamente para cada).'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Neutron rail rifle',
+            range: 'long',
+            profiles: [
+              {
+                name: 'standard',
+                A: 4,
+                skill: 4,
+                D: 4,
+                CD: 4,
+                tags: [
+                  'Devastating 2',
+                  'Neutron Fragment'
+                ]
+              },
+              {
+                name: 'aimed',
+                A: 4,
+                skill: 3,
+                D: 4,
+                CD: 4,
+                tags: [
+                  'Devastating 2',
+                  'Heavy (Dash only)',
+                  'Lethal 5+',
+                  'Neutron Fragment'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Claws',
+            A: 3,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-vesp-shadestrain',
+        name: 'Shadestrain',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 9,
+        abilities: [
+          {
+            name: 'Ghost Rig',
+            desc: 'Com ordem Conceal, o oponente não pode selecioná-lo como alvo válido a menos que esteja a 6" do operativo tentando mirá-lo. Sem efeito se não for o alvo válido (ex: alvo secundário de Blast).'
+          },
+          {
+            name: 'Camouflaged',
+            desc: 'Quando um operativo atira neste, ignore Piercing e todos os cover saves são retidos como sucessos críticos. Sem efeito se não for o alvo válido (ex: alvo secundário de Blast).'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Neutron sting',
+            A: 4,
+            skill: 4,
+            D: 3,
+            CD: 3,
+            range: 'short',
+            tags: [
+              'Range 8"',
+              'Devastating 2'
+            ]
+          },
+          {
+            name: 'Neutron grenade',
+            A: 4,
+            skill: 4,
+            D: 3,
+            CD: 3,
+            range: 'short',
+            tags: [
+              'Range 6"',
+              'Blast 2"',
+              'Devastating 2',
+              'Limited 1',
+              'Saturate'
+            ]
+          },
+          {
+            name: 'Claws',
+            A: 3,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-vesp-skyblast',
+        name: 'Skyblast',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 9,
+        abilities: [
+          {
+            name: 'Neutron Bombardment',
+            desc: 'Coloque um dos seus Neutron Fallout markers no control range do alvo primário.'
+          },
+          {
+            name: 'Neutron Fallout',
+            desc: 'Uma vez em cada ativação de inimigo, assim que ele estiver a 2" de um dos seus Neutron Fallout markers, cause D3 de dano nele (múltiplos marcadores não são cumulativos).'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Neutron grenade launcher',
+            A: 4,
+            skill: 4,
+            D: 3,
+            CD: 3,
+            range: 'long',
+            tags: [
+              'Blast 2"',
+              'Devastating 2',
+              'Neutron Bombardment'
+            ]
+          },
+          {
+            name: 'Claws',
+            A: 3,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-vesp-swarmguard',
+        name: 'Swarmguard',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 9,
+        abilities: [
+          {
+            name: 'Skytorch',
+            desc: 'Uma arma só pode ser usada durante a ação Skytorch Assault. Se usar, não selecione alvo válido: atire contra cada operativo na torch zone (exceto os totalmente sob Vantage); eles não estão em cover nem obscured. Role cada sequência separadamente do mais distante ao mais próximo. A torch zone é a área horizontal entre a posição atual e a anterior do operativo (marcador 28mm). Torrent 0" = sem alvos secundários fora da torch zone, mas mantém Torrent para todos os outros fins de regra.'
+          },
+          {
+            name: 'Skytorch Assault',
+            ap: '2AP',
+            desc: 'Faça uma Reposition gratuita com este operativo. Durante ela, ele deve FLY e pode mover +2". Depois faça um Shoot gratuito. Você só pode selecionar o flamer (skytorch) para esse Shoot. Não pode fazer esta ação com ordem Conceal, ou no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Flamer',
+            range: 'short',
+            profiles: [
+              {
+                name: 'standard',
+                A: 4,
+                skill: 2,
+                D: 3,
+                CD: 3,
+                tags: [
+                  'Range 8"',
+                  'Saturate',
+                  'Torrent 2"'
+                ]
+              },
+              {
+                name: 'skytorch',
+                A: 4,
+                skill: 2,
+                D: 3,
+                CD: 3,
+                tags: [
+                  'Saturate',
+                  'Torrent 0"',
+                  'Skytorch'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Claws',
+            A: 3,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-vesp-warrior',
+        name: 'Warrior',
+        unique: false,
+        count: 9,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 9,
+        abilities: [
+          {
+            name: 'Warrior Instincts',
+            desc: 'Sempre que este operativo está atirando, se você não gastar Communion points nessa sequência, o neutron blaster dele ganha Accurate 1 até o fim da sequência.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Neutron blaster',
+            A: 4,
+            skill: 4,
+            D: 3,
+            CD: 3,
+            range: 'long',
+            tags: [
+              'Devastating 2'
+            ]
+          },
+          {
+            name: 'Claws',
+            A: 3,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      }
+    ]
+  },
+
+  // ── HAND OF THE ARCHON (Aeldari / Drukhari) ─────────────────
+  {
+    id: 'kt-hota',
+    name: 'Hand of the Archon',
+    faction: 'Aeldari (Drukhari)',
+    color: '#2a6f8e',
+    emoji: '🗡',
+    desc: 'Assassinos e torturadores Drukhari de Commorragh. Ganham Pain tokens ao ferir/incapacitar e gastam em invigorations (cura, APL extra, re-rolls). Venenos, drogas de combate e lâminas cruéis. Máx. duas darklight weapons (blast pistol, blaster, dark lance).',
+    style: 'Dor · Veneno · Assassinato',
+    limit: 9,
+    coreRule: {
+      name: 'Regras de Facção + Equipamento',
+      desc: '<strong>Power From Pain.</strong> Depois que um HAND OF THE ARCHON amigo faz uma ação, ele ganha um Pain token se: um inimigo foi ferido (injured) na ação mas não incapacitado; OU um inimigo foi incapacitado na ação (se esse inimigo tinha Wounds 12+, ganha 2 Pain tokens). Gaste Pain tokens em invigorations quando a condição \'when\' ocorrer. Máx. uma invigoration por ativação/counteraction, exceto Stimulated Senses (que pode ser usada uma vez por ativação/counteraction além de outra invigoration).<br>• <strong>Dark Animus</strong> — Quando: durante a ativação, antes ou depois de uma ação. Efeito: até o começo da próxima ativação, +1 no APL.<br>• <strong>Accelerated Rejuvenation</strong> — Quando: durante ativação/counteraction, antes ou depois de uma ação. Efeito: recupera até D3+1 Wounds perdidos.<br>• <strong>Vitalised Surge</strong> — Quando: depois de incapacitar um inimigo e ele ser removido do killzone. Efeito: pode fazer um Dash gratuito imediatamente, mesmo se fez uma ação que impede Dash.<br>• <strong>Stimulated Senses</strong> — Quando: depois de rolar seus dados de ataque ou defesa. Efeito: re-role qualquer um dos seus dados de um mesmo resultado (ex: os 2).<br><br><strong>Rifles.</strong> Quando um HAND OF THE ARCHON amigo atira com splinter rifle numa ativação em que NÃO fez Charge, Fall Back ou Reposition, essa arma ganha Accurate 1. (Ele pode fazer essas ações depois de atirar.)<br><br><strong>EQUIP — Chain Snare.</strong> Quando um inimigo faria Fall Back no control range de um HAND OF THE ARCHON amigo, se nenhum outro inimigo estiver no control range dele, role 2D6 (ou 1D6 se o inimigo tiver Wounds maior). Se qualquer resultado for 4+, esse inimigo não pode fazer a ação (sem AP), e não pode usar de novo neste turno.<br><br><strong>EQUIP — Wicked Blades.</strong> Some 1 ao Atk das array of blades dos HAND OF THE ARCHON amigos.<br><br><strong>EQUIP — Toxin Coating.</strong> Até 2x por turno, quando um HAND OF THE ARCHON amigo está lutando/retaliando e você seleciona uma arma melee, até o fim da sequência essa arma melee ganha Lethal 5+.<br><br><strong>EQUIP — Refined Poison.</strong> Até 2x por turno, quando um HAND OF THE ARCHON amigo faz Shoot e você seleciona shardcarbine, splinter cannon, splinter pistol, splinter rifle ou stinger pistol, até o fim da ação some 1 ao Normal Dmg dessa arma.'
+    },
+    ploys: {
+      strategy: [
+        {
+          name: 'Blade Artists',
+          desc: 'As armas melee dos HAND OF THE ARCHON amigos ganham Rending.'
+        },
+        {
+          name: 'Merciless Sadists',
+          desc: 'Quando um HAND OF THE ARCHON amigo atira ou luta contra um inimigo ferido (wounded), as armas desse amigo ganham Balanced.'
+        },
+        {
+          name: 'From Darkness, Death',
+          desc: 'Quando um HAND OF THE ARCHON amigo é ativado, antes de determinar a ordem dele, você pode selecionar um inimigo do qual esse amigo não é alvo válido. Até o fim da ativação, na primeira vez que esse amigo atirar/lutar contra esse inimigo, você pode reter um dos seus sucessos normais como crítico.'
+        },
+        {
+          name: 'Denizens of Night',
+          desc: 'Quando um inimigo atira num HAND OF THE ARCHON amigo a mais de 2" de inimigos, se terreno Heavy ou Light estiver intervindo, ou qualquer parte da base do amigo estiver sob Vantage, você pode re-rolar um dos seus dados de defesa.'
+        }
+      ],
+      firefight: [
+        {
+          name: 'Cruel Deception',
+          desc: 'Use durante a ativação de um HAND OF THE ARCHON amigo, antes ou depois de uma ação. Nessa ativação, ele pode fazer Fall Back por 1 AP a menos.'
+        },
+        {
+          name: 'Devious Scheme',
+          desc: 'Use depois que o oponente usa um firefight ploy (exceto um que custa 0CP). Na próxima vez que ele for usar esse ploy, deve gastar 1 CP adicional (ponto em que o efeito acaba). Não pode usar este ploy de novo até o efeito acabar.'
+        },
+        {
+          name: 'Heinous Arrogance',
+          desc: 'Use quando for sua vez de ativar um operativo amigo. Você pode pular essa ativação.'
+        },
+        {
+          name: 'Prey on the Wounded',
+          desc: 'Use depois de rolar seus dados de ataque de um HAND OF THE ARCHON amigo, se ele estiver atirando/lutando contra um inimigo ferido. Re-role qualquer um dos seus dados de ataque.'
+        }
+      ]
+    },
+    operatives: [
+      {
+        id: 'kt-hota-archsybarite',
+        name: 'Archsybarite',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 9,
+        abilities: [
+          {
+            name: 'LÍDER',
+            desc: 'Este operativo é o líder do time.'
+          },
+          {
+            name: 'Opções de arma',
+            desc: 'Escolha uma combinação: Blast pistol + Venom blade; Splinter pistol + Venom blade; Splinter pistol + Agoniser; Splinter pistol + Power weapon; ou Splinter rifle + Array of blades. (Blast pistol é darklight.)'
+          },
+          {
+            name: 'Cunning',
+            desc: 'No passo Gambit de cada Strategy phase, se este operativo estiver no killzone e você passar na primeira oportunidade, ganhe 1CP. Ignore cada STRATEGIC GAMBIT do mission pack (se houver) ao determinar isso.'
+          },
+          {
+            name: 'Torturous Vision',
+            desc: 'Uma vez em cada ativação deste operativo, se ele não tiver Pain tokens ao fazer Fight ou Shoot, ele pode ganhar um Pain token seu ao selecionar alvo válido ou inimigo para lutar.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Blast pistol',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"',
+              'Piercing 2'
+            ]
+          },
+          {
+            name: 'Splinter pistol',
+            A: 4,
+            skill: 3,
+            D: 2,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"',
+              'Lethal 5+'
+            ]
+          },
+          {
+            name: 'Splinter rifle',
+            A: 4,
+            skill: 3,
+            D: 2,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Lethal 5+'
+            ]
+          },
+          {
+            name: 'Agoniser',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Brutal',
+              'Lethal 5+',
+              'Shock'
+            ]
+          },
+          {
+            name: 'Array of blades',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          },
+          {
+            name: 'Power weapon',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 6,
+            range: 'melee',
+            tags: [
+              'Lethal 5+'
+            ]
+          },
+          {
+            name: 'Venom blade',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Lethal 4+'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-hota-agent',
+        name: 'Agent',
+        unique: false,
+        count: 8,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 8,
+        abilities: [
+          {
+            name: 'Sadistic Competition',
+            desc: 'Uma vez por turno, quando um HAND OF THE ARCHON amigo ganha um Pain token seu, um AGENT amigo que não tenha um Pain token seu também pode ganhar um.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Splinter rifle',
+            A: 4,
+            skill: 3,
+            D: 2,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Lethal 5+'
+            ]
+          },
+          {
+            name: 'Array of blades',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-hota-crimsonduellist',
+        name: 'Crimson Duellist',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 8,
+        abilities: [
+          {
+            name: 'Brutal Display',
+            desc: 'Uma vez por turno, quando este operativo incapacita um inimigo no seu control range, selecione outro inimigo visível a e a 6" deste operativo ou do inimigo incapacitado. Até o começo do próximo turno, esse outro inimigo não pode controlar marcadores nem fazer Pick Up Marker ou ações de missão.'
+          },
+          {
+            name: 'Crimson Duellist',
+            desc: 'Este operativo pode fazer duas ações Fight na ativação dele.'
+          },
+          {
+            name: 'Tangle',
+            desc: 'Quando este operativo luta ou retalia com esta arma, cada um dos seus blocks pode bloquear dois sucessos não resolvidos (em vez de um).'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Splinter pistol',
+            A: 4,
+            skill: 3,
+            D: 2,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"',
+              'Lethal 5+'
+            ]
+          },
+          {
+            name: 'Razorflail',
+            A: 4,
+            skill: 2,
+            D: 4,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Brutal',
+              'Tangle'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-hota-disciple',
+        name: 'Disciple of Yaelindra',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 8,
+        abilities: [
+          {
+            name: 'Stinger',
+            desc: 'Quando um inimigo é incapacitado por esta arma, antes de ser removido do killzone, cause D3 de dano em cada outro operativo visível a e a 2" dele (role separadamente). Cada operativo incapacitado assim faz isso acontecer de novo.'
+          },
+          {
+            name: 'Torment Grenade',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a e a 6" deste operativo. Esse inimigo e cada operativo a 1" dele fazem um poison test. Poison test: role 1D6, +1 se o operativo tiver Save 4+ ou pior: em 3+, cause D3 de dano nele e ele ganha um Poison token seu (se ainda não tiver). Quando um operativo com Poison token é ativado, cause D3 de dano nele. Não pode fazer esta ação no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Stinger pistol',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 5,
+            range: 'short',
+            tags: [
+              'Range 8"',
+              'Lethal 5+',
+              'Stinger'
+            ]
+          },
+          {
+            name: 'Array of blades',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-hota-elixicant',
+        name: 'Elixicant',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 8,
+        abilities: [
+          {
+            name: 'Combat Drugs',
+            desc: 'No fim do passo Select Operatives, se este operativo for selecionado, escolha uma COMBAT DRUG para os HAND OF THE ARCHON amigos na batalha: Painbringer (quando um dado de ataque causa 3+ de dano neste operativo, role 1D6: em 6, -1 nesse dano); Adrenalight (no passo Ready de cada Strategy phase, selecione um amigo com esta COMBAT DRUG para ganhar um Pain token); Hypex (ignore mudanças no Move deste operativo por estar injured).'
+          },
+          {
+            name: 'Administer Drug',
+            ap: '1AP',
+            desc: 'Selecione um HAND OF THE ARCHON amigo visível a e a 3" deste operativo, depois escolha: ele recupera até 2D3 Wounds perdidos; ou escolha uma COMBAT DRUG diferente para ele na batalha (substitui a anterior). Não pode fazer esta ação no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Splinter rifle',
+            A: 4,
+            skill: 3,
+            D: 2,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Lethal 5+'
+            ]
+          },
+          {
+            name: 'Stim-needler',
+            A: 4,
+            skill: 3,
+            D: 0,
+            CD: 0,
+            range: 'short',
+            tags: [
+              'Range 3"',
+              'Lethal 3+',
+              'Stun'
+            ]
+          },
+          {
+            name: 'Array of blades',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-hota-flayer',
+        name: 'Flayer',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 8,
+        abilities: [
+          {
+            name: 'Insensible to Pain',
+            desc: 'Normal e Critical Dmg de 3+ causa 1 de dano a menos neste operativo.'
+          },
+          {
+            name: 'Flay',
+            desc: 'Quando este operativo usa esta arma, na primeira vez que você acerta com sucesso crítico nessa sequência, selecione um HAND OF THE ARCHON amigo a 6" dele para ganhar um Pain token seu.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Pain sculptors',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Ceaseless',
+              'Flay'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-hota-gunner',
+        name: 'Gunner',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 8,
+        abilities: [
+          {
+            name: 'Opções de arma',
+            desc: 'Escolha uma: Blaster + Array of blades; ou Shredder + Array of blades. (Blaster é darklight.)'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Blaster',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'long',
+            tags: [
+              'Piercing 2'
+            ]
+          },
+          {
+            name: 'Shredder',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'long',
+            tags: [
+              'Rending',
+              'Torrent 2"'
+            ]
+          },
+          {
+            name: 'Array of blades',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-hota-heavygunner',
+        name: 'Heavy Gunner',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 8,
+        abilities: [
+          {
+            name: 'Opções de arma',
+            desc: 'Escolha uma: Dark lance + Array of blades; ou Splinter cannon + Array of blades. (Dark lance é darklight.)'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Dark lance',
+            A: 4,
+            skill: 3,
+            D: 6,
+            CD: 7,
+            range: 'long',
+            tags: [
+              'Heavy (Dash only)',
+              'Piercing 2'
+            ]
+          },
+          {
+            name: 'Splinter cannon',
+            range: 'long',
+            profiles: [
+              {
+                name: 'focused',
+                A: 5,
+                skill: 3,
+                D: 3,
+                CD: 5,
+                tags: [
+                  'Heavy (Dash only)',
+                  'Lethal 5+'
+                ]
+              },
+              {
+                name: 'sweeping',
+                A: 4,
+                skill: 3,
+                D: 3,
+                CD: 5,
+                tags: [
+                  'Heavy (Dash only)',
+                  'Lethal 5+',
+                  'Torrent 1"'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Array of blades',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-hota-skysplinter',
+        name: 'Skysplinter Assassin',
+        unique: true,
+        M: '7"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 8,
+        abilities: [
+          {
+            name: 'Merciless Hunter',
+            desc: 'Se este operativo não fizer a ação Mark na ativação dele, ele pode fazer duas ações Shoot na ativação, mas uma razorwing deve ser selecionada para uma (e só uma) dessas ações.'
+          },
+          {
+            name: 'Omen',
+            desc: 'No passo Select Operatives, ao selecionar equipamento, selecione um inimigo ou outro HAND OF THE ARCHON amigo (revele ao revelar o equipamento). Ao rolar dados de ataque/defesa desse operativo: se inimigo, o oponente re-rola os resultados 6; se amigo, você pode re-rolar qualquer resultado 1.'
+          },
+          {
+            name: 'Mark',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Até o fim do turno, sempre que este operativo atira nesse inimigo você pode usar este efeito: as armas ranged deste operativo ganham Seek Light; e esse inimigo não pode estar obscured. Não pode fazer esta ação no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Razorwing',
+            A: 4,
+            skill: 4,
+            D: 1,
+            CD: 2,
+            range: 'long',
+            tags: [
+              'Saturate',
+              'Seek',
+              'Silent'
+            ]
+          },
+          {
+            name: 'Shardcarbine',
+            A: 4,
+            skill: 2,
+            D: 2,
+            CD: 2,
+            range: 'long',
+            tags: [
+              'Devastating 2',
+              'Lethal 5+'
+            ]
+          },
+          {
+            name: 'Array of blades',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      }
+    ]
+  },
 ];
 
 // ── KILL TEAM ACTIONS ────────────────────────────────
