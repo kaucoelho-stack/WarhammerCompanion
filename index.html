@@ -153,6 +153,16 @@ body::before{content:'';position:fixed;inset:0;
 .spc-meta{display:flex;gap:8px;margin-top:4px;font-family:var(--fu);font-size:11px}
 .cp-inline{color:var(--gold)}.dead-inline{color:var(--dmg)}
 .turn-display{text-align:center;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:12px}
+.turn-guide{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;margin-bottom:14px}
+.tg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.tg-title{font-family:var(--fu);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+.tg-steps{display:flex;gap:4px;margin-bottom:10px}
+.tg-step{flex:1;text-align:center;padding:6px 2px;border-radius:var(--rsm);background:var(--card2);border:1px solid var(--border);font-family:var(--fu);font-size:9px;letter-spacing:.5px;color:var(--muted);cursor:pointer;transition:all .15s}
+.tg-step.active{background:rgba(232,184,75,.15);border-color:var(--gold);color:var(--gold)}
+.tg-step.done{color:var(--hit);border-color:rgba(34,197,94,.35)}
+.tg-step .tg-ico{font-size:15px;display:block;margin-bottom:2px}
+.tg-reminders{font-size:12px;color:var(--text2);line-height:1.55;margin:0;padding-left:16px}
+.tg-nav{display:flex;gap:6px;margin-top:10px}
 .turn-num{font-family:var(--ff);font-size:42px;color:var(--gold);line-height:1}
 .turn-lbl{font-family:var(--fu);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .cp-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
@@ -675,7 +685,8 @@ body::before{content:'';position:fixed;inset:0;
 .kt-team-card.selected .kt-tc-check{background:var(--pcolor);border-color:var(--pcolor);color:#000;font-weight:900}
 
 /* KT operative select */
-.kt-op-select-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:10px}
+.kt-op-select-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden;isolation:isolate}
+.kt-op-select-card>*:not(.kt-op-portrait):not(.kt-op-portrait-fade){position:relative;z-index:2}
 .kt-osc-info{flex:1}
 .kt-osc-name{font-family:var(--ff);font-size:15px}
 .kt-osc-sub{font-size:11px;color:var(--muted);font-family:var(--fu)}
@@ -689,6 +700,8 @@ body::before{content:'';position:fixed;inset:0;
 /* ═══ RULES REFERENCE ═══ */
 .rules-section-title{font-family:var(--fu);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
 .rules-section-title:first-child{margin-top:0}
+.ploy-tag.faction{background:rgba(34,197,94,.15);color:var(--hit);border:1px solid rgba(34,197,94,.3)}
+.ploy-tag.equip{background:rgba(232,184,75,.15);color:var(--gold);border:1px solid rgba(232,184,75,.3)}
 .rule-card{background:var(--card2);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 12px;margin-bottom:8px}
 .rule-card-name{font-family:var(--fu);font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
 .rule-card-desc{font-size:12px;color:var(--text2);line-height:1.5}
@@ -1109,7 +1122,7 @@ const VFX = {
 <!-- ═══ BATTLE ═══ -->
 <div class="screen" id="screen-battle">
   <div class="hdr">
-    <button class="hdr-back" onclick="SFX.click();NAV.back()">←</button>
+    <button class="hdr-back" onclick="confirmLeaveBattle('40k')">←</button>
     <div class="hdr-info"><div class="hdr-eyebrow">Em andamento</div><div class="hdr-title">⚔ <span>BATALHA</span></div></div>
     <div class="hdr-right" style="display:flex;align-items:center;gap:8px">
       <button id="vol-btn" onclick="toggleVolume()" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px" title="Som">🔊</button>
@@ -1128,6 +1141,7 @@ const VFX = {
       <div class="turn-num" id="turn-num">1</div>
       <div class="turn-lbl" id="turn-label">Turno 1 de 5</div>
     </div>
+    <div class="turn-guide" id="turn-guide"></div>
     <div class="sec-label">Placar</div>
     <div class="score-grid" id="score-grid"></div>
     <div class="sec-label">Command Points</div>
@@ -1191,6 +1205,10 @@ const VFX = {
       <div style="font-family:var(--fu);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Falta para iniciar:</div>
       <div id="checklist-items"></div>
     </div>
+    <label id="melta-toggle-row" style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-bottom:10px;cursor:pointer;user-select:none">
+      <input type="checkbox" id="melta-close" onchange="COMBAT.meltaClose=this.checked" style="width:18px;height:18px">
+      🔥 Alvo a ≤9" — aplicar <strong>Melta +2</strong> no dano (só afeta armas melta)
+    </label>
     <button class="btn btn-primary" id="btn-open-battle" onclick="openBattle()">⚔ RESOLVER COMBATE</button>
     <div class="hist-section hidden" id="hist-section">
       <div class="sec-label">Histórico</div>
@@ -2203,6 +2221,7 @@ function endTurn() {
   SFX.turn();
   if (TRACKER.turn >= TRACKER.maxTurns) { TRACKER.active = false; saveTracker(); showVictory(); return; }
   TRACKER.turn++;
+  G40_PHASE = 0;
   saveTracker();
   renderTracker();
   const el = document.getElementById('turn-num');
@@ -2231,8 +2250,40 @@ function showVictory() {
 }
 
 // ── RENDER ────────────────────────────────────────────
+// ── GUIA DE TURNO 40K (lembretes por fase) ────────────
+const G40_PHASES = [
+  { ico:'📋', name:'Comando',   tips:['Ganhe 1 CP (e gaste se quiser)', 'Testes de Battle-shock', 'Efeitos de início de turno / auras'] },
+  { ico:'🥾', name:'Movimento', tips:['Normal / Advance / Fall Back', 'Reforços (Reserves) entram', 'Controle de objetivo é checado depois'] },
+  { ico:'🎯', name:'Tiro',      tips:['Escolha alvos e armas', 'Cover, modificadores e alcance', 'Blast/Torrent contra unidades grandes'] },
+  { ico:'⚡', name:'Carga',     tips:['Declare a carga e role 2D6"', 'Overwatch do inimigo (se tiver)', 'Deve terminar em contato (1")'] },
+  { ico:'⚔', name:'Combate',   tips:['Pile in 3"', 'Resolva ataques (quem carregou primeiro)', 'Consolidate 3"'] },
+];
+let G40_PHASE = 0;
+function renderTurnGuide() {
+  const wrap = document.getElementById('turn-guide');
+  if (!wrap) return;
+  const steps = G40_PHASES.map((p, i) =>
+    `<div class="tg-step ${i === G40_PHASE ? 'active' : (i < G40_PHASE ? 'done' : '')}" onclick="setTurnPhase(${i})"><span class="tg-ico">${p.ico}</span>${p.name}</div>`
+  ).join('');
+  const cur = G40_PHASES[G40_PHASE];
+  wrap.innerHTML = `
+    <div class="tg-head"><div class="tg-title">🧭 Guia do Turno</div><div style="font-size:10px;color:var(--muted);font-family:var(--fu)">Fase ${G40_PHASE + 1}/5</div></div>
+    <div class="tg-steps">${steps}</div>
+    <ul class="tg-reminders">${cur.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+    <div class="tg-nav">
+      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="setTurnPhase(${G40_PHASE - 1})" ${G40_PHASE === 0 ? 'disabled' : ''}>← Anterior</button>
+      <button class="btn btn-secondary btn-sm" style="flex:2" onclick="nextTurnPhase()">${G40_PHASE >= 4 ? '↺ Reiniciar fases (novo jogador)' : 'Próxima fase →'}</button>
+    </div>`;
+}
+function setTurnPhase(i) { G40_PHASE = Math.max(0, Math.min(4, i)); SFX.click(); renderTurnGuide(); }
+function nextTurnPhase() {
+  if (G40_PHASE < 4) { G40_PHASE++; SFX.click(); renderTurnGuide(); }
+  else { G40_PHASE = 0; SFX.click(); renderTurnGuide(); if (typeof showToast === 'function') showToast('🔄 Fases reiniciadas para o próximo jogador'); }
+}
+
 function renderTracker() {
   renderScoreboard();
+  renderTurnGuide();
   renderObjectives();
   renderPVTab();
 }
@@ -2430,6 +2481,34 @@ const NAV = {
   },
   current() { return this.stack[this.stack.length - 1]; },
 };
+
+// Confirmação in-app (o confirm() nativo é suprimido em PWA instalado)
+let _appConfirmCb = null;
+function showAppConfirm(msg, onYes, yesLabel) {
+  _appConfirmCb = onYes || null;
+  const m = document.getElementById('app-confirm-msg'); if (m) m.textContent = msg;
+  const y = document.getElementById('app-confirm-yes'); if (y) y.textContent = yesLabel || 'Confirmar';
+  const modal = document.getElementById('app-confirm-modal'); if (modal) modal.classList.add('open');
+  try { SFX.click(); } catch (e) {}
+}
+function appConfirmClose(yes) {
+  const modal = document.getElementById('app-confirm-modal'); if (modal) modal.classList.remove('open');
+  const cb = _appConfirmCb; _appConfirmCb = null;
+  if (yes && cb) cb();
+}
+
+// Confirmação ao sair de uma batalha em andamento (evita perder a partida por engano)
+function confirmLeaveBattle(kind) {
+  const active = kind === 'kt'
+    ? !!(typeof KT_SESSION !== 'undefined' && KT_SESSION.teams && KT_SESSION.teams.length)
+    : !!(typeof TRACKER !== 'undefined' && TRACKER.active);
+  if (!active) { SFX.click(); NAV.back(); return; }
+  showAppConfirm(
+    '⚠ Voltar agora encerra a partida atual e o progresso será perdido. Tem certeza que quer sair?',
+    () => { NAV.back(); },
+    '🚪 Sair'
+  );
+}
 
 // ══════════════════════════════════════════════
 // HOME
@@ -3417,18 +3496,23 @@ function openBattle() {
   document.getElementById('vs-def-player').style.color = defFac?.color || '#888';
   document.getElementById('vs-def-qty').textContent    = COMBAT.qtyDef + ' miniatura' + (COMBAT.qtyDef > 1 ? 's' : '');
 
-  // Calculate total attacks (sum across all weapons × qty attackers)
-  let totalA = 0;
-  for (let i = 0; i < COMBAT.qtyAtk; i++) {
-    allWeapons.forEach(w => { totalA += rollStat(w.A); });
-  }
+  // Per-weapon attack counts — each weapon rolls its OWN Attacks × qty attackers,
+  // and is resolved by its OWN profile (BS/S/AP/D). Fixes mixed-profile combos.
+  const perWeaponAtk = allWeapons.map(w => {
+    let a = 0; for (let i = 0; i < COMBAT.qtyAtk; i++) a += rollStat(w.A); return a;
+  });
 
-  // Init battle state — store weapons so all phases can access them
+  // Init battle state — resolves weapon by weapon, accumulating totals.
   BS = {
-    phase: 0, totalAtk: totalA,
+    phase: 0,
+    weapons: allWeapons,
+    primaryWeapon: primaryWeapon,
+    weaponIdx: 0,
+    perWeaponAtk: perWeaponAtk,
+    totalAtk: perWeaponAtk[0] || 0,
     hits: 0, wounds: 0, failed: 0, dmg: 0, deaths: 0, mortals: 0,
-    weapons: allWeapons,        // all selected weapons
-    primaryWeapon: primaryWeapon // used for stats (T, Sv, AP, D)
+    accAtk: 0, accHits: 0, accWounds: 0, accFailed: 0, accDmg: 0,
+    meltaClose: !!COMBAT.meltaClose
   };
   battleRolling = false;
 
@@ -3453,6 +3537,7 @@ function openBattle() {
 }
 function closeBattle() {
   if (typeof ktClearPendingTimeouts === 'function') ktClearPendingTimeouts();
+  COMBAT.meltaClose = false; { const _mc = document.getElementById('melta-close'); if (_mc) _mc.checked = false; }
   document.getElementById('battle-modal').classList.remove('open');
   document.body.style.overflow='';
   // DON'T touch NAV or other screens
@@ -3460,24 +3545,25 @@ function closeBattle() {
 
 function renderPhaseSetup() {
   const def=DB.getUnit(COMBAT.defUnitId);
-  const w = BS.primaryWeapon; if(!w||!def) return;
+  const w = BS.weapons[BS.weaponIdx]; if(!w||!def) return;
+  const _as = BS.weapons.length>1 ? ' · arma '+(BS.weaponIdx+1)+'/'+BS.weapons.length : '';
   const t=document.getElementById('dp-title'), d=document.getElementById('dp-desc'), btn=document.getElementById('btn-phase');
   if(BS.phase===0){
-    t.textContent='FASE 1 — ACERTO';
+    t.textContent='FASE 1 — ACERTO'+_as;
     d.innerHTML=w.auto?`Torrent: <strong>${BS.totalAtk}</strong> ataques automáticos`:`Role <strong>${BS.totalAtk}</strong> dado${BS.totalAtk!==1?'s':''} — precisa <strong>${w.BS}+</strong>`;
     btn.textContent=w.auto?'✅ AUTO-ACERTOS':'🎲 ROLAR ACERTO';
   } else if(BS.phase===1){
     const wn=woundNeeds(w.S,def.T);
-    t.textContent='FASE 2 — FERIDA';
+    t.textContent='FASE 2 — FERIDA'+_as;
     d.innerHTML=`Role <strong>${BS.hits}</strong> dado${BS.hits!==1?'s':''} — F${w.S} vs R${def.T} → <strong>${wn}+</strong>`;
     btn.textContent='🎲 ROLAR FERIDA';
   } else if(BS.phase===2){
     const sn=svNeeds(def.Sv,w.AP);
-    t.textContent='FASE 3 — ARMADURA';
+    t.textContent='FASE 3 — ARMADURA'+_as;
     d.innerHTML=`Role <strong>${BS.wounds}</strong> dado${BS.wounds!==1?'s':''} — Sv${def.Sv}+ com PA${w.AP} → <strong>${sn>=7?'impossível':sn+'+'}</strong>`;
     btn.textContent='🎲 ROLAR ARMADURA';
   } else if(BS.phase===3){
-    t.textContent='FASE 4 — DANO';
+    t.textContent='FASE 4 — DANO'+_as;
     d.innerHTML=`${BS.failed} falha${BS.failed!==1?'s':''} × <strong>D${typeof w.D==='number'?w.D:w.D.toUpperCase()}</strong>`;
     btn.textContent='💥 CALCULAR DANO';
   }
@@ -3522,7 +3608,7 @@ const BADGE_TIPS = {
 };
 
 function runHit(){
-  const w = BS.primaryWeapon; if(!w) return;
+  const w = BS.weapons[BS.weaponIdx]; if(!w) return;
   const count=BS.totalAtk;
   const{dg,bg}=mkLogEntry('FASE 1 — ACERTO');
   if(w.auto){BS.hits=count;animDice(dg,Array(Math.min(count,20)).fill(6),()=>'hit-ok',count,30,()=>{showBadges(bg,[{c:'b-hit',t:'✅ '+count+' automáticos'}]);afterPhase(count>0);});return;}
@@ -3538,7 +3624,7 @@ function runHit(){
 }
 
 function runWound(){
-  const w=BS.primaryWeapon; if(!w)return;
+  const w=BS.weapons[BS.weaponIdx]; if(!w)return;
   const def=DB.getUnit(COMBAT.defUnitId);
   const count=BS.hits,thresh=woundNeeds(w.S,def.T);
   const{dg,bg}=mkLogEntry('FASE 2 — FERIDA');
@@ -3558,7 +3644,7 @@ function runWound(){
 }
 
 function runSave(){
-  const w=BS.primaryWeapon; if(!w)return;
+  const w=BS.weapons[BS.weaponIdx]; if(!w)return;
   const def=DB.getUnit(COMBAT.defUnitId);
   const mortals=BS.mortals||0,toRoll=BS.wounds-mortals,sn=svNeeds(def.Sv,w.AP);
   const{dg,bg}=mkLogEntry('FASE 3 — ARMADURA');
@@ -3573,19 +3659,16 @@ function runSave(){
 }
 
 function runDmg(){
-  const w=BS.primaryWeapon; if(!w)return;
-  const def=DB.getUnit(COMBAT.defUnitId);
+  const w=BS.weapons[BS.weaponIdx]; if(!w)return;
   const fails=BS.failed;
-  const{dg,bg}=mkLogEntry('FASE 4 — DANO');
-  const dmgRolls=Array.from({length:fails},()=>rollDmg(w.D));
+  const meltaOn = !!(w.melta && BS.meltaClose);
+  const{dg,bg}=mkLogEntry('FASE 4 — DANO'+(BS.weapons.length>1?' · '+w.name:''));
+  const dmgRolls=Array.from({length:fails},()=>rollDmg(w.D)+(meltaOn?2:0));
   const total=dmgRolls.reduce((a,b)=>a+b,0);BS.dmg=total;
-  let rem=total,deaths=0;
-  for(let i=0;i<COMBAT.qtyDef&&rem>0;i++){if(rem>=def.W){deaths++;rem-=def.W;}else break;}
-  BS.deaths=deaths;
   animDice(dg,dmgRolls.slice(0,20),()=>'dmg-die',fails,typeof w.D==='number'&&w.D===1?30:100,()=>{
-    if(deaths>0){SFX.death();VFX.deathEffect();}
-    showBadges(bg,[{c:'b-fail',t:'💥 '+total+' dano'},{c:'b-note',t:fails+'× D'+(typeof w.D==='number'?w.D:w.D.toUpperCase())},(w.melta?{c:'b-wound',t:'Melta: +2 se ≤9"'}:null)].filter(Boolean));
-    setTimeout(()=>finalizeBattle(),500);
+    const dlabel=fails+'× D'+(typeof w.D==='number'?w.D:w.D.toUpperCase())+(meltaOn?' +2':'');
+    showBadges(bg,[{c:'b-fail',t:'💥 '+total+' dano'},{c:'b-note',t:dlabel},(w.melta?{c:'b-wound',t:meltaOn?'🔥 Melta aplicado':'Melta: marque ≤9"'}:null)].filter(Boolean));
+    bsAdvanceOrFinalize();
   });
 }
 
@@ -3594,12 +3677,32 @@ function afterPhase(success){
   document.getElementById('ph'+ph).classList.remove('active');
   document.getElementById('ph'+ph).classList.add('done');
   if(!success){
-    if(ph<1)BS.wounds=0;if(ph<2)BS.failed=0;if(ph<3){BS.dmg=0;BS.deaths=0;}
-    setTimeout(()=>finalizeBattle(),400);return;
+    if(ph<1)BS.wounds=0;if(ph<2)BS.failed=0;if(ph<3){BS.dmg=0;}
+    setTimeout(()=>bsAdvanceOrFinalize(),400);return;
   }
   BS.phase=ph+1;
   document.getElementById('ph'+(ph+1)).classList.add('active');
   setTimeout(()=>{renderPhaseSetup();battleRolling=false;document.getElementById('btn-phase').disabled=false;const da=document.getElementById('dice-area');da.scrollTop=da.scrollHeight;},350);
+}
+
+function bsAdvanceOrFinalize(){
+  BS.accAtk+=BS.totalAtk; BS.accHits+=BS.hits; BS.accWounds+=BS.wounds; BS.accFailed+=BS.failed; BS.accDmg+=BS.dmg;
+  if(BS.weaponIdx < BS.weapons.length-1){
+    BS.weaponIdx++;
+    BS.totalAtk=BS.perWeaponAtk[BS.weaponIdx]||0;
+    BS.hits=0;BS.wounds=0;BS.failed=0;BS.mortals=0;BS.dmg=0;BS.phase=0;
+    for(let i=0;i<4;i++){const s=document.getElementById('ph'+i);if(s){s.classList.remove('active','done');}}
+    const p0=document.getElementById('ph0');if(p0)p0.classList.add('active');
+    setTimeout(()=>{renderPhaseSetup();battleRolling=false;document.getElementById('btn-phase').disabled=false;const da=document.getElementById('dice-area');if(da)da.scrollTop=da.scrollHeight;},450);
+    return;
+  }
+  BS.totalAtk=BS.accAtk;BS.hits=BS.accHits;BS.wounds=BS.accWounds;BS.failed=BS.accFailed;BS.dmg=BS.accDmg;
+  const def=DB.getUnit(COMBAT.defUnitId);
+  let rem=BS.dmg,deaths=0;
+  for(let i=0;i<COMBAT.qtyDef&&rem>0;i++){if(def&&rem>=def.W){deaths++;rem-=def.W;}else break;}
+  BS.deaths=deaths;
+  if(deaths>0){SFX.death();VFX.deathEffect();}
+  setTimeout(()=>finalizeBattle(),300);
 }
 
 function finalizeBattle(){
@@ -4310,6 +4413,30 @@ function ktTogglePloy(playerId, kind, ployName) {
   renderKTCPStrip(); // refresh the used-count badge
 }
 
+// Splits a coreRule.desc (single HTML blob) into separate faction-rule and
+// equipment cards. Segments are divided by <br><br>; each starts with a
+// <strong>Header.</strong>. Headers beginning with "EQUIP —" become equipment.
+// Teams with a plain single-rule coreRule (no <strong>) fall back to one card.
+function splitCoreRule(cr) {
+  const out = { factionRules: [], equipment: [] };
+  if (!cr || !cr.desc) return out;
+  cr.desc.split(/<br>\s*<br>/).forEach((seg, i) => {
+    seg = seg.trim();
+    if (!seg) return;
+    const m = seg.match(/^<strong>([\s\S]*?)<\/strong>/);
+    if (m) {
+      const head = m[1].trim();
+      const rest = seg.slice(m[0].length).replace(/^[\s.\u2014-]+/, '').trim();
+      const isEq = /^EQUIP\b/i.test(head);
+      const name = head.replace(/^EQUIP\s*[\u2014-]\s*/i, '').replace(/[.\s]+$/, '').trim();
+      (isEq ? out.equipment : out.factionRules).push({ name, desc: rest });
+    } else {
+      out.factionRules.push({ name: (i === 0 ? (cr.name || 'Regra') : 'Regra'), desc: seg });
+    }
+  });
+  return out;
+}
+
 function showKTTeamRulesModal(teamId) {
   const team = KT_DB.getTeam(teamId);
   if (!team) return;
@@ -4325,8 +4452,19 @@ function showKTTeamRulesModal(teamId) {
     </div>`;
 
   if (team.coreRule) {
-    html += `<div class="rules-section-title">⚡ Regra Principal</div>
-      <div class="rule-card"><div class="rule-card-name">${team.coreRule.name}</div><div class="rule-card-desc">${linkifyKeywords(team.coreRule.desc)}</div></div>`;
+    const _cr = splitCoreRule(team.coreRule);
+    if (_cr.factionRules.length) {
+      html += `<div class="rules-section-title">⚡ Regras de Facção</div>`;
+      _cr.factionRules.forEach(r => {
+        html += `<div class="rule-card" style="border-left:3px solid ${team.color}"><div class="rule-card-name">${r.name}<span class="ploy-tag faction">Regra</span></div><div class="rule-card-desc">${linkifyKeywords(r.desc)}</div></div>`;
+      });
+    }
+    if (_cr.equipment.length) {
+      html += `<div class="rules-section-title">🛠 Equipamento</div>`;
+      _cr.equipment.forEach(r => {
+        html += `<div class="rule-card" style="border-left:3px solid var(--gold)"><div class="rule-card-name">${r.name}<span class="ploy-tag equip">Equip</span></div><div class="rule-card-desc">${linkifyKeywords(r.desc)}</div></div>`;
+      });
+    }
   }
 
   if (team.ploys) {
@@ -4436,6 +4574,17 @@ const KT_WEAPON_KEYWORDS = {
   'Silent':     { name:'Silent', desc:'Pode Atirar com esta arma mesmo estando com ordem Ocultar.' },
   'Stun':       { name:'Stun', desc:'Se você retiver algum crítico, reduz o APL do alvo em 1 até o fim da próxima ativação dele.' },
   'Torrent':    { name:'Torrent X', desc:'Escolhe o alvo principal normalmente, depois pode escolher qualquer número de alvos secundários dentro de X do primeiro (menos aliados do alvo). Atira em todos.' },
+  'Soulstrike':          { name:'Soulstrike', desc:'Defesa medida pelo APL do alvo: resultado ≤ APL é sucesso (retido), > APL é falha. Todo 1 é sempre crítico, todo 6 é sempre falha.' },
+  'Neutron Fragment':    { name:'Neutron Fragment', desc:'Se o alvo não for incapacitado mas você resolver algum dado, ele ganha um marcador Neutron Fragment. Operativo marcado sofre D3 por marcador ao ser ativado.' },
+  'Neutron Bombardment': { name:'Neutron Bombardment', desc:'Coloque um marcador Neutron Fallout no alcance de controle do alvo principal. Inimigos que ficarem a 2" dele sofrem D3 (1x por ativação).' },
+  'Stinger':             { name:'Stinger', desc:'Se o alvo for incapacitado por esta arma, antes de removê-lo cause D3 em cada operativo visível a 2" dele (encadeia se incapacitar outros).' },
+  'Flay':                { name:'Flay', desc:'Na primeira vez que você acertar um crítico na sequência com esta arma, um aliado a 6" ganha um Pain token.' },
+  'Tangle':              { name:'Tangle', desc:'Ao lutar ou retaliar com esta arma, cada bloqueio seu pode bloquear dois sucessos não resolvidos (em vez de um).' },
+  'Skytorch':            { name:'Skytorch', desc:'Só usável na ação Skytorch Assault. Atira contra cada operativo na torch zone (área entre a posição atual e a anterior), sem escolher alvo. Torrent 0" = sem alvos secundários fora da zona.' },
+  'Concealed Position':  { name:'Concealed Position', desc:'Este perfil de arma só pode ser usado na primeira vez que o operativo faz a ação Atirar na batalha.' },
+  'Explosive':           { name:'Explosive', desc:'Pode Atirar mesmo no alcance de controle de inimigo. O operativo é sempre o alvo principal e não pode estar em cobertura nem obscurecido.' },
+  'Shield':              { name:'Shield', desc:'Ao lutar ou retaliar com esta arma, cada bloqueio seu pode bloquear dois sucessos não resolvidos (em vez de um).' },
+  'Phase Sweep':         { name:'Phase Sweep', desc:'Após um Fight com este perfil (se não incapacitado), faça ações Fight grátis contra cada inimigo no alcance de controle, uma vez cada, usando este perfil.' },
 };
 
 function findWeaponKeyword(tagText) {
@@ -4453,13 +4602,20 @@ function findWeaponKeyword(tagText) {
 // Scans free-text (ability/ploy descriptions) for known weapon-rule keywords and
 // wraps them in the same clickable style used for weapon tag pills, so terms like
 // "Saturate" mentioned inside a sentence become tappable too.
+const KT_KEYWORD_LINK_EXCLUDE = new Set(['Shield']);
 const KT_KEYWORD_LINK_REGEX = new RegExp(
-  '\\b(' + Object.keys(KT_WEAPON_KEYWORDS).sort((a,b)=>b.length-a.length).join('|') + ')\\b',
+  '\\b(' + Object.keys(KT_WEAPON_KEYWORDS).filter(k => !KT_KEYWORD_LINK_EXCLUDE.has(k)).sort((a,b)=>b.length-a.length).join('|') + ')\\b',
   'g'
 );
 function linkifyKeywords(text) {
   if (!text) return text;
-  return text.replace(KT_KEYWORD_LINK_REGEX, (match) => {
+  return text.replace(KT_KEYWORD_LINK_REGEX, (match, _p1, offset, str) => {
+    // "Heavy" is also a terrain type — don't linkify it as a weapon rule there.
+    if (match === 'Heavy') {
+      const before = str.slice(Math.max(0, offset - 10), offset);
+      const after = str.slice(offset + 5, offset + 24);
+      if (/terreno\s*$/i.test(before) || /^\s*(ou|or)\s+Light\b/i.test(after)) return match;
+    }
     const encoded = match.replace(/"/g, '&quot;');
     return `<span class="kw-tag kw-inline" data-kw="${encoded}" onclick="event.stopPropagation();showKeywordPopup(this.dataset.kw)">${match}</span>`;
   });
@@ -4783,6 +4939,98 @@ function ktResolveCombat(atkOp, defOp, weapon, inCover) {
   };
 }
 
+
+// ── CALCULADOR "MEUS DADOS" (Modo Simples KT) ─────────
+// Aplica as MESMAS regras do resolvedor automático, partindo dos
+// sucessos que o jogador informa (dados físicos). Não rola nada.
+function ktCalcFromCounts(prof, defOp, atkCrit, atkNormal, defCrit, defNormal, inCover){
+  const tags = prof.tags || [];
+  const log = [];
+  if (ktHasTag(tags,'Rending') && atkCrit>0 && atkNormal>0){ atkNormal--; atkCrit++; log.push('Rending: 1 sucesso normal → crítico'); }
+  if (ktHasTag(tags,'Severe') && atkCrit===0 && atkNormal>0){ atkNormal--; atkCrit++; log.push('Severe: 1 sucesso normal → crítico (sem críticos)'); }
+  const devX = ktGetTagValue(tags,'Devastating'); let devastatingDmg=0;
+  if (devX && atkCrit>0){ devastatingDmg = devX*atkCrit; log.push('Devastating '+devX+': '+atkCrit+' crítico(s) = +'+devastatingDmg+' dano direto'); }
+  if (inCover && !ktHasTag(tags,'Saturate')){ defNormal++; log.push('Cobertura: +1 defesa normal automática'); }
+  if (ktHasTag(tags,'Brutal')){ if(defNormal>0) log.push('Brutal: defesa normal não pode bloquear'); defNormal=0; }
+  if (ktHasTag(tags,'Shock') && (atkCrit+atkNormal)>0){ if(defNormal>0){defNormal--;log.push('Shock: -1 defesa normal');} else if(defCrit>0){defCrit--;log.push('Shock: -1 defesa crítica');} }
+  let rAC=atkCrit, rAN=atkNormal, rDC=defCrit, rDN=defNormal;
+  let b=Math.min(rDC,rAC); rDC-=b; rAC-=b;
+  b=Math.min(rDC,rAN); rDC-=b; rAN-=b;
+  b=Math.min(Math.floor(rDN/2),rAC); rDN-=b*2; rAC-=b;
+  b=Math.min(rDN,rAN); rDN-=b; rAN-=b;
+  const hitsLanded=rAN, critsLanded=rAC;
+  const totalDmg = hitsLanded*prof.D + critsLanded*prof.CD + devastatingDmg;
+  return { hitsLanded, critsLanded, devastatingDmg, totalDmg, log };
+}
+
+let ktMC = { atk:[], def:[] };
+function ktOpenManualCombat(){
+  if (typeof KT_SESSION === 'undefined' || !KT_SESSION.teams || !KT_SESSION.teams.length) return;
+  ktMC.atk = []; ktMC.def = [];
+  KT_SESSION.teams.forEach(t => t.operatives.filter(o=>!o.dead).forEach(o => {
+    ktMC.def.push({op:o, team:t});
+    (o.weapons||[]).forEach(w => getWeaponProfiles(w).forEach(p => ktMC.atk.push({op:o, team:t, prof:p, wname:w.name})));
+  }));
+  if(!ktMC.atk.length || !ktMC.def.length){ if(typeof showToast==='function') showToast('Sem operativos vivos para resolver'); return; }
+  const atkOpts = ktMC.atk.map((a,i)=>'<option value="'+i+'">'+a.team.playerName+' · '+a.op.displayName+' — '+a.wname+(a.prof.name!==a.wname?' ('+a.prof.name+')':'')+'</option>').join('');
+  const defOpts = ktMC.def.map((d,i)=>'<option value="'+i+'">'+d.team.playerName+' · '+d.op.displayName+' (Sv '+d.op.SV+'+ · '+d.op.curW+'/'+d.op.W+' PV)</option>').join('');
+  document.getElementById('kt-mc-body').innerHTML =
+    '<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Você rola os dados físicos e informa os resultados; o app aplica as regras e calcula o dano.</div>'+
+    '<div class="sec-label" style="margin-bottom:4px">Atacante (arma)</div>'+
+    '<select id="kt-mc-atk" class="form-input" onchange="ktMCHints()">'+atkOpts+'</select>'+
+    '<div class="sec-label" style="margin:10px 0 4px">Defensor</div>'+
+    '<select id="kt-mc-def" class="form-input" onchange="ktMCHints()">'+defOpts+'</select>'+
+    '<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);margin:10px 0"><input type="checkbox" id="kt-mc-cover" onchange="ktMCHints()" style="width:18px;height:18px"> Defensor em cobertura</label>'+
+    '<div id="kt-mc-hints" style="font-size:12px;color:var(--gold);background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.25);border-radius:var(--rsm);padding:8px 10px;line-height:1.5;margin-bottom:10px"></div>'+
+    '<div class="sec-label" style="margin-bottom:6px">🎯 Seus dados de ataque</div>'+
+    '<div style="display:flex;gap:10px;margin-bottom:10px">'+
+      '<label style="flex:1;font-size:12px;color:var(--text2)">Críticos<br><input type="number" id="kt-mc-ac" class="form-input" min="0" value="0" style="text-align:center"></label>'+
+      '<label style="flex:1;font-size:12px;color:var(--text2)">Normais<br><input type="number" id="kt-mc-an" class="form-input" min="0" value="0" style="text-align:center"></label>'+
+    '</div>'+
+    '<div class="sec-label" style="margin-bottom:6px">🛡 Dados de defesa do defensor</div>'+
+    '<div style="display:flex;gap:10px;margin-bottom:14px">'+
+      '<label style="flex:1;font-size:12px;color:var(--text2)">Saves crít (6)<br><input type="number" id="kt-mc-dc" class="form-input" min="0" value="0" style="text-align:center"></label>'+
+      '<label style="flex:1;font-size:12px;color:var(--text2)">Saves normais<br><input type="number" id="kt-mc-dn" class="form-input" min="0" value="0" style="text-align:center"></label>'+
+    '</div>'+
+    '<button class="btn btn-primary" onclick="ktMCCalc()">🧮 CALCULAR RESULTADO</button>'+
+    '<div id="kt-mc-result" style="margin-top:12px"></div>';
+  ktMCHints();
+  document.getElementById('kt-mc-modal').classList.add('open');
+  SFX.click();
+}
+function ktMCHints(){
+  const a = ktMC.atk[+document.getElementById('kt-mc-atk').value];
+  const d = ktMC.def[+document.getElementById('kt-mc-def').value];
+  if(!a||!d) return;
+  const tags = a.prof.tags||[];
+  const critAt = ktGetTagValue(tags,'Lethal') || 6;
+  const acc = ktGetTagValue(tags,'Accurate')||0;
+  const cover = document.getElementById('kt-mc-cover').checked;
+  const pierce = ktGetTagValue(tags,'Piercing')||0;
+  const defDice = Math.max(0, 3 - pierce - (cover?1:0));
+  document.getElementById('kt-mc-hints').innerHTML =
+    'Role <strong>'+a.prof.A+'</strong> dado(s) de ataque — Hit <strong>'+a.prof.skill+'+</strong>, crítico <strong>'+critAt+'+</strong>'+(acc?' (+'+acc+' normal automático)':'')+'.<br>'+
+    'Defensor rola <strong>'+defDice+'</strong> dado(s) de defesa — Save <strong>'+d.op.SV+'+</strong>'+(cover?' · cobertura contada':'')+(pierce?' · Piercing '+pierce+' descontado':'')+'.';
+}
+function ktMCCalc(){
+  const a = ktMC.atk[+document.getElementById('kt-mc-atk').value];
+  const d = ktMC.def[+document.getElementById('kt-mc-def').value];
+  if(!a||!d) return;
+  const g = id => Math.max(0, parseInt(document.getElementById(id).value)||0);
+  const acc = ktGetTagValue(a.prof.tags||[],'Accurate')||0;
+  const cover = document.getElementById('kt-mc-cover').checked;
+  const r = ktCalcFromCounts(a.prof, d.op, g('kt-mc-ac'), g('kt-mc-an')+acc, g('kt-mc-dc'), g('kt-mc-dn'), cover);
+  const elim = r.totalDmg >= d.op.curW;
+  document.getElementById('kt-mc-result').innerHTML =
+    '<div class="death-banner '+(elim?'':(r.totalDmg>0?'dmg':'safe'))+'" style="margin-bottom:8px">'+
+      '<div style="font-size:22px">'+(elim?'💀':(r.totalDmg>0?'🩹':'🛡'))+'</div>'+
+      '<div style="font-family:var(--ff);font-size:18px">'+(elim?d.op.displayName+' ELIMINADO!':(r.totalDmg>0?r.totalDmg+' DANO':'BLOQUEADO'))+'</div>'+
+      '<div style="font-size:12px;color:var(--muted)">'+(r.totalDmg>0?(elim?r.totalDmg+' dano · '+d.op.curW+' PV':(d.op.curW-r.totalDmg)+' PV restantes em '+d.op.displayName):'Os saves anularam o dano')+'</div>'+
+    '</div>'+
+    '<div style="font-size:11px;color:var(--text2);line-height:1.5">Passaram: '+r.hitsLanded+' normal + '+r.critsLanded+' crít'+(r.devastatingDmg?' · Devastating +'+r.devastatingDmg:'')+(r.log.length?'<br>'+r.log.map(l=>'• '+l).join('<br>'):'')+'</div>';
+  SFX.roll();
+  if(elim){SFX.death();} else if(r.totalDmg>0){SFX.wound();}
+}
 
 function ktToggleCover() {
   const cb = document.getElementById('kt-cover-toggle');
@@ -5477,6 +5725,29 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 </div>
 
 
+<!-- ═══ CONFIRMAÇÃO IN-APP ═══ -->
+<div class="modal-overlay" id="app-confirm-modal" style="z-index:400">
+  <div style="background:var(--card);border:1px solid var(--border2);border-radius:20px 20px 0 0;border-bottom:none;width:100%;max-width:540px;padding:22px 20px 26px">
+    <div id="app-confirm-msg" style="font-size:15px;color:var(--text);line-height:1.55;text-align:center;margin-bottom:20px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" style="flex:1" onclick="appConfirmClose(false)">Cancelar</button>
+      <button class="btn btn-primary" id="app-confirm-yes" style="flex:1" onclick="appConfirmClose(true)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ KT: CALCULADOR "MEUS DADOS" (Modo Simples) ═══ -->
+<div class="modal-overlay" id="kt-mc-modal">
+<div class="modal-sheet" style="max-height:92vh">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hdr">
+    <div class="sheet-title">🎲 Resolver com meus dados</div>
+    <button class="sheet-close" onclick="document.getElementById('kt-mc-modal').classList.remove('open')">✕</button>
+  </div>
+  <div class="sheet-body" id="kt-mc-body"></div>
+</div>
+</div>
+
 <!-- ═══ FORMAT GUIDE MODAL ═══ -->
 <div class="modal-overlay" id="format-modal">
 <div class="modal-sheet" style="max-height:85vh">
@@ -5596,7 +5867,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 <!-- ═══ KT: BATTLE ═══ -->
 <div class="screen" id="screen-kt-battle">
   <div class="hdr">
-    <button class="hdr-back" onclick="SFX.click();NAV.back()">←</button>
+    <button class="hdr-back" onclick="confirmLeaveBattle('kt')">←</button>
     <div class="hdr-info"><div class="hdr-eyebrow">Kill Team · Em andamento</div><div class="hdr-title">🎯 <span>BATALHA</span></div></div>
     <div class="hdr-right">
       <div class="hdr-badge">Turno</div>
@@ -5625,6 +5896,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
       </div>
       <div class="ktb-sub" id="ktb-sub">Escolha um operativo</div>
     </div>
+    <div class="turn-guide" id="kt-turn-guide"></div>
     <!-- Active player operatives -->
     <div class="sec-label" id="kt-active-label">Operativos disponíveis:</div>
     <div id="kt-active-operatives"></div>
@@ -5632,6 +5904,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
     <div class="divider"></div>
     <div class="sec-label">Todos os operativos:</div>
     <div id="kt-all-teams-overview"></div>
+    <button class="btn btn-secondary btn-sm" id="kt-mc-open-btn" style="display:none;margin-top:8px" onclick="ktOpenManualCombat()">🎲 Resolver combate com meus dados</button>
     <div style="display:flex;gap:8px;margin-top:8px">
       <button class="btn btn-gold" style="flex:3" onclick="ktEndTurn();SFX.click()" id="kt-end-turn-btn">⏭ FINALIZAR TURNO</button>
       <button id="kt-undo-btn" class="btn btn-secondary" style="flex:1;font-size:16px;padding:12px" onclick="ktUndoLastAction()" disabled title="Nada para desfazer">↩</button>
@@ -5689,198 +5962,602 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 
 const KT_TEAMS = [
   // ── INTERCESSION SQUAD (Space Marines) ──────────────
-  {
-    id:'kt-intercession', name:'Intercession Squad', faction:'Space Marines',
-    color:'#4a90d9', emoji:'🔵',
-    desc:'Intercessors do Primaris — versáteis, resistentes e adaptáveis. Bom para iniciantes.',
-    style:'Tiro · Versátil',
-    limit: 6, // max operatives
-    coreRule:{name:"Astartes",desc:"Cada operativo pode fazer 2 ações de Tiro OU 2 de Luta na mesma ativação (nunca uma de cada)."},
-    ploys:{strategy:[{name:"Doutrina de Combate",desc:"Escolha uma doutrina no turno — Devastador (tiro longe), Tático (tiro perto) ou Assalto (CaC) — unidades ganham re-roll de 1 dado na situação escolhida."},{name:"Eles Não Temem",desc:"Ignora penalidades de status por estar ferido."}],firefight:[{name:"Fisiologia Transumana",desc:"Ao ser alvo de tiro, transforma um sucesso normal de defesa em crítico."},{name:"Assalto de Choque",desc:"Após uma Carga bem sucedida, o primeiro golpe em CaC causa +1 dano."}]},
-    operatives: [
-      { id:'kt-intercessor-sgt', name:'Sargento Intercessor', unique:true,
-        M:'3"', APL:2, GA:1, DF:3, SV:3, W:14,
-        abilities:'Líder: Uma vez por turno, pode usar 1 APL para dar 1 APL a um aliado a 6".',
-        weapons:[
-          { name:'Bolt Rifle',     A:4, skill:3, D:4, CD:5, range:'long', tags:['Relentless'] },
-          { name:'Espada Astartes',A:4, skill:3, D:4, CD:5, range:'melee', tags:['Lethal 5+'] },
-        ]},
-      { id:'kt-intercessor', name:'Guerreiro Intercessor', unique:false, count:5,
-        M:'3"', APL:2, GA:1, DF:3, SV:3, W:12,
-        abilities:'Determinado: Ignora penalidades de movimento ao atirar.',
-        weapons:[
-          { name:'Bolt Rifle',     A:4, skill:3, D:4, CD:5, range:'long', tags:['Relentless'] },
-          { name:'Espada Astartes',A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-intercessor-heavy', name:'Guerreiro com Arma Pesada', unique:false, count:1,
-        M:'3"', APL:2, GA:1, DF:3, SV:3, W:12,
-        abilities:'Arma Pesada: Após atirar, esta figurine fica Engajada.',
-        weapons:[
-          { name:'Auto Bolt Rifle',A:5, skill:3, D:3, CD:5, range:'long', tags:['Ceaseless'] },
-          { name:'Espada Astartes',A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-    ]
-  },
 
   // ── TYRANID WARRIORS (Tyranids) ─────────────────────
-  {
-    id:'kt-warriors', name:'Tyranid Warriors', faction:'Tyranids',
-    color:'#a855f7', emoji:'🟣',
-    desc:'Seres híbridos entre comandante e soldado. Synapse psíquica controla o enxame.',
-    style:'Melee · Synapse',
-    limit: 5,
-    coreRule:{name:"Synapse",desc:"Operativos Tyranid a 6\" de um Warrior podem re-rolar 1 dado de Defesa por ativação."},
-    ploys:{strategy:[{name:"Fome Insaciável",desc:"Armas corpo a corpo ganham a regra Rending (retêm 1 sucesso normal como crítico extra)."},{name:"Instinto de Enxame",desc:"Operativos a 6\" de um Warrior incapacitado ganham +1 no próximo ataque, por vingança."}],firefight:[{name:"Fúria Predatória",desc:"Após uma Carga, pode se mover +3\" antes de lutar."},{name:"Casca Reforçada",desc:"Re-rola 1s nos dados de Defesa uma vez por ativação."}]},
-    operatives: [
-      { id:'kt-warrior-prime', name:'Warrior Prime', unique:true,
-        M:'3"', APL:2, GA:1, DF:3, SV:4, W:18,
-        abilities:'Synapse: Operativos Tyranid a 6" podem re-rolar 1 dado de Defesa por ativação.',
-        weapons:[
-          { name:'Deathspitter',   A:4, skill:3, D:4, CD:6, range:'long' },
-          { name:'Lâminas Tyranid',A:5, skill:3, D:5, CD:7, range:'melee', tags:['Rending'] },
-        ]},
-      { id:'kt-warrior', name:'Warrior', unique:false, count:4,
-        M:'3"', APL:2, GA:1, DF:3, SV:4, W:16,
-        abilities:'Predatório: Re-rola 1 dado de ataque ao carregar (Fight action).',
-        weapons:[
-          { name:'Devourer',       A:5, skill:4, D:3, CD:5, range:'long', tags:['Ceaseless'] },
-          { name:'Lâminas Tyranid',A:4, skill:3, D:4, CD:6, range:'melee', tags:['Rending'] },
-        ]},
-    ]
-  },
 
   // ── KOMMANDOS (Orks) ────────────────────────────────
   {
-    id:'kt-kommandos', name:'Kommandos', faction:'Orks',
-    color:'#f59e0b', emoji:'🟡',
-    desc:'Orks furtivos especializados em infiltração e emboscadas. Time completo com 11 tipos de especialista — do Boss Nob ao Bomb Squig suicida.',
-    style:'Furtivo · Melee',
+    id: 'kt-kommandos',
+    name: 'Kommandos',
+    faction: 'Orks',
+    color: '#f59e0b',
+    emoji: '🟡',
+    desc: 'Orks furtivos que usam Conceal para chegar perto e então caem no krump. Podem fazer Charge escondidos (Throat Slittas), têm variedade enorme de especialistas (Boyz) e resiliência típica ork (Just a Scratch).',
+    style: 'Furtivo · Melee · Versátil',
     limit: 10,
-    coreRule: {name:"Throat Slittas", desc:"Todo Kommando (exceto Bomb Squig) pode Cargar mesmo com ordem de Ocultar."},
+    coreRule: {
+      name: 'Regras de Facção + Equipamento',
+      desc: '<strong>Composição.</strong> 1 Boss Nob + 9 operativos da lista. Só BOY pode repetir; os demais uma vez cada. <strong>Bomb Squig</strong> e <strong>Grot</strong> contam como meia seleção cada (pode levar os dois e conta como uma seleção no total).<br><br><strong>Throat Slittas.</strong> Cada KOMMANDO amigo (exceto BOMB SQUIG) pode fazer a ação Charge mesmo com ordem Conceal.<br><br><strong>EQUIP — Choppas.</strong> KOMMANDO amigos (exceto BOMB SQUIG e GROT) têm a arma melee: Choppa — A3, 3+, D4/5. (Se o operativo já tem uma versão melhor, use a melhor.)<br><br><strong>EQUIP — Dynamite.</strong> Uma vez por batalha, um KOMMANDO amigo (exceto BOMB SQUIG e GROT) pode usar: Dynamite — A5, 4+, D4/5, Range 4", Blast 1", Heavy (Reposition only), Saturate.<br><br><strong>EQUIP — Harpoon.</strong> Uma vez por turno, um KOMMANDO amigo (exceto BOMB SQUIG e GROT) pode usar: Harpoon — A4, 4+, D4/5, Range 8", Lethal 5+, Stun.<br><br><strong>EQUIP — Collapsible Stocks.</strong> Remova a regra Range das armas Shokka pistol e Slugga dos KOMMANDO amigos.'
+    },
     ploys: {
       strategy: [
-        {name:"DAKKA! DAKKA! DAKKA!", desc:"Armas de tiro ganham Punishing — retém uma falha como sucesso normal se já reteve algum crítico."},
-        {name:"Skulk About", desc:"Operativo com ordem Ocultar retém 1 sucesso de defesa sem rolar dado."},
-        {name:"SSSSHHHH!", desc:"Operativos ocultos e fora de alcance de visão podem fazer um Dash grátis (não no 1º turno)."},
-        {name:"WAAAGH!", desc:"Armas corpo a corpo ganham Balanced — pode re-rolar 1 dado de ataque."},
+        {
+          name: 'Dakka! Dakka! Dakka!',
+          desc: 'As armas ranged dos KOMMANDO amigos ganham Punishing.'
+        },
+        {
+          name: 'Waaagh!',
+          desc: 'As armas melee dos KOMMANDO amigos ganham Balanced.'
+        },
+        {
+          name: 'Skulk About',
+          desc: 'Quando um inimigo atira num KOMMANDO amigo com ordem Conceal, você pode reter um dos seus dados de defesa como sucesso normal sem rolar (além do cover save, se houver).'
+        },
+        {
+          name: 'Sssshhhh!',
+          desc: 'Cada KOMMANDO amigo que não é alvo válido para inimigos, ou que tem ordem Conceal e está a mais de 6" de inimigos, pode imediatamente fazer um Dash grátis. Não pode usar no primeiro turno.'
+        }
       ],
       firefight: [
-        {name:"Só um Arranhão", desc:"Ignora um dano normal recebido (exceto Bomb Squig e Grot)."},
-        {name:"Kunnin' Mas Brutal", desc:"Ao Cargar oculto, o primeiro golpe normal em CaC vira crítico."},
-        {name:"Krump 'Em", desc:"No fim da Firefight Phase, um Kommando faz uma ação de Luta grátis."},
-        {name:"Aguenta Firme", desc:"Ignora mudanças no APL até o início do próximo turno."},
-      ],
+        {
+          name: 'Just a Scratch',
+          desc: 'Use quando um dado de ataque causa Normal Dmg num KOMMANDO amigo (exceto BOMB SQUIG e GROT). Ignore esse dano.'
+        },
+        {
+          name: 'Kunnin\' but Brutal',
+          desc: 'Use quando um KOMMANDO amigo com ordem Conceal está lutando numa ativação em que fez Charge, você está resolvendo o primeiro dado de ataque e é um strike com sucesso normal. Trate esse sucesso normal como crítico.'
+        },
+        {
+          name: 'Krump \'Em!',
+          desc: 'Use no fim da Firefight phase. Selecione um KOMMANDO amigo. Ele pode imediatamente fazer um Fight grátis.'
+        },
+        {
+          name: 'Shake It Off',
+          desc: 'Use quando um KOMMANDO amigo é ativado, ou quando o APL dele muda. Até o começo do próximo turno, você pode ignorar mudanças no APL dele.'
+        }
+      ]
     },
     operatives: [
-      { id:'kt-kommando-boss', name:'Boss Nob', unique:true,
-        M:'6"', APL:3, GA:1, DF:4, SV:5, W:14,
-        abilities:[
-          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
-          {name:"Krumpin' Time", desc:'Pode fazer 2 ações de Luta na mesma ativação.'},
-          {name:'Get It Dun!', ap:'1AP', desc:'Apoio: escolha outro Kommando aliado visível a até 6" (exceto Bomb Squig). Até o fim da próxima ativação dele, +1 no APL. Não pode ser feito perto de inimigo ou contra-atacando.'},
+      {
+        id: 'kt-kommando-boss',
+        name: 'Boss Nob',
+        unique: true,
+        M: '6"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 14,
+        abilities: [
+          {
+            name: 'LÍDER',
+            desc: 'Este operativo é o líder do time.'
+          },
+          {
+            name: 'Krumpin\' Time',
+            desc: 'Este operativo pode fazer duas ações Fight na ativação dele.'
+          },
+          {
+            name: 'Get It Dun!',
+            ap: '1AP',
+            desc: 'SUPPORT. Selecione outro KOMMANDO amigo (exceto BOMB SQUIG) visível a e a 6" deste. Até o fim da próxima ativação dele, +1 no APL. Não pode fazer no control range de inimigo, nem counteracting.'
+          },
+          {
+            name: 'Opções de arma',
+            desc: 'Escolha: Slugga + Big choppa; ou Slugga + Power klaw.'
+          }
         ],
-        weapons:[
-          { name:'Slugga',       A:4, skill:4, D:3, CD:4, range:'short' },
-          { name:'Big Choppa',   A:5, skill:3, D:5, CD:6, range:'melee' },
-          { name:'Klaw de Força',A:4, skill:3, D:5, CD:7, range:'melee', tags:['Brutal','Shock'] },
-        ]},
-      { id:'kt-kommando-boy', name:'Kommando Boy', unique:false, count:9,
-        M:'6"', APL:2, GA:2, DF:4, SV:5, W:10,
-        abilities:[
-          {name:'Taktical Wot-notz', desc:'1x por turno: um Kommando Boy pode fazer a ação Granada de Fumaça. 1x por turno: um Kommando Boy pode fazer a ação Granada Atordoante. Nenhuma das duas conta para o limite de uso desses itens de equipamento.'},
+        weapons: [
+          {
+            name: 'Slugga',
+            A: 4,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"'
+            ]
+          },
+          {
+            name: 'Big choppa',
+            A: 5,
+            skill: 3,
+            D: 5,
+            CD: 6,
+            range: 'melee'
+          },
+          {
+            name: 'Power klaw',
+            A: 4,
+            skill: 3,
+            D: 5,
+            CD: 7,
+            range: 'melee',
+            tags: [
+              'Brutal',
+              'Shock'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-boy',
+        name: 'Boy',
+        unique: false,
+        count: 9,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 10,
+        abilities: [
+          {
+            name: 'Taktical Wot-notz',
+            desc: 'Uma vez por turno cada: um BOY amigo pode fazer a ação Smoke Grenade; e um BOY amigo pode fazer a ação Stun Grenade (regras no equipamento universal; não conta para os limites de ação dessas granadas).'
+          }
         ],
-        weapons:[
-          { name:'Slugga', A:4, skill:4, D:3, CD:4, range:'short' },
-          { name:'Choppa', A:4, skill:3, D:4, CD:5, range:'melee' },
-        ]},
-      { id:'kt-kommando-bombsquig', name:'Bomb Squig', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:5,
-        abilities:[
-          {name:'Explosive', desc:'Pode fazer a ação Atirar mesmo dentro do alcance de controle de um inimigo. Nesse caso não escolhe alvo — este operativo é sempre o alvo principal e nunca conta como em cobertura.'},
-          {name:'Boom!', desc:'Se for incapacitado numa batalha em que não usou os explosivos, role 1D6 (ou 2D6 se quiser): em 4+, faz um Tiro grátis com os explosivos antes de sair de campo.'},
-          {name:'Stoopid', desc:'Não pode escolher ordem Conceal. Só pode fazer as ações Charge, Dash, Fight, Reposition e Shoot, e só com as armas da própria ficha.'},
-          {name:'Expendable', desc:'Ignorado para as condições de vitória do oponente e para a contagem inicial de operativos, inclusive se for incapacitado.'},
+        weapons: [
+          {
+            name: 'Slugga',
+            A: 4,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"'
+            ]
+          },
+          {
+            name: 'Choppa',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-bombsquig',
+        name: 'Bomb Squig',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 5,
+        abilities: [
+          {
+            name: 'Explosive',
+            desc: 'Este operativo pode fazer Shoot com os explosives mesmo no control range de inimigo. Não selecione alvo válido: ele é sempre o alvo primário e não pode estar em cover nem obscured.'
+          },
+          {
+            name: 'Boom!',
+            desc: 'Se este operativo for incapacitado numa batalha em que não usou os explosives, role 1D6 (ou 2D6 se quiser). Se algum resultado for 4+, ele faz um Shoot grátis com os explosives antes de ser removido do killzone.'
+          },
+          {
+            name: 'Stoopid',
+            desc: 'Na Firefight phase, ao determinar a ordem dele, você não pode escolher Conceal. Não pode fazer ações além de Charge, Dash, Fight, Reposition e Shoot. Não pode usar armas fora do datacard.'
+          },
+          {
+            name: 'Expendable',
+            desc: 'Ignorado para o kill/elimination op do oponente (ao ser incapacitado e ao contar seu número inicial de operativos). Também ignorado para condições de vitória/VPs que exijam operativos \'escape\', \'survive\' ou ser incapacitado por inimigos.'
+          }
         ],
-        weapons:[
-          { name:'Explosivos', A:6, skill:4, D:4, CD:5, range:'short', tags:['Blast 1"','Limited 1'] },
-          { name:'Mordida',    A:3, skill:4, D:4, CD:5, range:'melee' },
-        ]},
-      { id:'kt-kommando-breacha', name:'Breacha Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:[
-          {name:'Breach', ap:'1AP', desc:'Coloca um marcador de Arrombamento o mais perto possível de um terreno dentro do alcance de controle. Terreno de até 1" de espessura dentro de 1" do marcador vira terreno Acessível. Pode fazer essa ação durante Charge ou Reposition por 1 AP a menos. Não pode ser feito perto de inimigo ou sem terreno no alcance de controle.'},
+        weapons: [
+          {
+            name: 'Explosives',
+            A: 6,
+            skill: 4,
+            D: 4,
+            CD: 5,
+            range: 'long',
+            tags: [
+              'Blast 1"',
+              'Limited 1',
+              'Explosive'
+            ]
+          },
+          {
+            name: 'Bite',
+            A: 3,
+            skill: 4,
+            D: 4,
+            CD: 5,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-breacha',
+        name: 'Breacha Boy',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 10,
+        abilities: [
+          {
+            name: 'Breach',
+            ap: '1AP',
+            desc: 'Coloque um Breach marker no control range deste operativo o mais perto possível de um terreno no control range dele. Enquanto um operativo estiver a 1" desse marker, ele trata partes desse terreno com até 1" de espessura como Accessible. Pode fazer durante Charge/Reposition por 1 AP a menos; o movimento restante pode ser usado depois. Não pode no control range de inimigo, nem sem terreno no control range.'
+          }
         ],
-        weapons:[
-          { name:'Slugga',        A:4, skill:4, D:3, CD:4, range:'short' },
-          { name:'Aríete Breacha',A:4, skill:4, D:5, CD:5, range:'melee', tags:['Brutal','Severe','Shock'] },
-        ]},
-      { id:'kt-kommando-burna', name:'Burna Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:[
-          {name:'Duas Configurações', desc:'A Burna tem modo Padrão (alcance maior, mais alvos secundários) ou Dilúvio (alcance curto, ignora cobertura via Seek, sem alvos secundários mas mantém a regra Torrent para outros efeitos).'},
+        weapons: [
+          {
+            name: 'Slugga',
+            A: 4,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"'
+            ]
+          },
+          {
+            name: 'Breacha ram',
+            A: 4,
+            skill: 4,
+            D: 5,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Brutal',
+              'Severe',
+              'Shock'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-burna',
+        name: 'Burna Boy',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 10,
+        weapons: [
+          {
+            name: 'Burna',
+            range: 'short',
+            profiles: [
+              {
+                name: 'standard',
+                A: 4,
+                skill: 2,
+                D: 3,
+                CD: 3,
+                tags: [
+                  'Range 8"',
+                  'Saturate',
+                  'Torrent 2"'
+                ]
+              },
+              {
+                name: 'deluge',
+                A: 4,
+                skill: 2,
+                D: 3,
+                CD: 3,
+                tags: [
+                  'Range 4"',
+                  'Saturate',
+                  'Seek',
+                  'Torrent 0"'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-comms',
+        name: 'Comms Boy',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 10,
+        abilities: [
+          {
+            name: 'I Got a Plan, Ladz',
+            desc: 'Uma vez em cada ativação deste operativo, ele pode fazer Pick Up Marker, Place Marker ou uma ação de missão por 1 AP a menos.'
+          },
+          {
+            name: 'Listen In',
+            ap: '1AP',
+            desc: 'SUPPORT. Selecione outro KOMMANDO amigo (exceto BOMB SQUIG) visível a e a 6" deste. Até o fim da próxima ativação dele, +1 no APL. Não pode fazer no control range de inimigo.'
+          }
         ],
-        weapons:[
-          { name:'Burna (Padrão)', A:4, skill:2, D:3, CD:3, range:'short', tags:['Saturate','Torrent 2"'] },
-          { name:'Burna (Dilúvio)',A:4, skill:2, D:3, CD:3, range:'short', tags:['Saturate','Seek','Torrent 0"'] },
-          { name:'Punhos',         A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-comms', name:'Comms Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:[
-          {name:'I Got a Plan, Ladz', desc:'1x em cada ativação deste operativo, as ações Pegar Marcador, Colocar Marcador ou uma ação de missão custam 1 AP a menos.'},
-          {name:'Listen In', ap:'1AP', desc:'Apoio: escolha outro Kommando aliado visível a até 6". Até o fim da próxima ativação dele, +1 no APL. Não pode ser feito perto de inimigo.'},
+        weapons: [
+          {
+            name: 'Shokka pistol',
+            A: 6,
+            skill: 4,
+            D: 1,
+            CD: 0,
+            range: 'short',
+            tags: [
+              'Range 8"',
+              'Devastating 2',
+              'Severe',
+              'Stun'
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-dakka',
+        name: 'Dakka Boy',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 10,
+        abilities: [
+          {
+            name: 'Dakka Dash',
+            ap: '1AP',
+            desc: 'Faça um Dash grátis e um Shoot grátis com este operativo em qualquer ordem. Você só pode selecionar um dakka shoota para esse Shoot. Não pode com ordem Conceal, nem no control range de inimigo.'
+          }
         ],
-        weapons:[
-          { name:'Pistola Shokka', A:6, skill:4, D:1, CD:0, range:'short', tags:['Devastating 2','Severe','Stun'] },
-          { name:'Punhos',         A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-dakka', name:'Dakka Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:[
-          {name:'Dakka Dash', ap:'1AP', desc:'Faz uma ação Dash grátis e uma ação Atirar grátis nesta ordem, mas o Tiro só pode ser com a Dakka Shoota. Não pode ser feito com ordem Conceal nem perto de inimigo.'},
+        weapons: [
+          {
+            name: 'Dakka shoota',
+            range: 'long',
+            profiles: [
+              {
+                name: 'short range',
+                A: 5,
+                skill: 4,
+                D: 3,
+                CD: 4,
+                tags: [
+                  'Range 9"',
+                  'Ceaseless'
+                ]
+              },
+              {
+                name: 'long range',
+                A: 5,
+                skill: 4,
+                D: 3,
+                CD: 4
+              }
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-grot',
+        name: 'Grot',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 5,
+        abilities: [
+          {
+            name: 'Sneaky Zogger',
+            desc: 'Este operativo não pode ter ordem Engage. Quando está em cover, não pode ser alvo válido (precede Seek, Vantage) exceto estar a 2".'
+          },
+          {
+            name: 'Grappling Hook',
+            ap: '1AP',
+            desc: 'Selecione um ponto visível num terreno. Remova este operativo e recoloque-o a 1" horizontal desse ponto, em local válido, fora do control range de inimigos e com o ponto visível a ele. Não pode fazer Operate Hatch nesta ação. Tratada como Reposition; não pode no control range de inimigo nem na mesma ativação de Charge/Fall Back.'
+          }
         ],
-        weapons:[
-          { name:'Dakka Shoota (Curto)', A:5, skill:4, D:3, CD:4, range:'short', tags:['Range 9"','Ceaseless'] },
-          { name:'Dakka Shoota (Longo)', A:5, skill:4, D:3, CD:4, range:'long' },
-          { name:'Punhos',               A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-grot', name:'Grot', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:5,
-        abilities:[
-          {name:'Sneaky Zogger', desc:'Não pode ter ordem Engage. Enquanto em cobertura, nunca é um alvo válido — isso vale mesmo contra Seek ou terreno Vantage — exceto se o atacante estiver a até 2".'},
-          {name:'Grappling Hook', ap:'1AP', desc:'Escolhe um ponto visível de terreno, remove este operativo do campo e recoloca a até 1" horizontal daquele ponto, fora do alcance de controle inimigo. Conta como ação Reposition. Não pode ser feito perto de inimigo, nem na mesma ativação de Charge/Fall Back.'},
+        weapons: [
+          {
+            name: 'Grot choppa',
+            A: 3,
+            skill: 5,
+            D: 1,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-rokkit',
+        name: 'Rokkit Boy',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 10,
+        weapons: [
+          {
+            name: 'Rokkit launcha',
+            range: 'long',
+            profiles: [
+              {
+                name: 'aimed',
+                A: 6,
+                skill: 4,
+                D: 4,
+                CD: 5,
+                tags: [
+                  'Blast 1"',
+                  'Ceaseless',
+                  'Heavy (Dash only)'
+                ]
+              },
+              {
+                name: 'mobile',
+                A: 6,
+                skill: 4,
+                D: 4,
+                CD: 5,
+                tags: [
+                  'Blast 1"'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-slasha',
+        name: 'Slasha Boy',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 10,
+        abilities: [
+          {
+            name: 'Dat All You Got?',
+            desc: 'Depois que este operativo luta ou retalia, se não foi incapacitado, você pode causar D3 de dano no inimigo dessa sequência.'
+          }
         ],
-        weapons:[
-          { name:'Machadinha Grot', A:3, skill:5, D:1, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-rokkit', name:'Rokkit Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:'Duas configurações: mirada (fixo, mais confiável) ou móvel (pode se mover antes).',
-        weapons:[
-          { name:'Rokkit Launcha (Mirada)', A:6, skill:4, D:4, CD:5, range:'long', tags:['Blast 1"','Ceaseless','Heavy (Dash only)'] },
-          { name:'Rokkit Launcha (Móvel)',  A:6, skill:4, D:4, CD:5, range:'long', tags:['Blast 1"'] },
-          { name:'Punhos',                  A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-kommando-slasha', name:'Slasha Boy', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:[
-          {name:'Dat All You Got?', desc:'Depois deste operativo lutar ou revidar, se não foi incapacitado, pode causar D3 de dano extra no inimigo daquela sequência.'},
+        weapons: [
+          {
+            name: 'Throwing knives',
+            A: 4,
+            skill: 3,
+            D: 2,
+            CD: 5,
+            range: 'short',
+            tags: [
+              'Range 6"',
+              'Silent'
+            ]
+          },
+          {
+            name: 'Twin choppas',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'melee',
+            tags: [
+              'Ceaseless',
+              'Lethal 5+'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-kommando-snipa',
+        name: 'Snipa Boy',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 10,
+        abilities: [
+          {
+            name: 'Concealed Position',
+            desc: 'O perfil (concealed) do scoped big shoota só pode ser usado na primeira vez que este operativo faz Shoot na batalha.'
+          }
         ],
-        weapons:[
-          { name:'Facas de Arremesso', A:4, skill:3, D:2, CD:5, range:'short', tags:['Silent'] },
-          { name:'Choppas Gêmeas',     A:4, skill:3, D:4, CD:5, range:'melee', tags:['Ceaseless','Lethal 5+'] },
-        ]},
-      { id:'kt-kommando-snipa', name:'Kommando Snipa', unique:true,
-        M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
-        abilities:[
-          {name:'Três Configurações', desc:'A Big Shoota com Mira tem modo Oculta (só pode ser usado na primeira vez que este operativo Atirar na batalha), Estacionária, ou Varredura.'},
-        ],
-        weapons:[
-          { name:'Big Shoota c/ Mira (Oculta)',      A:5, skill:3, D:3, CD:3, range:'long', tags:['Devastating 2','Heavy','Silent'] },
-          { name:'Big Shoota c/ Mira (Estacionária)',A:5, skill:3, D:3, CD:3, range:'long', tags:['Devastating 2','Heavy'] },
-          { name:'Big Shoota c/ Mira (Varredura)',   A:5, skill:3, D:3, CD:4, range:'long', tags:['Heavy (Dash only)','Torrent 1"'] },
-          { name:'Punhos',                           A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
+        weapons: [
+          {
+            name: 'Scoped big shoota',
+            range: 'long',
+            profiles: [
+              {
+                name: 'concealed',
+                A: 5,
+                skill: 3,
+                D: 3,
+                CD: 3,
+                tags: [
+                  'Devastating 2',
+                  'Heavy',
+                  'Silent',
+                  'Concealed Position'
+                ]
+              },
+              {
+                name: 'stationary',
+                A: 5,
+                skill: 3,
+                D: 3,
+                CD: 3,
+                tags: [
+                  'Devastating 2',
+                  'Heavy'
+                ]
+              },
+              {
+                name: 'sweeping',
+                A: 5,
+                skill: 3,
+                D: 3,
+                CD: 4,
+                tags: [
+                  'Heavy (Dash only)',
+                  'Torrent 1"'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 3,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      }
     ]
   },
   // ── WOLF SCOUTS (Space Wolves) ───────────────────────
@@ -6071,35 +6748,784 @@ const KT_TEAMS = [
 
   // ── TAU PATHFINDERS ─────────────────────────────────
   {
-    id:'kt-pathfinders', name:"T'au Pathfinders", faction:"T'au Empire",
-    color:'#06b6d4', emoji:'🔵',
-    desc:"Batedores T'au com tecnologia avançada de reconhecimento. Marcar alvos para aliados.",
-    style:'Tiro · Suporte',
-    limit: 10,
-    coreRule:{name:"Marcar Alvo",desc:"Ação de 1 AP: alvo a até 9\" fica Marcado — todos os T'au do time re-rolam 1 dado de Hit contra ele até o fim do turno."},
-    ploys:{strategy:[{name:"Protocolo de Fogo",desc:"Escolha Montagem de Fuego (+1 Ataque), Retrocesso (melhora PA) ou Perseguição (+alcance) no início do turno."},{name:"Retirada Tática",desc:"Um operativo pode recuar sem gastar AP extra uma vez por turno."}],firefight:[{name:"Disciplina de Fogo",desc:"Contra alvo Marcado, retém 1 falha como sucesso normal."},{name:"Escudo de Drone",desc:"Um Drone próximo pode \"sacrificar-se\" para anular 1 dano recebido."}]},
+    id: 'kt-pathfinders',
+    name: 'Pathfinders',
+    faction: 'T\'au Empire',
+    color: '#06b6d4',
+    emoji: '🔵',
+    desc: 'Reconhecimento avançado T\'au. Marcam alvos com Markerlights (bônus acumulativos de tiro), contam com drones de suporte, médico, sniper e especialistas de arma. Frágeis, mas com sinergia de tiro muito forte quando os tokens se acumulam.',
+    style: 'Tiro · Suporte · Markerlight',
+    limit: 12,
+    coreRule: {
+      name: 'Regras de Facção + Equipamento',
+      desc: '<strong>Composição.</strong> 1 Shas\'ui + 11 operativos da lista. Só SHAS\'LA e WEAPONS EXPERT podem repetir (máx. dois Weapons Expert); os demais uma vez cada. <strong>MB3 Recon Drone conta como duas seleções.</strong><br><br><strong>Markerlights.</strong> Alguns operativos (indicado no card) fazem a ação Markerlight (1AP): selecione um inimigo visível; ele ganha um Markerlight token seu (máx 4). Não pode no control range de inimigo. Uma vez em cada ativação, quando um inimigo com seus Markerlight tokens faz Dash/Charge/Fall Back/Reposition, remova um token dele. Todos os PATHFINDER amigos se beneficiam: ao atirar com arma do datacard (exceto fusion grenade do Assault Grenadier), aplica regras conforme o nº de tokens do alvo (cumulativo):<br>• 1 token: Saturate e Balanced.<br>• 2 tokens: +1 no Hit das armas ranged (máx 3+).<br>• 3 tokens: o alvo não pode estar obscured.<br>• 4 tokens: Seek Light.<br><br><strong>Pulse weapons.</strong> São: burst cannon, pulse carbine, suppressed pulse carbine, twin pulse carbine.<br><br><strong>EQUIP — Target Analysis Optic.</strong> Uma vez por turno, quando um PATHFINDER amigo (exceto DRONE) faz Shoot e seleciona alvo, até o fim da ação, se o alvo tem ≥1 Markerlight token seu, trate como se tivesse +1 (Blast/Torrent: só o primário).<br><br><strong>EQUIP — High-Intensity Markerlight.</strong> Até 2x por turno, quando um PATHFINDER amigo (exceto MV7 Marker Drone) faz Markerlight, o inimigo selecionado ganha dois tokens (em vez de um).<br><br><strong>EQUIP — Photon Grenade.</strong> Uma vez por turno, um PATHFINDER amigo com Markerlight no card (exceto DRONE) pode: selecionar um inimigo visível e rolar 1D6 — em 3+, até o fim da próxima ativação dele, -2" no Move. Não pode no control range de inimigo.<br><br><strong>EQUIP — Orbital Survey Uplink.</strong> Uma vez por turno, quando um PATHFINDER amigo faz Markerlight, você pode em vez disso selecionar um inimigo qualquer no killzone para ganhar um token (não precisa ser visível). Não cumulativo com High-Intensity Markerlight nem Analyse.'
+    },
+    ploys: {
+      strategy: [
+        {
+          name: 'Recon Sweep',
+          desc: 'Selecione uma borda do killzone (exceto a sua). Cada PATHFINDER amigo totalmente a 6" dessa borda pode imediatamente fazer um Dash grátis, mas deve terminar totalmente a 6" de uma borda (exceto a sua). Não pode usar no primeiro turno.'
+        },
+        {
+          name: 'Suppressing Fire',
+          desc: 'Quando um inimigo faz Shoot, se o alvo (primário, se Blast/Torrent) não é o alvo válido mais próximo, o oponente não pode re-rolar dados de ataque. Ignore PATHFINDER amigos com Conceal ou obscured ao determinar isso.'
+        },
+        {
+          name: 'Bonded',
+          desc: 'Quando um PATHFINDER amigo (exceto DRONE) atira ou retalia com arma ranged, se estiver a 3" de outro PATHFINDER amigo (exceto DRONE), as armas ranged do primeiro ganham Accurate 1.'
+        },
+        {
+          name: 'Take Cover',
+          desc: 'Quando um operativo atira num PATHFINDER amigo, se você puder reter algum cover save, melhore o Save desse amigo em 1.'
+        }
+      ],
+      firefight: [
+        {
+          name: 'A Worthy Cause',
+          desc: 'Use no início da Firefight phase. Um PATHFINDER amigo (exceto DRONE) pode imediatamente fazer uma ação de missão grátis.'
+        },
+        {
+          name: 'Supporting Fire',
+          desc: 'Use quando um PATHFINDER amigo faz Shoot e você seleciona um alvo válido a 6" dele. Ter outros PATHFINDER amigos no control range do inimigo não impede selecioná-lo.'
+        },
+        {
+          name: 'Saviour Protocols',
+          desc: 'Use quando um PATHFINDER amigo (exceto DRONE) é selecionado como alvo válido de um Shoot. Selecione um PATHFINDER DRONE amigo visível a e a 3" dele para virar o alvo (mesmo que normalmente não seja válido). O DRONE só está em cover/obscured se o alvo original estava. Sem efeito se a arma tem Blast ou Torrent.'
+        },
+        {
+          name: 'Point-Blank Fusillade',
+          desc: 'Use quando um PATHFINDER amigo (exceto DRONE) está retaliando, se não estava no control range de inimigos no início da ativação/counteraction. Ele pode usar uma arma ranged como melee (exceto \'grenade\') nessa sequência; se fizer, não pode block e as regras Devastating/Piercing/Torrent não têm efeito. Se estiver ready, com Engage e retaliando com pulse weapon, você resolve o primeiro dado de ataque (defensor em vez do atacante).'
+        }
+      ]
+    },
     operatives: [
-      { id:'kt-pathfinder-shas', name:"Shas'ui Pathfinder", unique:true,
-        M:'3"', APL:2, GA:1, DF:3, SV:5, W:10,
-        abilities:"Liderança T'au: Pode usar Marcar Alvo como ação de 0 APL uma vez por ativação.",
-        weapons:[
-          { name:'Pulse Rifle',    A:4, skill:3, D:4, CD:6, range:'long', tags:['Assault'] },
-          { name:'Lança Carbono',  A:3, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-pathfinder', name:'Pathfinder', unique:false, count:9,
-        M:'3"', APL:2, GA:2, DF:3, SV:5, W:8,
-        abilities:"Marcar Alvo: Ação (1 APL): alvo a até 9\" fica Marcado — todos os T'au ganham re-rolar 1 Hit contra ele.",
-        weapons:[
-          { name:'Pulse Carbine',  A:4, skill:4, D:3, CD:5, range:'short', tags:['Assault'] },
-          { name:'Lança Carbono',  A:3, skill:4, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-pathfinder-drone', name:'Recon Drone', unique:true,
-        M:'4"', APL:2, GA:1, DF:3, SV:5, W:8,
-        abilities:'Voo: Ignora terreno ao mover. Sensor: Inimigos a 9" não podem ficar Hidden.',
-        weapons:[
-          { name:'Pulse Carbine',  A:4, skill:4, D:3, CD:5, range:'short', tags:['Assault'] },
-          { name:'Colisão',        A:3, skill:4, D:3, CD:3, range:'melee' },
-        ]},
+      {
+        id: 'kt-pathfinder-shas',
+        name: 'Shas\'ui',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 8,
+        abilities: [
+          {
+            name: 'LÍDER',
+            desc: 'Este operativo é o líder do time.'
+          },
+          {
+            name: 'Art of War',
+            desc: 'STRATEGIC GAMBIT se este operativo está no killzone. Escolha uma opção e aplique até o fim do turno (não pode repetir a mesma opção na batalha): Mont\'ka (+1" no Move dos PATHFINDER amigos); ou Kauyon (PATHFINDER amigos podem fazer um Markerlight grátis na ativação se tiverem Conceal).'
+          },
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Pulse carbine',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'long'
+          },
+          {
+            name: 'Gun butt',
+            A: 3,
+            skill: 4,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder',
+        name: 'Shas\'la',
+        unique: false,
+        count: 11,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 7,
+        abilities: [
+          {
+            name: 'Group Activation',
+            desc: 'Quando este operativo é expended, você deve ativar outro SHAS\'LA amigo ready (se puder) antes do oponente ativar. Quando esse outro é expended, o oponente ativa normalmente (ou seja, no máximo dois em sequência com esta regra).'
+          },
+          {
+            name: 'Fearless on the Frontline',
+            desc: 'Este operativo pode fazer Markerlight mesmo no control range de inimigo (precede as condições normais da ação). Além disso, pode fazer Fall Back por 1 AP a menos.'
+          },
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Pulse carbine',
+            A: 4,
+            skill: 4,
+            D: 4,
+            CD: 5,
+            range: 'long'
+          },
+          {
+            name: 'Gun butt',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-grenadier',
+        name: 'Assault Grenadier',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 7,
+        abilities: [
+          {
+            name: 'Grenadier Specialist',
+            desc: 'Este operativo pode usar frag e krak grenades (equipamento universal), sem contar para limites de uso. Ao fazê-lo, melhore o Hit dessa arma em 1.'
+          },
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Fusion grenade',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 3,
+            range: 'short',
+            tags: [
+              'Range 6"',
+              'Devastating 2',
+              'Limited 1',
+              'Piercing 2',
+              'Saturate'
+            ]
+          },
+          {
+            name: 'Pulse carbine',
+            A: 4,
+            skill: 4,
+            D: 4,
+            CD: 5,
+            range: 'long'
+          },
+          {
+            name: 'Gun butt',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-blooded',
+        name: 'Blooded',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 8,
+        abilities: [
+          {
+            name: 'Veteran',
+            desc: 'Num turno em que você usou o Art of War do Shas\'ui e escolheu Mont\'ka, este operativo pode usar Kauyon na ativação dele (e vice-versa).'
+          },
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Suppressed pulse carbine',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'long',
+            tags: [
+              'Silent'
+            ]
+          },
+          {
+            name: 'Bionic arm',
+            A: 3,
+            skill: 4,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-comms',
+        name: 'Comms Specialist',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 7,
+        abilities: [
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          },
+          {
+            name: 'Signal',
+            ap: '1AP',
+            desc: 'SUPPORT. Selecione outro PATHFINDER amigo visível a e a 6" deste. Até o fim da próxima ativação dele, +1 no APL. Não pode fazer no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Pulse carbine',
+            A: 4,
+            skill: 4,
+            D: 4,
+            CD: 5,
+            range: 'long'
+          },
+          {
+            name: 'Fists',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-dronecontroller',
+        name: 'Drone Controller',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 7,
+        abilities: [
+          {
+            name: 'Drone Controller',
+            desc: 'Enquanto no killzone: +2" no Move dos PATHFINDER DRONE amigos; e o ploy Saviour Protocols custa 0CP.'
+          },
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          },
+          {
+            name: 'Remote Pilot',
+            ap: '1AP',
+            desc: 'Um PATHFINDER DRONE amigo pode imediatamente fazer uma ação grátis, mas não pode mover mais que 2" nela. Pode ser uma ação normalmente restrita pela regra Drone (precede-a). Não pode fazer no control range de inimigo. Pode fazer mais de uma vez na ativação, mas o mesmo DRONE não pode repetir a mesma ação grátis por ativação.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Pulse carbine',
+            A: 4,
+            skill: 4,
+            D: 4,
+            CD: 5,
+            range: 'long'
+          },
+          {
+            name: 'Gun butt',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-marksman',
+        name: 'Marksman',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 7,
+        abilities: [
+          {
+            name: 'Inertial Dampener',
+            desc: 'Você pode ignorar mudanças no Hit da marksman rail rifle deste operativo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Marksman rail rifle',
+            range: 'long',
+            profiles: [
+              {
+                name: 'standard',
+                A: 4,
+                skill: 3,
+                D: 4,
+                CD: 4,
+                tags: [
+                  'Devastating 2',
+                  'Lethal 5+',
+                  'Piercing 1'
+                ]
+              },
+              {
+                name: 'dart round',
+                A: 4,
+                skill: 3,
+                D: 3,
+                CD: 4,
+                tags: [
+                  'Piercing 1',
+                  'Silent'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Gun butt',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-medic',
+        name: 'Medical Technician',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 7,
+        abilities: [
+          {
+            name: 'Medic!',
+            desc: 'A primeira vez em cada turno que outro PATHFINDER amigo (exceto DRONE) visível a e a 3" deste seria incapacitado, você pode usar esta regra (se nenhum dos dois estiver no control range de inimigo): ele não é incapacitado, fica com 1 Wound e não pode ser incapacitado no resto da ação; depois pode fazer um Dash grátis terminando no control range deste operativo. -1 no APL de ambos até o fim das próximas ativações. Se usada na ativação do amigo, ela termina. Não pode se este operativo está incapacitado, ou se é um Shoot em que este seria alvo.'
+          },
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          },
+          {
+            name: 'Medikit',
+            ap: '1AP',
+            desc: 'Selecione um PATHFINDER amigo (exceto DRONE) no control range deste para recuperar até 2D3 Wounds. Não pode ser o operativo em que o Medic! foi usado neste turno. Não pode fazer no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Pulse carbine',
+            A: 4,
+            skill: 4,
+            D: 4,
+            CD: 5,
+            range: 'long'
+          },
+          {
+            name: 'Gun butt',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-transpectral',
+        name: 'Transpectral Interference',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 7,
+        abilities: [
+          {
+            name: 'Multi-Dimensional Vision',
+            desc: 'Quando este operativo está atirando, inimigos não podem estar obscured.'
+          },
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          },
+          {
+            name: 'System Jam',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Até o fim da próxima ativação dele, -1 no APL. Não pode com Conceal, nem no control range de inimigo.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Pulse carbine',
+            A: 4,
+            skill: 4,
+            D: 4,
+            CD: 5,
+            range: 'long'
+          },
+          {
+            name: 'Gun butt',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-weaponsexpert',
+        name: 'Weapons Expert',
+        unique: false,
+        count: 2,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 5,
+        W: 7,
+        abilities: [
+          {
+            name: 'Opções de arma',
+            desc: 'Escolha uma: Ion rifle + Gun butt; ou Rail rifle + Gun butt. (Máx. dois Weapons Expert no time.)'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Ion rifle',
+            range: 'long',
+            profiles: [
+              {
+                name: 'standard',
+                A: 5,
+                skill: 4,
+                D: 4,
+                CD: 5,
+                tags: [
+                  'Piercing Crits 1'
+                ]
+              },
+              {
+                name: 'overcharge',
+                A: 5,
+                skill: 4,
+                D: 4,
+                CD: 5,
+                tags: [
+                  'Hot',
+                  'Lethal 5+',
+                  'Piercing 1'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Rail rifle',
+            A: 4,
+            skill: 4,
+            D: 4,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Devastating 2',
+              'Lethal 5+',
+              'Piercing 1'
+            ]
+          },
+          {
+            name: 'Gun butt',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-drone',
+        name: 'MB3 Recon Drone',
+        unique: true,
+        M: '6"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 12,
+        abilities: [
+          {
+            name: 'Analyse',
+            desc: 'Quando este operativo faz Markerlight, cada outro inimigo visível a este e a 3" do inimigo selecionado também ganha um token seu.'
+          },
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          },
+          {
+            name: 'Drone',
+            desc: 'Não pode fazer ações além de Charge, Dash, Fall Back, Fight, Reposition e Shoot (e Markerlight, quando tiver). Não pode usar armas fora do datacard. Ao determinar controle de objetivo, trate o APL dele como 1 menor (cumulativo). Ao determinar visibilidade a partir dele, o disco no topo da miniatura é a cabeça.'
+          },
+          {
+            name: 'Nota',
+            desc: 'Conta como duas seleções na composição do time.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Burst cannon',
+            range: 'long',
+            profiles: [
+              {
+                name: 'focused',
+                A: 5,
+                skill: 4,
+                D: 3,
+                CD: 4,
+                tags: [
+                  'Ceaseless',
+                  'Heavy (Reposition only)',
+                  'Punishing'
+                ]
+              },
+              {
+                name: 'sweeping',
+                A: 4,
+                skill: 4,
+                D: 3,
+                CD: 4,
+                tags: [
+                  'Ceaseless',
+                  'Heavy (Reposition only)',
+                  'Punishing',
+                  'Torrent 1"'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Ram',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-mv1',
+        name: 'MV1 Gun Drone',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 7,
+        abilities: [
+          {
+            name: 'Drone',
+            desc: 'Não pode fazer ações além de Charge, Dash, Fall Back, Fight, Reposition e Shoot (e Markerlight, quando tiver). Não pode usar armas fora do datacard. Ao determinar controle de objetivo, trate o APL dele como 1 menor (cumulativo). Ao determinar visibilidade a partir dele, o disco no topo da miniatura é a cabeça.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Twin pulse carbine',
+            A: 4,
+            skill: 4,
+            D: 4,
+            CD: 5,
+            range: 'long',
+            tags: [
+              'Ceaseless'
+            ]
+          },
+          {
+            name: 'Ram',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-mv4',
+        name: 'MV4 Shield Drone',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 7,
+        abilities: [
+          {
+            name: 'Drone',
+            desc: 'Não pode fazer ações além de Charge, Dash, Fall Back, Fight, Reposition e Shoot (e Markerlight, quando tiver). Não pode usar armas fora do datacard. Ao determinar controle de objetivo, trate o APL dele como 1 menor (cumulativo). Ao determinar visibilidade a partir dele, o disco no topo da miniatura é a cabeça.'
+          },
+          {
+            name: 'Shield Generator',
+            desc: 'Este operativo ignora a regra Piercing. Uma vez por turno, quando um dado de ataque causa Normal Dmg nele, você pode ignorar esse dano. Você pode usar o ploy Saviour Protocols por 0CP se este for o DRONE especificado.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Ram',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-mv7',
+        name: 'MV7 Marker Drone',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 7,
+        abilities: [
+          {
+            name: 'High-intensity Markerlight',
+            desc: 'Quando este operativo faz Markerlight, o inimigo selecionado ganha dois tokens seus (em vez de um).'
+          },
+          {
+            name: 'Markerlight',
+            ap: '1AP',
+            desc: 'Selecione um inimigo visível a este operativo. Ele ganha um Markerlight token seu (máx 4). Não pode fazer no control range de inimigo. Se fizer Shoot e esta ação na mesma ativação, só o alvo do Shoot pode ser selecionado (e vice-versa). Ver \'Markerlights\' nas regras de facção para os efeitos dos tokens.'
+          },
+          {
+            name: 'Drone',
+            desc: 'Não pode fazer ações além de Charge, Dash, Fall Back, Fight, Reposition e Shoot (e Markerlight, quando tiver). Não pode usar armas fora do datacard. Ao determinar controle de objetivo, trate o APL dele como 1 menor (cumulativo). Ao determinar visibilidade a partir dele, o disco no topo da miniatura é a cabeça.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Ram',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-mv31',
+        name: 'MV31 Pulse Accelerator Drone',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 7,
+        abilities: [
+          {
+            name: 'Drone',
+            desc: 'Não pode fazer ações além de Charge, Dash, Fall Back, Fight, Reposition e Shoot (e Markerlight, quando tiver). Não pode usar armas fora do datacard. Ao determinar controle de objetivo, trate o APL dele como 1 menor (cumulativo). Ao determinar visibilidade a partir dele, o disco no topo da miniatura é a cabeça.'
+          },
+          {
+            name: 'Pulse Accelerator',
+            ap: '1AP',
+            desc: 'Até o começo da próxima ativação deste operativo ou até ser incapacitado, sempre que outro PATHFINDER amigo atira com pulse weapon a 3" deste, essa arma ganha Lethal 5+ e Severe.'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Ram',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-pathfinder-mv33',
+        name: 'MV33 Grav-Inhibitor Drone',
+        unique: true,
+        M: '6"',
+        APL: 2,
+        GA: 1,
+        DF: 3,
+        SV: 4,
+        W: 7,
+        abilities: [
+          {
+            name: 'Drone',
+            desc: 'Não pode fazer ações além de Charge, Dash, Fall Back, Fight, Reposition e Shoot (e Markerlight, quando tiver). Não pode usar armas fora do datacard. Ao determinar controle de objetivo, trate o APL dele como 1 menor (cumulativo). Ao determinar visibilidade a partir dele, o disco no topo da miniatura é a cabeça.'
+          },
+          {
+            name: 'Grav-inhibitor',
+            desc: 'Quando um inimigo faz uma ação em que se move (exceto Dash) e se moveria visível a e a 6" deste operativo, trate a distância como +2" e ignore as distâncias extras de Obstructing e Accessible. Quando um inimigo luta/retalia visível a e a 6" deste, piore o Hit das armas melee dele em 1 (cumulativo com injured).'
+          }
+        ],
+        weapons: [
+          {
+            name: 'Ram',
+            A: 3,
+            skill: 5,
+            D: 2,
+            CD: 3,
+            range: 'melee'
+          }
+        ]
+      }
     ]
   },
 
@@ -6392,163 +7818,698 @@ const KT_TEAMS = [
   },
   // ── DEATHWATCH (Space Marines) ──────────────────────
   {
-    id:'kt-deathwatch', name:'Deathwatch', faction:'Space Marines',
-    color:'#166534', emoji:'🦅',
-    desc:'Elite de caçadores de xenos reunidos de vários Capítulos. Armas altamente especializadas e adaptáveis para qualquer inimigo alienígena.',
-    style:'Elite · Versátil',
+    id: 'kt-deathwatch',
+    name: 'Deathwatch',
+    faction: 'Space Marines',
+    color: '#166534',
+    emoji: '🦅',
+    desc: 'A elite máxima dos Adeptus Astartes: veteranos especialistas anti-xenos. Só 5 operativos, mas cada um é versátil e devastador. Special Issue Ammunition e a regra Veteran Astartes (duas ações de Shoot/Fight, counteract flexível) fazem cada ativação valer muito.',
+    style: 'Elite · Versátil · Anti-xenos',
     limit: 5,
-    coreRule: {name:"Veteran Astartes", desc:"Cada operativo pode fazer 2 ações de Tiro ou 2 de Luta na mesma ativação. Pode contra-atacar independente da ordem."},
+    coreRule: {
+      name: 'Regras de Facção + Equipamento',
+      desc: '<strong>Composição.</strong> 5 operativos escolhidos da lista; cada um só uma vez, e no máximo <strong>um GRAVIS</strong> (Bombard, Breacher, Horde-Slayer).<br><br><strong>Veteran Astartes.</strong> Na ativação de cada DEATHWATCH amigo, ele pode fazer duas ações Shoot OU duas ações Fight. Se forem dois Shoot e um auxiliary grenade launcher, frag cannon, heavy plasma incinerator, infernus heavy bolter, plasma pistol ou stalker bolt rifle for selecionado para ambos, ou se um melta bomb for selecionado para qualquer um, gaste 1 AP adicional na segunda ação. Cada DEATHWATCH amigo pode counteract independente da ordem; ao fazê-lo, pode fazer uma ação de 1AP adicional grátis nesse counteraction, mas as duas ações devem ser diferentes e você não pode fazer Fight e Shoot no mesmo counteraction.<br><br><strong>Special Issue Ammunition.</strong> Uma vez por turno, quando um DEATHWATCH amigo faz Shoot, no passo Select Weapon selecione uma das regras abaixo para as armas ranged dele até o fim da ação (não pode com granadas explosivas nem melta bombs): Blast 1" (não se o perfil já tem Torrent); Devastating 1; Lethal 5+; Piercing Crits 1; Saturate; Severe.<br><br><strong>EQUIP — Digital Weapons.</strong> Uma vez por turno, quando um DEATHWATCH amigo faz Fight, no início do Roll Attack Dice, cause 1 de dano no inimigo dessa sequência.<br><br><strong>EQUIP — Scrutavore Servo-Thrall.</strong> Uma vez por turno, na ativação de um DEATHWATCH amigo, ele pode fazer uma ação de missão por 1 AP a menos (mesmo com inimigo no control range; nesse caso, após fazê-la, roll-off — se o oponente vencer, você não pode mais usar isto na batalha).<br><br><strong>EQUIP — Sanctus-V Bioscryer Cuffs.</strong> Uma vez em cada ativação de um DEATHWATCH amigo, antes/depois de uma ação, se não estiver no control range de inimigo: recupera até D3 Wounds; ou remove mudanças no APL dele; ou remove um token (Neutron Fragment, Poison, Terrorchem) dele.<br><br><strong>EQUIP — Ammunition Reserve.</strong> Uma vez por batalha, você pode usar Special Issue Ammunition para até dois Shoot num mesmo turno, mas deve escolher regras diferentes para cada uso (precede a regra normal).'
+    },
     ploys: {
       strategy: [
-        {name:"Táticas de Missão", desc:"Escolha Conceal ou Engage — suas armas ganham Balanced contra inimigos com essa ordem."},
-        {name:"Vigília Eterna", desc:"Ao ser alvo dentro do seu território, re-rola 1 dado de defesa."},
-        {name:"Escudo que Mata", desc:"No território inimigo, dano normal de 4+ recebido é reduzido em 1."},
-        {name:"Eles Não Temem", desc:"Ignora mudanças de status por estar ferido."},
+        {
+          name: 'Mission Tactics',
+          desc: 'Selecione Conceal ou Engage. Sempre que um DEATHWATCH amigo atira ou luta contra um inimigo que tem essa ordem, as armas desse amigo ganham Balanced.'
+        },
+        {
+          name: 'The Long Vigil',
+          desc: 'Sempre que um operativo atira num DEATHWATCH amigo que está totalmente no seu território, você pode re-rolar um dos seus dados de defesa.'
+        },
+        {
+          name: 'The Shield That Slays',
+          desc: 'Sempre que um DEATHWATCH amigo está totalmente no território do oponente, Normal Dmg de 4+ causa 1 de dano a menos nele.'
+        },
+        {
+          name: 'And They Shall Know No Fear',
+          desc: 'Você pode ignorar mudanças nos stats dos DEATHWATCH amigos por estarem injured (inclusive stats das armas).'
+        }
       ],
       firefight: [
-        {name:"Não Sofra o Alienígena", desc:"Contra inimigo sem palavra-chave Chaos/Imperium, re-rola qualquer dado de ataque."},
-        {name:"Rastreamento Auspicador", desc:"Ao contra-atacar, pode trocar a ordem antes de agir."},
-        {name:"Varredura Avançada", desc:"Ao atirar, arma ganha Saturate e inimigos não ficam obscurecidos até o fim da ação."},
-        {name:"Fisiologia Transumana", desc:"Ao ser alvo, transforma 1 sucesso normal de defesa em crítico."},
-      ],
+        {
+          name: 'Suffer Not the Alien',
+          desc: 'Use depois de rolar seus dados de ataque de um DEATHWATCH amigo, se ele estiver atirando/lutando contra um operativo que NÃO tem o keyword CHAOS ou IMPERIUM. Re-role qualquer um dos seus dados de ataque.'
+        },
+        {
+          name: 'Auspicator Tracking',
+          desc: 'Use quando um DEATHWATCH amigo está counteracting, antes de fazer ações. Você pode mudar a ordem dele.'
+        },
+        {
+          name: 'Advanced Auspex Scan',
+          desc: 'Use quando um DEATHWATCH amigo faz Shoot. Até o fim da ativação/counteraction, as armas ranged dele ganham Saturate e inimigos não podem estar obscured.'
+        },
+        {
+          name: 'Transhuman Physiology',
+          desc: 'Use quando um operativo atira num DEATHWATCH amigo, no passo Roll Defence Dice. Você pode reter um dos seus sucessos normais como crítico.'
+        }
+      ]
     },
     operatives: [
-      { id:'kt-dw-sergeant', name:'Watch Sergeant', unique:true,
-        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:[
-          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
-          {name:'Adaptable Armoury', desc:'Pode escolher 1 opção adicional de equipamento.'},
-          {name:'Strategic Command', desc:'1x por batalha cada, se este operativo estiver em campo: usa um Strategy Ploy Deathwatch de graça; usa um Firefight Ploy Deathwatch de graça.'},
+      {
+        id: 'kt-dw-sergeant',
+        name: 'Watch Sergeant',
+        unique: true,
+        M: '6"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 15,
+        abilities: [
+          {
+            name: 'LÍDER',
+            desc: 'Este operativo é o líder do time.'
+          },
+          {
+            name: 'Adaptable Armoury',
+            desc: 'Você pode selecionar uma opção de equipamento adicional.'
+          },
+          {
+            name: 'Strategic Command',
+            desc: 'Uma vez por batalha cada, se este operativo estiver no killzone: usar um Strategy Ploy DEATHWATCH por 0CP; e usar um Firefight Ploy DEATHWATCH por 0CP.'
+          }
         ],
-        weapons:[
-          { name:'Pistola de Plasma', range:'short', profiles:[
-            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
-            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
-          ]},
-          { name:'Arma de Poder', A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
-        ]},
-      { id:'kt-dw-aegis', name:'Aegis Veteran', unique:true,
-        M:'6"', APL:3, GA:1, DF:3, SV:2, W:15,
-        abilities:[
-          {name:'Shield', desc:'Ao lutar ou revidar com o Malho + Escudo Tempestade, cada bloqueio pode ser usado pra bloquear 2 sucessos não resolvidos (em vez de 1).'},
-          {name:'Storm Shield', desc:'Ao ser alvo de tiro, piora o valor X da regra Piercing em 1 (então Piercing 1 é totalmente ignorado).'},
+        weapons: [
+          {
+            name: 'Plasma pistol',
+            range: 'short',
+            profiles: [
+              {
+                name: 'standard',
+                A: 4,
+                skill: 3,
+                D: 3,
+                CD: 5,
+                tags: [
+                  'Range 8"',
+                  'Piercing 1'
+                ]
+              },
+              {
+                name: 'supercharge',
+                A: 4,
+                skill: 3,
+                D: 4,
+                CD: 5,
+                tags: [
+                  'Range 8"',
+                  'Hot',
+                  'Lethal 5+',
+                  'Piercing 1'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Power weapon',
+            A: 5,
+            skill: 3,
+            D: 4,
+            CD: 6,
+            range: 'melee',
+            tags: [
+              'Lethal 5+'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-aegis',
+        name: 'Aegis Veteran',
+        unique: true,
+        M: '6"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 2,
+        W: 15,
+        abilities: [
+          {
+            name: 'Shield',
+            desc: 'Quando este operativo luta ou retalia com a power maul & storm shield, cada um dos seus blocks pode bloquear dois sucessos não resolvidos (em vez de um).'
+          },
+          {
+            name: 'Storm Shield',
+            desc: 'Quando um operativo atira neste, piore o x da regra Piercing em 1 (se houver). Logo, Piercing 1 é ignorada.'
+          }
         ],
-        weapons:[
-          { name:'Pistola Bolter',            A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Malho + Escudo Tempestade',  A:5, skill:3, D:4, CD:6, range:'melee', tags:['Shock'] },
-        ]},
-      { id:'kt-dw-blademaster', name:'Blademaster Veteran', unique:true,
-        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:[
-          {name:'Adaptive Swordsmanship', desc:'Ignora mudanças no Hit da Lâmina Xenófase. Ao lutar ou revidar, pode resolver um dos seus sucessos antes da ordem normal — mas nesse caso ele deve ser usado pra Bloquear.'},
-          {name:'Phase Sweep', desc:'Ao lutar com o perfil Varredura de Fase, se não for incapacitado, pode fazer outra ação de Luta grátis logo em seguida — mas só contra cada inimigo no alcance de controle 1x por ativação ou contra-ataque com esse perfil. Continua fazendo ações grátis até ser incapacitado ou ter lutado contra todos os inimigos no alcance.'},
+        weapons: [
+          {
+            name: 'Bolt pistol',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"'
+            ]
+          },
+          {
+            name: 'Power maul & storm shield',
+            A: 5,
+            skill: 3,
+            D: 4,
+            CD: 6,
+            range: 'melee',
+            tags: [
+              'Shock',
+              'Shield'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-blademaster',
+        name: 'Blademaster Veteran',
+        unique: true,
+        M: '6"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 15,
+        abilities: [
+          {
+            name: 'Adaptive Swordsmanship',
+            desc: 'Você pode ignorar mudanças no Hit da xenophase blade deste operativo. Quando ele luta ou retalia, você pode resolver um dos seus sucessos antes da ordem normal — se fizer, esse sucesso deve ser usado para block.'
+          },
+          {
+            name: 'Phase Sweep',
+            desc: 'Quando este operativo faz Fight com este perfil e não é incapacitado, ele pode imediatamente fazer um Fight grátis depois, mas deve usar este perfil e só pode lutar contra cada inimigo no seu control range uma vez por ativação/counteraction com este perfil. Precede restrições de ação; continua fazendo Fights grátis até ser incapacitado ou ter lutado contra cada inimigo no control range.'
+          }
         ],
-        weapons:[
-          { name:'Pistola Bolter Especial', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing 1'] },
-          { name:'Lâmina Xenófase', range:'melee', profiles:[
-            { name:'Duelo',        A:5, skill:3, D:4, CD:6, tags:['Brutal','Lethal 5+'] },
-            { name:'Varredura de Fase', A:4, skill:3, D:4, CD:6, tags:['Brutal','Lethal 5+'] },
-          ]},
-        ]},
-      { id:'kt-dw-bombard', name:'Bombard Veteran', unique:true,
-        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
-        abilities:[
-          {name:'GRAVIS', desc:'Armadura pesada Gravis — máximo 1 operativo Gravis por time. Com 18 PV, é um dos mais resistentes do time.'},
+        weapons: [
+          {
+            name: 'Special issue bolt pistol',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"',
+              'Piercing 1'
+            ]
+          },
+          {
+            name: 'Xenophase blade',
+            range: 'melee',
+            profiles: [
+              {
+                name: 'duel',
+                A: 5,
+                skill: 3,
+                D: 4,
+                CD: 6,
+                tags: [
+                  'Brutal',
+                  'Lethal 5+'
+                ]
+              },
+              {
+                name: 'phase sweep',
+                A: 4,
+                skill: 3,
+                D: 4,
+                CD: 6,
+                tags: [
+                  'Brutal',
+                  'Lethal 5+',
+                  'Phase Sweep'
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-bombard',
+        name: 'Bombard Veteran',
+        unique: true,
+        M: '5"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 18,
+        abilities: [
+          {
+            name: 'GRAVIS',
+            desc: 'Operativo GRAVIS (o time pode incluir no máximo um GRAVIS).'
+          }
         ],
-        weapons:[
-          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Canhão de Estilhaço', range:'short', profiles:[
-            { name:'Concha',    A:4, skill:3, D:5, CD:7, tags:['Piercing 1'] },
-            { name:'Estilhaço', A:5, skill:3, D:4, CD:5, tags:['Torrent 2"'] },
-          ]},
-          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-dw-breacher', name:'Breacher Veteran', unique:true,
-        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
-        abilities:[
-          {name:'GRAVIS', desc:'Armadura pesada Gravis — máximo 1 operativo Gravis por time.'},
-          {name:'Especialista em Arrombamento', desc:'Carrega granadas auxiliares e uma bomba de melta devastadora contra alvos blindados.'},
+        weapons: [
+          {
+            name: 'Bolt pistol',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"'
+            ]
+          },
+          {
+            name: 'Frag cannon',
+            range: 'long',
+            profiles: [
+              {
+                name: 'shell',
+                A: 4,
+                skill: 3,
+                D: 5,
+                CD: 7,
+                tags: [
+                  'Piercing 1'
+                ]
+              },
+              {
+                name: 'shrapnel',
+                A: 5,
+                skill: 3,
+                D: 4,
+                CD: 5,
+                tags: [
+                  'Torrent 2"'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-breacher',
+        name: 'Breacher Veteran',
+        unique: true,
+        M: '5"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 18,
+        abilities: [
+          {
+            name: 'GRAVIS',
+            desc: 'Operativo GRAVIS (o time pode incluir no máximo um GRAVIS).'
+          }
         ],
-        weapons:[
-          { name:'Lançador de Granadas Auxiliar', range:'long', profiles:[
-            { name:'Frag', A:4, skill:3, D:2, CD:4, tags:['Blast 2"'] },
-            { name:'Krak', A:4, skill:3, D:4, CD:5, tags:['Piercing 1'] },
-          ]},
-          { name:'Rifle Bolter Hellstorm', A:4, skill:3, D:4, CD:5, range:'long', tags:['Torrent 1"'] },
-          { name:'Bomba de Melta', A:4, skill:3, D:5, CD:3, range:'short', tags:['Range 3"','Devastating 3','Heavy (Reposition only)','Limited 1','Piercing 2'] },
-          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-dw-demolisher', name:'Demolisher Veteran', unique:true,
-        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:[
-          {name:'Brutal Assault', desc:'Ao lutar, o Martelo Pesado do Trovão ganha a regra Brutal. Ao fazer a ação Charge, ganha a regra Ceaseless até o fim da ativação/contra-ataque.'},
-          {name:'Aggressive Force', desc:'Ao lutar ou revidar, dano Normal ou Crítico de 3+ recebido é reduzido em 1. Não acumula com o Ploy Shield That Slays.'},
+        weapons: [
+          {
+            name: 'Auxiliary grenade launcher',
+            range: 'long',
+            profiles: [
+              {
+                name: 'frag',
+                A: 4,
+                skill: 3,
+                D: 2,
+                CD: 4,
+                tags: [
+                  'Blast 2"'
+                ]
+              },
+              {
+                name: 'krak',
+                A: 4,
+                skill: 3,
+                D: 4,
+                CD: 5,
+                tags: [
+                  'Piercing 1'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Hellstorm bolt rifle',
+            A: 4,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'long',
+            tags: [
+              'Torrent 1"'
+            ]
+          },
+          {
+            name: 'Melta bomb',
+            A: 4,
+            skill: 3,
+            D: 5,
+            CD: 3,
+            range: 'short',
+            tags: [
+              'Range 3"',
+              'Devastating 3',
+              'Heavy (Reposition only)',
+              'Limited 1',
+              'Piercing 2'
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-demolisher',
+        name: 'Demolisher Veteran',
+        unique: true,
+        M: '6"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 15,
+        abilities: [
+          {
+            name: 'Brutal Assault',
+            desc: 'Quando este operativo luta, o heavy thunder hammer ganha Brutal. Quando ele faz Charge, o heavy thunder hammer ganha Ceaseless até o fim da ativação/counteraction.'
+          },
+          {
+            name: 'Aggressive Force',
+            desc: 'Quando este operativo luta ou retalia, Normal e Critical Dmg de 3+ causa 1 de dano a menos nele. Não é cumulativo com o ploy The Shield That Slays.'
+          }
         ],
-        weapons:[
-          { name:'Pistola Bolter',       A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Martelo Pesado do Trovão', A:5, skill:4, D:6, CD:7, range:'melee', tags:['Shock','Stun'] },
-        ]},
-      { id:'kt-dw-disruptor', name:'Disruptor Veteran', unique:true,
-        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
-        abilities:[
-          {name:'Advanced Omni-Scrambler', desc:'Strategic Gambit. Escolhe um inimigo visível ou a até 6" e rola 1D6. Na Firefight Phase deste turno, aquele inimigo não pode ativar nem agir até que X inimigos tenham sido ativados (X = resultado do dado) ou até ser o último a ativar.'},
-          {name:'Auspex Triangulation', desc:'O Ploy Advanced Auspex Scan custa 0CP quando este operativo não está no alcance de controle de inimigo E o alvo do Tiro é visível a ele.'},
+        weapons: [
+          {
+            name: 'Bolt pistol',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"'
+            ]
+          },
+          {
+            name: 'Heavy thunder hammer',
+            A: 5,
+            skill: 4,
+            D: 6,
+            CD: 7,
+            range: 'melee',
+            tags: [
+              'Shock',
+              'Stun'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-disruptor',
+        name: 'Disruptor Veteran',
+        unique: true,
+        M: '7"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 13,
+        abilities: [
+          {
+            name: 'Advanced Omni-Scrambler',
+            desc: 'STRATEGIC GAMBIT. Selecione um inimigo visível a ou a 6" deste operativo, depois role 1D6. Na Firefight phase deste turno, esse inimigo não pode ser ativado nem fazer ações até: o oponente ter ativado um número de inimigos igual ao resultado do D6; ou ser o último inimigo a ser ativado.'
+          },
+          {
+            name: 'Auspex Triangulation',
+            desc: 'O ploy Advanced Auspex Scan custa 0CP quando ambos: este operativo não está no control range de inimigos; e o alvo do Shoot (primário, se relevante) é visível a este operativo. Não precisa ser este operativo atirando, e Shoots subsequentes na ativação/counteraction devem atender aos mesmos requisitos.'
+          }
         ],
-        weapons:[
-          { name:'Carabina Marksman', A:4, skill:3, D:3, CD:4, range:'long', tags:['Lethal 5+'] },
-          { name:'Punhos',            A:4, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-dw-gunner', name:'Gunner Veteran', unique:true,
-        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:[
-          {name:'Especialista em Plasma', desc:'Carrega o Incinerador de Plasma Pesado, com modo padrão e sobrecarga.'},
+        weapons: [
+          {
+            name: 'Marksman bolt carbine',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'long',
+            tags: [
+              'Lethal 5+'
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-gunner',
+        name: 'Gunner Veteran',
+        unique: true,
+        M: '6"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 15,
+        weapons: [
+          {
+            name: 'Bolt pistol',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"'
+            ]
+          },
+          {
+            name: 'Heavy plasma incinerator',
+            range: 'long',
+            profiles: [
+              {
+                name: 'standard',
+                A: 5,
+                skill: 3,
+                D: 4,
+                CD: 6,
+                tags: [
+                  'Piercing 1'
+                ]
+              },
+              {
+                name: 'supercharge',
+                A: 5,
+                skill: 3,
+                D: 5,
+                CD: 6,
+                tags: [
+                  'Hot',
+                  'Lethal 5+',
+                  'Piercing 1'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-headtaker',
+        name: 'Headtaker Veteran',
+        unique: true,
+        M: '7"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 13,
+        abilities: [
+          {
+            name: 'Grav-chute and Grapnel Launcher',
+            desc: 'Quando este operativo está climbing, trate a distância vertical como 2" (independente do quanto sobe). Quando está dropping, ignore a distância vertical.'
+          },
+          {
+            name: 'Clandestine Headtaker',
+            desc: 'Este operativo pode fazer Charge com ordem Conceal. Quando luta contra um operativo ao qual não era visível no início da ativação/counteraction, na primeira vez que você acerta um strike nessa sequência, resolva imediatamente outro dos seus sucessos como strike (antes do oponente).'
+          }
         ],
-        weapons:[
-          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Incinerador de Plasma Pesado', range:'long', profiles:[
-            { name:'Padrão',     A:5, skill:3, D:4, CD:6, tags:['Piercing 1'] },
-            { name:'Sobrecarga', A:5, skill:3, D:5, CD:6, tags:['Hot','Lethal 5+','Piercing 1'] },
-          ]},
-          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-dw-headtaker', name:'Headtaker Veteran', unique:true,
-        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
-        abilities:[
-          {name:'Grav-chute e Lançador de Grapnel', desc:'Ao escalar, a distância vertical é sempre tratada como 2" (não importa a altura real). Ao cair, ignora a distância vertical.'},
-          {name:'Clandestine Headtaker', desc:'Pode fazer a ação Charge mesmo com ordem Conceal. Ao lutar contra um inimigo que não via no início da ativação/contra-ataque, na primeira vez que golpear naquela sequência, pode resolver outro dos seus sucessos como golpe imediatamente (antes do oponente agir).'},
+        weapons: [
+          {
+            name: 'Special issue bolt pistol',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"',
+              'Piercing 1'
+            ]
+          },
+          {
+            name: 'Combat knives',
+            A: 5,
+            skill: 3,
+            D: 4,
+            CD: 5,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-hordeslayer',
+        name: 'Horde-Slayer Veteran',
+        unique: true,
+        M: '5"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 18,
+        abilities: [
+          {
+            name: 'GRAVIS',
+            desc: 'Operativo GRAVIS (o time pode incluir no máximo um GRAVIS).'
+          }
         ],
-        weapons:[
-          { name:'Pistola Bolter Especial', A:4, skill:3, D:3, CD:4, range:'short', tags:['Piercing 1'] },
-          { name:'Facas de Combate',        A:5, skill:3, D:4, CD:5, range:'melee' },
-        ]},
-      { id:'kt-dw-hordeslayer', name:'Horde-Slayer Veteran', unique:true,
-        M:'5"', APL:3, GA:1, DF:3, SV:3, W:18,
-        abilities:[
-          {name:'GRAVIS', desc:'Armadura pesada Gravis — máximo 1 operativo Gravis por time. Com 18 PV, é um dos mais resistentes do time.'},
-          {name:'Bolter Pesado Infernal', desc:'Três modos de disparo — devastador contra grupos ou alvos únicos, a curta ou longa distância.'},
+        weapons: [
+          {
+            name: 'Bolt pistol',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'short',
+            tags: [
+              'Range 8"'
+            ]
+          },
+          {
+            name: 'Infernus heavy bolter',
+            range: 'long',
+            profiles: [
+              {
+                name: 'flame',
+                A: 5,
+                skill: 2,
+                D: 3,
+                CD: 3,
+                tags: [
+                  'Range 8"',
+                  'Saturate',
+                  'Torrent 2"'
+                ]
+              },
+              {
+                name: 'focused bolt',
+                A: 5,
+                skill: 3,
+                D: 4,
+                CD: 5,
+                tags: [
+                  'Piercing Crits 1'
+                ]
+              },
+              {
+                name: 'sweeping bolt',
+                A: 4,
+                skill: 3,
+                D: 4,
+                CD: 5,
+                tags: [
+                  'Piercing Crits 1',
+                  'Torrent 1"'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      },
+      {
+        id: 'kt-dw-marksman',
+        name: 'Marksman Veteran',
+        unique: true,
+        M: '6"',
+        APL: 3,
+        GA: 1,
+        DF: 3,
+        SV: 3,
+        W: 15,
+        abilities: [
+          {
+            name: 'Vigilant Marksman',
+            desc: 'Este operativo pode fazer a ação Guard na ativação dele independente do killzone (close quarters). Nos close quarters, uma vez por turno, depois de um Shoot grátis em guard, ele pode fazer um Guard grátis; se fizer, não pode counteract nesse turno (nem Guard duas vezes se counteracted).'
+          }
         ],
-        weapons:[
-          { name:'Pistola Bolter', A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Bolter Pesado Infernal', range:'long', profiles:[
-            { name:'Chama',           A:5, skill:2, D:3, CD:3, tags:['Range 8"','Saturate','Torrent 2"'] },
-            { name:'Bolt Focado',     A:5, skill:3, D:4, CD:5, tags:['Piercing Crits 1'] },
-            { name:'Bolt Varredura',  A:4, skill:3, D:4, CD:5, tags:['Piercing Crits 1','Torrent 1"'] },
-          ]},
-          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
-        ]},
-      { id:'kt-dw-marksman', name:'Marksman Veteran', unique:true,
-        M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
-        abilities:[
-          {name:'Vigilant Marksman', desc:'Pode fazer a ação Guard durante sua ativação independente do tipo de zona de jogo (ver regras de combate próximo).'},
-          {name:'Guard Extra', desc:'Usando regras de combate próximo, 1x por turno, depois que este operativo fizer um Tiro grátis via Guard, pode imediatamente fazer outra ação Guard grátis — mas nesse caso não pode contra-atacar naquele turno (nem fazer Guard duas vezes se for contra-atacado).'},
-        ],
-        weapons:[
-          { name:'Rifle Bolter Stalker', range:'long', profiles:[
-            { name:'Móvel',  A:4, skill:3, D:3, CD:4, tags:[] },
-            { name:'Pesado', A:4, skill:2, D:3, CD:5, tags:['Heavy (Dash only)','Lethal 5+','Piercing Crits 1'] },
-          ]},
-          { name:'Punhos', A:4, skill:3, D:3, CD:4, range:'melee' },
-        ]},
+        weapons: [
+          {
+            name: 'Stalker bolt rifle',
+            range: 'long',
+            profiles: [
+              {
+                name: 'mobile',
+                A: 4,
+                skill: 3,
+                D: 3,
+                CD: 4
+              },
+              {
+                name: 'heavy',
+                A: 4,
+                skill: 2,
+                D: 3,
+                CD: 5,
+                tags: [
+                  'Heavy (Dash only)',
+                  'Lethal 5+',
+                  'Piercing Crits 1'
+                ]
+              }
+            ]
+          },
+          {
+            name: 'Fists',
+            A: 4,
+            skill: 3,
+            D: 3,
+            CD: 4,
+            range: 'melee'
+          }
+        ]
+      }
     ]
   },
   // ── PLAGUE MARINES (Chaos - Death Guard) ────────────
@@ -8384,6 +10345,10 @@ function renderKTPlayerForms() {
       card.className = 'kt-team-card' + (p.teamId === team.id ? ' selected' : '');
       card.style.setProperty('--pcolor', team.color);
       card.innerHTML = `
+        <div class="kt-tc-banner" style="margin:-14px -14px 10px;height:96px;overflow:hidden;border-radius:calc(var(--r) - 1px) calc(var(--r) - 1px) 0 0;position:relative;background:linear-gradient(135deg,${team.color}22,transparent)">
+          <img src="images/${team.id}.jpg" onerror="this.closest('.kt-tc-banner').remove()" style="width:100%;height:100%;object-fit:cover;object-position:center 28%;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 45%,var(--card) 100%);pointer-events:none"></div>
+        </div>
         <div class="kt-tc-hdr">
           <div class="kt-tc-emoji">${team.emoji}</div>
           <div class="kt-tc-info">
@@ -8463,6 +10428,8 @@ function renderKTRosterForPlayer(idx) {
     const card = document.createElement('div');
     card.className = 'kt-op-select-card';
     card.innerHTML = `
+      <img class="kt-op-portrait" src="images/${op.id}.jpg" onerror="this.remove()">
+      <div class="kt-op-portrait-fade"></div>
       <div class="kt-op-emoji" style="font-size:22px">${team.emoji}</div>
       <div class="kt-osc-info">
         <div class="kt-osc-name">${op.name}</div>
@@ -8548,6 +10515,7 @@ let ktActiveCombat = { atkTeamId:null, atkOpId:null, weapon:null, profile:null, 
 let ktCombatHist = [];
 
 function initKTBattle() {
+  KT_TP_PHASE = 0;
   ktUpdateTurnDisplay();
   ktCombatHist = [];
   KT_UNDO_STACK.length = 0;
@@ -8556,6 +10524,8 @@ function initKTBattle() {
   // Simple Mode: hide the Combat tab entirely — players roll physical dice
   const combatTabBtn = document.getElementById('kt-tab-combat');
   if (combatTabBtn) combatTabBtn.style.display = KT_SIMPLE_MODE ? 'none' : '';
+  const mcBtn = document.getElementById('kt-mc-open-btn');
+  if (mcBtn) mcBtn.style.display = KT_SIMPLE_MODE ? '' : 'none';
   const eyebrow = document.querySelector('#screen-kt-battle .hdr-eyebrow');
   if (eyebrow) eyebrow.textContent = KT_SIMPLE_MODE ? 'Kill Team · Modo Simples' : 'Kill Team · Em andamento';
 
@@ -8680,7 +10650,37 @@ function ktSwitchTab(tab) {
 }
 
 // ── ACTIVATION TAB ───────────────────────────────────
+// ── GUIA DE TURNING POINT (KT) ────────────────────────
+const KT_TP_PHASES = [
+  { ico:'📋', name:'Strategy', tips:['Roll-off de iniciativa', 'Ganhe CP (1º turno +1; depois +1 iniciativa / +2 o outro)', 'Escolha e marque os Strategy Ploys'] },
+  { ico:'⚡', name:'Firefight', tips:['Alternem ativações (quem tem iniciativa começa)', 'Gaste APL e escolha a ordem (Conceal/Engage)', 'Use Firefight Ploys e equipamento'] },
+  { ico:'🏁', name:'Fim', tips:['Resolva efeitos de fim de turno', 'Limpe ploys/tokens do turno', 'Toque em Finalizar Turno'] },
+];
+let KT_TP_PHASE = 0;
+function renderKTTurnGuide() {
+  const wrap = document.getElementById('kt-turn-guide');
+  if (!wrap) return;
+  const steps = KT_TP_PHASES.map((p, i) =>
+    `<div class="tg-step ${i === KT_TP_PHASE ? 'active' : (i < KT_TP_PHASE ? 'done' : '')}" onclick="ktSetTPPhase(${i})"><span class="tg-ico">${p.ico}</span>${p.name}</div>`
+  ).join('');
+  const cur = KT_TP_PHASES[KT_TP_PHASE];
+  wrap.innerHTML = `
+    <div class="tg-head"><div class="tg-title">🧭 Turning Point</div><div style="font-size:10px;color:var(--muted);font-family:var(--fu)">${KT_TP_PHASE + 1}/3</div></div>
+    <div class="tg-steps">${steps}</div>
+    <ul class="tg-reminders">${cur.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+    <div class="tg-nav">
+      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="ktSetTPPhase(${KT_TP_PHASE - 1})" ${KT_TP_PHASE === 0 ? 'disabled' : ''}>← Anterior</button>
+      <button class="btn btn-secondary btn-sm" style="flex:2" onclick="ktNextTPPhase()">${KT_TP_PHASE >= 2 ? '✓ Pronto pra finalizar' : 'Próxima fase →'}</button>
+    </div>`;
+}
+function ktSetTPPhase(i) { KT_TP_PHASE = Math.max(0, Math.min(2, i)); SFX.click(); renderKTTurnGuide(); }
+function ktNextTPPhase() {
+  if (KT_TP_PHASE < 2) { KT_TP_PHASE++; SFX.click(); renderKTTurnGuide(); }
+  else if (typeof showToast === 'function') showToast('🏁 Toque em Finalizar Turno para avançar');
+}
+
 function renderKTActivation() {
+  renderKTTurnGuide();
   const activeTeam = KT_SESSION.getActiveTeam();
   const banner = document.getElementById('ktb-team-name');
   const sub    = document.getElementById('ktb-sub');
@@ -8875,6 +10875,7 @@ function ktApplyTurnCP(initiativePlayerId) {
   }
   setTimeout(() => {
     KT_SESSION.endTurn(initiativeIdx >= 0 ? initiativeIdx : undefined);
+    KT_TP_PHASE = 0;
     ktUpdateTurnDisplay();
     renderKTActivation();
     showToast(`🎯 Turno ${KT_SESSION.turn} iniciado!`);
