@@ -1,4 +1,17 @@
 <!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════════
+   WARHAMMER 40K + KILL TEAM COMPANION
+   Criado por @coelhokau
+   © 2026 @coelhokau — Todos os direitos reservados.
+
+   💜 Ajude o criador — Pix: kaue_coelho@hotmail.com
+
+   Projeto de fã, não oficial. Warhammer 40,000 e Kill Team são marcas
+   da Games Workshop Ltd. Este app não é afiliado, endossado nem
+   licenciado pela Games Workshop.
+  ═══════════════════════════════════════════════════════════════════
+-->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1021,6 +1034,19 @@ const VFX = {
     </div>
 
     <div class="home-intro-stats" style="margin-top:20px;font-size:12px;line-height:1.8" id="home-stats"></div>
+
+    <!-- ═══ AJUDE O CRIADOR ═══ -->
+    <div style="width:100%;max-width:300px;margin-top:22px;padding:13px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);text-align:center">
+      <div style="font-family:var(--ff);font-size:15px;letter-spacing:1px;color:var(--gold);margin-bottom:5px">💜 AJUDE O CRIADOR</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:11px">Criado por <strong style="color:var(--text)">@coelhokau</strong>. Se este app te ajudou, considere apoiar 🙏</div>
+      <div onclick="copyPix()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 10px;background:var(--bg);border:1px dashed var(--border);border-radius:var(--rsm);cursor:pointer">
+        <span style="font-size:11px;color:var(--muted)">Pix:</span>
+        <span style="font-size:12px;color:var(--text);font-weight:600">kaue_coelho@hotmail.com</span>
+        <span id="pix-copy-ic" style="font-size:13px">📋</span>
+      </div>
+      <div id="pix-copied" style="font-size:10px;color:var(--hit);margin-top:6px;height:12px;letter-spacing:.5px"></div>
+    </div>
+
   </div>
 </div>
 
@@ -3883,6 +3909,39 @@ function applySettings() {
   SFX.setVol(SETTINGS.sound === 'on' ? 0.7 : 0);
   // Max turns
   if (TRACKER) TRACKER.maxTurns = parseInt(SETTINGS.turns) || 5;
+}
+
+// ── AJUDE O CRIADOR — copiar chave Pix ──────────────
+function copyPix() {
+  var key = 'kaue_coelho@hotmail.com';
+  var done = function () {
+    var m = document.getElementById('pix-copied');
+    var ic = document.getElementById('pix-copy-ic');
+    if (m) m.textContent = '✓ Chave copiada!';
+    if (ic) ic.textContent = '✓';
+    try { SFX.click(); } catch (e) {}
+    setTimeout(function () {
+      if (m) m.textContent = '';
+      if (ic) ic.textContent = '📋';
+    }, 1800);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(key).then(done).catch(function () { fallbackCopyPix(key, done); });
+  } else {
+    fallbackCopyPix(key, done);
+  }
+}
+function fallbackCopyPix(text, cb) {
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    cb();
+  } catch (e) {
+    var m = document.getElementById('pix-copied');
+    if (m) m.textContent = 'Copie: ' + text;
+  }
 }
 
 function openSettings() {
