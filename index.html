@@ -647,6 +647,25 @@ body::before{content:'';position:fixed;inset:0;
 .kt-token-chip{font-size:10px;font-family:var(--fu);letter-spacing:.3px;background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:20px;padding:2px 9px;cursor:pointer}
 .kt-token-chip.injured{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);color:var(--dmg)}
 .kt-token-chip.add{background:rgba(232,184,75,.08);border-color:rgba(232,184,75,.3);color:var(--gold)}
+.kt-lib-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.kt-lib-chip{font-family:var(--fu);font-size:11px;letter-spacing:.5px;background:var(--card2);border:1px solid var(--border2);color:var(--muted);border-radius:20px;padding:5px 12px;cursor:pointer}
+.kt-lib-chip.active{background:rgba(232,184,75,.15);border-color:var(--gold);color:var(--gold)}
+.kt-lib-team-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px;cursor:pointer}
+.kt-lib-banner{height:112px;position:relative;overflow:hidden}
+.kt-lib-banner.big{height:150px;border-radius:var(--r);margin-bottom:2px}
+.kt-lib-banner-fade{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--card) 100%);pointer-events:none}
+.kt-lib-banner-title{position:absolute;left:12px;bottom:8px;font-family:var(--ff);font-size:20px;letter-spacing:1px;z-index:2;text-shadow:0 2px 8px rgba(0,0,0,.85)}
+.kt-lib-team-meta{display:flex;justify-content:space-between;padding:9px 12px;font-size:11px;color:var(--muted);font-family:var(--fu);letter-spacing:.3px}
+.kt-lib-info-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.kt-lib-info-row span:first-child{color:var(--muted)}
+.kt-lib-info-row span:last-child{color:var(--text);text-align:right;font-family:var(--fu)}
+.kt-lib-op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
+.kt-lib-op-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;padding-bottom:8px}
+.kt-lib-op-portrait{height:112px;position:relative;overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center}
+.kt-lib-op-emoji{position:absolute;font-size:38px;opacity:.4;z-index:0}
+.kt-lib-op-portrait img{position:relative;z-index:1;display:block}
+.kt-lib-op-name{font-family:var(--fu);font-size:12px;color:var(--text);padding:7px 9px 2px;letter-spacing:.3px;line-height:1.2}
+.kt-lib-op-stats{font-size:10px;color:var(--muted);padding:0 9px;font-family:var(--fu)}
 .kt-apl-pip:active{transform:scale(.85)}
 
 /* KT stats row */
@@ -1048,6 +1067,7 @@ const VFX = {
         </div>
       </div>
       <button class="btn btn-secondary btn-sm" onclick="SFX.click();NAV.go('screen-library',initLibrary)">📚 BIBLIOTECA DE FICHAS</button>
+      <button class="btn btn-secondary btn-sm" onclick="SFX.click();NAV.go('screen-kt-library',initKTLibrary)">📖 FICHAS KILL TEAM</button>
       <button class="btn btn-secondary btn-sm" onclick="openSettings();SFX.click()" style="margin-top:4px">⚙ CONFIGURAÇÕES</button>
     </div>
 
@@ -5741,6 +5761,26 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 </div>
 </div>
 
+
+<!-- ═══ BIBLIOTECA KILL TEAM (consulta) ═══ -->
+<div class="screen" id="screen-kt-library">
+  <div class="hdr">
+    <button class="hdr-back" onclick="SFX.click();NAV.back(initHome)">←</button>
+    <div class="hdr-info"><div class="hdr-eyebrow">Kill Team · Consulta</div><div class="hdr-title">📖 <span>FICHAS KT</span></div></div>
+  </div>
+  <div class="screen-body">
+    <div id="kt-lib-filter" class="kt-lib-filter"></div>
+    <div id="kt-lib-teams"></div>
+  </div>
+</div>
+
+<div class="screen" id="screen-kt-lib-team">
+  <div class="hdr">
+    <button class="hdr-back" onclick="SFX.click();NAV.back()">←</button>
+    <div class="hdr-info"><div class="hdr-eyebrow" id="kt-lib-team-faction">—</div><div class="hdr-title" id="kt-lib-team-name">—</div></div>
+  </div>
+  <div class="screen-body" id="kt-lib-team-body"></div>
+</div>
 
 <!-- ═══ BOTÃO DE CONFIGURAÇÕES FLUTUANTE (todas as telas) ═══ -->
 <button id="global-settings-fab" onclick="openSettings();SFX.click()" title="Configurações"
@@ -11015,6 +11055,68 @@ function showKTOpDetail(teamId, instanceId) {
 // Preview mode — used when browsing a team's roster OUTSIDE of an active battle
 // (e.g. from the home screen or the rules reference). Shows full stats/abilities/weapons
 // at full health, with no live-battle controls (PV adjustment, order toggle, etc).
+// ── BIBLIOTECA DE CONSULTA KILL TEAM ──────────────────
+let _ktLibFilter = 'all';
+function initKTLibrary() {
+  _ktLibFilter = 'all';
+  renderKTLibFilter();
+  renderKTLibTeams();
+}
+function renderKTLibFilter() {
+  const factions = ['all', ...Array.from(new Set(KT_TEAMS.map(t => t.faction)))];
+  const el = document.getElementById('kt-lib-filter');
+  if (!el) return;
+  el.innerHTML = factions.map(f =>
+    `<button class="kt-lib-chip ${_ktLibFilter === f ? 'active' : ''}" onclick="ktLibSetFilter('${f.replace(/'/g,"\\'")}')">${f === 'all' ? 'Todos' : f}</button>`
+  ).join('');
+}
+function ktLibSetFilter(f) { _ktLibFilter = f; SFX.click(); renderKTLibFilter(); renderKTLibTeams(); }
+function renderKTLibTeams() {
+  const teams = KT_DB.getTeams().filter(t => _ktLibFilter === 'all' || t.faction === _ktLibFilter);
+  const el = document.getElementById('kt-lib-teams');
+  if (!el) return;
+  el.innerHTML = teams.map(t => `
+    <div class="kt-lib-team-card" onclick="SFX.click();NAV.go('screen-kt-lib-team',()=>renderKTLibTeam('${t.id}'))">
+      <div class="kt-lib-banner" style="background:linear-gradient(135deg,${t.color}22,transparent)">
+        <img src="images/${t.id}.jpg" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;object-position:center 28%;display:block">
+        <div class="kt-lib-banner-fade"></div>
+        <div class="kt-lib-banner-title" style="color:${t.color}">${t.emoji} ${t.name}</div>
+      </div>
+      <div class="kt-lib-team-meta"><span>${t.faction}</span><span>${t.operatives.length} operativos · ${t.limit} no time</span></div>
+    </div>`).join('');
+}
+function renderKTLibTeam(teamId) {
+  const t = KT_DB.getTeam(teamId); if (!t) return;
+  document.getElementById('kt-lib-team-name').innerHTML = `${t.emoji} <span>${t.name.toUpperCase()}</span>`;
+  document.getElementById('kt-lib-team-faction').textContent = t.faction;
+  const leaderIds = (typeof ktLeaderIds === 'function') ? ktLeaderIds(t) : [];
+  const leaderNames = t.operatives.filter(o => leaderIds.includes(o.id)).map(o => o.name).join(' / ');
+  const gravis = t.operatives.filter(o => Array.isArray(o.abilities) && o.abilities.some(ab => /GRAVIS/i.test(ab.name || ''))).map(o => o.name);
+  document.getElementById('kt-lib-team-body').innerHTML = `
+    <div class="kt-lib-banner big" style="background:linear-gradient(135deg,${t.color}22,transparent)">
+      <img src="images/${t.id}.jpg" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;object-position:center 28%;display:block">
+      <div class="kt-lib-banner-fade"></div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.55;margin:10px 0">${t.desc || ''}</div>
+    <div class="kt-lib-info-row"><span>⚔ Estilo</span><span>${t.style || '—'}</span></div>
+    <div class="kt-lib-info-row"><span>👥 Composição</span><span>${t.limit} operativos</span></div>
+    <div class="kt-lib-info-row"><span>🎖 Líder</span><span>${leaderNames || '—'}</span></div>
+    ${gravis.length ? `<div class="kt-lib-info-row"><span>🛡 GRAVIS (máx 1)</span><span>${gravis.join(', ')}</span></div>` : ''}
+    <button class="btn btn-primary" style="margin:12px 0" onclick="showKTTeamRulesModal('${t.id}')">⚡ Regras & Equipamento</button>
+    <div class="sec-label">Operativos (${t.operatives.length})</div>
+    <div class="kt-lib-op-grid">
+      ${t.operatives.map(o => `
+        <div class="kt-lib-op-card" onclick="showKTOpDetailPreview('${t.id}','${o.id}')">
+          <div class="kt-lib-op-portrait">
+            <div class="kt-lib-op-emoji">${t.emoji}</div>
+            <img src="images/${o.id}.jpg" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;object-position:center 18%">
+          </div>
+          <div class="kt-lib-op-name">${o.name}${o.unique ? '' : (o.count ? ` ×${o.count}` : '')}</div>
+          <div class="kt-lib-op-stats">APL ${o.APL} · ${o.W} PV · Sv ${o.SV}+</div>
+        </div>`).join('')}
+    </div>`;
+}
+
 function showKTOpDetailPreview(teamId, opId) {
   const team = KT_DB.getTeam(teamId);
   const op = team?.operatives.find(o => o.id === opId);
