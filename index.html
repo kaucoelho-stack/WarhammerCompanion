@@ -50,6 +50,7 @@ body::before{content:'';position:fixed;inset:0;
 /* ── SCREENS ── */
 .screen{position:absolute;inset:0;z-index:1;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column;-webkit-overflow-scrolling:touch}
 .screen.active{display:flex}
+#screen-home.active ~ #global-settings-fab{display:none !important}
 .screen-body{flex:1;padding:14px;max-width:520px;width:100%;margin:0 auto;padding-bottom:36px}
 .screen.slide-in{animation:sIn .28s ease-out}
 .screen.slide-back{animation:sBack .28s ease-out}
@@ -642,6 +643,10 @@ body::before{content:'';position:fixed;inset:0;
 .kt-apl-pips{display:flex;gap:4px}
 .kt-apl-pip{width:18px;height:18px;border-radius:50%;border:2px solid rgba(6,182,212,.5);background:rgba(6,182,212,.1);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;font-size:9px}
 .kt-apl-pip.used{background:rgba(6,182,212,.5);border-color:#06b6d4}
+.kt-token-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.kt-token-chip{font-size:10px;font-family:var(--fu);letter-spacing:.3px;background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:20px;padding:2px 9px;cursor:pointer}
+.kt-token-chip.injured{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);color:var(--dmg)}
+.kt-token-chip.add{background:rgba(232,184,75,.08);border-color:rgba(232,184,75,.3);color:var(--gold)}
 .kt-apl-pip:active{transform:scale(.85)}
 
 /* KT stats row */
@@ -1072,6 +1077,14 @@ const VFX = {
   <div class="screen-body">
     <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Selecione quantos jogadores vão participar desta batalha:</div>
     <div class="count-grid" id="player-count-grid"></div>
+
+    <div class="sec-label" style="margin-top:20px">Quantos turnos a batalha terá?</div>
+    <div class="kt-turns-stepper">
+      <button class="kt-turns-btn" onclick="w40kChangeTurnCount(-1)">−</button>
+      <div class="kt-turns-val" id="w40k-turns-val">5</div>
+      <button class="kt-turns-btn" onclick="w40kChangeTurnCount(1)">+</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Padrão 40K: 5 turnos. O app avisa no último.</div>
 
     <div class="sec-label" style="margin-top:22px">Como vocês querem jogar?</div>
     <div class="kt-mode-card" id="w40k-mode-full" onclick="w40kPickMode(false)">
@@ -2111,9 +2124,16 @@ const SFX = (() => {
 
 let TRACKER = { active:false, turn:1, maxTurns:5, players:[], objectives:[], turnLog:[] };
 
+let W40K_TURNS = 5;
+function w40kChangeTurnCount(delta) {
+  W40K_TURNS = Math.max(1, Math.min(10, W40K_TURNS + delta));
+  const el = document.getElementById('w40k-turns-val'); if (el) el.textContent = W40K_TURNS;
+  SFX.click();
+}
+
 function initTracker() {
   TRACKER = {
-    active: true, turn: 1, maxTurns: 5, turnLog: [],
+    active: true, turn: 1, maxTurns: W40K_TURNS, turnLog: [],
     objectives: [0,1,2,3,4].map(i => ({ id:i, label:`Obj ${i===2?'Centro':i+1}`, ownerId:null })),
     players: SESSION.players.map(p => {
       const faction = DB.getFaction(p.factionId);
@@ -3191,10 +3211,11 @@ function deleteUnitConfirm(id) {
   const msg = isDefault
     ? 'Ocultar esta unidade padrão? Ela pode ser restaurada depois em "Unidades Ocultas".'
     : 'Excluir esta ficha permanentemente?';
-  if (!confirm(msg)) return;
-  DB.deleteUnit(id);
-  SFX.click();
-  initLibrary();
+  showAppConfirm(msg, () => {
+    DB.deleteUnit(id);
+    SFX.click();
+    initLibrary();
+  }, isDefault ? 'Ocultar' : 'Excluir');
 }
 
 function restoreAllDefaults() {
@@ -3455,11 +3476,11 @@ function saveFaction() {
 
 function deleteFactionConfirm(id) {
   const f = DB.getFaction(id);
-  if (!confirm(`Excluir facção "${f?.name}"? As unidades desta facção também serão removidas.`)) return;
-  DB.deleteFaction(id);
-  // Also delete units of this faction
-  DB.getUnits(id).forEach(u => { if (!u.id.startsWith('du-')) DB.deleteUnit(u.id); });
-  initLibrary();
+  showAppConfirm(`Excluir facção "${f?.name}"? As unidades desta facção também serão removidas.`, () => {
+    DB.deleteFaction(id);
+    DB.getUnits(id).forEach(u => { if (!u.id.startsWith('du-')) DB.deleteUnit(u.id); });
+    initLibrary();
+  }, 'Excluir');
 }
 
 // ══════════════════════════════════════════════
@@ -3992,7 +4013,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ═══════════════════════════════════════════════════════
 // SETTINGS
 // ═══════════════════════════════════════════════════════
-const SETTINGS_DEFAULTS = { lang:'pt', sound:'on', dice:'auto', turns:'5' };
+const SETTINGS_DEFAULTS = { lang:'pt', sound:'on', dice:'auto' };
 let SETTINGS = { ...SETTINGS_DEFAULTS };
 
 function loadSettings() {
@@ -4010,8 +4031,6 @@ function saveSettingsData() {
 function applySettings() {
   // Sound
   SFX.setVol(SETTINGS.sound === 'on' ? 0.7 : 0);
-  // Max turns
-  if (TRACKER) TRACKER.maxTurns = parseInt(SETTINGS.turns) || 5;
 }
 
 // ── AJUDE O CRIADOR — copiar chave Pix ──────────────
@@ -4049,7 +4068,7 @@ function fallbackCopyPix(text, cb) {
 
 function openSettings() {
   // Update UI to reflect current settings
-  ['lang','sound','dice','turns'].forEach(key => {
+  ['lang','sound','dice'].forEach(key => {
     document.querySelectorAll(`[id^="${key}-"]`).forEach(el => {
       el.classList.toggle('active', el.id === `${key}-${SETTINGS[key]}`);
     });
@@ -4378,13 +4397,14 @@ function showKTPloyChecklist(playerId) {
     return `<div class="kt-ploy-row ${used?'used':''}" onclick="ktTogglePloy('${playerId}','${kind}','${p.name.replace(/'/g,"\\'")}')">
       <div class="kt-ploy-check">${used?'✓':''}</div>
       <div class="kt-ploy-info">
-        <div class="kt-ploy-name">${p.name}</div>
+        <div class="kt-ploy-name">${p.name} <span style="font-size:9px;color:var(--gold);background:rgba(232,184,75,.12);border:1px solid rgba(232,184,75,.3);border-radius:8px;padding:1px 6px;font-family:var(--fu);letter-spacing:.5px">1 CP</span></div>
         <div class="kt-ploy-desc">${linkifyKeywords(p.desc)}</div>
       </div>
     </div>`;
   };
 
-  let html = `<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Toque num Ploy pra marcar como usado neste turno. A lista reseta sozinha a cada novo turno.</div>`;
+  let html = `<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Toque num Ploy pra usá-lo: gasta <strong style="color:var(--gold)">1 CP</strong> e marca como usado neste turno (desmarcar devolve o CP). A lista reseta a cada novo turno.</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">CP disponível: <strong style="color:var(--gold);font-size:15px">${t.cp}</strong> ⚡ · <span style="opacity:.85">se um ploy for grátis pra você (regra do time), ajuste o CP na mão.</span></div>`;
 
   if (team.ploys?.strategy?.length) {
     html += `<div class="rules-section-title">🎯 Strategy Ploys</div>`;
@@ -4405,12 +4425,17 @@ function ktTogglePloy(playerId, kind, ployName) {
   const list = kind === 'strategy' ? t.usedStrategyPloys : t.usedFirefightPloys;
   const idx = list.indexOf(ployName);
   const wasUsed = idx >= 0;
-  ktPushUndo(`Ploy "${ployName}" ${wasUsed?'desmarcado':'marcado'} (${t.playerName})`);
-  if (wasUsed) list.splice(idx, 1);
-  else list.push(ployName);
+  const cost = 1; // ploys de Kill Team custam 1 CP (padrão)
+  if (!wasUsed && (t.cp ?? 0) < cost) {
+    if (typeof showToast === 'function') showToast(`⚠ CP insuficiente para usar este ploy (precisa de ${cost})`);
+    return;
+  }
+  ktPushUndo(`Ploy "${ployName}" ${wasUsed ? `desmarcado (+${cost} CP)` : `usado (-${cost} CP)`} (${t.playerName})`);
+  if (wasUsed) { list.splice(idx, 1); t.cp = Math.min(12, (t.cp ?? 0) + cost); }
+  else { list.push(ployName); t.cp = Math.max(0, (t.cp ?? 0) - cost); }
   SFX.click();
   showKTPloyChecklist(playerId); // re-render checklist with updated state
-  renderKTCPStrip(); // refresh the used-count badge
+  renderKTCPStrip(); // refresh CP + used-count badge
 }
 
 // Splits a coreRule.desc (single HTML blob) into separate faction-rule and
@@ -4585,6 +4610,8 @@ const KT_WEAPON_KEYWORDS = {
   'Explosive':           { name:'Explosive', desc:'Pode Atirar mesmo no alcance de controle de inimigo. O operativo é sempre o alvo principal e não pode estar em cobertura nem obscurecido.' },
   'Shield':              { name:'Shield', desc:'Ao lutar ou retaliar com esta arma, cada bloqueio seu pode bloquear dois sucessos não resolvidos (em vez de um).' },
   'Phase Sweep':         { name:'Phase Sweep', desc:'Após um Fight com este perfil (se não incapacitado), faça ações Fight grátis contra cada inimigo no alcance de controle, uma vez cada, usando este perfil.' },
+  'FLY':                 { name:'Fly (Voar)', desc:'Ao fazer uma ação de movimento, o operativo pode VOAR: em vez de mover normalmente, remova-o e recoloque-o a até a distância do seu Move (medido na horizontal), ignorando o terreno. Não ganha distância extra na Charge; fora da Charge, não pode terminar no control range de um inimigo.' },
+  'Fly':                 { name:'Fly (Voar)', desc:'Ao fazer uma ação de movimento, o operativo pode VOAR: em vez de mover normalmente, remova-o e recoloque-o a até a distância do seu Move (medido na horizontal), ignorando o terreno. Não ganha distância extra na Charge; fora da Charge, não pode terminar no control range de um inimigo.' },
 };
 
 function findWeaponKeyword(tagText) {
@@ -5684,19 +5711,9 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
           <div style="font-size:10px;color:var(--muted);margin-top:2px">Rola todos de uma vez</div>
         </div>
         <div class="settings-opt" id="dice-manual" onclick="setSetting('dice','manual')">
-          <div>👆 Manual</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">Clique em cada dado</div>
+          <div>👆 Revelar</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">O app rola; você revela tocando</div>
         </div>
-      </div>
-    </div>
-
-    <!-- Max turns -->
-    <div class="settings-group">
-      <div class="settings-label">⏱ Número de Turnos</div>
-      <div class="settings-options" id="turns-opts">
-        <div class="settings-opt" id="turns-3" onclick="setSetting('turns','3')">3</div>
-        <div class="settings-opt active" id="turns-5" onclick="setSetting('turns','5')">5</div>
-        <div class="settings-opt" id="turns-7" onclick="setSetting('turns','7')">7</div>
       </div>
     </div>
 
@@ -5724,6 +5741,10 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 </div>
 </div>
 
+
+<!-- ═══ BOTÃO DE CONFIGURAÇÕES FLUTUANTE (todas as telas) ═══ -->
+<button id="global-settings-fab" onclick="openSettings();SFX.click()" title="Configurações"
+  style="position:fixed;bottom:16px;left:14px;z-index:150;width:42px;height:42px;border-radius:50%;background:rgba(20,20,26,.85);border:1px solid var(--border2);color:var(--gold);font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 4px 14px rgba(0,0,0,.4)">⚙</button>
 
 <!-- ═══ CONFIRMAÇÃO IN-APP ═══ -->
 <div class="modal-overlay" id="app-confirm-modal" style="z-index:400">
@@ -5860,6 +5881,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
     <div id="kt-team-info-card" style="margin-bottom:12px"></div>
     <div class="sec-label">Selecione os operativos:</div>
     <div id="kt-operative-list"></div>
+    <div id="kt-roster-validation" style="margin:10px 0 4px"></div>
     <button class="btn btn-primary" id="btn-kt-roster-next" onclick="ktRosterNext();SFX.click()" disabled>PRÓXIMO →</button>
   </div>
 </div>
@@ -10159,7 +10181,8 @@ const KT_SESSION = {
             activated: false,
             hidden: false,
             order: 'conceal', // starts hidden, per official setup rules
-            tokens: [], // Engaged, Reloading, etc.
+            tokens: [], // Envenenado, Recarregando, etc.
+            aplUsed: 0,
           });
         }
       });
@@ -10179,7 +10202,7 @@ const KT_SESSION = {
 
   resetActivations(forcedIdx) {
     this.teams.forEach(t => {
-      t.operatives.forEach(op => op.activated = false);
+      t.operatives.forEach(op => { op.activated = false; op.aplUsed = 0; });
       t.usedStrategyPloys = [];
       t.usedFirefightPloys = [];
     });
@@ -10395,6 +10418,43 @@ function initKTRoster() {
   renderKTRosterForPlayer(0);
 }
 
+// ── VALIDAÇÃO DE COMPOSIÇÃO ───────────────────────────
+function ktLeaderIds(team) {
+  const ids = team.operatives.filter(o => Array.isArray(o.abilities) && o.abilities.some(ab => /LÍDER|LIDER|Líder/i.test(ab.name || ''))).map(o => o.id);
+  if (ids.length) return ids;
+  const KNOWN = { 'kt-krieg': ['kt-krieg-watchmaster'], 'kt-legionaries': ['kt-legionary-aspiring'] };
+  if (KNOWN[team.id]) return KNOWN[team.id];
+  const fu = team.operatives.find(o => o.unique);
+  return fu ? [fu.id] : [];
+}
+function ktValidateComp(team, sel) {
+  const errors = [], warnings = [];
+  const total = Object.values(sel).reduce((s, v) => s + v, 0);
+  if (total > team.limit) errors.push(`Acima do limite (${total}/${team.limit})`);
+  else if (total > 0 && total < team.limit) warnings.push(`Time incompleto (${total}/${team.limit})`);
+  const leaderIds = ktLeaderIds(team);
+  const leaderSel = leaderIds.reduce((s, id) => s + (sel[id] || 0), 0);
+  if (leaderSel === 0) errors.push('Falta o líder do time');
+  else if (leaderSel > 1) errors.push(`Só pode haver 1 líder (${leaderSel} selecionados)`);
+  const gravisIds = team.operatives.filter(o => Array.isArray(o.abilities) && o.abilities.some(ab => /GRAVIS/i.test(ab.name || ''))).map(o => o.id);
+  const gravisSel = gravisIds.reduce((s, id) => s + (sel[id] || 0), 0);
+  if (gravisSel > 1) errors.push(`Máx. 1 operativo GRAVIS (${gravisSel} selecionados)`);
+  return { errors, warnings, ok: errors.length === 0 && total === team.limit };
+}
+function ktRenderRosterValidation(val, limit, total) {
+  const el = document.getElementById('kt-roster-validation');
+  if (!el) return;
+  if (val.ok) {
+    el.innerHTML = `<div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.35);color:var(--hit);border-radius:var(--rsm);padding:8px 11px;font-size:12px;font-family:var(--fu);letter-spacing:.5px">✓ COMPOSIÇÃO VÁLIDA (${total}/${limit})</div>`;
+    return;
+  }
+  const items = val.errors.map(e => `<div style="color:var(--dmg)">✕ ${e}</div>`)
+    .concat(val.warnings.map(w => `<div style="color:var(--wound)">⚠ ${w}</div>`)).join('');
+  el.innerHTML = items
+    ? `<div style="background:var(--card2);border:1px solid var(--border2);border-radius:var(--rsm);padding:8px 11px;font-size:12px;line-height:1.6">${items}</div>`
+    : '';
+}
+
 function renderKTRosterForPlayer(idx) {
   const p = ktPendingPlayers[idx];
   const team = KT_DB.getTeam(p.teamId);
@@ -10452,11 +10512,13 @@ function renderKTRosterForPlayer(idx) {
     list.appendChild(card);
   });
 
-  // Next/start button
+  // Validation + next/start button
   const btn = document.getElementById('btn-kt-roster-next');
   const isLast = idx === ktPendingPlayers.length - 1;
   btn.textContent = isLast ? '⚔ INICIAR KILL TEAM!' : 'PRÓXIMO JOGADOR →';
-  btn.disabled = totalSelected === 0;
+  const _val = ktValidateComp(team, p.selectedOps);
+  ktRenderRosterValidation(_val, team.limit, totalSelected);
+  btn.disabled = totalSelected === 0 || _val.errors.length > 0;
 }
 
 function ktChangeOp(pidx, opId, delta) {
@@ -10772,15 +10834,20 @@ function renderKTOpCard(op, team, container, clickable) {
       <span class="kt-stat"><s>DF</s>${op.DF}</span>
     </div>
     <div class="kt-weapon-summary">${renderWeaponSummaryChips(op.weapons)}</div>
+    ${!op.dead ? `<div class="kt-token-row">
+      ${(op.curW>0 && op.curW*2<=op.W) ? '<span class="kt-token-chip injured">🩸 Ferido</span>' : ''}
+      ${(op.tokens||[]).map(tk=>`<span class="kt-token-chip" onclick="event.stopPropagation();showKTTokenPicker('${team.playerId}','${op.instanceId}')">${tk}</span>`).join('')}
+      <span class="kt-token-chip add" onclick="event.stopPropagation();showKTTokenPicker('${team.playerId}','${op.instanceId}')">＋ token</span>
+    </div>` : ''}
     ${!op.dead ? `
     <div class="kt-order-badge ${order}" onclick="ktToggleOrder('${team.playerId}','${op.instanceId}',event)" title="Toque para trocar a ordem">
       <div class="kt-order-icon"></div>${order === 'conceal' ? 'CONCEAL' : 'ENGAGE'} · toque p/ trocar
     </div>` : ''}
     ${!op.dead && !op.activated && clickable ? `
     <div class="kt-apl-row">
-      <div class="kt-apl-label">Ações:</div>
+      <div class="kt-apl-label">Ações: <span style="color:var(--gold)">${Math.max(0, ktEffectiveAPL(op)-(op.aplUsed||0))}/${ktEffectiveAPL(op)}</span>${ktEffectiveAPL(op) < op.APL ? ' <span style="color:var(--wound);font-size:10px">(ferido −1)</span>' : ''}</div>
       <div class="kt-apl-pips">
-        ${Array.from({length:op.APL},(_,i)=>`<div class="kt-apl-pip" id="aplpip-${team.playerId}-${op.instanceId}-${i}" onclick="event.stopPropagation();ktUseAPL('${team.playerId}','${op.instanceId}',${i})">⚡</div>`).join('')}
+        ${Array.from({length:ktEffectiveAPL(op)},(_,i)=>`<div class="kt-apl-pip${i < (op.aplUsed||0) ? ' used':''}" onclick="event.stopPropagation();ktUseAPL('${team.playerId}','${op.instanceId}',${i})">⚡</div>`).join('')}
       </div>
     </div>
     <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap">
@@ -10838,11 +10905,55 @@ function ktActivateOp(teamId, instanceId) {
   showToast(`✓ ${op.displayName} ativado!`);
 }
 
+// ── APL como orçamento real de ação ───────────────────
+function ktEffectiveAPL(op) {
+  const injured = op.curW > 0 && op.curW * 2 <= op.W;   // ferido: PV atual ≤ metade
+  return Math.max(0, (op.APL || 0) - (injured ? 1 : 0));
+}
 function ktUseAPL(teamId, instanceId, pipIdx) {
+  const team = KT_SESSION.teams.find(t => t.playerId === teamId);
+  const op = team && team.operatives.find(o => o.instanceId === instanceId);
+  if (!op) return;
+  const clicked = pipIdx + 1;
+  op.aplUsed = (op.aplUsed === clicked) ? pipIdx : clicked;  // toca no último preenchido = desmarca
+  const eff = ktEffectiveAPL(op);
+  if (op.aplUsed > eff) op.aplUsed = eff;
+  if (op.aplUsed < 0) op.aplUsed = 0;
   SFX.cp();
-  // Visual feedback only — APL tracking is conceptual in this version
-  const pip = document.getElementById(`aplpip-${teamId}-${instanceId}-${pipIdx}`);
-  if (pip) pip.classList.toggle('used');
+  renderKTActivation();
+}
+
+// ── Tokens / condições ────────────────────────────────
+const KT_TOKEN_PRESETS = ['Envenenado', 'Atordoado', 'Recarregando', 'Marcado', 'Neutron Fragment', 'Pain', 'Blooded', 'Choque de Batalha'];
+function showKTTokenPicker(teamId, instanceId) {
+  SFX.click();
+  const team = KT_SESSION.teams.find(t => t.playerId === teamId);
+  const op = team && team.operatives.find(o => o.instanceId === instanceId);
+  if (!op) return;
+  const active = op.tokens || [];
+  document.getElementById('rules-modal-title').textContent = `🏷 Tokens — ${op.displayName}`;
+  const rows = KT_TOKEN_PRESETS.map(tk => {
+    const on = active.includes(tk);
+    return `<div class="kt-ploy-row ${on ? 'used' : ''}" onclick="ktToggleToken('${teamId}','${instanceId}','${tk.replace(/'/g,"\\'")}')">
+      <div class="kt-ploy-check">${on ? '✓' : ''}</div>
+      <div class="kt-ploy-info"><div class="kt-ploy-name">${tk}</div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('rules-modal-body').innerHTML =
+    `<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Marque os tokens/condições ativos neste operativo. "Ferido" é detectado automaticamente pelos ferimentos (e já aplica −1 APL).</div>${rows}`;
+  document.getElementById('rules-modal').classList.add('open');
+}
+function ktToggleToken(teamId, instanceId, tk) {
+  const team = KT_SESSION.teams.find(t => t.playerId === teamId);
+  const op = team && team.operatives.find(o => o.instanceId === instanceId);
+  if (!op) return;
+  if (!op.tokens) op.tokens = [];
+  const i = op.tokens.indexOf(tk);
+  ktPushUndo(`Token "${tk}" ${i >= 0 ? 'removido' : 'adicionado'} (${op.displayName})`);
+  if (i >= 0) op.tokens.splice(i, 1); else op.tokens.push(tk);
+  SFX.click();
+  showKTTokenPicker(teamId, instanceId);
+  renderKTActivation();
 }
 
 function ktEndTurn() {
