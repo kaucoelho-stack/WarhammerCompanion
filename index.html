@@ -6986,29 +6986,167 @@ const KT_TEAMS = [
     ]
   },
 
-  // ── CHAOS SPACE MARINES (Traitor Astartes) ──────────
+  // ── LEGIONARIES (Chaos Space Marines / Heretic Astartes) ─
   {
     id:'kt-legionaries', name:'Legionaries', faction:'Chaos Space Marines',
     color:'#ef4444', emoji:'🔴',
-    desc:'Ex-Space Marines corrompidos pelo Caos. Versáteis e implacáveis, com bênçãos sombrias.',
-    style:'Melee · Versátil',
+    desc:'Heretic Astartes veteranos de séculos de guerra. Cada operativo escolhe uma Marca do Caos (Khorne, Nurgle, Slaanesh, Tzeentch ou Undivided) que muda suas regras e potencializa os ploys. Elite de 6 operativos com armas pesadas, psyker e brutamontes de melee.',
+    style:'Elite · Versátil · Marcas do Caos',
     limit: 6,
-    coreRule:{name:"Bênção do Caos",desc:"No início de cada ativação, escolha 1 bônus: +1 Ataque, re-rolar Hits, ou +1 Dano — dependendo do Deus do Caos escolhido antes da batalha."},
-    ploys:{strategy:[{name:"Marca do Caos",desc:"Escolha uma Marca (Khorne, Nurgle, Slaanesh ou Tzeentch) — cada uma dá um bônus passivo diferente ao time."},{name:"Fúria Implacável",desc:"Ignora as primeiras mudanças de status por ferimento na batalha."}],firefight:[{name:"Sede de Sangue",desc:"Contra inimigo ferido em CaC, re-rola 1 dado de ataque."},{name:"Escudo Sombrio",desc:"Retém 1 defesa extra como crítico uma vez por turno."}]},
+    coreRule: {
+      name:'Regras de Facção + Equipamento',
+      desc:'<strong>Composição.</strong> 1 líder (ASPIRING CHAMPION ou CHOSEN) + 5 operativos da lista: ANOINTED, BALEFIRE ACOLYTE, BUTCHER, GUNNER, HEAVY GUNNER, ICON BEARER, SHRIVETALON, WARRIOR. Só WARRIOR pode repetir; os demais uma vez cada.<br><br><strong>Astartes.</strong> Na ativação de cada LEGIONARY amigo, ele pode fazer duas ações Shoot OU duas ações Fight. Se forem dois Shoot, um bolt pistol, boltgun ou tainted bolt pistol deve ser selecionado em pelo menos uma delas. Cada LEGIONARY amigo pode counteract independente da ordem.<br><br><strong>Marks of Chaos.</strong> Ao selecionar cada LEGIONARY para a batalha, escolha uma palavra-chave: KHORNE, NURGLE, SLAANESH, TZEENTCH ou UNDIVIDED. Cada operativo pode ter uma diferente, mas o BALEFIRE ACOLYTE não pode ter KHORNE. Os ploys têm benefícios extras conforme a marca.<br>• <strong>KHORNE — Wrathful Onslaught:</strong> as armas melee deste operativo ganham Severe.<br>• <strong>NURGLE — Disgusting Vigour:</strong> sempre que Normal Dmg de 3 ou mais for causado neste operativo, role 1D6: em 5+, subtraia 1 desse dano.<br>• <strong>SLAANESH — Unnatural Agility:</strong> some 1\" ao Move deste operativo.<br>• <strong>TZEENTCH — Empyreal Guidance:</strong> as armas ranged deste operativo ganham Severe.<br>• <strong>UNDIVIDED — Vicious Reavers:</strong> quando este operativo atira, luta ou retalia contra um inimigo a 6\" dele, as armas dele ganham Ceaseless.<br><br><strong>EQUIP — Warded Armour.</strong> STRATEGIC GAMBIT. Selecione um LEGIONARY amigo. Até o passo Ready da próxima Strategy phase, o Save dele passa a ser 2+.<br><br><strong>EQUIP — Tainted Rounds.</strong> Uma vez por turno, quando um LEGIONARY amigo faz Shoot e você seleciona um bolt pistol ou boltgun, até o fim da ação essa arma ganha Rending.<br><br><strong>EQUIP — Chaos Talismans.</strong> STRATEGIC GAMBIT. Selecione uma palavra-chave de Marks of Chaos. Uma vez em cada ativação deles, quando um LEGIONARY amigo com essa marca está atirando, lutando ou retaliando, se você rolar dois ou mais fails, pode causar D3 de dano nesse amigo para descartar um deles e reter o outro como sucesso normal. Se for Shoot e esse dano incapacitar o amigo, a ação não termina (continue a sequência com seus dados de ataque bem-sucedidos).<br><br><strong>EQUIP — Malefic Blades.</strong> LEGIONARY amigos têm a arma melee: Malefic blade — A5, 3+, D3/4.'
+    },
+    ploys: {
+      strategy: [
+        {name:'Blood for the Blood God', desc:'Quando um LEGIONARY amigo (exceto KHORNE) está lutando, na primeira vez que você strike na sequência, cause 1 de dano adicional (máx. 7). Some 1 aos dois valores de Dmg das armas melee dos LEGIONARY KHORNE amigos (máx. 7).'},
+        {name:'Implacable', desc:'Quando um operativo atira num LEGIONARY amigo, armas com Piercing 1 passam a ter Piercing Crits 1. Você pode ignorar mudanças nos stats dos LEGIONARY NURGLE amigos causadas por ferimento (inclusive nos stats das armas).'},
+        {name:'Quicksilver Speed', desc:'Quando um LEGIONARY amigo que fez uma ação de movimento neste turno está lutando, piore em 1 o Hit das armas melee do inimigo. Quando um operativo atira num LEGIONARY SLAANESH amigo a mais de 6\" que fez uma ação de movimento neste turno, piore em 1 o Hit das armas do inimigo. Em todos os casos, não é cumulativo com estar ferido.'},
+        {name:'Fickle Fates', desc:'Quando um LEGIONARY amigo atira num inimigo ready, as armas ranged dele ganham Balanced. Quando um operativo atira num LEGIONARY TZEENTCH amigo ready, no passo Roll Defence Dice, se você reter algum sucesso crítico, pode reter um dos seus fails como sucesso normal em vez de descartá-lo.'},
+      ],
+      firefight: [
+        {name:'Unending Bloodshed', desc:'Use quando um LEGIONARY KHORNE amigo é incapacitado lutando ou retaliando. Você pode strike o inimigo dessa sequência com um dos seus sucessos não resolvidos antes de ele ser removido do killzone.'},
+        {name:'Mutability and Change', desc:'Use quando um LEGIONARY TZEENTCH amigo é ativado. Até o fim da ativação dele, +1 no APL, mas ele não pode fazer a mesma ação mais de uma vez nessa ativação. Se for um WARRIOR, a Marks of Chaos dele não pode ser trocada neste turno (ver Infernal Pact).'},
+        {name:'Malignant Aura', desc:'Use quando um LEGIONARY NURGLE amigo faz Shoot, ao selecionar alvo válido. Até o fim da ação, sempre que ele atirar num inimigo a 3\" dele (incluindo alvos secundários), as armas ranged dele ganham Piercing 1.'},
+        {name:'Sickening Captivation', desc:'Use durante a ativação de um LEGIONARY SLAANESH amigo, antes ou depois de uma ação. Selecione um inimigo visível a e a 4\" dele. Até o fim da próxima ativação desse inimigo, -1 no APL dele.'},
+      ],
+    },
     operatives: [
       { id:'kt-legionary-aspiring', name:'Aspiring Champion', unique:true,
-        M:'3"', APL:2, GA:1, DF:3, SV:3, W:16,
-        abilities:'Bênção do Caos: No início da ativação, escolha um bônus: +1 Ataque, re-rolar Hits, ou +1 Dano.',
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:'Opções de arma', desc:'Escolha uma opção de cada: (1) Plasma pistol OU Tainted bolt pistol; (2) Power fist, Power maul, Power weapon OU Tainted chainsword.'},
+          {name:'In the Eyes of the Gods', desc:'Uma vez em cada ativação deste operativo, se ele incapacitar um inimigo, some 1 ao APL dele até o fim dessa ativação.'},
+        ],
         weapons:[
-          { name:'Bolter do Caos', A:4, skill:3, D:4, CD:5, range:'long' },
-          { name:'Espada do Caos', A:5, skill:3, D:5, CD:7, range:'melee', tags:['Lethal 5+'] },
+          { name:'Plasma pistol', range:'short', profiles:[
+            { name:'standard',    A:4, skill:3, D:3, CD:5, tags:['Range 8\"','Piercing 1'] },
+            { name:'supercharge', A:4, skill:3, D:4, CD:5, tags:['Range 8\"','Hot','Lethal 5+','Piercing 1'] },
+          ]},
+          { name:'Tainted bolt pistol', A:4, skill:3, D:3, CD:5, range:'short', tags:['Range 8\"','Rending'] },
+          { name:'Power fist',         A:5, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
+          { name:'Power maul',         A:5, skill:3, D:4, CD:6, range:'melee', tags:['Shock'] },
+          { name:'Power weapon',       A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+          { name:'Tainted chainsword', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
         ]},
-      { id:'kt-legionary', name:'Legionary', unique:false, count:5,
-        M:'3"', APL:2, GA:1, DF:3, SV:3, W:13,
-        abilities:'Aura do Caos: Re-rola 1 dado de ataque por ativação.',
+      { id:'kt-legionary-chosen', name:'Chosen', unique:true,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:15,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
+          {name:'Opções de arma', desc:'Escolha: Plasma pistol + Daemon blade; ou Tainted bolt pistol + Daemon blade.'},
+          {name:'Daemonic Aura', desc:'Quando um inimigo faz Fall Back dentro do control range deste operativo, você pode usar esta regra: role 1D6; em 3+, esse inimigo não pode fazer essa ação nessa ativação/counteraction (o AP gasto é devolvido).'},
+          {name:'Soul Gorge', desc:'Depois que este operativo luta ou retalia, se ele não foi incapacitado mas incapacitou um inimigo nessa sequência, ele recupera até D3+1 Wounds perdidos.'},
+        ],
         weapons:[
-          { name:'Bolter do Caos', A:4, skill:3, D:4, CD:5, range:'long' },
-          { name:'Punho do Caos',  A:4, skill:3, D:4, CD:6, range:'melee' },
+          { name:'Plasma pistol', range:'short', profiles:[
+            { name:'standard',    A:4, skill:3, D:3, CD:5, tags:['Range 8\"','Piercing 1'] },
+            { name:'supercharge', A:4, skill:3, D:4, CD:5, tags:['Range 8\"','Hot','Lethal 5+','Piercing 1'] },
+          ]},
+          { name:'Tainted bolt pistol', A:4, skill:3, D:3, CD:5, range:'short', tags:['Range 8\"','Rending'] },
+          { name:'Daemon blade',        A:5, skill:3, D:4, CD:7, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-legionary-anointed', name:'Anointed', unique:true,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Unleash Daemon', desc:'Uma vez por batalha, quando este operativo é ativado, você pode usar esta regra. Se usar, até o fim da batalha: (1) ele não pode fazer Pick Up Marker nem ações de missão (exceto Operate Hatch) — se estiver carregando um marcador, deve fazer Place Marker imediatamente por 0AP; (2) Normal e Critical Dmg de 4 ou mais causam 1 de dano a menos nele (se ele for NURGLE, você não pode reduzir o dano de um dado de ataque em mais de 1 no total); (3) o daemonic claw dele ganha Ceaseless e Lethal 5+.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol',    A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Daemonic claw',  A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
+        ]},
+      { id:'kt-legionary-balefire', name:'Balefire Acolyte', unique:true,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'PSYKER', desc:'Este operativo tem a palavra-chave PSYKER. Não pode ter a marca KHORNE.'},
+          {name:'Siphon Life', desc:'Ao selecionar o life siphon ou o fell dagger, você pode usar esta regra. Se usar, no início do passo Resolve Attack Dice, selecione um LEGIONARY amigo visível a e a 6\" deste operativo. Para cada dado de ataque resolvido nesse passo que cause dano, esse amigo recupera 1 Wound perdido (ou D3 se foi sucesso crítico). Só uma vez por turno.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol',  A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Fireblast',    A:4, skill:3, D:3, CD:4, range:'long',  tags:['PSYCHIC','Blast 2\"','Devastating 1','Saturate'] },
+          { name:'Life siphon',  A:5, skill:3, D:3, CD:3, range:'long',  tags:['PSYCHIC','Saturate','Siphon Life'] },
+          { name:'Fell dagger',  A:5, skill:3, D:3, CD:4, range:'melee', tags:['PSYCHIC','Rending','Siphon Life'] },
+        ]},
+      { id:'kt-legionary-butcher', name:'Butcher', unique:true,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Devastating Onslaught', desc:'Quando este operativo está lutando ou retaliando, inimigos não podem assistir. No fim de cada ativação/counteraction inimiga, você pode selecionar um inimigo a 2\" deste operativo: ele faz um Charge grátis (pode mudar a ordem para Engage), mas não pode mover mais de 2\" e deve terminar no control range desse inimigo selecionado.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol',             A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Double-handed chainaxe',  A:5, skill:4, D:5, CD:7, range:'melee', tags:['Brutal'] },
+        ]},
+      { id:'kt-legionary-gunner', name:'Gunner', unique:true,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Opções de arma', desc:'Escolha: Bolt pistol + Flamer + Fists; Bolt pistol + Meltagun + Fists; ou Bolt pistol + Plasma gun + Fists.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol', A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Flamer',      A:4, skill:2, D:3, CD:3, range:'short', tags:['Range 8\"','Saturate','Torrent 2\"'] },
+          { name:'Meltagun',    A:4, skill:3, D:6, CD:3, range:'short', tags:['Range 6\"','Devastating 4','Piercing 2'] },
+          { name:'Plasma gun', range:'long', profiles:[
+            { name:'standard',    A:4, skill:3, D:4, CD:6, tags:['Piercing 1'] },
+            { name:'supercharge', A:4, skill:3, D:5, CD:6, tags:['Hot','Lethal 5+','Piercing 1'] },
+          ]},
+          { name:'Fists',       A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-legionary-heavygunner', name:'Heavy Gunner', unique:true,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Opções de arma', desc:'Escolha: Bolt pistol + Heavy bolter + Fists; Bolt pistol + Missile launcher + Fists; ou Bolt pistol + Reaper chaincannon + Fists.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol', A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Heavy bolter', range:'long', profiles:[
+            { name:'focused',  A:5, skill:3, D:4, CD:5, tags:['Heavy (Reposition only)','Piercing Crits 1'] },
+            { name:'sweeping', A:4, skill:3, D:4, CD:5, tags:['Heavy (Reposition only)','Piercing Crits 1','Torrent 1\"'] },
+          ]},
+          { name:'Missile launcher', range:'long', profiles:[
+            { name:'frag', A:4, skill:3, D:3, CD:5, tags:['Blast 2\"','Heavy (Reposition only)'] },
+            { name:'krak', A:4, skill:3, D:5, CD:7, tags:['Heavy (Reposition only)','Piercing 1'] },
+          ]},
+          { name:'Reaper chaincannon', range:'long', profiles:[
+            { name:'focused',  A:5, skill:3, D:3, CD:4, tags:['Ceaseless','Heavy (Reposition only)','Punishing'] },
+            { name:'sweeping', A:4, skill:3, D:3, CD:4, tags:['Ceaseless','Heavy (Reposition only)','Punishing','Torrent 2\"'] },
+          ]},
+          { name:'Fists',       A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-legionary-iconbearer', name:'Icon Bearer', unique:true,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Opções de arma', desc:'Escolha: Boltgun + Fists; ou Bolt pistol + Chainsword.'},
+          {name:'Icon Bearer', desc:'Ao determinar o controle de um marcador, trate o APL deste operativo como 1 a mais. Isso não é uma mudança no APL, então outras mudanças são cumulativas.'},
+          {name:'Favoured of the Dark Gods', desc:'No passo Ready de cada Strategy phase, se este operativo controla um objective marker que não esteja tainted, esse marcador fica tainted pelo resto da batalha e você ganha 1CP. Se qualquer operativo (inclusive inimigo) já tiver tainted aquele marcador, você não pode taintá-lo.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol', A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Boltgun',     A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Chainsword',  A:5, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Fists',       A:4, skill:3, D:3, CD:4, range:'melee' },
+        ]},
+      { id:'kt-legionary-shrivetalon', name:'Shrivetalon', unique:true,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Vicious Reflexes', desc:'Quando este operativo está retaliando, você resolve o primeiro dado de ataque (ou seja, o defensor no lugar do atacante).'},
+          {name:'Horrifying Dismemberment', desc:'Quando este operativo incapacita um inimigo lutando ou retaliando, selecione outro inimigo visível a e a 3\" deste operativo ou do inimigo incapacitado: -1 no APL dele até o fim da próxima ativação dele.'},
+          {name:'Grisly Mark', ap:'2AP', desc:'Coloque o seu Grisly marker no control range deste operativo. Inimigos a 3\" do marcador gastam 1 AP adicional para fazer Pick Up Marker e ações de missão. Ao determinar controle de marcador, trate o APL total dos inimigos que o contestam como 1 a menos se pelo menos um deles estiver a 3\" do Grisly marker. Só uma vez por batalha e não pode ser feita no control range de inimigo.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol',     A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Flensing blades', A:5, skill:3, D:3, CD:5, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-legionary-warrior', name:'Warrior', unique:false, count:5,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:14,
+        abilities:[
+          {name:'Opções de arma', desc:'Escolha: Boltgun + Fists; ou Bolt pistol + Chainsword.'},
+          {name:'Infernal Pact', desc:'Uma vez por batalha, quando um LEGIONARY WARRIOR amigo é ativado, você pode usar esta regra: troque a palavra-chave Marks of Chaos dele.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol', A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Boltgun',     A:4, skill:3, D:3, CD:4, range:'long' },
+          { name:'Chainsword',  A:5, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Fists',       A:4, skill:3, D:3, CD:4, range:'melee' },
         ]},
     ]
   },
@@ -10378,6 +10516,122 @@ const KT_TEAMS = [
           }
         ]
       }
+    ]
+  },
+  // ── CELESTIAN INSIDIANTS (Adepta Sororitas) ─────────
+  {
+    id:'kt-insidiants', name:'Celestian Insidiants', faction:'Adepta Sororitas',
+    color:'#e11d48', emoji:'⚜',
+    desc:'Caçadoras de bruxas das Orders Militant. Operativas ficam INSPIRING ao cargar ou ao incapacitar inimigos grandes (W6+), ganhando Severe; quando uma INSPIRING morre, uma irmã recebe uma BENEDICTION (Martyrdom). Anti-PSYKER pesado: campos nulos, estacas condemnor e regras que desligam poderes psíquicos por perto.',
+    style:'Anti-Psyker · Melee · Fé',
+    limit: 9,
+    coreRule: {
+      name:'Regras de Facção + Equipamento',
+      desc:'<strong>Composição.</strong> 1 CELESTIAN INSIDIANT SUPERIOR + 8 operativos da lista: ABJUROR, CENSOR, CREMATOR, DENUNCIA, MORTISANCTUS, RELIQUARIUS, WARRIOR. Fora CREMATOR e WARRIOR, cada operativo só pode entrar uma vez. Máximo de dois CREMATOR.<br><br><strong>Inspiration.</strong> Um CELESTIAN INSIDIANT amigo fica INSPIRING quando: incapacita um inimigo com Wounds 6 ou mais; ou faz a ação Charge (fica INSPIRING antes de mover). Enquanto está INSPIRING, as armas do datacard dele ganham Severe.<br><br><strong>Martyrdom.</strong> Quando uma CELESTIAN INSIDIANT amiga INSPIRING é incapacitada, antes de ser removida do killzone, selecione outra CELESTIAN INSIDIANT amiga visível a ou a 6\" dela. Essa operativa ganha uma BENEDICTION (operativas incapacitadas não podem ser selecionadas).<br><br><strong>Benedictions.</strong> • <strong>Ardour</strong> — até o fim da batalha, +1 no APL dela. Não pode ser escolhida para uma SUPERIOR.<br>• <strong>Wrath</strong> — até o fim da batalha, as armas do datacard dela ganham Ceaseless.<br>• <strong>Restoration</strong> — ela recupera até D3+2 Wounds perdidos.<br>• <strong>Exigence</strong> — ela faz imediatamente um Charge ou Dash grátis (no Charge não pode mover mais de 3\"), mas deve terminar o movimento mais perto da operativa INSPIRING incapacitada.<br><br><strong>Weapons of the Witch Hunters.</strong> Armas ranged PSYCHIC não causam dano em CELESTIAN INSIDIANT amigas. Para efeitos de ações PSYCHIC, elas não podem ser selecionadas e nunca são tratadas como dentro das distâncias exigidas. Qualquer operativo a 3\" de uma CELESTIAN INSIDIANT amiga: não pode fazer ações PSYCHIC nem usar regras adicionais PSYCHIC; não pode usar armas ranged PSYCHIC; e suas armas melee PSYCHIC perdem todas as regras de arma e não podem ter Dmg maior que 3/4.<br><br><strong>Anti-PSYKER.</strong> Sempre que uma arma com esta regra é usada contra um operativo com a palavra-chave PSYKER, ela ganha Lethal 5+.<br><br><strong>EQUIP — Psyk-Out Grenades.</strong> Permite selecionar duas utility grenades do equipamento universal, e todas devem ser stun grenades (se também selecionar aquele equipamento normalmente, não pode escolher stun grenades de novo). Quando um operativo faz um stun test por causa da ação Stun Grenade de uma CELESTIAN INSIDIANT amiga, se o resultado for 3+, cause também dano igual à metade do resultado do dado (arredondando pra cima). Se esse operativo tiver PSYKER, cause dano igual ao resultado inteiro.<br><br><strong>EQUIP — Vocifera Mortis.</strong> Uma vez por batalha, quando uma CELESTIAN INSIDIANT amiga INSPIRING é incapacitada, para a regra Martyrdom a outra amiga selecionada pode ser uma que não esteja visível nem a 6\" dela.<br><br><strong>EQUIP — Saintly Relics.</strong> Quando um dado de ataque causaria dano numa CELESTIAN INSIDIANT amiga, role 1D6 (ou 2D6 se ela estiver INSPIRING): se algum resultado for 6, ignore o dano desse dado de ataque. Máximo de um dado de ataque por ação e dois por batalha.<br><br><strong>EQUIP — Auto-Flagellator.</strong> Quando uma CELESTIAN INSIDIANT amiga é ativada, role 1D6 e cause nela dano igual à metade do resultado (arredondando pra cima); em 4+ ela também fica INSPIRING. Você não pode deixar mais de uma operativa amiga INSPIRING por turno com esta regra.'
+    },
+    ploys: {
+      strategy: [
+        {name:'Suspect & Eliminate', desc:'Selecione um inimigo ou um marcador. Se for inimigo, ele e cada outro inimigo visível a e a 2\" dele ganham um Suspicion token seu até o fim do turno. Se for marcador, cada inimigo contestando aquele marcador ganha um Suspicion token até o fim do turno. Quando uma CELESTIAN INSIDIANT amiga atira contra ou luta contra um operativo com Suspicion token seu, as armas dela ganham Punishing.'},
+        {name:'Wrathful Determination', desc:'Quando um operativo atira numa CELESTIAN INSIDIANT amiga com ordem Engage, você pode re-rolar um dos seus dados de defesa.'},
+        {name:'Suffering & Sacrifice', desc:'Quando uma CELESTIAN INSIDIANT amiga ferida (wounded) está atirando, lutando ou retaliando contra um inimigo, as armas dela ganham Balanced.'},
+        {name:'Holy Resilience', desc:'Quando uma CELESTIAN INSIDIANT amiga INSPIRING está lutando ou retaliando, Normal e Critical Dmg de 4 ou mais causam 1 de dano a menos nela.'},
+      ],
+      firefight: [
+        {name:'Glory to the Martyrs', desc:'Use quando uma CELESTIAN INSIDIANT amiga é incapacitada lutando ou retaliando. Você pode strike o inimigo dessa sequência com um dos seus sucessos não resolvidos antes de ela ser removida. Se esse inimigo for incapacitado por isso, a amiga fica INSPIRING antes de ser removida e você pode resolver a regra Martyrdom.'},
+        {name:'Faith & Fury', desc:'Use quando uma CELESTIAN INSIDIANT amiga está lutando e você strike o inimigo dessa sequência com sucesso crítico. Depois de resolver esse strike, cause também D3 de dano em cada outro inimigo visível a e a 2\" dessa amiga, na ordem que quiser (role separadamente para cada). Se algum inimigo com Wounds 6 ou mais for incapacitado por esse dano, a amiga fica INSPIRING.'},
+        {name:'Unshakeable Pursuit', desc:'Use durante a ativação de uma CELESTIAN INSIDIANT amiga, antes ou depois de uma ação. Até o fim da ativação, você pode ignorar mudanças no Move dela. Se ela estiver INSPIRING, some 1\" ao Move até o fim da ativação. Se ela ficar INSPIRING ao fazer Charge, você pode usar este ploy antes de ela mover para ganhar o movimento extra.'},
+        {name:'Fervent Hate', desc:'Use depois de rolar seus dados de ataque de uma CELESTIAN INSIDIANT amiga, se ela estiver atirando, lutando ou retaliando contra um inimigo sem a palavra-chave IMPERIUM. As armas dela ganham Ceaseless até o fim da sequência; se esse inimigo também tiver CHAOS e/ou PSYKER, ganham Relentless em vez disso.'},
+      ],
+    },
+    operatives: [
+      { id:'kt-insid-superior', name:'Insidiant Superior', unique:true,
+        M:'6\"', APL:3, GA:1, DF:3, SV:3, W:10,
+        abilities:[
+          {name:'LÍDER', desc:'Esta operativa é a líder do time.'},
+          {name:'Opções de arma', desc:'Escolha: Relic condemnor stakethrower + Relic bolt pistol + Null mace; ou Inferno pistol + Null mace.'},
+          {name:'Holy Example', desc:'Uma vez por turno, se esta operativa estiver INSPIRING, você pode usar um firefight ploy por 0CP se ela for a CELESTIAN INSIDIANT especificada no ploy (incluindo Command Re-roll, se o dado de ataque ou defesa foi rolado para ela).'},
+          {name:'Spiritual Mentor', ap:'1AP', desc:'SUPPORT. Selecione uma CELESTIAN INSIDIANT amiga visível a e a 6\" desta operativa. Ela fica INSPIRING. Não pode ser feita no control range de inimigo, nem mais de uma vez por turno.'},
+        ],
+        weapons:[
+          { name:'Inferno pistol',                A:4, skill:3, D:4, CD:2, range:'short', tags:['Range 3\"','Devastating 3','Piercing 2'] },
+          { name:'Relic bolt pistol',             A:4, skill:3, D:3, CD:5, range:'short', tags:['Range 8\"','Lethal 5+'] },
+          { name:'Relic condemnor stakethrower',  A:4, skill:3, D:2, CD:2, range:'long',  tags:['Devastating 2','Lethal 5+','Piercing Crits 1','Silent','Anti-PSYKER'] },
+          { name:'Null mace',                     A:4, skill:3, D:4, CD:4, range:'melee', tags:['Shock','Anti-PSYKER'] },
+        ]},
+      { id:'kt-insid-abjuror', name:'Insidiant Abjuror', unique:true,
+        M:'6\"', APL:2, GA:1, DF:3, SV:2, W:11,
+        abilities:[
+          {name:'Holy Defender', desc:'Uma vez por turno, quando uma CELESTIAN INSIDIANT amiga visível a e a 2\" desta operativa é selecionada como alvo válido de um Shoot ou para ser lutada num Fight, você pode usar esta regra: esta operativa passa a ser o alvo válido / a operativa lutada (mesmo que normalmente não fosse válido). Se for Fight, trate esta operativa como estando no control range do atacante durante a ação. Se for Shoot, esta operativa só está em cover ou obscured se o alvo original estava. Sem efeito se for Shoot com arma ranged Blast ou Torrent.'},
+          {name:'Shield', desc:'Quando esta operativa está lutando ou retaliando com o perfil defensivo, cada um dos seus blocks pode bloquear dois sucessos não resolvidos (em vez de um).'},
+        ],
+        weapons:[
+          { name:'Blessed sword & praesidium protectiva', range:'melee', profiles:[
+            { name:'defensive', A:4, skill:3, D:4, CD:6, tags:['Shield'] },
+            { name:'offensive', A:4, skill:3, D:4, CD:6, tags:['Lethal 5+'] },
+          ]},
+        ]},
+      { id:'kt-insid-censor', name:'Insidiant Censor', unique:true,
+        M:'6\"', APL:2, GA:1, DF:3, SV:3, W:9,
+        abilities:[
+          {name:'Virge of Admonition Icon Bearer', desc:'Ao determinar o controle de um marcador, trate o APL desta operativa como 1 a mais. Isso não é uma mudança no APL, então outras mudanças são cumulativas.'},
+          {name:'Null Field', desc:'Esta operativa começa a batalha com null range de 1\". Sempre que um inimigo estiver dentro do null range dela, subtraia 2\" do Move desse inimigo e piore em 1 o Hit das armas dele (não é cumulativo com estar ferido).'},
+          {name:'Nullifying Ritual', ap:'1AP', desc:'Some 1\" ao null range desta operativa (máximo de 5\"). Não pode ser feita no control range de inimigo, nem mais de uma vez por turno.'},
+        ],
+        weapons:[
+          { name:'Virge of admonition', A:4, skill:4, D:5, CD:5, range:'melee', tags:['Brutal','Shock','Anti-PSYKER'] },
+        ]},
+      { id:'kt-insid-cremator', name:'Insidiant Cremator', unique:false, count:2,
+        M:'6\"', APL:2, GA:1, DF:3, SV:3, W:9,
+        abilities:[
+          {name:'Inspirational Pyre', desc:'Uma vez por turno, quando esta operativa causa dano num inimigo com qualquer perfil do hand flamer mas não o incapacita, você pode usar esta regra: selecione uma CELESTIAN INSIDIANT amiga a 6\" desta operativa para ficar INSPIRING.'},
+        ],
+        weapons:[
+          { name:'Hand flamer', range:'short', profiles:[
+            { name:'standard', A:4, skill:2, D:3, CD:3, tags:['Range 6\"','Saturate','Torrent 1\"'] },
+            { name:'deluge',   A:4, skill:2, D:3, CD:3, tags:['Range 4\"','Saturate','Seek Light','Torrent 0\"'] },
+          ]},
+          { name:'Null mace', A:4, skill:3, D:4, CD:4, range:'melee', tags:['Shock','Anti-PSYKER'] },
+        ]},
+      { id:'kt-insid-denuncia', name:'Insidiant Denuncia', unique:true,
+        M:'6\"', APL:2, GA:1, DF:3, SV:3, W:9,
+        abilities:[
+          {name:'Accusing Exorcist', desc:'Sempre que esta operativa estiver INSPIRING, o ploy Suspect & Eliminate custa 0CP se o inimigo ou marcador selecionado estiver visível a ou a 6\" dela.'},
+          {name:'Speak of Her Deeds', ap:'1AP', desc:'SUPPORT. Selecione uma CELESTIAN INSIDIANT amiga INSPIRING visível a e a 6\" desta operativa: ela deixa de estar INSPIRING. Depois selecione outra CELESTIAN INSIDIANT amiga visível a e a 6\" desta operativa e resolva nela uma BENEDICTION da regra Martyrdom (exceto Exigence). Não pode ser feita no control range de inimigo.'},
+        ],
+        weapons:[
+          { name:'Voice of condemnation', A:5, skill:3, D:1, CD:1, range:'short', tags:['Range 6\"','Seek','Stun'] },
+          { name:'Staff of declamation',  A:4, skill:3, D:3, CD:3, range:'melee', tags:['Shock'] },
+        ]},
+      { id:'kt-insid-mortisanctus', name:'Insidiant Mortisanctus', unique:true,
+        M:'6\"', APL:2, GA:1, DF:3, SV:3, W:9,
+        abilities:[
+          {name:'Zealous Ultimatum', desc:'STRATEGIC GAMBIT, uma vez por batalha. Selecione um inimigo a 8\" desta operativa e faça um ultimato. O oponente aceita ou recusa (se for operativo non-player, role 1D6: em 4+ aceita). ACEITO: quando esta operativa luta ou retalia contra esse inimigo, +1 no Atk do blessed broadsword; a primeira vez que ela incapacitar esse inimigo lutando/retaliando, +1 no Atk até o fim da batalha (máx. 5 em qualquer caso). RECUSADO: quando esse inimigo luta ou retalia contra uma CELESTIAN INSIDIANT amiga, -1 no Atk das armas dele.'},
+          {name:'Bladed Stance', desc:'Quando esta operativa está lutando ou retaliando, você pode resolver um dos seus sucessos antes da ordem normal. Se fizer isso, esse sucesso deve ser usado para bloquear.'},
+        ],
+        weapons:[
+          { name:'Blessed broadsword', A:4, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+','Brutal'] },
+        ]},
+      { id:'kt-insid-reliquarius', name:'Insidiant Reliquarius', unique:true,
+        M:'6\"', APL:2, GA:1, DF:3, SV:3, W:9,
+        abilities:[
+          {name:'Simulacrum Nullificatus Icon Bearer', desc:'Ao determinar o controle de um marcador, trate o APL total dos inimigos que o contestam como 1 a menos se pelo menos um deles estiver a 3\" desta operativa. Isso não é uma mudança no APL, então outras mudanças são cumulativas.'},
+          {name:'Devotion', desc:'No fim de cada ativação desta operativa, se ela estiver INSPIRING e controlando um objective marker ou um dos seus mission markers, uma CELESTIAN INSIDIANT amiga visível a e a 6\" dela fica INSPIRING.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol',            A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Condemnor stakethrower', A:4, skill:3, D:2, CD:2, range:'long',  tags:['Devastating 1','Piercing Crits 1','Silent','Anti-PSYKER'] },
+          { name:'Gun butt',               A:3, skill:3, D:2, CD:3, range:'melee' },
+        ]},
+      { id:'kt-insid-warrior', name:'Insidiant Warrior', unique:false, count:8,
+        M:'6\"', APL:2, GA:1, DF:3, SV:3, W:9,
+        abilities:[
+          {name:'Inspired Strikes', desc:'Sempre que esta operativa estiver INSPIRING, some 1 ao Critical Dmg das armas do datacard dela.'},
+        ],
+        weapons:[
+          { name:'Bolt pistol',            A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Condemnor stakethrower', A:4, skill:3, D:2, CD:2, range:'long',  tags:['Devastating 1','Piercing Crits 1','Silent','Anti-PSYKER'] },
+          { name:'Null mace',              A:4, skill:3, D:4, CD:4, range:'melee', tags:['Shock','Anti-PSYKER'] },
+        ]},
     ]
   },
 ];
