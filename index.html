@@ -51,6 +51,14 @@ body::before{content:'';position:fixed;inset:0;
 .screen{position:absolute;inset:0;z-index:1;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column;-webkit-overflow-scrolling:touch}
 .screen.active{display:flex}
 #screen-home.active ~ #global-settings-fab{display:none !important}
+#screen-home{background:#0a0a0c url('images/home-bg.jpg') center 22%/cover no-repeat}
+#screen-home::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,10,12,.5) 0%,rgba(10,10,12,.72) 42%,rgba(10,10,12,.9) 100%);pointer-events:none;z-index:0}
+.home-sec-label{font-family:var(--fu);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);text-align:left;width:100%;margin-bottom:2px}
+.home-lib-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.home-lib-btn{background:rgba(20,20,26,.72);border:1px solid var(--border2);color:var(--text2);border-radius:10px;padding:11px 8px;font-size:13px;font-family:var(--fu);letter-spacing:.3px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;backdrop-filter:blur(2px)}
+.home-lib-btn:active{transform:scale(.97)}
+.home-footer{margin-top:22px;font-size:11px;color:var(--muted);text-align:center}
+.home-footer strong{color:var(--text2)}
 .screen-body{flex:1;padding:14px;max-width:520px;width:100%;margin:0 auto;padding-bottom:36px}
 .screen.slide-in{animation:sIn .28s ease-out}
 .screen.slide-back{animation:sBack .28s ease-out}
@@ -164,6 +172,10 @@ body::before{content:'';position:fixed;inset:0;
 .tg-step .tg-ico{font-size:15px;display:block;margin-bottom:2px}
 .tg-reminders{font-size:12px;color:var(--text2);line-height:1.55;margin:0;padding-left:16px}
 .tg-nav{display:flex;gap:6px;margin-top:10px}
+.tg-players{display:flex;gap:5px;margin-bottom:9px}
+.tg-player{flex:1;padding:6px 4px;border-radius:var(--rsm);background:var(--card2);border:1px solid var(--border);font-family:var(--fu);font-size:11px;color:var(--muted);cursor:pointer;letter-spacing:.3px}
+.tg-player.active{background:rgba(232,184,75,.15);border-color:var(--gold);color:var(--gold)}
+.tg-player.done{border-color:rgba(34,197,94,.35);color:var(--hit)}
 .turn-num{font-family:var(--ff);font-size:42px;color:var(--gold);line-height:1}
 .turn-lbl{font-family:var(--fu);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .cp-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
@@ -1021,12 +1033,20 @@ const VFX = {
 <div class="screen" id="screen-home">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;text-align:center;position:relative;z-index:1;overflow-y:auto">
 
-    <!-- Animated logo -->
-    <div class="home-intro-logo" style="font-size:64px;margin-bottom:10px;filter:drop-shadow(0 0 28px rgba(183,50,40,.65))">⚔</div>
-    <div class="home-intro-title home-logo">WARHAMMER <span>40K</span></div>
-    <div class="home-intro-sub home-sub" style="margin-bottom:4px">Campo de Batalha</div>
+    <button onclick="openSettings();SFX.click()" title="Configurações" style="position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;background:rgba(20,20,26,.7);border:1px solid var(--border2);color:var(--gold);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;backdrop-filter:blur(3px)">⚙</button>
+    <div class="home-intro-logo" style="font-size:52px;margin-bottom:4px;filter:drop-shadow(0 0 26px rgba(183,50,40,.6))">⚔</div>
+    <div class="home-intro-title home-logo" style="font-size:46px">AUSPEX</div>
+    <div class="home-intro-sub home-sub" style="margin-bottom:4px;letter-spacing:2px;text-transform:uppercase;font-size:11px;color:var(--muted)">Warhammer 40.000 · Kill Team</div>
 
     <!-- Onboarding banner (shown only when no units) -->
+    <div id="home-resume" style="display:none;width:100%;max-width:340px;margin-top:12px;background:var(--card);border:1px solid var(--gold2);border-radius:12px;padding:14px;text-align:left">
+      <div style="font-family:var(--ff);font-size:15px;color:var(--gold);letter-spacing:1px;margin-bottom:4px">⏸ PARTIDA EM ANDAMENTO</div>
+      <div id="home-resume-desc" style="font-size:12px;color:var(--text2);margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gold btn-sm" style="flex:2" onclick="resumeBattle()">▶ Retomar</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="clearBattleState();initHome();SFX.click()">Descartar</button>
+      </div>
+    </div>
     <div id="home-onboard" class="onboard-banner home-intro-sub" style="width:100%;max-width:340px;text-align:left;display:none;margin-top:12px">
       <div style="font-family:var(--ff);font-size:16px;color:var(--gold);letter-spacing:1px;margin-bottom:10px">👋 BEM-VINDO, COMANDANTE!</div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">Para começar a batalha, você precisa cadastrar suas unidades. Siga esses passos:</div>
@@ -1048,42 +1068,29 @@ const VFX = {
       </div>
     </div>
 
-    <!-- Normal desc (shown when has units) -->
-    <div id="home-desc-normal" class="home-intro-sub home-desc" style="margin-top:8px">Gerencie seus exércitos, rastreie PV e resolva combates</div>
-
     <!-- Buttons -->
     <div class="home-intro-btns" style="width:100%;max-width:300px;display:flex;flex-direction:column;gap:10px;margin-top:16px">
-      <!-- Mode selection -->
+      <div class="home-sec-label">Jogar</div>
       <div class="mode-grid">
         <div class="mode-card mode-40k" id="btn-start-battle" onclick="onStartBattle()">
           <div class="mode-icon">⚔</div>
           <div class="mode-name">WARHAMMER 40K</div>
-          <div class="mode-sub">Batalha em escala de exército</div>
+          <div class="mode-sub">Batalha de exército</div>
         </div>
         <div class="mode-card mode-kt" onclick="onStartKillTeam()">
           <div class="mode-icon">🎯</div>
           <div class="mode-name">KILL TEAM</div>
-          <div class="mode-sub">Esquadrões de elite em missões táticas</div>
+          <div class="mode-sub">Esquadrões táticos</div>
         </div>
       </div>
-      <button class="btn btn-secondary btn-sm" onclick="SFX.click();NAV.go('screen-library',initLibrary)">📚 BIBLIOTECA DE FICHAS</button>
-      <button class="btn btn-secondary btn-sm" onclick="SFX.click();NAV.go('screen-kt-library',initKTLibrary)">📖 FICHAS KILL TEAM</button>
-      <button class="btn btn-secondary btn-sm" onclick="openSettings();SFX.click()" style="margin-top:4px">⚙ CONFIGURAÇÕES</button>
-    </div>
-
-    <div class="home-intro-stats" style="margin-top:20px;font-size:12px;line-height:1.8" id="home-stats"></div>
-
-    <!-- ═══ AJUDE O CRIADOR ═══ -->
-    <div style="width:100%;max-width:300px;margin-top:22px;padding:13px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);text-align:center">
-      <div style="font-family:var(--ff);font-size:15px;letter-spacing:1px;color:var(--gold);margin-bottom:5px">💜 AJUDE O CRIADOR</div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:11px">Criado por <strong style="color:var(--text)">@coelhokau</strong>. Se este app te ajudou, considere apoiar 🙏</div>
-      <div onclick="copyPix()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 10px;background:var(--bg);border:1px dashed var(--border);border-radius:var(--rsm);cursor:pointer">
-        <span style="font-size:11px;color:var(--muted)">Pix:</span>
-        <span style="font-size:12px;color:var(--text);font-weight:600">kaue_coelho@hotmail.com</span>
-        <span id="pix-copy-ic" style="font-size:13px">📋</span>
+      <div class="home-sec-label" style="margin-top:10px">Fichas &amp; consulta</div>
+      <div class="home-lib-grid">
+        <button class="home-lib-btn" onclick="SFX.click();NAV.go('screen-library',initLibrary)">📚 Fichas 40K</button>
+        <button class="home-lib-btn" onclick="SFX.click();NAV.go('screen-kt-library',initKTLibrary)">📖 Fichas KT</button>
       </div>
-      <div id="pix-copied" style="font-size:10px;color:var(--hit);margin-top:6px;height:12px;letter-spacing:.5px"></div>
     </div>
+
+    <div class="home-footer">Criado por <strong>@coelhokau</strong> · <span onclick="showPixModal()" style="color:var(--gold);cursor:pointer">💜 Apoiar</span></div>
 
   </div>
 </div>
@@ -1185,6 +1192,7 @@ const VFX = {
     <div style="font-size:10px;color:var(--muted);font-family:var(--fu);text-align:right;margin-top:4px;margin-bottom:8px">Toque para atribuir · Pressione para renomear</div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
       <button class="btn btn-gold" style="flex:3" onclick="endTurn();SFX.click()">⏭ FINALIZAR TURNO</button>
+      <button class="btn btn-secondary" style="flex:1;font-size:15px;padding:12px" onclick="showBattleLog()" title="Log da batalha">📜</button>
       <button id="undo-btn" class="btn btn-secondary" style="flex:1;font-size:16px;padding:12px" onclick="undoLastAction()" disabled title="Nada para desfazer">↩</button>
     </div>
     <button class="btn btn-secondary btn-sm" id="btn-goto-combat" onclick="switchTab('combat');SFX.click()">⚔ IR PARA COMBATE</button>
@@ -2152,6 +2160,8 @@ function w40kChangeTurnCount(delta) {
 }
 
 function initTracker() {
+  clearBattleState();
+  BATTLE_LOG = [];
   TRACKER = {
     active: true, turn: 1, maxTurns: W40K_TURNS, turnLog: [],
     objectives: [0,1,2,3,4].map(i => ({ id:i, label:`Obj ${i===2?'Centro':i+1}`, ownerId:null })),
@@ -2174,6 +2184,51 @@ function initTracker() {
   };
   saveTracker();
 }
+
+// ── AUTOSAVE DE RECUPERAÇÃO (crash/fechamento) ────────
+function saveBattleState() {
+  try {
+    const cur = (typeof NAV !== 'undefined' && NAV.stack) ? NAV.stack[NAV.stack.length - 1] : '';
+    if (cur !== 'screen-battle' && cur !== 'screen-kt-battle') return; // só salva enquanto está numa batalha
+    if (typeof TRACKER !== 'undefined' && TRACKER.active) {
+      localStorage.setItem('wh40k_resume', JSON.stringify({ type: '40k', at: Date.now(), tracker: TRACKER }));
+    } else if (typeof KT_SESSION !== 'undefined' && KT_SESSION.teams && KT_SESSION.teams.length) {
+      localStorage.setItem('wh40k_resume', JSON.stringify({ type: 'kt', at: Date.now(), kt: KT_SESSION, simple: KT_SIMPLE_MODE, totalTurns: KT_TOTAL_TURNS }));
+    }
+  } catch (e) {}
+}
+function clearBattleState() { try { localStorage.removeItem('wh40k_resume'); } catch (e) {} }
+function getResumeInfo() { try { const r = localStorage.getItem('wh40k_resume'); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+
+function resumeBattle() {
+  const info = getResumeInfo(); if (!info) return;
+  SFX.click();
+  if (info.type === '40k' && info.tracker) {
+    Object.assign(TRACKER, info.tracker);
+    NAV.go('screen-battle', () => { if (typeof switchTab === 'function') switchTab('tracker'); else renderTracker(); });
+  } else if (info.type === 'kt' && info.kt) {
+    Object.assign(KT_SESSION, info.kt);
+    KT_SIMPLE_MODE = !!info.simple;
+    KT_TOTAL_TURNS = info.totalTurns || 4;
+    NAV.go('screen-kt-battle', ktRenderResume);
+  }
+}
+function ktRenderResume() {
+  KT_TP_PHASE = 0;
+  ktUpdateTurnDisplay();
+  const combatTabBtn = document.getElementById('kt-tab-combat');
+  if (combatTabBtn) combatTabBtn.style.display = KT_SIMPLE_MODE ? 'none' : '';
+  const mcBtn = document.getElementById('kt-mc-open-btn');
+  if (mcBtn) mcBtn.style.display = KT_SIMPLE_MODE ? '' : 'none';
+  const eyebrow = document.querySelector('#screen-kt-battle .hdr-eyebrow');
+  if (eyebrow) eyebrow.textContent = KT_SIMPLE_MODE ? 'Kill Team · Modo Simples' : 'Kill Team · Em andamento';
+  renderKTCPStrip();
+  ktSwitchTab('activation');
+}
+
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveBattleState(); });
+window.addEventListener('pagehide', saveBattleState);
+setInterval(saveBattleState, 8000);
 
 function saveTracker() {
   try {
@@ -2262,6 +2317,8 @@ function endTurn() {
   if (TRACKER.turn >= TRACKER.maxTurns) { TRACKER.active = false; saveTracker(); showVictory(); return; }
   TRACKER.turn++;
   G40_PHASE = 0;
+  G40_ACTIVE_PLAYER = 0;
+  G40_ROUND_DONE = [];
   saveTracker();
   renderTracker();
   const el = document.getElementById('turn-num');
@@ -2269,6 +2326,8 @@ function endTurn() {
 }
 
 function showVictory() {
+  clearBattleState();
+  if (typeof TRACKER !== 'undefined') TRACKER.active = false;
   const sorted = [...TRACKER.players].sort((a,b) => b.score - a.score);
   const winner = sorted[0];
   const isTie = sorted.length > 1 && sorted[0].score === sorted[1].score;
@@ -2299,26 +2358,50 @@ const G40_PHASES = [
   { ico:'⚔', name:'Combate',   tips:['Pile in 3"', 'Resolva ataques (quem carregou primeiro)', 'Consolidate 3"'] },
 ];
 let G40_PHASE = 0;
+let G40_ACTIVE_PLAYER = 0;
+let G40_ROUND_DONE = [];
 function renderTurnGuide() {
   const wrap = document.getElementById('turn-guide');
   if (!wrap) return;
+  const players = (typeof TRACKER !== 'undefined' && TRACKER.players) ? TRACKER.players : [];
+  if (G40_ACTIVE_PLAYER >= players.length) G40_ACTIVE_PLAYER = 0;
+  const activeP = players[G40_ACTIVE_PLAYER] || null;
+  const round = (typeof TRACKER !== 'undefined') ? TRACKER.turn : 1;
   const steps = G40_PHASES.map((p, i) =>
     `<div class="tg-step ${i === G40_PHASE ? 'active' : (i < G40_PHASE ? 'done' : '')}" onclick="setTurnPhase(${i})"><span class="tg-ico">${p.ico}</span>${p.name}</div>`
   ).join('');
+  let playerTabs = '';
+  if (players.length > 1) {
+    playerTabs = `<div class="tg-players">${players.map((pl, i) => {
+      const done = G40_ROUND_DONE.includes(pl.playerId);
+      return `<button class="tg-player ${i === G40_ACTIVE_PLAYER ? 'active' : ''} ${done ? 'done' : ''}" onclick="setActivePlayer40(${i})">${done ? '✓ ' : ''}${pl.playerName}</button>`;
+    }).join('')}</div>`;
+  }
   const cur = G40_PHASES[G40_PHASE];
+  const allDone = players.length > 1 && players.every(pl => G40_ROUND_DONE.includes(pl.playerId));
   wrap.innerHTML = `
-    <div class="tg-head"><div class="tg-title">🧭 Guia do Turno</div><div style="font-size:10px;color:var(--muted);font-family:var(--fu)">Fase ${G40_PHASE + 1}/5</div></div>
+    <div class="tg-head"><div class="tg-title">🧭 Guia do Turno</div><div style="font-size:10px;color:var(--muted);font-family:var(--fu)">Round ${round}${activeP ? ' · vez de ' + activeP.playerName : ''}</div></div>
+    ${playerTabs}
     <div class="tg-steps">${steps}</div>
     <ul class="tg-reminders">${cur.tips.map(t => `<li>${t}</li>`).join('')}</ul>
     <div class="tg-nav">
-      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="setTurnPhase(${G40_PHASE - 1})" ${G40_PHASE === 0 ? 'disabled' : ''}>← Anterior</button>
-      <button class="btn btn-secondary btn-sm" style="flex:2" onclick="nextTurnPhase()">${G40_PHASE >= 4 ? '↺ Reiniciar fases (novo jogador)' : 'Próxima fase →'}</button>
-    </div>`;
+      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="setTurnPhase(${G40_PHASE - 1})" ${G40_PHASE === 0 ? 'disabled' : ''}>← Fase</button>
+      <button class="btn btn-secondary btn-sm" style="flex:2" onclick="nextTurnPhase()">${G40_PHASE >= 4 ? (players.length > 1 ? '✓ Terminar turno do jogador' : '↺ Reiniciar fases') : 'Próxima fase →'}</button>
+    </div>
+    ${allDone ? '<div style="font-size:11px;color:var(--hit);text-align:center;margin-top:8px">✓ Os dois já jogaram — toque em <strong>Finalizar Turno</strong> pra avançar o round</div>' : ''}`;
 }
+function setActivePlayer40(i) { G40_ACTIVE_PLAYER = i; G40_PHASE = 0; SFX.click(); renderTurnGuide(); }
 function setTurnPhase(i) { G40_PHASE = Math.max(0, Math.min(4, i)); SFX.click(); renderTurnGuide(); }
 function nextTurnPhase() {
-  if (G40_PHASE < 4) { G40_PHASE++; SFX.click(); renderTurnGuide(); }
-  else { G40_PHASE = 0; SFX.click(); renderTurnGuide(); if (typeof showToast === 'function') showToast('🔄 Fases reiniciadas para o próximo jogador'); }
+  const players = (typeof TRACKER !== 'undefined' && TRACKER.players) ? TRACKER.players : [];
+  if (G40_PHASE < 4) { G40_PHASE++; SFX.click(); renderTurnGuide(); return; }
+  if (players.length > 1) {
+    const activeP = players[G40_ACTIVE_PLAYER];
+    if (activeP && !G40_ROUND_DONE.includes(activeP.playerId)) G40_ROUND_DONE.push(activeP.playerId);
+    const nextIdx = players.findIndex(pl => !G40_ROUND_DONE.includes(pl.playerId));
+    if (nextIdx >= 0) { G40_ACTIVE_PLAYER = nextIdx; G40_PHASE = 0; SFX.click(); renderTurnGuide(); }
+    else { SFX.click(); renderTurnGuide(); if (typeof showToast === 'function') showToast('Round completo — toque em Finalizar Turno'); }
+  } else { G40_PHASE = 0; SFX.click(); renderTurnGuide(); if (typeof showToast === 'function') showToast('🔄 Fases reiniciadas'); }
 }
 
 function renderTracker() {
@@ -2522,6 +2605,8 @@ const NAV = {
   current() { return this.stack[this.stack.length - 1]; },
 };
 
+function showPixModal() { SFX.click(); const m = document.getElementById('pix-modal'); if (m) m.classList.add('open'); }
+
 // Confirmação in-app (o confirm() nativo é suprimido em PWA instalado)
 let _appConfirmCb = null;
 function showAppConfirm(msg, onYes, yesLabel) {
@@ -2545,7 +2630,7 @@ function confirmLeaveBattle(kind) {
   if (!active) { SFX.click(); NAV.back(); return; }
   showAppConfirm(
     '⚠ Voltar agora encerra a partida atual e o progresso será perdido. Tem certeza que quer sair?',
-    () => { NAV.back(); },
+    () => { clearBattleState(); NAV.back(); },
     '🚪 Sair'
   );
 }
@@ -2554,6 +2639,17 @@ function confirmLeaveBattle(kind) {
 // HOME
 // ══════════════════════════════════════════════
 function initHome() {
+  const _resumeEl = document.getElementById('home-resume');
+  if (_resumeEl) {
+    const _info = getResumeInfo();
+    if (_info) {
+      const _d = document.getElementById('home-resume-desc');
+      if (_d) _d.textContent = _info.type === '40k'
+        ? `Batalha 40K — round ${(_info.tracker && _info.tracker.turn) || '?'}. Continue de onde parou.`
+        : `Kill Team — turno ${(_info.kt && _info.kt.turn) || '?'}. Continue de onde parou.`;
+      _resumeEl.style.display = 'block';
+    } else { _resumeEl.style.display = 'none'; }
+  }
   const all = DB.getUnits();
   const factions = DB.getFactions();
   const hasUnits = all.length > 0;
@@ -4300,14 +4396,43 @@ function addLongPress(el, fn, delay=600) {
 const UNDO_STACK = [];
 const MAX_UNDO = 10;
 
+// ── LOG DE BATALHA ("o que aconteceu neste turno") ────
+let BATTLE_LOG = [];
+function logAction(text, turn) {
+  if (!text) return;
+  BATTLE_LOG.push({ turn: turn || 1, text });
+  if (BATTLE_LOG.length > 300) BATTLE_LOG.shift();
+}
+function showBattleLog() {
+  SFX.click();
+  const title = document.getElementById('rules-modal-title');
+  const body = document.getElementById('rules-modal-body');
+  if (title) title.textContent = '📜 Log da Batalha';
+  if (!BATTLE_LOG.length) {
+    if (body) body.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:24px 12px;line-height:1.6">Nenhuma ação registrada ainda.<br>Conforme você joga — dano, CP, ativações, objetivos — tudo aparece aqui, por turno.</div>';
+  } else {
+    const byTurn = {};
+    BATTLE_LOG.forEach(e => { (byTurn[e.turn] = byTurn[e.turn] || []).push(e); });
+    const turns = Object.keys(byTurn).map(Number).sort((a, b) => b - a);
+    if (body) body.innerHTML = turns.map(tn =>
+      `<div class="sec-label" style="margin-top:10px">Turno ${tn}</div>` +
+      byTurn[tn].slice().reverse().map(e => `<div style="font-size:12px;color:var(--text2);padding:5px 2px;border-bottom:1px solid var(--border);line-height:1.4">• ${e.text}</div>`).join('')
+    ).join('');
+  }
+  const modal = document.getElementById('rules-modal');
+  if (modal) modal.classList.add('open');
+}
+
 function pushUndo(description) {
   UNDO_STACK.push({ description, state: JSON.stringify(TRACKER) });
   if (UNDO_STACK.length > MAX_UNDO) UNDO_STACK.shift();
+  logAction(description, (typeof TRACKER !== 'undefined') ? TRACKER.turn : 1);
   updateUndoBtn();
 }
 
 function undoLastAction() {
   if (!UNDO_STACK.length) return;
+  BATTLE_LOG.pop();
   const entry = UNDO_STACK.pop();
   try {
     TRACKER = JSON.parse(entry.state);
@@ -5074,9 +5199,23 @@ function ktMCCalc(){
       '<div style="font-family:var(--ff);font-size:18px">'+(elim?d.op.displayName+' ELIMINADO!':(r.totalDmg>0?r.totalDmg+' DANO':'BLOQUEADO'))+'</div>'+
       '<div style="font-size:12px;color:var(--muted)">'+(r.totalDmg>0?(elim?r.totalDmg+' dano · '+d.op.curW+' PV':(d.op.curW-r.totalDmg)+' PV restantes em '+d.op.displayName):'Os saves anularam o dano')+'</div>'+
     '</div>'+
-    '<div style="font-size:11px;color:var(--text2);line-height:1.5">Passaram: '+r.hitsLanded+' normal + '+r.critsLanded+' crít'+(r.devastatingDmg?' · Devastating +'+r.devastatingDmg:'')+(r.log.length?'<br>'+r.log.map(l=>'• '+l).join('<br>'):'')+'</div>';
+    '<div style="font-size:11px;color:var(--text2);line-height:1.5">Passaram: '+r.hitsLanded+' normal + '+r.critsLanded+' crít'+(r.devastatingDmg?' · Devastating +'+r.devastatingDmg:'')+(r.log.length?'<br>'+r.log.map(l=>'• '+l).join('<br>'):'')+'</div>'+
+    (r.totalDmg>0 ? '<button class="btn btn-primary" style="margin-top:12px" onclick="ktMCApplyDamage('+(+document.getElementById('kt-mc-def').value)+','+r.totalDmg+')">✔ Aplicar '+r.totalDmg+' de dano em '+d.op.displayName+'</button>' : '');
   SFX.roll();
   if(elim){SFX.death();} else if(r.totalDmg>0){SFX.wound();}
+}
+
+function ktMCApplyDamage(defIdx, dmg) {
+  const d = ktMC.def[defIdx];
+  if (!d || dmg <= 0) return;
+  if (typeof ktPushUndo === 'function') ktPushUndo(`Dano (${dmg}) aplicado em ${d.op.displayName} pela calculadora`);
+  d.op.curW = Math.max(0, d.op.curW - dmg);
+  if (d.op.curW === 0) d.op.dead = true;
+  SFX.wound(); if (d.op.dead) SFX.death();
+  document.getElementById('kt-mc-modal').classList.remove('open');
+  if (typeof renderKTActivation === 'function') renderKTActivation();
+  if (typeof renderKTStatus === 'function') renderKTStatus();
+  if (typeof showToast === 'function') showToast(`✔ ${dmg} de dano em ${d.op.displayName}${d.op.dead ? ' — ELIMINADO' : ' (' + d.op.curW + ' PV)'}`);
 }
 
 function ktToggleCover() {
@@ -5786,6 +5925,21 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 <button id="global-settings-fab" onclick="openSettings();SFX.click()" title="Configurações"
   style="position:fixed;bottom:16px;left:14px;z-index:150;width:42px;height:42px;border-radius:50%;background:rgba(20,20,26,.85);border:1px solid var(--border2);color:var(--gold);font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 4px 14px rgba(0,0,0,.4)">⚙</button>
 
+<!-- ═══ APOIAR / PIX ═══ -->
+<div class="modal-overlay" id="pix-modal" style="z-index:400">
+  <div style="background:var(--card);border:1px solid var(--gold2);border-radius:20px 20px 0 0;border-bottom:none;width:100%;max-width:540px;padding:22px 20px 26px;text-align:center">
+    <div style="font-family:var(--ff);font-size:18px;letter-spacing:1px;color:var(--gold);margin-bottom:6px">💜 AJUDE O CRIADOR</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px">Criado por <strong style="color:var(--text)">@coelhokau</strong>. Se este app te ajudou, considere apoiar 🙏</div>
+    <div onclick="copyPix()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:var(--bg);border:1px dashed var(--border);border-radius:var(--rsm);cursor:pointer;margin-bottom:6px">
+      <span style="font-size:11px;color:var(--muted)">Pix:</span>
+      <span style="font-size:13px;color:var(--text);font-weight:600">kaue_coelho@hotmail.com</span>
+      <span id="pix-copy-ic" style="font-size:14px">📋</span>
+    </div>
+    <div id="pix-copied" style="font-size:11px;color:var(--hit);height:14px;margin-bottom:12px;letter-spacing:.5px"></div>
+    <button class="btn btn-secondary" onclick="document.getElementById('pix-modal').classList.remove('open')">Fechar</button>
+  </div>
+</div>
+
 <!-- ═══ CONFIRMAÇÃO IN-APP ═══ -->
 <div class="modal-overlay" id="app-confirm-modal" style="z-index:400">
   <div style="background:var(--card);border:1px solid var(--border2);border-radius:20px 20px 0 0;border-bottom:none;width:100%;max-width:540px;padding:22px 20px 26px">
@@ -5969,6 +6123,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
     <button class="btn btn-secondary btn-sm" id="kt-mc-open-btn" style="display:none;margin-top:8px" onclick="ktOpenManualCombat()">🎲 Resolver combate com meus dados</button>
     <div style="display:flex;gap:8px;margin-top:8px">
       <button class="btn btn-gold" style="flex:3" onclick="ktEndTurn();SFX.click()" id="kt-end-turn-btn">⏭ FINALIZAR TURNO</button>
+      <button class="btn btn-secondary" style="flex:1;font-size:15px;padding:12px" onclick="showBattleLog()" title="Log da batalha">📜</button>
       <button id="kt-undo-btn" class="btn btn-secondary" style="flex:1;font-size:16px;padding:12px" onclick="ktUndoLastAction()" disabled title="Nada para desfazer">↩</button>
     </div>
   </div>
@@ -10617,6 +10772,8 @@ let ktActiveCombat = { atkTeamId:null, atkOpId:null, weapon:null, profile:null, 
 let ktCombatHist = [];
 
 function initKTBattle() {
+  clearBattleState();
+  BATTLE_LOG = [];
   KT_TP_PHASE = 0;
   ktUpdateTurnDisplay();
   ktCombatHist = [];
@@ -10905,11 +11062,13 @@ const KT_MAX_UNDO = 10;
 function ktPushUndo(description) {
   KT_UNDO_STACK.push({ description, state: JSON.stringify(KT_SESSION) });
   if (KT_UNDO_STACK.length > KT_MAX_UNDO) KT_UNDO_STACK.shift();
+  logAction(description, (typeof KT_SESSION !== 'undefined') ? KT_SESSION.turn : 1);
   ktUpdateUndoBtn();
 }
 
 function ktUndoLastAction() {
   if (!KT_UNDO_STACK.length) return;
+  BATTLE_LOG.pop();
   const entry = KT_UNDO_STACK.pop();
   try {
     const restored = JSON.parse(entry.state);
