@@ -1090,7 +1090,7 @@ const VFX = {
       </div>
     </div>
 
-    <div class="home-footer">Criado por <strong>@coelhokau</strong> · <span onclick="showPixModal()" style="color:var(--gold);cursor:pointer">💜 Apoiar</span></div>
+    <div class="home-footer">Criado por <strong>@coelhokau</strong><br><span onclick="showPixModal()" style="color:var(--gold);cursor:pointer">💜 Apoiar</span> &nbsp;·&nbsp; <span onclick="sendFeedback()" style="color:var(--gold);cursor:pointer">💬 Feedback</span></div>
 
   </div>
 </div>
@@ -2516,6 +2516,38 @@ function activatePVTab(playerId) {
   if (panel) panel.style.display = 'block';
 }
 
+// ── CONDIÇÕES DE UNIDADE (40K) ────────────────────────
+const W40K_COND_PRESETS = ['Battle-shock', 'Em reserva', 'Líder anexado', 'Marcada', 'Efeito temporário'];
+function w40kCondKey(playerId, unitId) { return playerId + '::' + unitId; }
+function w40kGetConds(playerId, unitId) {
+  if (!TRACKER.conditions) TRACKER.conditions = {};
+  return TRACKER.conditions[w40kCondKey(playerId, unitId)] || [];
+}
+function showW40KCondPicker(playerId, unitId) {
+  SFX.click();
+  const u = DB.getUnit(unitId);
+  const active = w40kGetConds(playerId, unitId);
+  document.getElementById('rules-modal-title').textContent = `🏷 Condições — ${(u && u.name) || 'Unidade'}`;
+  const rows = W40K_COND_PRESETS.map(c => {
+    const on = active.includes(c);
+    return `<div class="kt-ploy-row ${on ? 'used' : ''}" onclick="w40kToggleCond('${playerId}','${unitId}','${c.replace(/'/g,"\\'")}')"><div class="kt-ploy-check">${on ? '✓' : ''}</div><div class="kt-ploy-info"><div class="kt-ploy-name">${c}</div></div></div>`;
+  }).join('');
+  document.getElementById('rules-modal-body').innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Marque as condições ativas nesta unidade. "Abaixo da força" é detectado automaticamente (metade ou menos das miniaturas vivas).</div>${rows}`;
+  document.getElementById('rules-modal').classList.add('open');
+}
+function w40kToggleCond(playerId, unitId, cond) {
+  if (!TRACKER.conditions) TRACKER.conditions = {};
+  const key = w40kCondKey(playerId, unitId);
+  const arr = TRACKER.conditions[key] || (TRACKER.conditions[key] = []);
+  const i = arr.indexOf(cond);
+  const u = DB.getUnit(unitId);
+  pushUndo(`Condição "${cond}" ${i >= 0 ? 'removida' : 'adicionada'} (${(u && u.name) || 'unidade'})`);
+  if (i >= 0) arr.splice(i, 1); else arr.push(cond);
+  SFX.click();
+  showW40KCondPicker(playerId, unitId);
+  renderPlayerPV(playerId);
+}
+
 function renderPlayerPV(playerId) {
   const tp = getTrackerPlayer(playerId);
   if (!tp) return;
@@ -2548,6 +2580,11 @@ function renderPlayerPV(playerId) {
           <div class="pv-unit-stat">${alive}/${minis.length} vivas · ${totalCurW}/${totalMaxW} PV</div>
         </div>
         <button class="info-btn" onclick="showUnitDetail('${unitId}')" style="flex-shrink:0">ℹ</button>
+      </div>
+      <div class="kt-token-row">
+        ${(alive>0 && alive*2<=minis.length) ? '<span class="kt-token-chip injured">⚠ Abaixo da força</span>' : ''}
+        ${w40kGetConds(playerId, unitId).map(c=>`<span class="kt-token-chip" onclick="showW40KCondPicker('${playerId}','${unitId}')">${c}</span>`).join('')}
+        <span class="kt-token-chip add" onclick="showW40KCondPicker('${playerId}','${unitId}')">＋ condição</span>
       </div>
       <div class="pv-minis-wrap" id="pvm-${playerId}-${unitId}"></div>`;
     panel.appendChild(section);
@@ -4150,6 +4187,13 @@ function applySettings() {
 }
 
 // ── AJUDE O CRIADOR — copiar chave Pix ──────────────
+const FEEDBACK_URL = 'mailto:kaue_coelho@hotmail.com?subject=' + encodeURIComponent('Feedback — Auspex') + '&body=' + encodeURIComponent('Conta o que achou (bugs, ideias, o que melhorar):\n\n');
+function sendFeedback() {
+  SFX.click();
+  if (FEEDBACK_URL.startsWith('mailto:')) window.location.href = FEEDBACK_URL;
+  else window.open(FEEDBACK_URL, '_blank');
+}
+
 function copyPix() {
   var key = 'kaue_coelho@hotmail.com';
   var done = function () {
@@ -4607,6 +4651,12 @@ function splitCoreRule(cr) {
   return out;
 }
 
+// Data de atualização das fichas de Kill Team (troque quando reimportar dos PDFs oficiais)
+const KT_RULES_UPDATED = 'Jan/2026';
+function ktRulesNote() {
+  return `<div style="font-size:10.5px;color:var(--muted);text-align:center;line-height:1.5;margin-top:14px;padding:10px;border-top:1px solid var(--border)">📅 Fichas atualizadas em <strong style="color:var(--text2)">${KT_RULES_UPDATED}</strong>.<br>Referência não-oficial — confira os documentos oficiais (ou o app da GW) para torneios.</div>`;
+}
+
 function showKTTeamRulesModal(teamId) {
   const team = KT_DB.getTeam(teamId);
   if (!team) return;
@@ -4667,7 +4717,7 @@ function showKTTeamRulesModal(teamId) {
     });
   }
 
-  body.innerHTML = html;
+  body.innerHTML = html + ktRulesNote();
   document.getElementById('rules-modal').classList.add('open');
 }
 
@@ -11242,7 +11292,7 @@ function renderKTLibTeams() {
         <div class="kt-lib-banner-title" style="color:${t.color}">${t.emoji} ${t.name}</div>
       </div>
       <div class="kt-lib-team-meta"><span>${t.faction}</span><span>${t.operatives.length} operativos · ${t.limit} no time</span></div>
-    </div>`).join('');
+    </div>`).join('') + ktRulesNote();
 }
 function renderKTLibTeam(teamId) {
   const t = KT_DB.getTeam(teamId); if (!t) return;
@@ -11377,8 +11427,8 @@ function ktManualDmg(teamId, instanceId, delta) {
   if (!op) return;
   ktPushUndo(`PV manual em ${op.displayName}`);
   op.curW = Math.max(0, Math.min(op.W, op.curW + delta));
-  if (op.curW === 0 && delta < 0) { op.dead = true; SFX.death(); VFX.deathEffect(); }
-  else if (delta < 0) SFX.wound();
+  if (op.curW === 0) { if (delta < 0 && !op.dead) { SFX.death(); VFX.deathEffect(); } op.dead = true; }
+  else { if (op.dead) op.dead = false; if (delta < 0) SFX.wound(); }
   renderKTActivation();
   renderKTStatus();
   // Only refresh the detail modal if it's already open (don't force-open it)
@@ -11898,7 +11948,10 @@ function renderKTStatus() {
           <button class="mini-btn dmg" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',-1)">−1 PV</button>
           <button class="mini-btn heal" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',1)">+1 PV</button>
           <button class="info-btn" onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')" style="margin-left:4px">ℹ</button>
-        </div>` : ''}`;
+        </div>` : `
+        <div class="mini-btns" style="margin-top:6px">
+          <button class="mini-btn heal" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',1)">↺ Reviver (+1 PV)</button>
+        </div>`}`;
       section.appendChild(div);
     });
     container.appendChild(section);
