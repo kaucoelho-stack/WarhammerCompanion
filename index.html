@@ -1182,8 +1182,10 @@ const VFX = {
       <div class="turn-lbl" id="turn-label">Turno 1 de 5</div>
     </div>
     <div class="turn-guide" id="turn-guide"></div>
+    <div id="mission-bar"></div>
     <div class="sec-label">Placar</div>
     <div class="score-grid" id="score-grid"></div>
+    <button class="btn btn-secondary btn-sm" style="width:100%;margin-bottom:14px" onclick="showVPModal40()">🎯 Missão / VP</button>
     <div class="sec-label">Command Points</div>
     <div class="cp-strip" id="cp-strip"></div>
     <div class="sec-label">Objetivos <span style="color:var(--muted);font-size:10px;font-family:var(--fu)">— toque para atribuir</span></div>
@@ -2163,7 +2165,7 @@ function initTracker() {
   clearBattleState();
   BATTLE_LOG = [];
   TRACKER = {
-    active: true, turn: 1, maxTurns: W40K_TURNS, turnLog: [],
+    active: true, turn: 1, maxTurns: W40K_TURNS, mission: null, turnLog: [],
     objectives: [0,1,2,3,4].map(i => ({ id:i, label:`Obj ${i===2?'Centro':i+1}`, ownerId:null })),
     players: SESSION.players.map(p => {
       const faction = DB.getFaction(p.factionId);
@@ -2177,7 +2179,7 @@ function initTracker() {
         }
       });
       return { playerId: p.id, playerName: p.name, factionId: p.factionId,
-               color: faction?.color || '#888', score: 0, cp: p.cp || parseInt(SETTINGS.cp)||3,
+               color: faction?.color || '#888', score: 0, primaryVP: 0, secondaryVP: 0, cp: p.cp || parseInt(SETTINGS.cp)||3,
                minis, // flat list of all minis for this player
                units: SESSION.getPlayerUnits(p.id) };
     }),
@@ -2308,8 +2310,6 @@ function endTurn() {
   const maxCount = Math.max(...Object.values(counts));
   const leaders = Object.keys(counts).filter(id => counts[id] === maxCount && maxCount > 0);
   TRACKER.players.forEach(p => {
-    p.score += counts[p.playerId];
-    if (leaders.length === 1 && leaders[0] === p.playerId) p.score += 1;
     p.cp = Math.min(12, p.cp + 1);
   });
   TRACKER.turnLog.push({ turn: TRACKER.turn, scores: TRACKER.players.map(p => ({ id:p.playerId, name:p.playerName, score:p.score, obj:counts[p.playerId] })) });
@@ -2406,9 +2406,141 @@ function nextTurnPhase() {
 
 function renderTracker() {
   renderScoreboard();
+  renderMissionBar();
   renderTurnGuide();
   renderObjectives();
   renderPVTab();
+}
+
+// ── MISSÕES / VP (Bloco 3) ────────────────────────────
+function _vpQuick(fn, id, cat) {
+  return [1, 2, 3].map(n => `<button class="btn btn-secondary btn-sm" style="flex:1" onclick="${fn}('${id}',${n}${cat ? `,'${cat}'` : ''})">+${n}</button>`).join('');
+}
+// ---- 40K ----
+function showVPModal40() {
+  SFX.click();
+  document.getElementById('rules-modal-title').textContent = '🎯 Missão & VP';
+  document.getElementById('rules-modal-body').innerHTML =
+    `<div style="font-size:11px;color:var(--muted);margin-bottom:12px">Primário e Secundário contados separadamente — cada ponto entra no 📜 log. Os objetivos no tracker mostram quem controla o quê (lembrete), sem pontuar sozinhos.</div>` +
+    TRACKER.players.map(p => {
+      const pr = p.primaryVP || 0, se = p.secondaryVP || 0;
+      return `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-family:var(--fu);font-size:14px;color:${p.color}">${p.playerName}</div>
+          <div style="font-family:var(--ff);font-size:22px;color:var(--gold)">${pr + se} <span style="font-size:12px;color:var(--muted)">VP</span></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">PRIMÁRIO — ${pr}</div>
+        <div style="display:flex;gap:6px;margin-bottom:9px">${_vpQuick('vpAdd40', p.playerId, 'Primário')}<button class="btn btn-secondary btn-sm" style="flex:1" onclick="vpAdd40('${p.playerId}',-1,'Primário')">−1</button></div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">SECUNDÁRIA — ${se}</div>
+        <div style="display:flex;gap:6px">${_vpQuick('vpAdd40', p.playerId, 'Secundária')}<button class="btn btn-secondary btn-sm" style="flex:1" onclick="vpAdd40('${p.playerId}',-1,'Secundária')">−1</button></div>
+      </div>`;
+    }).join('');
+  document.getElementById('rules-modal').classList.add('open');
+}
+function vpAdd40(playerId, pts, cat) {
+  const p = getTrackerPlayer(playerId); if (!p) return;
+  if (p.primaryVP == null) p.primaryVP = 0;
+  if (p.secondaryVP == null) p.secondaryVP = 0;
+  pushUndo(`${p.playerName}: ${pts > 0 ? '+' : ''}${pts} VP · ${cat}`);
+  if (cat === 'Primário') p.primaryVP = Math.max(0, p.primaryVP + pts);
+  else p.secondaryVP = Math.max(0, p.secondaryVP + pts);
+  p.score = (p.primaryVP || 0) + (p.secondaryVP || 0);
+  SFX.cp(); saveTracker(); renderScoreboard(); showVPModal40();
+}
+// ---- Kill Team ----
+function showVPModalKT() {
+  SFX.click();
+  document.getElementById('rules-modal-title').textContent = `🎯 Missão & VP — Turning Point ${KT_SESSION.turn}`;
+  document.getElementById('rules-modal-body').innerHTML =
+    `<div style="font-size:11px;color:var(--muted);margin-bottom:12px">VP por Turning Point + Tac Ops por jogador. Cada mudança entra no 📜 log.</div>` +
+    KT_SESSION.teams.map(t => {
+      if (t.vp == null) t.vp = 0;
+      if (!t.tacOps) t.tacOps = [];
+      const tac = t.tacOps.map((op, i) => `<div class="kt-ploy-row ${op.done ? 'used' : ''}" onclick="ktToggleTacOp('${t.playerId}',${i})"><div class="kt-ploy-check">${op.done ? '✓' : ''}</div><div class="kt-ploy-info"><div class="kt-ploy-name">${op.name}</div></div></div>`).join('');
+      return `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-family:var(--fu);font-size:14px;color:var(--gold)">${t.playerName}</div>
+          <div style="font-family:var(--ff);font-size:26px;color:var(--gold)">${t.vp} VP</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:12px">${_vpQuick('vpAddKT', t.playerId, '')}<button class="btn btn-secondary btn-sm" style="flex:1" onclick="vpAddKT('${t.playerId}',-1)">−1</button></div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">TAC OPS (máx 3)</div>
+        ${tac || '<div style="font-size:11px;color:var(--muted);padding:2px 0 6px">Nenhuma ainda.</div>'}
+        ${t.tacOps.length < 3 ? `<div style="display:flex;gap:6px;margin-top:6px"><input class="form-input" id="tacop-in-${t.playerId}" placeholder="Nova Tac Op..." style="flex:1;font-size:12px"><button class="btn btn-secondary btn-sm" onclick="ktAddTacOp('${t.playerId}')">＋</button></div>` : ''}
+      </div>`;
+    }).join('');
+  document.getElementById('rules-modal').classList.add('open');
+}
+function vpAddKT(playerId, pts) {
+  const t = KT_SESSION.teams.find(x => x.playerId === playerId); if (!t) return;
+  if (t.vp == null) t.vp = 0;
+  ktPushUndo(`${t.playerName}: ${pts > 0 ? '+' : ''}${pts} VP (TP${KT_SESSION.turn})`);
+  t.vp = Math.max(0, t.vp + pts);
+  SFX.cp(); showVPModalKT();
+}
+function ktAddTacOp(playerId) {
+  const t = KT_SESSION.teams.find(x => x.playerId === playerId); if (!t) return;
+  if (!t.tacOps) t.tacOps = [];
+  const inp = document.getElementById('tacop-in-' + playerId);
+  const name = (inp && inp.value.trim()) || '';
+  if (!name) { if (typeof showToast === 'function') showToast('Digite o nome da Tac Op'); return; }
+  if (t.tacOps.length >= 3) return;
+  ktPushUndo(`Tac Op "${name}" adicionada (${t.playerName})`);
+  t.tacOps.push({ name, done: false });
+  SFX.click(); showVPModalKT();
+}
+function ktToggleTacOp(playerId, i) {
+  const t = KT_SESSION.teams.find(x => x.playerId === playerId); if (!t || !t.tacOps || !t.tacOps[i]) return;
+  ktPushUndo(`Tac Op "${t.tacOps[i].name}" ${t.tacOps[i].done ? 'reaberta' : 'completada'} (${t.playerName})`);
+  t.tacOps[i].done = !t.tacOps[i].done;
+  SFX.click(); showVPModalKT();
+}
+
+// ── SETUP DE MISSÃO (40K) ─────────────────────────────
+function _escM(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function renderMissionBar() {
+  const el = document.getElementById('mission-bar'); if (!el) return;
+  const m = TRACKER.mission;
+  if (m && (m.deployment || m.primary || m.rule)) {
+    el.innerHTML = `<div onclick="showMissionSetup()" style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;cursor:pointer;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-family:var(--fu);font-size:11px;letter-spacing:1.5px;color:var(--gold)">📋 MISSÃO</div><div style="font-size:10px;color:var(--muted)">editar ✎</div></div>
+      <div style="font-size:11.5px;color:var(--text2);line-height:1.6;margin-top:5px">
+        ${m.deployment?`<div><span style="color:var(--muted)">Deployment:</span> ${_escM(m.deployment)}</div>`:''}
+        ${m.primary?`<div><span style="color:var(--muted)">Primária:</span> ${_escM(m.primary)}</div>`:''}
+        ${m.rule?`<div><span style="color:var(--muted)">Regra:</span> ${_escM(m.rule)}</div>`:''}
+      </div></div>`;
+  } else {
+    el.innerHTML = `<button class="btn btn-secondary btn-sm" style="width:100%;margin-bottom:14px" onclick="showMissionSetup()">📋 Definir missão (deployment, primária, regra)</button>`;
+  }
+}
+function showMissionSetup() {
+  SFX.click();
+  const m = TRACKER.mission || {};
+  const deps = ['Crucible of Battle','Dawn of War','Hammer and Anvil','Search and Destroy','Sweeping Engagement','Tipping Point'];
+  document.getElementById('rules-modal-title').textContent = '📋 Setup da Missão';
+  document.getElementById('rules-modal-body').innerHTML = `
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Registre o que vocês sortearam na mesa — só anotação; as regras ficam nas cartas oficiais.</div>
+    <div class="sec-label">Deployment</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${deps.map(d=>`<button class="kt-lib-chip" onclick="document.getElementById('mission-dep').value='${d}'">${d}</button>`).join('')}</div>
+    <input class="form-input" id="mission-dep" placeholder="Deployment..." value="${_escM(m.deployment)}" style="width:100%;margin-bottom:12px">
+    <div class="sec-label">Missão Primária</div>
+    <input class="form-input" id="mission-primary" placeholder="Ex.: Take and Hold, Purge the Foe..." value="${_escM(m.primary)}" style="width:100%;margin-bottom:12px">
+    <div class="sec-label">Regra da Missão</div>
+    <input class="form-input" id="mission-rule" placeholder="Ex.: Nowhere to Hide..." value="${_escM(m.rule)}" style="width:100%;margin-bottom:14px">
+    <button class="btn btn-primary" onclick="saveMissionSetup()">Salvar</button>`;
+  document.getElementById('rules-modal').classList.add('open');
+}
+function saveMissionSetup() {
+  TRACKER.mission = {
+    deployment: (document.getElementById('mission-dep').value || '').trim(),
+    primary: (document.getElementById('mission-primary').value || '').trim(),
+    rule: (document.getElementById('mission-rule').value || '').trim()
+  };
+  saveTracker();
+  document.getElementById('rules-modal').classList.remove('open');
+  renderMissionBar();
+  SFX.click();
 }
 
 function renderScoreboard() {
@@ -2430,6 +2562,7 @@ function renderScoreboard() {
       <div class="spc-name">${p.playerName}</div>
       <div class="spc-faction">${DB.getFaction(p.factionId)?.name||''}</div>
       <div class="spc-score">${p.score}</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--fu);letter-spacing:.5px;margin-top:2px">P ${p.primaryVP||0} · S ${p.secondaryVP||0}</div>
       <div class="spc-meta">
         <span class="cp-inline">⚡${p.cp}CP</span>
         ${deadCount>0?`<span class="dead-inline">💀${deadCount}</span>`:''}
@@ -6170,6 +6303,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
     <div class="divider"></div>
     <div class="sec-label">Todos os operativos:</div>
     <div id="kt-all-teams-overview"></div>
+    <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:8px" onclick="showVPModalKT()">🎯 Missão / VP</button>
     <button class="btn btn-secondary btn-sm" id="kt-mc-open-btn" style="display:none;margin-top:8px" onclick="ktOpenManualCombat()">🎲 Resolver combate com meus dados</button>
     <div style="display:flex;gap:8px;margin-top:8px">
       <button class="btn btn-gold" style="flex:3" onclick="ktEndTurn();SFX.click()" id="kt-end-turn-btn">⏭ FINALIZAR TURNO</button>
