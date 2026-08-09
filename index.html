@@ -142,6 +142,10 @@ body::before{content:'';position:fixed;inset:0;
 .upc-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s}
 .unit-pick-card.selected .upc-check{background:var(--fc);border-color:var(--fc);color:#000;font-weight:900}
 .upc-qty{display:flex;align-items:center;gap:5px}
+.upc-squads{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.squad-chip{font-size:10px;font-family:var(--fu);letter-spacing:.3px;background:var(--card2);border:1px solid var(--border2);color:var(--text2);border-radius:20px;padding:3px 9px}
+.squad-chip b{color:var(--dmg);cursor:pointer;margin-left:4px;font-size:11px}
+.squad-add{font-size:10px;font-family:var(--fu);letter-spacing:.3px;background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.3);color:var(--gold);border-radius:20px;padding:3px 10px;cursor:pointer}
 .qty-mini-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border2);background:var(--card2);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none}
 .qty-mini-btn:active{transform:scale(.88)}
 .qty-mini-val{font-family:var(--ff);font-size:19px;color:var(--gold);min-width:18px;text-align:center}
@@ -2004,6 +2008,13 @@ const DB = {
 // ══════════════════════════════════════════════════════
 // GAME SESSION
 // ══════════════════════════════════════════════════════
+// ── ESQUADRÕES (múltiplos do mesmo datasheet) ─────────
+// p.units[unitId] pode ser um número (formato antigo = 1 esquadrão)
+// ou um array de tamanhos (novo): [5, 10] = dois esquadrões.
+function squadSizes(v) { return Array.isArray(v) ? v.slice() : (v ? [v] : []); }
+function squadTotal(v) { return squadSizes(v).reduce((s, n) => s + n, 0); }
+function squadLabel(i, total) { return total > 1 ? ' ' + String.fromCharCode(65 + i) : ''; }
+
 const SESSION = {
   players: [],
   init(players) { this.players = players.map((p, i) => ({ ...p, id: `p${i}` })); },
@@ -2011,9 +2022,9 @@ const SESSION = {
   getPlayerUnits(playerId) {
     const p = this.getPlayer(playerId);
     if (!p) return [];
-    return Object.entries(p.units).map(([unitId, qty]) => {
+    return Object.entries(p.units).map(([unitId, v]) => {
       const u = DB.getUnit(unitId);
-      return u ? { ...u, qty } : null;
+      return u ? { ...u, qty: squadTotal(v), squads: squadSizes(v) } : null;
     }).filter(Boolean);
   },
 };
@@ -2170,13 +2181,19 @@ function initTracker() {
     players: SESSION.players.map(p => {
       const faction = DB.getFaction(p.factionId);
       const minis = [];
-      Object.entries(p.units).forEach(([unitId, qty]) => {
+      Object.entries(p.units).forEach(([unitId, v]) => {
         const u = DB.getUnit(unitId);
         if (!u) return;
-        for (let i = 0; i < qty; i++) {
-          minis.push({ id:`${unitId}-${i}`, unitId, name: qty>1 ? `${u.name} ${i+1}` : u.name,
-            maxW: u.W, curW: u.W, dead: false, emoji: u.emoji||'⚔', imageData: u.imageData||null });
-        }
+        const sizes = squadSizes(v);
+        sizes.forEach((size, sIdx) => {
+          const squadId = `${unitId}#${sIdx}`;
+          const squadName = u.name + squadLabel(sIdx, sizes.length);
+          for (let i = 0; i < size; i++) {
+            minis.push({ id:`${squadId}-${i}`, unitId, squadId, squadName,
+              name: size>1 ? `${squadName} ${i+1}` : squadName,
+              maxW: u.W, curW: u.W, dead: false, emoji: u.emoji||'⚔', imageData: u.imageData||null });
+          }
+        });
       });
       return { playerId: p.id, playerName: p.name, factionId: p.factionId,
                color: faction?.color || '#888', score: 0, primaryVP: 0, secondaryVP: 0, cp: p.cp || parseInt(SETTINGS.cp)||3,
@@ -2658,7 +2675,7 @@ function w40kGetConds(playerId, unitId) {
 }
 function showW40KCondPicker(playerId, unitId) {
   SFX.click();
-  const u = DB.getUnit(unitId);
+  const u = DB.getUnit(String(unitId).split('#')[0]);
   const active = w40kGetConds(playerId, unitId);
   document.getElementById('rules-modal-title').textContent = `🏷 Condições — ${(u && u.name) || 'Unidade'}`;
   const rows = W40K_COND_PRESETS.map(c => {
@@ -2669,11 +2686,12 @@ function showW40KCondPicker(playerId, unitId) {
   document.getElementById('rules-modal').classList.add('open');
 }
 function w40kToggleCond(playerId, unitId, cond) {
+  const _baseId = String(unitId).split('#')[0];
   if (!TRACKER.conditions) TRACKER.conditions = {};
   const key = w40kCondKey(playerId, unitId);
   const arr = TRACKER.conditions[key] || (TRACKER.conditions[key] = []);
   const i = arr.indexOf(cond);
-  const u = DB.getUnit(unitId);
+  const u = DB.getUnit(_baseId);
   pushUndo(`Condição "${cond}" ${i >= 0 ? 'removida' : 'adicionada'} (${(u && u.name) || 'unidade'})`);
   if (i >= 0) arr.splice(i, 1); else arr.push(cond);
   SFX.click();
@@ -2694,9 +2712,11 @@ function renderPlayerPV(playerId) {
   }
   // Group minis by unitId
   const groups = {};
-  tp.minis.forEach(m => { if (!groups[m.unitId]) groups[m.unitId] = []; groups[m.unitId].push(m); });
+  tp.minis.forEach(m => { const k = m.squadId || m.unitId; if (!groups[k]) groups[k] = []; groups[k].push(m); });
   panel.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="rules-btn" onclick="showFactionRulesModal('${tp.factionId}')" title="Ver regras da facção">ℹ️</button></div>`;
-  Object.entries(groups).forEach(([unitId, minis]) => {
+  Object.entries(groups).forEach(([groupKey, minis]) => {
+    const unitId = minis[0].unitId || groupKey;
+    const squadTitle = minis[0].squadName || null;
     const u = DB.getUnit(unitId);
     const alive = minis.filter(m=>!m.dead).length;
     const totalCurW = minis.reduce((s,m)=>s+m.curW,0);
@@ -2709,19 +2729,19 @@ function renderPlayerPV(playerId) {
       <div class="pv-unit-hdr">
         <div class="pv-unit-img">${imgHtml}</div>
         <div class="pv-unit-info">
-          <div class="pv-unit-name">${u?.name||'?'}</div>
-          <div class="pv-unit-stat">${alive}/${minis.length} vivas · ${totalCurW}/${totalMaxW} PV</div>
+          <div class="pv-unit-name">${squadTitle || u?.name || '?'}</div>
+          <div class="pv-unit-stat">Esquadrão de ${minis.length} · ${alive}/${minis.length} vivas · ${totalCurW}/${totalMaxW} PV</div>
         </div>
         <button class="info-btn" onclick="showUnitDetail('${unitId}')" style="flex-shrink:0">ℹ</button>
       </div>
       <div class="kt-token-row">
         ${(alive>0 && alive*2<=minis.length) ? '<span class="kt-token-chip injured">⚠ Abaixo da força</span>' : ''}
-        ${w40kGetConds(playerId, unitId).map(c=>`<span class="kt-token-chip" onclick="showW40KCondPicker('${playerId}','${unitId}')">${c}</span>`).join('')}
-        <span class="kt-token-chip add" onclick="showW40KCondPicker('${playerId}','${unitId}')">＋ condição</span>
+        ${w40kGetConds(playerId, groupKey).map(c=>`<span class="kt-token-chip" onclick="showW40KCondPicker('${playerId}','${groupKey}')">${c}</span>`).join('')}
+        <span class="kt-token-chip add" onclick="showW40KCondPicker('${playerId}','${groupKey}')">＋ condição</span>
       </div>
-      <div class="pv-minis-wrap" id="pvm-${playerId}-${unitId}"></div>`;
+      <div class="pv-minis-wrap" id="pvm-${playerId}-${groupKey}"></div>`;
     panel.appendChild(section);
-    const wrap = document.getElementById(`pvm-${playerId}-${unitId}`);
+    const wrap = document.getElementById(`pvm-${playerId}-${groupKey}`);
     minis.forEach(mini => {
       const pct = mini.maxW > 0 ? mini.curW / mini.maxW : 0;
       const col = pct > .6 ? 'var(--hit)' : pct > .3 ? 'var(--wound)' : 'var(--dmg)';
@@ -2992,7 +3012,8 @@ function renderUnitSelectForPlayer(idx) {
   }
 
   units.forEach(u => {
-    const qty = p.units[u.id] || 0;
+    const qty = squadTotal(p.units[u.id]);
+    const _sizes = squadSizes(p.units[u.id]);
     const card = document.createElement('div');
     card.className = 'unit-pick-card' + (qty>0?' selected':'');
     card.id = `upick-${u.id}`;
@@ -3022,8 +3043,12 @@ function renderUnitSelectForPlayer(idx) {
           <button class="qty-mini-btn" onclick="changeUnitPick(${idx},'${u.id}',5,event)" style="font-size:10px;font-family:var(--fu);font-weight:700;color:var(--gold)">+5</button>
           <button class="qty-mini-btn" onclick="setUnitPickMax(${idx},'${u.id}',${u.max},event)" style="font-size:10px;font-family:var(--fu);font-weight:700;color:var(--tyranid2)">MAX</button>
         </div>
-      </div>`;
-    card.addEventListener('click', () => toggleUnitPick(idx, u.id, u.max));
+      </div>
+      ${qty>0 ? `<div class="upc-squads">
+        ${_sizes.length>1 ? _sizes.map((sz,si)=>`<span class="squad-chip">${u.name}${String.fromCharCode(65+si)} · ${sz} modelos <b onclick="removeSquad(${idx},'${u.id}',${si},event)">✕</b></span>`).join('') : ''}
+        <button class="squad-add" onclick="addSquad(${idx},'${u.id}',event)">＋ outro esquadrão</button>
+      </div>` : ''}`;
+    card.addEventListener('click', (ev) => { if (ev.target.closest('.upc-qty,.upc-squads')) return; toggleUnitPick(idx, u.id, u.max); });
     list.appendChild(card);
   });
 
@@ -3031,13 +3056,32 @@ function renderUnitSelectForPlayer(idx) {
   const isLast = idx === pendingPlayers.length - 1;
   const btn = document.getElementById('btn-unit-next');
   btn.textContent = isLast ? '⚔ INICIAR BATALHA' : `PRÓXIMO JOGADOR →`;
-  btn.disabled = Object.keys(p.units).length === 0;
+  btn.disabled = Object.keys(p.units).filter(k => squadTotal(p.units[k]) > 0).length === 0;
 }
 
 function toggleUnitPick(pidx, unitId, max) {
   SFX.click();
   const p = pendingPlayers[pidx];
-  if (p.units[unitId]) delete p.units[unitId]; else p.units[unitId] = 1;
+  if (p.units[unitId]) delete p.units[unitId]; else p.units[unitId] = [1];
+  renderUnitSelectForPlayer(pidx);
+}
+
+function addSquad(pidx, unitId, evt) {
+  evt.stopPropagation();
+  SFX.click();
+  const p = pendingPlayers[pidx];
+  const sizes = squadSizes(p.units[unitId]);
+  sizes.push(1);
+  p.units[unitId] = sizes;
+  renderUnitSelectForPlayer(pidx);
+}
+function removeSquad(pidx, unitId, sIdx, evt) {
+  evt.stopPropagation();
+  SFX.click();
+  const p = pendingPlayers[pidx];
+  const sizes = squadSizes(p.units[unitId]);
+  sizes.splice(sIdx, 1);
+  if (sizes.length) p.units[unitId] = sizes; else delete p.units[unitId];
   renderUnitSelectForPlayer(pidx);
 }
 
@@ -3048,9 +3092,12 @@ function changeUnitPick(pidx, unitId, delta, evt) {
   // Get how many are already dead in tracker for this unit/player (if battle running)
   const dead = getDeadCount(pidx, unitId);
   const available = (u ? u.max : 10) - dead;
-  p.units[unitId] = Math.max(1, Math.min(Math.max(1, available), (p.units[unitId]||1) + delta));
-  const el = document.getElementById(`upv-${unitId}`);
-  if (el) el.textContent = p.units[unitId];
+  const sizes = squadSizes(p.units[unitId]);
+  if (!sizes.length) sizes.push(1);
+  const li = sizes.length - 1;
+  sizes[li] = Math.max(1, Math.min(Math.max(1, available), sizes[li] + delta));
+  p.units[unitId] = sizes;
+  renderUnitSelectForPlayer(pidx);
 }
 
 function setUnitPickMax(pidx, unitId, unitMax, evt) {
@@ -3059,7 +3106,10 @@ function setUnitPickMax(pidx, unitId, unitMax, evt) {
   const p = pendingPlayers[pidx];
   const dead = getDeadCount(pidx, unitId);
   const available = Math.max(1, unitMax - dead);
-  p.units[unitId] = available;
+  const sizes = squadSizes(p.units[unitId]);
+  if (!sizes.length) sizes.push(1);
+  sizes[sizes.length - 1] = available;
+  p.units[unitId] = sizes;
   // Re-render to update display
   renderUnitSelectForPlayer(pidx);
   // Brief glow on the card
@@ -6965,117 +7015,123 @@ const KT_TEAMS = [
   {
     id:'kt-wolfscouts', name:'Wolf Scouts', faction:'Space Marines',
     color:'#7dd3fc', emoji:'🐺',
-    desc:'Os caçadores mais temidos da Great Company dos Space Wolves. Operam sozinhos e sem apoio atrás das linhas inimigas, envoltos em tempestades e névoa. Vêm com um Lobo Fenrisiano de caça.',
-    style:'Infiltração · Tempestade',
+    desc:'Os caçadores mais temidos da Great Company dos Space Wolves. Operam sozinhos atrás das linhas inimigas, envoltos numa tempestade elemental (STORM) que eles mesmos posicionam: dentro dela cargam com Conceal, ganham bônus de armas e defesa, e enfraquecem o inimigo. Acompanhados sempre por um Lobo Fenrisiano.',
+    style:'Elite · Tempestade · Melee',
     limit: 6,
-    coreRule: {name:"Tempestade Elemental", desc:"Como Strategic Gambit, reposiciona o marcador de Tempestade — operativos dentro dela ganham bônus conforme cada um (ver habilidades)."},
+    optionalLeader: true,
+    coreRule: {
+      name:'Regras de Facção + Equipamento',
+      desc:'<strong>Composição.</strong> 1 WOLF SCOUT FENRISIAN WOLF (obrigatório) + 5 operativos da lista: PACK LEADER, FANGBEARER, FROSTEYE, GUNNER, TRAPMASTER, RUNE PRIEST SKJALD, HUNTER. Só HUNTER pode repetir; os demais uma vez cada. O PACK LEADER é o LEADER do time, mas não é obrigatório.<br><br><strong>Elemental Storm.</strong> STRATEGIC GAMBIT. Remova o seu Storm marker do killzone (se houver) e coloque-o no killzone. Sempre que um operativo estiver a 6\" horizontais do seu Storm marker, ele está dentro do seu STORM.<br>Cada WOLF SCOUT amigo pode fazer a ação Charge mesmo com ordem Conceal, desde que termine essa ação dentro do seu STORM.<br><br><strong>Hunting Astartes.</strong> Na ativação de cada WOLF SCOUT amigo, ele pode fazer duas ações Shoot OU duas ações Fight. Se forem dois Shoot: 1 AP adicional deve ser gasto na segunda ação se as duas usarem plasma gun ou plasma pistol; e você não pode selecionar duas armas ranged PSYCHIC.<br>Cada WOLF SCOUT amigo pode counteract independente da ordem. Sempre que fizer isso dentro do seu STORM, você pode mudar a ordem dele primeiro, ou mudar a ordem dele em vez de fazer uma ação (nesse caso ainda conta como tendo feito counteract neste turno).<br><br><strong>EQUIP — Frost Weapons.</strong> Sempre que um WOLF SCOUT amigo estiver inteiramente (wholly) dentro do seu STORM, o combat blade dele (se houver) ganha Lethal 5+.<br><br><strong>EQUIP — Runic Charms.</strong> Uma vez por turno, quando um operativo atira num WOLF SCOUT amigo (exceto FENRISIAN WOLF) que está inteiramente dentro do seu STORM, no início do passo Roll Defence Dice você pode usar esta regra: piore em 1 o x da regra Piercing (se houver) até o fim da sequência. Piercing 1 é portanto ignorado.<br><br><strong>EQUIP — Wolfteeth Necklaces.</strong> Uma vez por turno, quando um WOLF SCOUT amigo (exceto FENRISIAN WOLF) está atirando, lutando ou retaliando, se você rolar dois ou mais fails, pode descartar um deles para reter outro como sucesso normal.<br><br><strong>EQUIP — Talismanic Trophies.</strong> Sempre que um WOLF SCOUT amigo (exceto FENRISIAN WOLF) inteiramente dentro do seu STORM está lutando ou retaliando, no passo Resolve Attack Dice você pode subtrair 1 do dano causado nele por um sucesso normal.'
+    },
     ploys: {
       strategy: [
-        {name:"Encoberto pela Tempestade", desc:"Ao ser alvo dentro da Tempestade, re-rola 1 dado de defesa."},
-        {name:"Fúria Tempestuosa", desc:"Armas corpo a corpo ganham Balanced se esteve na Tempestade neste turno."},
-        {name:"Mordida da Tempestade", desc:"Contra inimigo dentro da Tempestade em CaC, reduz o Ataque dele em 1."},
-        {name:"Lutadores Selvagens", desc:"Ao revidar sem ser incapacitado, causa D3+1 dano extra no atacante."},
+        {name:'Cloaked by the Storm', desc:'Quando um operativo atira num WOLF SCOUT amigo que está dentro do seu STORM, você pode re-rolar um dos seus dados de defesa.'},
+        {name:'Tempestuous Wrath', desc:'Quando um WOLF SCOUT amigo está lutando ou retaliando, se ele estiver dentro do seu STORM ou estava dentro do seu STORM no início da ativação, as armas melee dele ganham Balanced.'},
+        {name:"Storm's Bite", desc:'Quando um WOLF SCOUT amigo está lutando contra um inimigo que está dentro do seu STORM, subtraia 1 do Atk das armas melee desse inimigo (mínimo de 3).'},
+        {name:'Savage Fighters', desc:'Quando um WOLF SCOUT amigo termina de retaliar, se não foi incapacitado, você pode causar D3+1 de dano no inimigo dessa sequência.'},
       ],
       firefight: [
-        {name:"Sentidos Aguçados", desc:"Ao atirar, ganha alcance 6\" extra e o alvo não pode ficar obscurecido."},
-        {name:"Contra-Ataque", desc:"Após o inimigo lutar ou terminar ativação, um Wolf Scout luta de graça."},
-        {name:"Tocado por Lokyar", desc:"Ao lutar longe de aliados (5\"+), re-rola qualquer dado de ataque."},
-        {name:"Fisiologia Transumana", desc:"Ao ser alvo de tiro, transforma 1 sucesso normal de defesa em crítico."},
+        {name:'Acute Senses', desc:'Use quando um WOLF SCOUT amigo faz a ação Shoot e você está selecionando alvo válido. Até o fim da ação, as armas ranged dele ganham Range 6\" e Seek Light, e inimigos não podem estar obscured.'},
+        {name:'Counterattack', desc:'Use no fim da ativação de um inimigo, ou depois de um inimigo fazer a ação Fight. Um WOLF SCOUT amigo pode imediatamente fazer um Fight grátis, mas você não pode selecionar nenhum outro inimigo para lutar durante essa ação.'},
+        {name:'Touched by Lokyar', desc:'Use depois de rolar seus dados de ataque de um WOLF SCOUT amigo (exceto FENRISIAN WOLF), se ele estiver lutando a mais de 5\" de outros operativos amigos. Re-role qualquer um dos seus dados de ataque.'},
+        {name:'Transhuman Physiology', desc:'Use quando um operativo atira num WOLF SCOUT amigo (exceto FENRISIAN WOLF), no passo Roll Defence Dice. Você pode reter um dos seus sucessos normais como sucesso crítico.'},
       ],
     },
     operatives: [
-      { id:'kt-ws-packleader', name:'Pack Leader', unique:true,
-        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+      { id:'kt-ws-wolf', name:'Fenrisian Wolf', unique:true, required:true,
+        M:'8\"', APL:2, GA:1, DF:3, SV:5, W:9,
         abilities:[
-          {name:'LÍDER', desc:'Este operativo é o líder do time.'},
-          {name:'Lupine Guile', desc:'1x por batalha, depois de rolar pra decidir iniciativa, se este operativo estiver em campo, pode re-rolar seu dado.'},
-          {name:'Grizzled Veteran', desc:'A primeira vez que seria incapacitado na batalha, não é: fica com 1 PV e não pode ser incapacitado pelo resto daquela ação. Todos os dados de ataque restantes são descartados (inclusive os seus, se estava lutando/revidando). Não pode usar o Ploy Counterattack nem causar dano de Savage Fighters no fim daquela ação.'},
+          {name:'OBRIGATÓRIO', desc:'Todo time Wolf Scouts inclui exatamente um FENRISIAN WOLF, além dos 5 operativos escolhidos da lista.'},
+          {name:'Instinctive Predator', desc:'Este operativo não pode fazer nenhuma ação além de Charge, Dash, Fall Back, Fight, Guard e Reposition. Não pode usar armas que não estejam no datacard dele. Pode fazer Charge mesmo com ordem Conceal.'},
+          {name:'Pounce', desc:'STRATEGIC GAMBIT, uma vez por batalha. Se o APL deste operativo for 2 ou mais, ele faz uma ação grátis de Charge, Fall Back ou Reposition. Se fizer, até o fim da próxima ativação dele, -1 no APL e ele não pode fazer nenhuma dessas ações.'},
+          {name:'Base 60x35mm', desc:'Ao medir movimento, nenhuma parte da base pode se mover mais que a distância permitida — se ele girar, conte a distância percorrida pela rotação.'},
         ],
         weapons:[
-          { name:'Pistola de Plasma', range:'short', profiles:[
-            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
-            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          { name:'Fangs', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
+        ]},
+      { id:'kt-ws-packleader', name:'Pack Leader', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time (não é obrigatório levá-lo).'},
+          {name:'Lupine Guile', desc:'Uma vez por batalha, depois do roll-off para decidir a iniciativa, se este operativo estiver no killzone, você pode re-rolar o seu dado.'},
+          {name:'Grizzled Veteran', desc:'A primeira vez que este operativo seria incapacitado na batalha, ele não é incapacitado, fica com 1 Wound e não pode ser incapacitado pelo resto daquela ação. Todos os dados de ataque restantes são descartados (inclusive os seus, se ele estiver lutando ou retaliando). Você não pode usar o firefight ploy Counterattack nem causar dano pelo strategy ploy Savage Fighters no fim daquela ação.'},
+        ],
+        weapons:[
+          { name:'Plasma pistol', range:'short', profiles:[
+            { name:'standard',    A:4, skill:3, D:3, CD:5, tags:['Range 8\"','Piercing 1'] },
+            { name:'supercharge', A:4, skill:3, D:4, CD:5, tags:['Range 8\"','Hot','Lethal 5+','Piercing 1'] },
           ]},
-          { name:'Arma de Poder', A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+          { name:'Power weapon', A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
         ]},
       { id:'kt-ws-fangbearer', name:'Fangbearer', unique:true,
-        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:13,
         abilities:[
-          {name:'Spiritual Chirurgy', desc:'Ignora mudanças de status por ferimento em operativos Wolf Scout (exceto o Lobo Fenrisiano) — vale pro time todo desde que este operativo tenha sido selecionado pra batalha, mesmo se for incapacitado depois.'},
-          {name:'Healing Balms', ap:'1AP', desc:'Escolhe um Wolf Scout aliado no alcance de controle pra recuperar até D3+3 PV perdidos. Não pode ser feito perto de inimigo.'},
+          {name:'Spiritual Chirurgy', desc:'Você pode ignorar mudanças nos stats dos WOLF SCOUT amigos (exceto FENRISIAN WOLF) causadas por ferimento, incluindo os stats das armas deles. Os amigos têm esta regra desde que você tenha selecionado este operativo para a batalha (mesmo que ele seja incapacitado depois).'},
+          {name:'Healing Balms', ap:'1AP', desc:'Selecione um WOLF SCOUT amigo dentro do control range deste operativo para recuperar até D3+3 Wounds perdidos. Não pode ser feita no control range de inimigo.'},
         ],
         weapons:[
-          { name:'Pistola Bolter Absolver', A:4, skill:3, D:4, CD:5, range:'short', tags:['Range 9"','Piercing Crits 1'] },
-          { name:'Lâmina de Combate',       A:5, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Absolvor bolt pistol', A:4, skill:3, D:4, CD:5, range:'short', tags:['Range 9\"','Piercing Crits 1'] },
+          { name:'Combat blade',         A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-ws-frosteye', name:'Frosteye', unique:true,
-        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:13,
         abilities:[
-          {name:'Storm-Veiled Execution', desc:'Dentro da Tempestade: pode usar Guard independente do tipo de zona de jogo, e pode usar Guard mesmo com ordem Conceal.'},
-          {name:"Hunter's Senses", ap:'1AP', desc:'Escolhe Severe OU Saturate (e nesse caso inimigos não ficam obscurecidos ao ser alvo) pra Carabina Instigator, até a próxima ativação. Não pode ser feito perto de inimigo.'},
+          {name:'Storm-veiled Execution', desc:'Sempre que este operativo estiver dentro do seu STORM: ele pode fazer a ação Guard independente do killzone (ver regras de close quarters, Kill Team Core Book); e pode fazer Guard mesmo com ordem Conceal.'},
+          {name:"Hunter's Senses", ap:'1AP', desc:'Selecione uma das regras abaixo para o instigator bolt carbine deste operativo ter até o começo da próxima ativação dele: (1) Severe; ou (2) Saturate, e sempre que ele atirar com essa arma, inimigos não podem estar obscured. Não pode ser feita no control range de inimigo.'},
         ],
         weapons:[
-          { name:'Carabina Instigator', A:4, skill:3, D:3, CD:4, range:'long', tags:['Piercing Crits 1','Silent'] },
-          { name:'Lâmina de Combate',   A:4, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Instigator bolt carbine', A:4, skill:3, D:3, CD:4, range:'long', tags:['Piercing Crits 1','Silent'] },
+          { name:'Combat blade',            A:4, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-ws-gunner', name:'Gunner', unique:true,
-        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:13,
         abilities:[
-          {name:"Tempest's Fury", desc:'Dentro da Tempestade: todos os modos da Plasma Gun ganham Punishing. O modo Sobrecarga perde a regra Hot (sem risco de dano próprio).'},
+          {name:"Tempest's Fury", desc:'Sempre que este operativo estiver dentro do seu STORM: todos os perfis da plasma gun dele ganham Punishing; e a plasma gun (supercharge) perde a regra Hot.'},
         ],
         weapons:[
-          { name:'Plasma Gun', range:'short', profiles:[
-            { name:'Padrão',     A:4, skill:3, D:4, CD:6, tags:['Piercing 1'] },
-            { name:'Sobrecarga', A:4, skill:3, D:5, CD:6, tags:['Piercing 1','Hot','Lethal 5+'] },
+          { name:'Plasma gun', range:'long', profiles:[
+            { name:'standard',    A:4, skill:3, D:4, CD:6, tags:['Piercing 1'] },
+            { name:'supercharge', A:4, skill:3, D:5, CD:6, tags:['Hot','Lethal 5+','Piercing 1'] },
           ]},
-          { name:'Lâmina de Combate', A:4, skill:3, D:4, CD:5, range:'melee' },
-        ]},
-      { id:'kt-ws-hunter', name:'Hunter', unique:false, count:2,
-        M:'7"', APL:3, GA:2, DF:3, SV:3, W:13,
-        abilities:[
-          {name:'Fierce Temperament', desc:'Dentro da Tempestade, todas as armas deste operativo ganham a regra Severe.'},
-        ],
-        weapons:[
-          { name:'Pistola de Plasma', range:'short', profiles:[
-            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
-            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
-          ]},
-          { name:'Lâmina de Combate', A:5, skill:3, D:4, CD:5, range:'melee' },
-        ]},
-      { id:'kt-ws-skjald', name:'Rune Priest Skjald', unique:true,
-        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
-        abilities:[
-          {name:'PSYKER', desc:'Este operativo tem palavra-chave Psyker.'},
-          {name:'Cast the Runes', desc:'Depois de escolher este operativo, antes da batalha, role 3D6 e separe-os. Cada resultado 1-4 dá um uso grátis do Ploy Command Re-roll no turno correspondente. Cada resultado 5-6 dá +1CP.'},
-          {name:'Call the Storm', ap:'1AP', desc:'Psychic. Remove o marcador de Tempestade do campo (se houver) e recoloca em outro lugar. Alternativamente, escolhe um Wolf Scout aliado — até a próxima ativação dele, sempre que estiver na Tempestade e a mais de 3" do operativo ativo, fica obscurecido. Não pode ser feito perto de inimigo.'},
-        ],
-        weapons:[
-          { name:'Pistola Bolter',  A:4, skill:3, D:3, CD:4, range:'short' },
-          { name:'Mandíbulas do Mundo Lobo', A:5, skill:3, D:3, CD:5, range:'long', tags:['Blast 2"','Severe'] },
-          { name:'Thunderclap',     A:5, skill:2, D:2, CD:2, range:'short', tags:['Range 6"','Saturate','Seek Light','Stun','Torrent 2"'] },
-          { name:'Bastão Rúnico',   A:5, skill:3, D:4, CD:6, range:'melee', tags:['Shock'] },
+          { name:'Combat blade', A:4, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-ws-trapmaster', name:'Trapmaster', unique:true,
-        M:'7"', APL:3, GA:1, DF:3, SV:3, W:13,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:13,
         abilities:[
-          {name:'Haywire Mine', desc:'Carrega o marcador de Mina Haywire e pode fazer a ação Pegar Marcador nele — mas o marcador não pode ser colocado no alcance de controle de outro operativo. Se este operativo for incapacitado carregando a mina e ela não puder ser colocada, ela é removida junto.'},
-          {name:'Proximity Mine', desc:'A primeira vez que a Mina Haywire entrar no alcance de controle de outro operativo, remove o marcador, reduz o APL dele em 1 até o fim da próxima ativação, e causa 2D3+3 de dano (ou D3+6 se a mina estiver a até 6" horizontal da Tempestade). Se não for incapacitado, a ação dele termina ali mesmo.'},
+          {name:'Haywire Mine', desc:'Este operativo carrega o seu Haywire Mine marker e pode fazer a ação Pick Up Marker nele, mas esse marcador não pode ser colocado dentro do control range de outro operativo. Se ele for incapacitado carregando o marcador e o marcador não puder ser colocado, ele é removido junto.'},
+          {name:'Proximity Mine', desc:'A primeira vez que o seu Haywire Mine marker estiver dentro do control range de outro operativo: remova o marcador, subtraia 1 do APL desse operativo até o fim da próxima ativação dele, e cause 2D3+3 de dano nele (ou D3+6 se o marcador estiver a 6\" horizontais do seu Storm marker). Se ele não for incapacitado, encerre a ação dele (se houver), mesmo que os efeitos da ação não sejam cumpridos. Este operativo é ignorado para esses efeitos (não dispara a mina nem sofre dano dela).'},
         ],
         weapons:[
-          { name:'Pistola de Plasma', range:'short', profiles:[
-            { name:'Padrão',     A:4, skill:3, D:3, CD:5, tags:['Piercing 1'] },
-            { name:'Sobrecarga', A:4, skill:3, D:4, CD:5, tags:['Piercing 1','Hot','Lethal 5+'] },
+          { name:'Plasma pistol', range:'short', profiles:[
+            { name:'standard',    A:4, skill:3, D:3, CD:5, tags:['Range 8\"','Piercing 1'] },
+            { name:'supercharge', A:4, skill:3, D:4, CD:5, tags:['Range 8\"','Hot','Lethal 5+','Piercing 1'] },
           ]},
-          { name:'Lâmina de Combate', A:5, skill:3, D:4, CD:5, range:'melee' },
+          { name:'Combat blade', A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
-      { id:'kt-ws-wolf', name:'Lobo Fenrisiano', unique:true,
-        M:'8"', APL:2, GA:1, DF:3, SV:5, W:9,
+      { id:'kt-ws-skjald', name:'Rune Priest Skjald', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:13,
         abilities:[
-          {name:'Instinctive Predator', desc:'Só pode fazer as ações Charge, Dash, Fall Back, Fight, Guard e Reposition, e só com as armas da própria ficha. Pode Cargar mesmo com ordem Conceal.'},
-          {name:'Pounce', desc:'Strategic Gambit, 1x por batalha. Se o APL deste operativo for 2 ou mais, faz uma ação grátis de Charge, Fall Back ou Reposition. Se fizer isso, -1 no APL até o fim da próxima ativação e não pode repetir nenhuma dessas ações nesse período.'},
+          {name:'PSYKER', desc:'Este operativo tem a palavra-chave PSYKER.'},
+          {name:'Cast the Runes', desc:'Depois de selecionar este operativo, antes da batalha, role 3D6 e separe-os. Para cada resultado 1-4, você pode usar o firefight ploy Command Re-roll por 0CP uma vez durante o turno correspondente ao resultado. Para cada resultado 5-6, ganhe 1CP.'},
+          {name:'Call the Storm', ap:'1AP', desc:'PSYCHIC. Remova o seu Storm marker do killzone (se houver) e coloque-o no killzone. PSYCHIC alternativo: em vez do efeito acima, selecione um WOLF SCOUT amigo — até o começo da próxima ativação deste operativo, até ele ser incapacitado ou até ele repetir esta ação (o que vier primeiro), sempre que esse amigo estiver dentro do seu STORM e a mais de 3\" do operativo ativo, ele está obscured. Não pode ser feita no control range de inimigo.'},
         ],
         weapons:[
-          { name:'Presas', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
+          { name:'Bolt pistol',            A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
+          { name:'Jaws of the World Wolf', A:5, skill:3, D:3, CD:5, range:'long',  tags:['PSYCHIC','Blast 2\"','Severe'] },
+          { name:'Thunderclap',            A:5, skill:2, D:2, CD:2, range:'short', tags:['PSYCHIC','Range 6\"','Saturate','Seek Light','Stun','Torrent 2\"'] },
+          { name:'Runic stave',            A:5, skill:3, D:4, CD:6, range:'melee', tags:['PSYCHIC','Shock'] },
+        ]},
+      { id:'kt-ws-hunter', name:'Hunter', unique:false, count:5,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:13,
+        abilities:[
+          {name:'Fierce Temperament', desc:'Sempre que este operativo estiver dentro do seu STORM, as armas dele ganham Severe.'},
+        ],
+        weapons:[
+          { name:'Plasma pistol', range:'short', profiles:[
+            { name:'standard',    A:4, skill:3, D:3, CD:5, tags:['Range 8\"','Piercing 1'] },
+            { name:'supercharge', A:4, skill:3, D:4, CD:5, tags:['Range 8\"','Hot','Lethal 5+','Piercing 1'] },
+          ]},
+          { name:'Combat blade', A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
     ]
   },
@@ -11067,8 +11123,14 @@ function ktValidateComp(team, sel) {
   else if (total > 0 && total < team.limit) warnings.push(`Time incompleto (${total}/${team.limit})`);
   const leaderIds = ktLeaderIds(team);
   const leaderSel = leaderIds.reduce((s, id) => s + (sel[id] || 0), 0);
-  if (leaderSel === 0) errors.push('Falta o líder do time');
+  if (leaderSel === 0) {
+    if (team.optionalLeader) warnings.push('Sem líder (permitido neste time)');
+    else errors.push('Falta o líder do time');
+  }
   else if (leaderSel > 1) errors.push(`Só pode haver 1 líder (${leaderSel} selecionados)`);
+  team.operatives.filter(o => o.required).forEach(o => {
+    if (!(sel[o.id] || 0)) errors.push(`Falta ${o.name} (obrigatório)`);
+  });
   const gravisIds = team.operatives.filter(o => Array.isArray(o.abilities) && o.abilities.some(ab => /GRAVIS/i.test(ab.name || ''))).map(o => o.id);
   const gravisSel = gravisIds.reduce((s, id) => s + (sel[id] || 0), 0);
   if (gravisSel > 1) errors.push(`Máx. 1 operativo GRAVIS (${gravisSel} selecionados)`);
