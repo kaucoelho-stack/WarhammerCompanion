@@ -1094,6 +1094,7 @@ const VFX = {
       <div class="home-lib-grid">
         <button class="home-lib-btn" onclick="SFX.click();NAV.go('screen-library',initLibrary)">📚 Fichas 40K</button>
         <button class="home-lib-btn" onclick="SFX.click();NAV.go('screen-kt-library',initKTLibrary)">📖 Fichas KT</button>
+        <button class="home-lib-btn" style="grid-column:1/-1" onclick="SFX.click();NAV.go('screen-rules-page',initRulesPage)">🧭 Regras &amp; Termos — guia para iniciantes</button>
       </div>
     </div>
 
@@ -2414,7 +2415,7 @@ function renderTurnGuide() {
     <div class="tg-head"><div class="tg-title">🧭 Guia do Turno</div><div style="font-size:10px;color:var(--muted);font-family:var(--fu)">Round ${round}${activeP ? ' · vez de ' + activeP.playerName : ''}</div></div>
     ${playerTabs}
     <div class="tg-steps">${steps}</div>
-    <ul class="tg-reminders">${cur.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+    <ul class="tg-reminders">${cur.tips.map(t => `<li>${linkify40K(t)}</li>`).join('')}</ul>
     <div class="tg-nav">
       <button class="btn btn-secondary btn-sm" style="flex:1" onclick="setTurnPhase(${G40_PHASE - 1})" ${G40_PHASE === 0 ? 'disabled' : ''}>← Fase</button>
       <button class="btn btn-secondary btn-sm" style="flex:2" onclick="nextTurnPhase()">${G40_PHASE >= 4 ? (players.length > 1 ? '✓ Terminar turno do jogador' : '↺ Reiniciar fases') : 'Próxima fase →'}</button>
@@ -5008,6 +5009,14 @@ const KT_WEAPON_KEYWORDS = {
   'Explosive':           { name:'Explosive', desc:'Pode Atirar mesmo no alcance de controle de inimigo. O operativo é sempre o alvo principal e não pode estar em cobertura nem obscurecido.' },
   'Shield':              { name:'Shield', desc:'Ao lutar ou retaliar com esta arma, cada bloqueio seu pode bloquear dois sucessos não resolvidos (em vez de um).' },
   'Phase Sweep':         { name:'Phase Sweep', desc:'Após um Fight com este perfil (se não incapacitado), faça ações Fight grátis contra cada inimigo no alcance de controle, uma vez cada, usando este perfil.' },
+  'Anti-PSYKER':         { name:'Anti-PSYKER', desc:'Efeito extra contra operativos com a keyword PSYKER (normalmente dano/penalidade adicional contra eles).' },
+  'PSYCHIC':             { name:'PSYCHIC (Psíquico)', desc:'Marca a arma/ação como poder psíquico. Só operativos PSYKER podem usar; alguns efeitos e regras anulam ou punem ações PSYCHIC.' },
+  'Piercing Crits':      { name:'Piercing Crits X', desc:'Como Piercing, mas só entra em ação se você conseguir pelo menos um sucesso crítico: o defensor rola X dado(s) de defesa a menos.' },
+  'Seek Light':          { name:'Seek Light', desc:'Ignora cobertura (Light) do alvo ao mirar: ele não pode se beneficiar de estar obscurecido por terreno Light nem contar cobertura.' },
+  'Melta':               { name:'Melta X', desc:'Se o alvo estiver dentro do alcance curto indicado, cada dado de dano resolvido causa X de dano adicional (armas de fusão, letais de perto).' },
+  'Crush':               { name:'Crush', desc:'Ao golpear com esta arma, você e o oponente fazem um roll-off; o vencedor aplica um efeito extra (ver a habilidade do operativo para o detalhe).' },
+  'Siphon Life':         { name:'Siphon Life', desc:'Ao usar a arma, no início do passo de resolver os dados você drena vida do alvo — recuperando PV do próprio operativo (ver habilidade para o valor).' },
+  'Terrorchem':          { name:'Terrorchem', desc:'Se causar dano com um sucesso crítico (incluindo via Devastating), o alvo ganha um marcador de Terrorchem. Operativo marcado sofre D3 de dano ao ser ativado.' },
   'FLY':                 { name:'Fly (Voar)', desc:'Ao fazer uma ação de movimento, o operativo pode VOAR: em vez de mover normalmente, remova-o e recoloque-o a até a distância do seu Move (medido na horizontal), ignorando o terreno. Não ganha distância extra na Charge; fora da Charge, não pode terminar no control range de um inimigo.' },
   'Fly':                 { name:'Fly (Voar)', desc:'Ao fazer uma ação de movimento, o operativo pode VOAR: em vez de mover normalmente, remova-o e recoloque-o a até a distância do seu Move (medido na horizontal), ignorando o terreno. Não ganha distância extra na Charge; fora da Charge, não pode terminar no control range de um inimigo.' },
 };
@@ -6155,6 +6164,19 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 
 
 <!-- ═══ BIBLIOTECA KILL TEAM (consulta) ═══ -->
+<!-- ═══ REGRAS & TERMOS ═══ -->
+<div class="screen" id="screen-rules-page">
+  <div class="hdr">
+    <button class="hdr-back" onclick="SFX.click();NAV.back(initHome)">←</button>
+    <div class="hdr-info"><div class="hdr-eyebrow">Consulta rápida</div><div class="hdr-title">📖 <span>REGRAS &amp; TERMOS</span></div></div>
+  </div>
+  <div class="screen-body">
+    <input class="form-input" id="rules-page-search" placeholder="🔎 Buscar termo (ex.: Battle-shock, Piercing...)" oninput="rulesSearch(this.value)" style="width:100%;margin-bottom:10px">
+    <div id="rules-page-tabs" class="kt-lib-filter"></div>
+    <div id="rules-page-body"></div>
+  </div>
+</div>
+
 <div class="screen" id="screen-kt-library">
   <div class="hdr">
     <button class="hdr-back" onclick="SFX.click();NAV.back(initHome)">←</button>
@@ -11846,6 +11868,112 @@ function showKTOpDetail(teamId, instanceId) {
 // Preview mode — used when browsing a team's roster OUTSIDE of an active battle
 // (e.g. from the home screen or the rules reference). Shows full stats/abilities/weapons
 // at full health, with no live-battle controls (PV adjustment, order toggle, etc).
+// ── GLOSSÁRIO 40K + PÁGINA DE REGRAS & TERMOS ─────────
+const W40K_GLOSSARY = {
+  'Battle-shock': 'No início do seu turno, unidades Abaixo da Força (metade ou menos das miniaturas) fazem um teste: role 2D6 e some — se der menos que o Moral (Ld) da unidade, ela fica Battle-shocked: não controla objetivos e não pode usar Estratagemas até o próximo turno.',
+  'Abaixo da Força': 'Unidade com metade ou menos das miniaturas iniciais vivas. É o gatilho do teste de Battle-shock. O app marca isso sozinho.',
+  'Advance': 'No Movimento, em vez de mover normal, role 1D6 e some ao movimento. Quem faz Advance normalmente não pode atirar nem carregar naquele turno.',
+  'Fall Back': 'Sair do combate corpo a corpo. A unidade recua, mas normalmente não pode atirar nem carregar no mesmo turno.',
+  'Overwatch': 'Estratagema (1 CP): quando um inimigo se move ou carrega, sua unidade atira nele fora da sua vez, acertando só com 6.',
+  'Pile In': 'No Combate, antes de atacar, cada miniatura pode mover até 3" para chegar ao contato com o inimigo.',
+  'Consolidate': 'Depois de atacar no Combate, cada miniatura pode mover até 3" — para engajar outro inimigo ou pisar num objetivo.',
+  'Reservas': 'Unidades que começam fora da mesa (Strategic Reserves / Deep Strike) e entram em turnos seguintes, normalmente a 9" do inimigo.',
+  'Deep Strike': 'Chegar do céu: a unidade entra da reserva e é posicionada a mais de 9" de qualquer inimigo.',
+  'CP': 'Command Points. Moeda para usar Estratagemas. Você ganha 1 CP no início do seu Comando.',
+  'Estratagema': 'Habilidade especial comprada com CP (ex.: Overwatch, Command Re-roll). Cada um tem quando e quantas vezes pode ser usado.',
+  'Command Re-roll': 'Estratagema (1 CP): permite re-rolar um único dado — de acerto, ferida, save, carga, etc.',
+  'OC': 'Objective Control. Cada miniatura tem um valor de OC; quem tiver mais OC total perto do objetivo o controla.',
+  'Objetivo': 'Marcador no tabuleiro que dá pontos. Você o controla se tiver mais OC total dentro de 3" dele.',
+  'Primário': 'Pontos da missão principal, marcados a cada round (normalmente a partir do round 2), geralmente por controlar objetivos.',
+  'Secundária': 'Objetivos extras (fixos ou sorteados) que dão VP adicionais além do primário.',
+  'VP': 'Victory Points. Quem tiver mais VP no fim da partida vence.',
+  'Sv': 'Save (armadura). Role 1D6: igual ou maior que o valor salva o ferimento. O AP da arma piora esse valor.',
+  'Save Invulnerável': 'Save especial que ignora o AP da arma. Você escolhe usar o normal ou o invulnerável, nunca os dois.',
+  'AP': 'Armour Penetration. Piora o save do alvo (AP -1 faz um save 3+ virar 4+).',
+  'T': 'Toughness (resistência). Comparada à Força da arma para saber com quanto você fere.',
+  'W': 'Wounds (ferimentos). Quantos pontos de dano a miniatura aguenta antes de morrer.',
+  'Ld': 'Leadership (moral). Usado nos testes de Battle-shock.',
+  'Feel No Pain': 'Depois de sofrer dano, role 1D6 por ponto: cada resultado igual/maior ao valor ignora aquele ponto de dano.',
+  'Blast': 'Arma que ganha ataques extras contra unidades grandes (+1 ataque a cada 5 miniaturas no alvo). Não pode ser usada em combate corpo a corpo.',
+  'Torrent': 'Arma que acerta automaticamente — não role para acertar.',
+  'Melta': 'Arma que causa dano extra quando o alvo está dentro de metade do alcance.',
+  'Cobertura': 'Se a unidade está protegida por terreno, melhora o save em 1 contra tiros (não melhora saves 3+ contra AP 0).',
+  'Sustained Hits': 'Cada acerto crítico (6 natural) gera acertos adicionais.',
+  'Lethal Hits': 'Acerto crítico (6 natural) fere automaticamente, sem rolar para ferir.',
+  'Devastating Wounds': 'Ferida crítica (6 natural ao ferir) vira dano direto que ignora saves.',
+  'Ferida Mortal': 'Dano que ignora saves normais e invulneráveis (só Feel No Pain pode reduzir).',
+  'Líder': 'Personagem que se junta a uma unidade, dando habilidades a ela. Enquanto acompanhado, o personagem não pode ser alvo sozinho.',
+  'Battle Round': 'Um round completo: os DOIS jogadores fazem seu turno. O 40K padrão tem 5 battle rounds.',
+};
+
+const W40K_LINK_REGEX = new RegExp('\\b(' + Object.keys(W40K_GLOSSARY).filter(k=>k.length>2).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\-]/g,'\\$&')).join('|') + ')\\b', 'g');
+function linkify40K(text) {
+  if (!text) return text;
+  return text.replace(W40K_LINK_REGEX, m => `<span class="kw-tag kw-inline" onclick="event.stopPropagation();show40KTerm('${m.replace(/'/g,"\\'")}')">${m}</span>`);
+}
+function show40KTerm(term) {
+  const desc = W40K_GLOSSARY[term];
+  if (!desc) return;
+  SFX.click();
+  document.getElementById('rules-modal-title').textContent = `🔑 ${term}`;
+  document.getElementById('rules-modal-body').innerHTML = `
+    <div class="rule-card" style="margin-top:0">
+      <div class="rule-card-name" style="font-size:15px;color:var(--gold)">${term}</div>
+      <div class="rule-card-desc" style="font-size:13px;margin-top:6px">${desc}</div>
+    </div>
+    <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="document.getElementById('rules-modal').classList.remove('open');NAV.go('screen-rules-page',initRulesPage)">📖 Ver todas as regras e termos</button>`;
+  document.getElementById('rules-modal').classList.add('open');
+}
+
+let _rulesTab = '40k';
+let _rulesQuery = '';
+function initRulesPage() { _rulesTab = '40k'; _rulesQuery = ''; renderRulesPage(); }
+function rulesSetTab(tab) { _rulesTab = tab; SFX.click(); renderRulesPage(); }
+function rulesSearch(v) { _rulesQuery = (v || '').toLowerCase().trim(); renderRulesPage(true); }
+function renderRulesPage(keepInput) {
+  const tabsEl = document.getElementById('rules-page-tabs');
+  if (tabsEl) tabsEl.innerHTML = [['40k','⚔ Warhammer 40K'],['kt','🎯 Kill Team'],['seq','🧭 Sequência de jogo']]
+    .map(([id,label]) => `<button class="kt-lib-chip ${_rulesTab===id?'active':''}" onclick="rulesSetTab('${id}')">${label}</button>`).join('');
+  const body = document.getElementById('rules-page-body');
+  if (!body) return;
+  if (_rulesTab === 'seq') { body.innerHTML = renderSequenceHelp(); return; }
+  const dict = _rulesTab === '40k'
+    ? Object.entries(W40K_GLOSSARY).map(([k,v]) => ({ name:k, desc:v }))
+    : Object.entries(KT_WEAPON_KEYWORDS).filter(([k]) => k !== 'Fly').map(([k,v]) => ({ name:v.name||k, desc:v.desc }));
+  const q = _rulesQuery;
+  const list = dict.filter(e => !q || e.name.toLowerCase().includes(q) || (e.desc||'').toLowerCase().includes(q))
+                   .sort((a,b) => a.name.localeCompare(b.name,'pt'));
+  body.innerHTML = list.length
+    ? list.map(e => `<div class="rule-card"><div class="rule-card-name">${e.name}</div><div class="rule-card-desc">${e.desc}</div></div>`).join('')
+    : `<div style="font-size:12px;color:var(--muted);text-align:center;padding:26px 12px">Nenhum termo encontrado para “${_rulesQuery}”.</div>`;
+}
+function renderSequenceHelp() {
+  const step = (n, title, body) => `<div class="rule-card"><div class="rule-card-name">${n}. ${title}</div><div class="rule-card-desc">${body}</div></div>`;
+  return `
+    <div class="sec-label" style="margin-top:4px">⚔ Warhammer 40K — um battle round</div>
+    <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;line-height:1.5">Um <strong>battle round</strong> = os dois jogadores jogam um turno completo. A partida padrão tem 5.</div>
+    ${step(1,'Comando','Ganhe 1 CP. Faça os testes de Battle-shock das unidades Abaixo da Força. Resolva efeitos de início de turno.')}
+    ${step(2,'Movimento','Mova cada unidade: normal, Advance (+D6, sem atirar/carregar) ou Fall Back (sair do combate). Reservas podem entrar.')}
+    ${step(3,'Tiro','Escolha alvos e armas. Role para acertar (BS), depois para ferir (Força vs Toughness), o alvo faz os saves e você aplica o dano.')}
+    ${step(4,'Carga','Declare a carga, role 2D6" e mova se alcançar (deve terminar a 1" do inimigo). O inimigo pode usar Overwatch.')}
+    ${step(5,'Combate','Pile In 3". Quem carregou ataca primeiro. Resolva os ataques como no tiro. Depois Consolidate 3".')}
+    ${step(6,'Fim do turno','Marque os pontos: primário (controle de objetivos, normalmente a partir do round 2) e secundárias.')}
+    <div class="sec-label" style="margin-top:16px">🎯 Kill Team — um Turning Point</div>
+    <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px;line-height:1.5">A partida tem 4 Turning Points. Aqui vocês <strong>alternam</strong> ativações, um operativo de cada vez.</div>
+    ${step(1,'Fase de Estratégia','Roll-off de iniciativa (quem vence escolhe quem começa). Ganhem CP e usem os Strategy Ploys.')}
+    ${step(2,'Fase de Firefight','Alternem ativações: você ativa um operativo, depois o oponente ativa um. Cada operativo gasta seus pontos de ação (APL).')}
+    ${step(3,'Fim do Turning Point','Resolvam efeitos de fim de turno, limpem tokens do turno e marquem os VP.')}
+    <div class="sec-label" style="margin-top:16px">💡 Erros comuns de quem está começando</div>
+    <div class="rule-card"><div class="rule-card-desc" style="line-height:1.7">
+      • Esquecer de <strong>marcar os pontos</strong> no fim de cada round.<br>
+      • Esquecer que ganha <strong>1 CP</strong> todo turno de Comando.<br>
+      • No 40K, o primário normalmente <strong>só pontua a partir do round 2</strong>.<br>
+      • No Kill Team, operativo <strong>ferido perde 1 APL</strong> (o app já desconta).<br>
+      • Quem faz <strong>Advance</strong> ou <strong>Fall Back</strong> geralmente não pode atirar nem carregar.<br>
+      • Medir sempre da <strong>base</strong> da miniatura, não do corpo dela.
+    </div></div>`;
+}
+
 // ── BIBLIOTECA DE CONSULTA KILL TEAM ──────────────────
 let _ktLibFilter = 'all';
 function initKTLibrary() {
