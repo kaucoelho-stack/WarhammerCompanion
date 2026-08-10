@@ -58,6 +58,7 @@ body::before{content:'';position:fixed;inset:0;
 .home-lib-btn{background:rgba(20,20,26,.72);border:1px solid var(--border2);color:var(--text2);border-radius:10px;padding:11px 8px;font-size:13px;font-family:var(--fu);letter-spacing:.3px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;backdrop-filter:blur(2px)}
 .home-lib-btn:active{transform:scale(.97)}
 .home-footer{margin-top:22px;font-size:11px;color:var(--muted);text-align:center}
+.home-version{display:inline-block;font-family:var(--fu);font-size:10px;letter-spacing:1.5px;color:var(--text2);background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:3px 11px;margin-bottom:8px}
 .home-footer strong{color:var(--text2)}
 .screen-body{flex:1;padding:14px;max-width:520px;width:100%;margin:0 auto;padding-bottom:36px}
 .screen.slide-in{animation:sIn .28s ease-out}
@@ -590,9 +591,9 @@ body::before{content:'';position:fixed;inset:0;
 
 
 /* ═══ INFO BUTTONS ═══ */
-.info-btn{width:24px;height:24px;border-radius:50%;border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.1);color:var(--save);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--fu);font-weight:700;flex-shrink:0;transition:all .15s}
+.info-btn{width:26px;height:26px;border-radius:50%;border:1.5px solid #60a5fa;background:rgba(10,12,20,.9);color:#93c5fd;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--fu);font-weight:900;flex-shrink:0;transition:all .15s;box-shadow:0 2px 6px rgba(0,0,0,.55)}
 .info-btn:active{transform:scale(.9);background:rgba(59,130,246,.25)}
-.info-btn-sm{position:absolute;top:6px;left:6px;width:18px;height:18px;border-radius:50%;border:1px solid rgba(59,130,246,.4);background:rgba(59,130,246,.12);color:var(--save);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--fu);font-weight:700}
+.info-btn-sm{position:absolute;top:6px;left:6px;width:21px;height:21px;border-radius:50%;border:1.5px solid #60a5fa;background:rgba(8,10,16,.92);color:#93c5fd;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--fu);font-weight:900;box-shadow:0 2px 7px rgba(0,0,0,.7);z-index:3}
 .info-btn-sm:active{transform:scale(.9)}
 
 
@@ -701,7 +702,9 @@ body::before{content:'';position:fixed;inset:0;
 .kt-mini-ops{display:flex;flex-wrap:wrap;gap:5px}
 .kt-mini-op{width:34px;height:34px;border-radius:var(--rsm);background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;cursor:pointer;transition:all .2s}
 .kt-mini-op.dead{opacity:.25;filter:grayscale(1)}
-.kt-mini-op.activated{border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.05)}
+.kt-mini-op.activated{border-color:#22c55e !important;background:rgba(34,197,94,.22);opacity:.55;filter:grayscale(.5)}
+.kt-mini-op.ready{box-shadow:0 0 0 1px rgba(255,255,255,.06)}
+.kt-mini-op-done{position:absolute;top:-5px;right:-5px;width:15px;height:15px;border-radius:50%;background:#22c55e;color:#04240f;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bg);line-height:1}
 .kt-mini-op-hp{position:absolute;bottom:1px;right:2px;font-size:8px;font-family:var(--fu);font-weight:700;color:var(--text)}
 
 /* KT combat dice */
@@ -731,7 +734,7 @@ body::before{content:'';position:fixed;inset:0;
 .kt-osc-name{font-family:var(--ff);font-size:15px}
 .kt-osc-sub{font-size:11px;color:var(--muted);font-family:var(--fu)}
 .kt-osc-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.kt-osc-unique{font-family:var(--fu);font-size:10px;color:var(--gold);letter-spacing:1px;background:rgba(232,184,75,.1);border:1px solid rgba(232,184,75,.3);border-radius:4px;padding:2px 6px}
+.kt-osc-unique{font-family:var(--fu);font-size:10px;color:#1a1400;font-weight:900;letter-spacing:1px;background:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:3px 8px;box-shadow:0 2px 6px rgba(0,0,0,.5)}
 .kt-osc-toggle{width:28px;height:28px;border-radius:var(--rsm);border:1px solid var(--border2);background:var(--card2);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .kt-osc-toggle.active{background:rgba(6,182,212,.2);border-color:#06b6d4;color:#06b6d4}
 .kt-osc-toggle:active{transform:scale(.88)}
@@ -1094,7 +1097,7 @@ const VFX = {
       </div>
     </div>
 
-    <div class="home-footer">Criado por <strong>@coelhokau</strong><br><span onclick="showPixModal()" style="color:var(--gold);cursor:pointer">💜 Apoiar</span> &nbsp;·&nbsp; <span onclick="sendFeedback()" style="color:var(--gold);cursor:pointer">💬 Feedback</span></div>
+    <div class="home-footer"><span class="home-version">v1.4 · 10/ago/2026</span><br>Criado por <strong>@coelhokau</strong><br><span onclick="showPixModal()" style="color:var(--gold);cursor:pointer">💜 Apoiar</span> &nbsp;·&nbsp; <span onclick="sendFeedback()" style="color:var(--gold);cursor:pointer">💬 Feedback</span></div>
 
   </div>
 </div>
@@ -10841,6 +10844,99 @@ const KT_TEAMS = [
         ]},
     ]
   },
+  // ── RAVENERS (Tyranids) ──────────────────────────────
+  {
+    id:'kt-raveners', name:'Raveners', faction:'Tyranids',
+    color:'#a855f7', emoji:'🐍',
+    desc:'Bioformas serpentinas da Grande Devoradora que escavam túneis sob os pés da presa. Começam a batalha em grande parte underground e emergem pelo TUNNEL para atacar de ângulos impossíveis, sumindo de volta antes da resposta. Só 5 operativos, Save 5+ — não trocam bem, mas ameaçam qualquer ponto do killzone.',
+    style:'Elite · Emboscada · Túneis',
+    limit: 5,
+    coreRule: {
+      name:'Regras de Facção + Equipamento',
+      desc:'<strong>Composição.</strong> 1 RAVENER PRIME + 4 operativos da lista: FELLTALON, TREMORSCYTHE, VENOMSPITTER, WARRIOR, WRECKER. Só WARRIOR pode repetir; os demais uma vez cada.<br><br><strong>Tunnel.</strong> No fim do passo Set Up Operatives, coloque o seu Tunnel marker número \'0\' no chão do killzone, inteiramente dentro da sua drop zone e encostando na sua borda do killzone. Como STRATEGIC GAMBIT nos quatro primeiros turnos, você pode colocar o próximo Tunnel marker numerado no chão do killzone, inteiramente a 5\" do marcador anterior. Assim você monta uma sequência de marcadores (0, 1, 2, 3 e 4); depois de cinco colocados, não coloque mais.<br>Os seus Tunnel markers e a área entre marcadores de numeração sequencial (0 e 1, 1 e 2, etc.) formam o seu TUNNEL. Um operativo encostando num marcador, ou na área entre dois marcadores sequenciais, está no seu TUNNEL — a área entre marcadores não sequenciais (ex. 1 e 3) não conta.<br>Em killzone com regras de close quarters (ex. Tomb World), o seu TUNNEL e a distância entre os marcadores podem ser medidos através de terreno Wall. Em killzone com áreas perigosas (ex. Bheta Decima), para a regra Restricted Movement, partes de um Tunnel marker encostando numa área perigosa são tratadas como área perigosa.<br><br><strong>Burrow.</strong> Ao montar o time antes da batalha, os seus dois primeiros operativos devem ser colocados normalmente. Cada outro RAVENER amigo pode ser colocado underground: deixe-o de lado em vez de no killzone.<br>Na Firefight phase, RAVENER amigos underground são ativados e podem counteract normalmente. Enquanto está underground, um RAVENER amigo não pode fazer nenhuma ação além de Burrow. No fim da batalha, cada RAVENER amigo underground é incapacitado.<br><br><strong>Burrow (ação, 1AP).</strong> Se este operativo está underground, coloque-o no seu TUNNEL num lugar onde ele caiba (ele deixa de estar underground e pode ser colocado dentro do control range de inimigos). Até o fim da ativação/counteraction, subtraia 2\" do Move dele.<br>Alternativamente, em vez do efeito acima, se ele está no killzone e no seu TUNNEL, remova-o do killzone: ele agora está underground.<br>Um operativo não pode fazer esta ação carregando um marcador, nem se não estiver underground nem no seu TUNNEL.<br><br><strong>Predatory Instincts.</strong> Na ativação de cada RAVENER amigo, ele pode fazer duas ações Fight.<br>Cada RAVENER amigo pode counteract independente da ordem. Sempre que fizer isso: você pode mudar a ordem dele primeiro, ou mudar a ordem em vez de fazer uma ação (nesse caso ainda conta como tendo feito counteract neste turno); e durante esse counteraction, se ele não fizer uma ação de missão, pode fazer uma ação Burrow grátis.<br><br><strong>EQUIP — Chromatospore Camouflage.</strong> Quando um operativo atira num RAVENER amigo, se você puder reter cover saves, pode reter um cover save adicional. Não é cumulativo com cover save melhorado de terreno Vantage.<br><br><strong>EQUIP — Acid Blood.</strong> Quando um RAVENER amigo está lutando ou retaliando, sempre que um dado de ataque causar dano nele, role 1D6: em 5+, cause 1 de dano no inimigo dessa sequência.<br><br><strong>EQUIP — Metamorphic Flesh.</strong> Sempre que um RAVENER amigo é ativado, ele recupera até D3 Wounds perdidos.<br><br><strong>EQUIP — Heightened Senses.</strong> Uma vez por batalha, depois do roll-off para decidir a iniciativa, se um RAVENER amigo estiver underground e um inimigo estiver a 5\" do seu TUNNEL, você pode re-rolar o seu dado.'
+    },
+    ploys: {
+      strategy: [
+        {name:'Death from Below', desc:'Quando um RAVENER amigo está lutando: se ele fez a ação Burrow durante essa ativação/counteraction, as armas melee dele ganham Balanced; se ele está no seu TUNNEL, as armas melee dele ganham Ceaseless.'},
+        {name:'Whipcord Emergence', desc:'Quando um operativo atira num RAVENER amigo: se esse amigo fez a ação Burrow durante este turno, você pode re-rolar um dos seus dados de defesa; se esse amigo está no seu TUNNEL, você pode re-rolar qualquer um dos seus dados de defesa.'},
+        {name:'Writhe out of Sight', desc:'Selecione um RAVENER amigo no killzone. Ele pode fazer imediatamente uma ação Burrow grátis. Se ele estiver a 2\" do seu TUNNEL, pode fazer antes disso uma ação Fall Back ou Reposition grátis.'},
+        {name:'Tunnel Lurkers', desc:'Sempre que um RAVENER amigo está no seu TUNNEL, ele está em cover, a não ser que esteja a 2\" do operativo ativo. Trate como cover de terreno Light (portanto é afetado por regras que impedem isso, ex. Seek Light e terreno Vantage).'},
+      ],
+      firefight: [
+        {name:'Slithering Evasion', desc:'Use durante a ativação ou counteraction de um RAVENER amigo, antes ou depois de uma ação. Durante essa ativação/counteraction, ele pode: fazer Fall Back por 1 AP a menos; e fazer Charge mesmo dentro do control range de um inimigo, podendo sair do control range dele para isso (mas valem os requisitos normais do movimento).'},
+        {name:'Subterranean Horror', desc:'Use quando um inimigo faz a ação Fight e seleciona um RAVENER amigo que está no seu TUNNEL para lutar. No passo Resolve Attack Dice dessa sequência, você resolve o primeiro dado de ataque (ou seja, o defensor no lugar do atacante).'},
+        {name:'Burrowing Strike', desc:'Use quando um RAVENER amigo faz a ação Burrow. Antes dele ser removido do killzone, ou depois de colocá-lo no seu TUNNEL, cause D3+1 de dano em cada inimigo dentro do control range dele (role separadamente para cada). Não pode ser usado na Strategy phase, nem durante a ativação/counteraction de um FELLTALON se ele fizer a ação Toxic Lunge (e vice-versa).'},
+        {name:'Death Frenzy', desc:'Use quando um RAVENER amigo é incapacitado. Antes dele ser removido do killzone, cause D3 de dano em cada inimigo dentro do control range dele (role separadamente para cada). Se esse amigo for um VENOMSPITTER se beneficiando da ação Distend Dorsal Sac, cause 2D3 de dano em vez disso.'},
+      ],
+    },
+    operatives: [
+      { id:'kt-rav-prime', name:'Ravener Prime', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:21,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time e é obrigatório (1 PRIME + 4 da lista).'},
+          {name:'Neuropredatory Crest', desc:'Ao determinar o controle de um marcador, trate o APL total dos inimigos que o contestam como 1 a menos se pelo menos um deles estiver a 3\" deste operativo (não é mudança no APL, então outras mudanças são cumulativas). Sempre que um inimigo estiver a 3\" deste operativo: o oponente gasta 1 AP adicional para esse inimigo fazer Pick Up Marker e ações de missão; e o oponente não pode re-rolar os dados de ataque ou defesa desse inimigo.'},
+          {name:'Synaptic Link', desc:'STRATEGIC GAMBIT, se este operativo não estiver incapacitado. Role 1D6 e compare com o número do turno atual: se for o dobro ou mais, ganhe 1CP; se for menor, cause dano neste operativo igual ao resultado; qualquer outro resultado, nada acontece.'},
+        ],
+        weapons:[
+          { name:'Tail blade',                      A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 3\"','Rending','Silent'] },
+          { name:'Scything talons & rending claws', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
+        ]},
+      { id:'kt-rav-felltalon', name:'Ravener Felltalon', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:20,
+        abilities:[
+          {name:'Poison', desc:'No passo Resolve Attack Dice, se você causar dano com algum sucesso crítico, o operativo alvo desta arma ganha um Poison token seu (se ainda não tiver). Sempre que um operativo com um Poison token seu é ativado, cause D3 de dano nele.'},
+          {name:'Toxic Lunge', ap:'1AP', desc:'Selecione um inimigo a 2\" deste operativo. Alternativamente, se este operativo estiver underground, selecione um inimigo no seu TUNNEL. Cause D3+2 de dano nesse inimigo e ele ganha um Poison token seu (se ainda não tiver). Este operativo pode fazer esta ação enquanto está underground (isso tem precedência sobre as regras normais de Burrow).'},
+        ],
+        weapons:[
+          { name:'Pincer tail',   A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 3\"','Silent'] },
+          { name:'Toxic glands',  A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 6\"','Silent','Poison'] },
+          { name:'Toxic scythes', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Lethal 5+','Shock','Poison'] },
+        ]},
+      { id:'kt-rav-tremorscythe', name:'Ravener Tremorscythe', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:20,
+        abilities:[
+          {name:'Subterranean Ambush', desc:'Uma vez por turno na Firefight phase, depois que um inimigo faz uma ação em que move mais de 2\" e termina a 2\" do seu TUNNEL, se este operativo estiver underground e estiver ready ou não tiver feito counteract neste turno, você pode interromper para usar esta regra.<br>Se usar, ative ou faça counteract com este operativo (conforme apropriado), mas durante essa ativação/counteraction ele deve lutar contra ou atirar contra aquele inimigo, e não pode fazer isso contra nenhum outro inimigo antes disso (se não for possível, a ativação/counteraction é cancelada e a regra não foi usada). Depois de completá-la, continue a ativação/counteraction do inimigo (se possível e relevante).'},
+          {name:'Hypersensory Hunter', desc:'Este operativo pode fazer a ação Charge mesmo com ordem Conceal, se tiver feito a ação Burrow durante a mesma ativação/counteraction.'},
+        ],
+        weapons:[
+          { name:'Pincer tail',                     A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 3\"','Silent'] },
+          { name:'Scything talons & rending claws', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
+        ]},
+      { id:'kt-rav-venomspitter', name:'Ravener Venomspitter', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:20,
+        abilities:[
+          {name:'Poison', desc:'No passo Resolve Attack Dice, se você causar dano com algum sucesso crítico, o operativo alvo desta arma ganha um Poison token seu (se ainda não tiver). Sempre que um operativo com um Poison token seu é ativado, cause D3 de dano nele.'},
+          {name:'Distend Dorsal Sac', ap:'1AP', desc:'Até este operativo atirar com o venom bolt, até ele repetir esta ação ou até ele fazer a ação Burrow (o que vier primeiro), todos os perfis do venom bolt dele ganham Lethal 5+, +1 no Atk e perdem a regra Range 8\".'},
+        ],
+        weapons:[
+          { name:'Pincer tail', A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 3\"','Silent'] },
+          { name:'Venom bolt', range:'short', profiles:[
+            { name:'blast',   A:4, skill:3, D:3, CD:5, tags:['Range 8\"','Blast 2\"','Poison'] },
+            { name:'focused', A:4, skill:3, D:4, CD:5, tags:['Range 8\"','Piercing 1','Poison'] },
+          ]},
+          { name:'Scything talons', A:5, skill:3, D:4, CD:5, range:'melee' },
+        ]},
+      { id:'kt-rav-wrecker', name:'Ravener Wrecker', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:4, W:20,
+        abilities:[
+          {name:'Reinforced Carapace', desc:'Normal e Critical Dmg de 4 ou mais causam 1 de dano a menos neste operativo.'},
+          {name:'Crush', desc:'Sempre que você strike com as scything talons & crushing claws, você e o oponente fazem um roll-off, somando 1 ao seu resultado se o operativo alvo tiver Wounds 9 ou menos. Se você vencer, cause dano adicional nele igual à diferença entre os dados (máximo de 3 de dano adicional).'},
+        ],
+        weapons:[
+          { name:'Bone mace',                        A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 3\"','Piercing 1','Silent'] },
+          { name:'Scything talons & crushing claws', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Crush'] },
+        ]},
+      { id:'kt-rav-warrior', name:'Ravener Warrior', unique:false, count:4,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:20,
+        abilities:[
+          {name:'Instinctive Behaviour', desc:'Quando este operativo está atirando contra, lutando contra ou retaliando contra um inimigo ferido (wounded), ou contra um inimigo que fez a ação Fall Back neste turno, as armas dele ganham Lethal 5+.'},
+        ],
+        weapons:[
+          { name:'Pincer tail',     A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 3\"','Silent'] },
+          { name:'Scything talons', A:5, skill:3, D:4, CD:5, range:'melee' },
+        ]},
+    ]
+  },
 ];
 
 // ── KILL TEAM ACTIONS ────────────────────────────────
@@ -11498,11 +11594,12 @@ function renderKTActivation() {
       </div>
       <div class="kt-mini-ops">
         ${team.operatives.map(op => `
-          <div class="kt-mini-op ${op.dead?'dead':op.activated?'activated':''}"
-            style="border-color:${op.dead?'':(op.order==='engage'?'#f97316':'#3b82f6')}"
-            onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')" title="${op.displayName} — ${op.order==='engage'?'Engage':'Conceal'}">
+          <div class="kt-mini-op ${op.dead?'dead':op.activated?'activated':'ready'}"
+            style="${op.dead||op.activated?'':`border-color:${op.order==='engage'?'#f97316':'#3b82f6'}`}"
+            onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')" title="${op.displayName} — ${op.dead?'Morto':op.activated?'JÁ ATIVADO':'Pronto · '+(op.order==='engage'?'Engage':'Conceal')}">
             <span style="font-size:13px">${team.emoji}</span>
             <div class="kt-mini-op-hp">${op.dead?'💀':op.curW}</div>
+            ${op.activated&&!op.dead?'<div class="kt-mini-op-done">✓</div>':''}
           </div>`).join('')}
       </div>`;
     overview.appendChild(div);
@@ -11528,7 +11625,7 @@ function renderKTOpCard(op, team, container, clickable) {
   card.innerHTML = `
     <img class="kt-op-portrait" src="images/${op.id}.jpg" onerror="this.remove()">
     <div class="kt-op-portrait-fade"></div>
-    ${op.activated && !op.dead ? '<div class="kt-activated-badge">✓ ATIVADO</div>' : ''}
+    ${op.activated && !op.dead ? `<div class="kt-activated-badge" onclick="event.stopPropagation();ktDeactivateOp('${team.playerId}','${op.instanceId}')" title="Desfazer ativação" style="cursor:pointer">✓ ATIVADO · ↺ desfazer</div>` : ''}
     ${op.dead ? '<div class="kt-dead-badge">💀 MORTO</div>' : ''}
     <div class="kt-op-hdr">
       <div class="kt-op-emoji">${team.emoji}</div>
@@ -11619,6 +11716,24 @@ function ktActivateOp(teamId, instanceId) {
   ktUpdateTurnDisplay();
   renderKTActivation();
   showToast(`✓ ${op.displayName} ativado!`);
+}
+
+function ktDeactivateOp(teamId, instanceId) {
+  const team = KT_SESSION.teams.find(t => t.playerId === teamId);
+  const op = team?.operatives.find(o => o.instanceId === instanceId);
+  if (!op || !op.activated) return;
+  showAppConfirm(`Desfazer a ativação de ${op.displayName}? A vez volta para ${team.playerName}.`, () => {
+    ktPushUndo(`Ativação de ${op.displayName} desfeita`);
+    op.activated = false;
+    op.aplUsed = 0;
+    // devolve a vez ao time dono do operativo
+    const idx = KT_SESSION.teams.findIndex(t => t.playerId === teamId);
+    if (idx >= 0) KT_SESSION.activeIdx = idx;
+    SFX.click();
+    ktUpdateTurnDisplay();
+    renderKTActivation();
+    if (typeof showToast === 'function') showToast(`↺ ${op.displayName} voltou a ficar disponível`);
+  }, '↺ Desativar');
 }
 
 // ── APL como orçamento real de ação ───────────────────
@@ -11871,7 +11986,8 @@ function renderKTOpDetailBody(op, team, isLive) {
       <div style="flex:1;font-family:var(--fu);font-size:12px;color:var(--muted)">Ajustar PV manualmente:</div>
       <button class="qty-btn" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',-1)">−1</button>
       <button class="qty-btn" onclick="ktManualDmg('${team.playerId}','${op.instanceId}',1)">+1</button>
-    </div>` : ''}
+    </div>
+    ${op.activated && !op.dead ? `<button class="btn btn-secondary btn-sm" style="width:100%;margin-top:10px" onclick="document.getElementById('unit-detail-modal').classList.remove('open');ktDeactivateOp('${team.playerId}','${op.instanceId}')">↺ Desfazer ativação</button>` : ''}` : ''}
     <div style="height:8px"></div>`;
   document.getElementById('unit-detail-modal').classList.add('open');
 }
