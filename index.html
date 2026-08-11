@@ -6090,7 +6090,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // ── BOTÃO VOLTAR DO ANDROID → navega DENTRO do app ────
 // Mantemos sempre uma entrada "guarda" no histórico: cada toque no ←
 // do sistema é capturado, tratado como voltar do app, e a guarda é reposta.
-let _exitArmed = false;
 function _openModals() {
   return Array.from(document.querySelectorAll('.modal-overlay.open'));
 }
@@ -6120,18 +6119,13 @@ function handleSystemBack() {
     if (NAV.current() === 'screen-home' && typeof initHome === 'function') initHome();
     return;
   }
-  // 4) Já está na home: pede confirmação antes de fechar o app
-  if (_exitArmed) { _exitArmed = false; history.back(); return; }
-  _exitArmed = true;
-  if (typeof showToast === 'function') showToast('Toque em voltar novamente para sair');
-  setTimeout(() => { _exitArmed = false; }, 2000);
+  // 4) Já está na home: não faz nada (o app não fecha pelo botão voltar).
+  // Para sair, o usuário usa o gesto/botão de início do sistema.
 }
 
 window.addEventListener('popstate', () => {
-  const wasArmed = _exitArmed;
   handleSystemBack();
-  // Repõe a guarda, exceto quando o usuário confirmou a saída
-  if (!(wasArmed && !_exitArmed)) _pushGuard();
+  _pushGuard(); // repõe a guarda: o botão voltar nunca fecha o app
 });
 try { history.replaceState({ auspex: true }, ''); _pushGuard(); } catch (e) {}
 
@@ -11054,6 +11048,110 @@ const KT_TEAMS = [
         weapons:[
           { name:'Pincer tail',     A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 3\"','Silent'] },
           { name:'Scything talons', A:5, skill:3, D:4, CD:5, range:'melee' },
+        ]},
+    ]
+  },
+  // ── BLADES OF KHAINE (Aeldari Asuryani) ──────────────
+  {
+    id:'kt-bladesofkhaine', name:'Blades of Khaine', faction:'Aeldari (Asuryani)',
+    color:'#14b8a6', emoji:'🗡',
+    desc:'Aspect Warriors de três templos — Dire Avengers, Howling Banshees e Striking Scorpions — reunidos num único time. O motor da facção são as ASPECT TECHNIQUES: 15 habilidades específicas por Aspecto, uma por ativação e uma por turno cada. Monotema (só um Aspecto) libera usar cada técnica duas vezes por turno.',
+    style:'Elite · Técnicas · Ágil',
+    limit: 8,
+    coreRule: {
+      name:'Regras de Facção + Equipamento',
+      desc:'<strong>Composição.</strong> 1 EXARCH (DIRE AVENGER EXARCH, HOWLING BANSHEE EXARCH ou STRIKING SCORPION EXARCH) + 7 operativos da lista: DIRE AVENGER WARRIOR, HOWLING BANSHEE WARRIOR, STRIKING SCORPION WARRIOR (podem repetir livremente).<br><br><strong>Archetypes.</strong> Seek &amp; Destroy, ou o archetype associado ao Aspecto mais comum no seu time (se dois empatarem, escolha um deles): DIRE AVENGER = Security; HOWLING BANSHEE = Recon; STRIKING SCORPION = Infiltration.<br><br><strong>Aspect Techniques.</strong> Cada ASPECT TECHNIQUE pertence a uma categoria (Dire Avenger, Howling Banshee ou Striking Scorpion) e só pode ser usada com um operativo amigo que tenha a palavra-chave de Aspecto correspondente.<br>• Você não pode usar mais de uma ASPECT TECHNIQUE por ativação ou counteraction.<br>• Você não pode usar cada ASPECT TECHNIQUE mais de uma vez por turno.<br>• Se todo BLADES OF KHAINE amigo selecionado para o deployment tiver a mesma palavra-chave de Aspecto (ex. só STRIKING SCORPION), você pode usar cada ASPECT TECHNIQUE até duas vezes por turno em vez de uma.<br><br><strong>Aspect Techniques — DIRE AVENGER.</strong> • <strong>The Slicing Hurricane:</strong> use quando um DIRE AVENGER amigo faz a ação Reposition. Ele pode fazer a ação Shoot durante essa ação (num lugar onde ele caiba, e a distância restante do Reposition pode ser usada depois). Você deve selecionar o shuriken catapult, shuriken pistol ou twin shuriken catapult dele para esse Shoot.<br>• <strong>Death of a Thousand Blades:</strong> use quando um DIRE AVENGER amigo faz Shoot e você seleciona um shuriken catapult ou twin shuriken catapult. Até o fim da ação, essa arma ganha Torrent 2\", mas você não pode selecionar mais de um alvo secundário.<br>• <strong>Vigilance of the Avenger:</strong> use quando um DIRE AVENGER amigo faz Shoot e você seleciona um shuriken catapult ou twin shuriken catapult. Até o fim da ação, essa arma ganha Lethal 5+.<br>• <strong>Unstinting, Immovable:</strong> use quando um operativo atira num DIRE AVENGER amigo e você rolou dois ou mais fails. Você pode descartar um deles para reter o outro como sucesso normal.<br>• <strong>Raging Heat of the Dying Flame:</strong> use durante a ativação de um DIRE AVENGER amigo. Até o começo da próxima ativação dele, você pode ignorar mudanças nos stats dele causadas por ferimento (inclusive nos stats das armas).<br><br><strong>Aspect Techniques — HOWLING BANSHEE.</strong> • <strong>The Woe:</strong> use durante a ativação de um HOWLING BANSHEE amigo, depois dele ter feito a ação Charge e incapacitado um inimigo durante a ação Fight, e não estar mais no control range de inimigos. Ele faz imediatamente um Charge grátis usando a distância de movimento que sobrou do primeiro Charge (pode fazer dois Charge na ativação para isso). Ele não pode ter feito nenhuma outra ação nessa ativação (mas pode depois de resolver a técnica).<br>• <strong>Rain of Tears:</strong> use quando um HOWLING BANSHEE amigo está lutando, depois de você strike com sucesso crítico, se o inimigo não foi incapacitado. Encerre a sequência (dados de ataque restantes são descartados) e faça imediatamente um Fall Back grátis de até 3\" com ele (a ação Fight então termina). Ele pode fazer isso mesmo que tenha feito uma ação que o impeça de fazer Fall Back.<br>• <strong>Acrobatic:</strong> use quando um HOWLING BANSHEE amigo faz uma ação em que move. Até o fim da ação ele: pode ignorar todas as distâncias verticais ao subir e descer; pode mover através de inimigos, mover dentro do control range deles e, no Charge, sair do control range deles (ainda deve terminar o movimento cumprindo todos os requisitos); e não pode mover mais que o Move dele se for a ação Charge.<br>• <strong>Scream-that-Steals:</strong> use quando um HOWLING BANSHEE amigo está lutando ou retaliando, no início do passo Resolve Attack Dice. Você pode resolver um dos seus sucessos antes da ordem normal; se fizer, esse sucesso deve ser usado para bloquear.<br>• <strong>Shriek-that-Kills:</strong> use quando um HOWLING BANSHEE amigo faz a ação Shoot. Até o fim da ação ele pode usar a arma ranged: Shriek-that-kills — A5, 3+, D1/2, Range 6\", Saturate, Seek Light, Stun, Torrent 1\".<br><br><strong>Aspect Techniques — STRIKING SCORPION.</strong> • <strong>Patient Stalk, Sudden Blow:</strong> use quando um STRIKING SCORPION amigo com ordem Conceal faz a ação Reposition. Durante essa ação ele pode mover dentro do control range de inimigos (não pode terminar o movimento lá), e você pode causar D3+2 de dano num inimigo em cujo control range ele entrou, depois de mover.<br>• <strong>Strike and Fade:</strong> use quando um STRIKING SCORPION amigo incapacita um inimigo lutando ou retaliando, e não está mais a 3\" de inimigos. Mude a ordem dele para Conceal e ele faz imediatamente um Dash grátis, mesmo que tenha feito uma ação que o impeça de fazer Dash.<br>• <strong>Scorpion\'s Eye:</strong> use quando um STRIKING SCORPION amigo faz Shoot e você seleciona um shuriken pistol. Até o fim da ação, essa arma ganha Seek Light.<br>• <strong>Merciless Strikes:</strong> use quando um STRIKING SCORPION amigo está lutando, na primeira vez que você strike com sucesso crítico na sequência. Até o fim da sequência, a arma melee dele ganha Shock.<br>• <strong>One with the Gloom:</strong> use durante a ativação de um STRIKING SCORPION amigo. Até o começo da próxima ativação dele, enquanto ele tiver ordem Conceal e estiver em cover, ele não pode ser selecionado como alvo válido, com precedência sobre todas as outras regras (ex. Seek, terreno Vantage), exceto estar a 2\".<br><br><strong>EQUIP — Rune of Prophecy.</strong> Uma vez por batalha, depois do roll-off para decidir a iniciativa, você pode somar D3 ou subtrair D3 do seu resultado.<br><br><strong>EQUIP — Rune of Shielding.</strong> Uma vez por batalha, quando um dado de ataque causa Normal Dmg num BLADES OF KHAINE amigo, você pode ignorar esse dano.<br><br><strong>EQUIP — Rune of Foresight.</strong> Quando este equipamento é revelado, role 1D3. Na Strategy phase do turno igual ao resultado, você ganha 1CP adicional.<br><br><strong>EQUIP — Wraithbone Talisman.</strong> Uma vez por turno, quando um BLADES OF KHAINE amigo está atirando, lutando ou retaliando, se você rolar dois ou mais fails, pode descartar um deles para reter outro como sucesso normal.'
+    },
+    ploys: {
+      strategy: [
+        {name:'Forewarned', desc:'Quando um operativo atira num BLADES OF KHAINE amigo ready, você pode re-rolar todos os seus dados de defesa que tenham um mesmo resultado (ex. todos os resultados 2).'},
+        {name:'Ruthless Poise', desc:'Quando um BLADES OF KHAINE amigo está lutando contra um inimigo ready, as armas melee dele ganham Ceaseless.'},
+        {name:"Khaine's Vengeance", desc:'Quando um BLADES OF KHAINE amigo está atirando num inimigo expended, as armas ranged dele ganham Ceaseless.'},
+        {name:'Dance of Death', desc:'Selecione dois BLADES OF KHAINE amigos visíveis entre si e a 6\" um do outro. Remova os dois do killzone e coloque-os de volta nas posições anteriores um do outro (ou seja, troque as posições).'},
+      ],
+      firefight: [
+        {name:'Bladewind', desc:'Use durante a ativação de um BLADES OF KHAINE amigo. Durante essa ativação, ele pode fazer duas ações Fight.'},
+        {name:'Starfall', desc:'Use durante a ativação de um BLADES OF KHAINE amigo. Durante essa ativação, ele pode fazer duas ações Shoot.'},
+        {name:'Fading Light', desc:'Use durante a ativação de um BLADES OF KHAINE amigo, antes ou depois dele fazer uma ação. Durante essa ativação, ele pode fazer a ação Fall Back por 1 AP a menos.'},
+        {name:'Contempt', desc:'Use quando um BLADES OF KHAINE amigo está retaliando ou um inimigo está atirando nele, depois do oponente rolar os dados de ataque mas antes dos re-rolls. Até o fim da sequência, o oponente não pode re-rolar os dados de ataque dele (se ele tinha declarado algum firefight ploy nessa sequência que permitisse re-rolar, o ploy é cancelado e o CP é devolvido).'},
+      ],
+    },
+    operatives: [
+      { id:'kt-bok-da-exarch', name:'Dire Avenger Exarch', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:9,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time. Escolha um dos três Exarchs (Dire Avenger, Howling Banshee ou Striking Scorpion).'},
+          {name:'Opções de arma', desc:'Escolha: Shuriken catapult + Fists; Twin shuriken catapult + Gun butts; ou uma opção de cada — (1) Diresword ou Power weapon; (2) Shuriken pistol ou Shimmershield.'},
+          {name:'Exarch', desc:'Este operativo pode fazer duas ações Shoot ou duas ações Fight durante a ativação dele.'},
+          {name:'Defence Tactics', desc:'Quando este operativo contesta um objective marker ou um dos seus mission markers, ou quando está atirando num inimigo que contesta, as armas dele ganham Balanced.'},
+          {name:'Shimmershield', desc:'Quando um operativo atira num BLADES OF KHAINE amigo visível a e a 2\" deste operativo, ignore a regra Piercing. Este operativo só tem esta regra se você escolher a opção de arma shimmershield.'},
+        ],
+        weapons:[
+          { name:'Shuriken catapult',      A:4, skill:3, D:3, CD:4, range:'long',  tags:['Rending'] },
+          { name:'Shuriken pistol',        A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"','Rending'] },
+          { name:'Twin shuriken catapult', A:4, skill:3, D:3, CD:4, range:'long',  tags:['Ceaseless','Rending'] },
+          { name:'Diresword',              A:5, skill:3, D:4, CD:5, range:'melee', tags:['Lethal 5+','Rending'] },
+          { name:'Power weapon',           A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+          { name:'Fists',                  A:4, skill:3, D:2, CD:4, range:'melee' },
+          { name:'Gun butts',              A:3, skill:4, D:2, CD:3, range:'melee' },
+        ]},
+      { id:'kt-bok-hb-exarch', name:'Howling Banshee Exarch', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:9,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time. Escolha um dos três Exarchs (Dire Avenger, Howling Banshee ou Striking Scorpion).'},
+          {name:'Opções de arma', desc:'Escolha: Mirrorswords; Shuriken pistol + Executioner; Shuriken pistol + Power weapon; Shuriken pistol + Triskele; ou Triskele + Power weapon.'},
+          {name:'Exarch', desc:'Este operativo pode fazer duas ações Shoot ou duas ações Fight durante a ativação dele.'},
+          {name:'Banshee Mask', desc:'Quando este operativo está lutando, piore em 1 o Hit das armas melee do inimigo. Não é cumulativo com estar ferido.'},
+        ],
+        weapons:[
+          { name:'Shuriken pistol',    A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"','Rending'] },
+          { name:'Triskele (throw)',   A:4, skill:3, D:2, CD:3, range:'short', tags:['Range 8\"','Rending','Torrent 2\"'] },
+          { name:'Executioner',        A:5, skill:3, D:3, CD:7, range:'melee', tags:['Lethal 5+'] },
+          { name:'Mirrorswords',       A:5, skill:3, D:4, CD:6, range:'melee', tags:['Ceaseless','Lethal 5+'] },
+          { name:'Power weapon',       A:5, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+          { name:'Triskele (slice)',   A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
+        ]},
+      { id:'kt-bok-ss-exarch', name:'Striking Scorpion Exarch', unique:true,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:9,
+        abilities:[
+          {name:'LÍDER', desc:'Este operativo é o líder do time. Escolha um dos três Exarchs (Dire Avenger, Howling Banshee ou Striking Scorpion).'},
+          {name:'Opções de arma', desc:'Escolha: Shuriken pistol + Biting blade; Shuriken pistol + Scorpion\'s claw and chainsword; ou Twin shuriken pistols + Twin chainswords.'},
+          {name:'Exarch', desc:'Este operativo pode fazer duas ações Shoot ou duas ações Fight durante a ativação dele.'},
+          {name:'Mandiblasters', desc:'Quando este operativo faz a ação Fight, no início do passo Roll Attack Dice, você pode usar esta regra: cause 2 de dano no inimigo dessa sequência.'},
+        ],
+        weapons:[
+          { name:'Shuriken pistol',                 A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"','Rending'] },
+          { name:'Twin shuriken pistols',           A:4, skill:4, D:3, CD:4, range:'short', tags:['Range 8\"','Ceaseless','Rending'] },
+          { name:'Biting blade',                    A:5, skill:3, D:5, CD:6, range:'melee', tags:['Rending'] },
+          { name:"Scorpion's claw and chainsword",  A:5, skill:3, D:4, CD:6, range:'melee', tags:['Brutal','Lethal 5+'] },
+          { name:'Twin chainswords',                A:5, skill:3, D:4, CD:5, range:'melee', tags:['Ceaseless','Rending'] },
+        ]},
+      { id:'kt-bok-da-warrior', name:'Dire Avenger Warrior', unique:false, count:7,
+        M:'7\"', APL:3, GA:1, DF:3, SV:4, W:8,
+        abilities:[
+          {name:'Defence Tactics', desc:'Quando este operativo contesta um objective marker ou um dos seus mission markers, ou quando está atirando num inimigo que contesta, as armas dele ganham Balanced.'},
+        ],
+        weapons:[
+          { name:'Shuriken catapult', A:4, skill:3, D:3, CD:4, range:'long', tags:['Rending'] },
+          { name:'Fists',             A:4, skill:3, D:2, CD:4, range:'melee' },
+        ]},
+      { id:'kt-bok-hb-warrior', name:'Howling Banshee Warrior', unique:false, count:7,
+        M:'7\"', APL:3, GA:1, DF:3, SV:4, W:8,
+        abilities:[
+          {name:'Banshee Mask', desc:'Quando este operativo está lutando, piore em 1 o Hit das armas melee do inimigo. Não é cumulativo com estar ferido.'},
+        ],
+        weapons:[
+          { name:'Shuriken pistol', A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"','Rending'] },
+          { name:'Power weapon',    A:4, skill:3, D:4, CD:6, range:'melee', tags:['Lethal 5+'] },
+        ]},
+      { id:'kt-bok-ss-warrior', name:'Striking Scorpion Warrior', unique:false, count:7,
+        M:'7\"', APL:3, GA:1, DF:3, SV:3, W:8,
+        abilities:[
+          {name:'Mandiblasters', desc:'Quando este operativo faz a ação Fight, no início do passo Roll Attack Dice, você pode usar esta regra: cause 2 de dano no inimigo dessa sequência.'},
+        ],
+        weapons:[
+          { name:'Shuriken pistol', A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"','Rending'] },
+          { name:'Chainsword',      A:4, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
         ]},
     ]
   },
