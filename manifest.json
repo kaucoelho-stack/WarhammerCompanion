@@ -1,7 +1,9 @@
 {
-  "name": "Warhammer 40K — Campo de Batalha",
-  "short_name": "WH40K",
-  "start_url": "/",
+  "name": "Auspex — 40K & Kill Team",
+  "short_name": "Auspex",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0a0c",
   "theme_color": "#0a0a0c",

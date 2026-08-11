@@ -2468,7 +2468,7 @@ function showVPModal40() {
         <div style="display:flex;gap:6px">${_vpQuick('vpAdd40', p.playerId, 'Secundária')}<button class="btn btn-secondary btn-sm" style="flex:1" onclick="vpAdd40('${p.playerId}',-1,'Secundária')">−1</button></div>
       </div>`;
     }).join('');
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 function vpAdd40(playerId, pts, cat) {
   const p = getTrackerPlayer(playerId); if (!p) return;
@@ -2502,7 +2502,7 @@ function showVPModalKT() {
         ${t.tacOps.length < 3 ? `<div style="display:flex;gap:6px;margin-top:6px"><input class="form-input" id="tacop-in-${t.playerId}" placeholder="Nova Tac Op..." style="flex:1;font-size:12px"><button class="btn btn-secondary btn-sm" onclick="ktAddTacOp('${t.playerId}')">＋</button></div>` : ''}
       </div>`;
     }).join('');
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 function vpAddKT(playerId, pts) {
   const t = KT_SESSION.teams.find(x => x.playerId === playerId); if (!t) return;
@@ -2561,7 +2561,7 @@ function showMissionSetup() {
     <div class="sec-label">Regra da Missão</div>
     <input class="form-input" id="mission-rule" placeholder="Ex.: Nowhere to Hide..." value="${_escM(m.rule)}" style="width:100%;margin-bottom:14px">
     <button class="btn btn-primary" onclick="saveMissionSetup()">Salvar</button>`;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 function saveMissionSetup() {
   TRACKER.mission = {
@@ -2698,7 +2698,7 @@ function showW40KCondPicker(playerId, unitId) {
     return `<div class="kt-ploy-row ${on ? 'used' : ''}" onclick="w40kToggleCond('${playerId}','${unitId}','${c.replace(/'/g,"\\'")}')"><div class="kt-ploy-check">${on ? '✓' : ''}</div><div class="kt-ploy-info"><div class="kt-ploy-name">${c}</div></div></div>`;
   }).join('');
   document.getElementById('rules-modal-body').innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Marque as condições ativas nesta unidade. "Abaixo da força" é detectado automaticamente (metade ou menos das miniaturas vivas).</div>${rows}`;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 function w40kToggleCond(playerId, unitId, cond) {
   const _baseId = String(unitId).split('#')[0];
@@ -4716,6 +4716,26 @@ function showToast(msg, duration=2000) {
 
 // ── RULES MODAL BACK NAVIGATION ──────────────────────
 let ktRulesBackStack = [];
+let _ktRulesCurrentRender = null;
+
+// Abre o modal de regras SEMPRE com o cabeçalho no estado padrão:
+// ← aparece se há para onde voltar; ✕ (fechar tudo) visível.
+function openRulesModal() {
+  const back = document.getElementById('rules-modal-back');
+  if (back) back.style.display = ktRulesBackStack.length ? 'flex' : 'none';
+  const close = document.getElementById('rules-modal-close');
+  if (close) close.style.display = '';
+  document.getElementById('rules-modal').classList.add('open');
+}
+// Popups de glossário: só a seta de voltar (sem ✕), quando há para onde voltar.
+function rulesModalBackOnly() {
+  const back = document.getElementById('rules-modal-back');
+  const close = document.getElementById('rules-modal-close');
+  if (back && ktRulesBackStack.length) {
+    back.style.display = 'flex';
+    if (close) close.style.display = 'none';
+  }
+}
 
 function ktRulesNavigate(renderFn) {
   // Call this INSTEAD of directly calling a rules-render function when the
@@ -4773,7 +4793,7 @@ function showFactionRulesModal(factionId) {
   }
 
   body.innerHTML = html;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 
 function showKTPloyChecklist(playerId) {
@@ -4809,7 +4829,7 @@ function showKTPloyChecklist(playerId) {
   }
 
   body.innerHTML = html;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 
 function ktTogglePloy(playerId, kind, ployName) {
@@ -4862,6 +4882,7 @@ function ktRulesNote() {
 }
 
 function showKTTeamRulesModal(teamId) {
+  _ktRulesCurrentRender = () => showKTTeamRulesModal(teamId);
   const team = KT_DB.getTeam(teamId);
   if (!team) return;
   SFX.click();
@@ -4922,7 +4943,7 @@ function showKTTeamRulesModal(teamId) {
   }
 
   body.innerHTML = html + ktRulesNote();
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 
 
@@ -5009,6 +5030,27 @@ const KT_WEAPON_KEYWORDS = {
   'Explosive':           { name:'Explosive', desc:'Pode Atirar mesmo no alcance de controle de inimigo. O operativo é sempre o alvo principal e não pode estar em cobertura nem obscurecido.' },
   'Shield':              { name:'Shield', desc:'Ao lutar ou retaliar com esta arma, cada bloqueio seu pode bloquear dois sucessos não resolvidos (em vez de um).' },
   'Phase Sweep':         { name:'Phase Sweep', desc:'Após um Fight com este perfil (se não incapacitado), faça ações Fight grátis contra cada inimigo no alcance de controle, uma vez cada, usando este perfil.' },
+  'Roll-off':            { name:'Roll-off', desc:'Cada jogador rola 1D6; quem tirar mais vence (empate = rola de novo). Usado principalmente para decidir a iniciativa no início do Turning Point.' },
+  'roll-off':            { name:'Roll-off', desc:'Cada jogador rola 1D6; quem tirar mais vence (empate = rola de novo). Usado principalmente para decidir a iniciativa no início do Turning Point.' },
+  'Burrow':              { name:'Burrow (Escavar)', desc:'Ação de alguns times (ex.: Raveners): o operativo mergulha no subsolo (underground) e some do killzone, podendo emergir depois pelo TUNNEL.' },
+  'killzone':            { name:'Killzone', desc:'A área de jogo do Kill Team — a mesa com o terreno onde a partida acontece.' },
+  'Killzone':            { name:'Killzone', desc:'A área de jogo do Kill Team — a mesa com o terreno onde a partida acontece.' },
+  'Vantage':             { name:'Terreno Vantage', desc:'Terreno elevado onde dá para subir. Operativos em Vantage enxergam por cima de coberturas mais baixas e ignoram a cobertura de terreno Light abaixo deles.' },
+  'Wall':                { name:'Terreno Wall', desc:'Parede: bloqueia visão e movimento. Só dá para passar escalando (Climb) ou contornando.' },
+  'Restricted':          { name:'Movimento Restrito (Restricted)', desc:'Terreno que limita o movimento: normalmente não dá para atravessar sem escalar/contornar, ou custa deslocamento extra.' },
+  'Firefight':           { name:'Firefight Phase', desc:'A fase principal do Turning Point: os jogadores alternam ativações de operativo em operativo até todos terem sido ativados.' },
+  'Counteract':          { name:'Counteract', desc:'Quando o oponente ativa um operativo e você já ativou todos os seus, você pode fazer uma ação grátis com um operativo já ativado (normalmente limitada pela ordem dele).' },
+  'counteraction':       { name:'Counteract', desc:'Quando o oponente ativa um operativo e você já ativou todos os seus, você pode fazer uma ação grátis com um operativo já ativado.' },
+  'Cover save':          { name:'Cover Save', desc:'Dado de defesa extra ganho por estar em cobertura: você retém automaticamente um sucesso normal a mais na defesa.' },
+  'cover':               { name:'Cover (Cobertura)', desc:'Estar protegido por terreno ao ser alvejado: garante reter automaticamente um sucesso normal de defesa (a menos que a arma tenha Saturate ou Seek).' },
+  'Fall Back':           { name:'Fall Back (Recuar)', desc:'Ação de movimento usada para sair do control range de um inimigo. Custa APL extra e o operativo normalmente não pode atirar/lutar no mesmo turno.' },
+  'Reposition':          { name:'Reposition (Reposicionar)', desc:'A ação de movimento normal do Kill Team: mova o operativo até o valor de Move (M) dele.' },
+  'Dash':                { name:'Dash (Arrancada)', desc:'Ação de movimento curta: mova o operativo até 3", ignorando o valor de Move.' },
+  'Charge':              { name:'Charge (Investida)', desc:'Ação de movimento para engajar: mova até M + 2" e termine no control range de um inimigo. Só com ordem Engage.' },
+  'control range':       { name:'Control Range', desc:'A zona ao redor do operativo (normalmente 1"). Estar no control range de um inimigo significa estar engajado com ele.' },
+  'underground':         { name:'Underground', desc:'Estado fora do killzone (usado por times que escavam, como os Raveners): o operativo não pode ser alvejado nem interagir até emergir.' },
+  'TUNNEL':              { name:'TUNNEL (Túnel)', desc:'Marcador colocado por times escavadores. Serve de ponto de emergência e concede benefícios (como cobertura) aos operativos ligados a ele.' },
+  'obscured':            { name:'Obscured (Obscurecido)', desc:'Quando terreno Heavy fica entre atirador e alvo: o alvo não pode ser escolhido como alvo principal (salvo regras que ignorem isso).' },
   'Anti-PSYKER':         { name:'Anti-PSYKER', desc:'Efeito extra contra operativos com a keyword PSYKER (normalmente dano/penalidade adicional contra eles).' },
   'PSYCHIC':             { name:'PSYCHIC (Psíquico)', desc:'Marca a arma/ação como poder psíquico. Só operativos PSYKER podem usar; alguns efeitos e regras anulam ou punem ações PSYCHIC.' },
   'Piercing Crits':      { name:'Piercing Crits X', desc:'Como Piercing, mas só entra em ação se você conseguir pelo menos um sucesso crítico: o defensor rola X dado(s) de defesa a menos.' },
@@ -5055,11 +5097,15 @@ function linkifyKeywords(text) {
   });
 }
 
-function showKeywordPopup(tagText) {
+function showKeywordPopup(tagText, fromRender) {
   const kw = findWeaponKeyword(tagText);
   SFX.click();
   if (!kw) { showToast(`ℹ ${tagText}`, 2000); return; }
   const modal = document.getElementById('rules-modal');
+  // Se já havia uma tela de regras aberta, empilha para o ← voltar até ela
+  if (modal && modal.classList.contains('open') && _ktRulesCurrentRender) {
+    ktRulesPushCurrent(_ktRulesCurrentRender);
+  }
   document.getElementById('rules-modal-title').textContent = `🔑 ${kw.fullTag}`;
   document.getElementById('rules-modal-body').innerHTML = `
     <div class="rule-card" style="margin-top:0">
@@ -5067,7 +5113,8 @@ function showKeywordPopup(tagText) {
       <div class="rule-card-desc" style="font-size:13px;margin-top:6px">${kw.desc}</div>
     </div>
     <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="ktRulesPushCurrent(openGlobalRulesHub);ktRulesNavigate(()=>showKTCoreRulesModal())">ℹ️ Ver todas as regras e termos</button>`;
-  modal.classList.add('open');
+  openRulesModal();
+  rulesModalBackOnly();
 }
 
 function renderTagPills(tags) {
@@ -5076,6 +5123,7 @@ function renderTagPills(tags) {
 }
 
 function showKTCoreRulesModal() {
+  _ktRulesCurrentRender = showKTCoreRulesModal;
   SFX.click();
   document.getElementById('rules-modal-title').textContent = 'ℹ️ Regras Gerais — Kill Team';
   const body = document.getElementById('rules-modal-body');
@@ -5094,12 +5142,13 @@ function showKTCoreRulesModal() {
   });
 
   body.innerHTML = html;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 
 
 function openGlobalRulesHub() {
   SFX.click();
+  _ktRulesCurrentRender = openGlobalRulesHub;
   ktRulesBackStack.length = 0;
   const backBtn0 = document.getElementById('rules-modal-back');
   if (backBtn0) backBtn0.style.display = 'none';
@@ -5121,7 +5170,7 @@ function openGlobalRulesHub() {
         <div class="rule-card-desc">Setup, turnos, ações, tiro, dano e o glossário completo de palavras-chave.</div>
       </div>`;
     document.getElementById('rules-modal-body').innerHTML = html;
-    document.getElementById('rules-modal').classList.add('open');
+    openRulesModal();
     return;
   }
 
@@ -5137,7 +5186,7 @@ function openGlobalRulesHub() {
       </div>`;
     });
     document.getElementById('rules-modal-body').innerHTML = html;
-    document.getElementById('rules-modal').classList.add('open');
+    openRulesModal();
     return;
   }
 
@@ -5162,7 +5211,7 @@ function openGlobalRulesHub() {
     </div>`;
   });
   document.getElementById('rules-modal-body').innerHTML = html;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 
 
@@ -6037,6 +6086,55 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.innerHTML = '<h2 style="color:#e8b84b;margin-bottom:16px">⚠ Erro ao iniciar</h2><pre style="white-space:pre-wrap;color:#ede9e0;word-break:break-all">' + (err.stack||err.message||String(err)) + '</pre><p style="margin-top:16px;color:#6a6860">Tire um print e manda pro Claude!</p>';
   }
 });
+
+// ── BOTÃO VOLTAR DO ANDROID → navega DENTRO do app ────
+// Mantemos sempre uma entrada "guarda" no histórico: cada toque no ←
+// do sistema é capturado, tratado como voltar do app, e a guarda é reposta.
+let _exitArmed = false;
+function _openModals() {
+  return Array.from(document.querySelectorAll('.modal-overlay.open'));
+}
+function _pushGuard() { try { history.pushState({ auspex: true }, ''); } catch (e) {} }
+
+function handleSystemBack() {
+  // 1) Algum modal aberto? Fecha o mais recente.
+  const modals = _openModals();
+  if (modals.length) {
+    const top = modals[modals.length - 1];
+    if (top.id === 'app-confirm-modal') { appConfirmClose(false); return; }
+    // Modal de regras com histórico interno (glossário → regras do time)
+    if (top.id === 'rules-modal' && typeof ktRulesBackStack !== 'undefined' && ktRulesBackStack.length) {
+      ktRulesGoBack(); return;
+    }
+    if (typeof ktRulesBackStack !== 'undefined') ktRulesBackStack.length = 0;
+    top.classList.remove('open');
+    return;
+  }
+  // 2) Tela de batalha: confirma antes de sair (mesma regra do ← do app)
+  const cur = NAV.current();
+  if (cur === 'screen-battle') { confirmLeaveBattle('40k'); return; }
+  if (cur === 'screen-kt-battle') { confirmLeaveBattle('kt'); return; }
+  // 3) Volta uma tela
+  if (NAV.stack.length > 1) {
+    NAV.back();
+    if (NAV.current() === 'screen-home' && typeof initHome === 'function') initHome();
+    return;
+  }
+  // 4) Já está na home: pede confirmação antes de fechar o app
+  if (_exitArmed) { _exitArmed = false; history.back(); return; }
+  _exitArmed = true;
+  if (typeof showToast === 'function') showToast('Toque em voltar novamente para sair');
+  setTimeout(() => { _exitArmed = false; }, 2000);
+}
+
+window.addEventListener('popstate', () => {
+  const wasArmed = _exitArmed;
+  handleSystemBack();
+  // Repõe a guarda, exceto quando o usuário confirmou a saída
+  if (!(wasArmed && !_exitArmed)) _pushGuard();
+});
+try { history.replaceState({ auspex: true }, ''); _pushGuard(); } catch (e) {}
+
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 </script>
@@ -11440,7 +11538,7 @@ function ktShowFirstInitiativePrompt() {
       <button class="btn btn-secondary" style="margin-bottom:8px;border-left:4px solid ${t.color};text-align:left" onclick="ktSetFirstActivator(${i})">${t.emoji} ${t.playerName} tem iniciativa</button>
     `).join('')}
   `;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 
 function ktSetFirstActivator(idx) {
@@ -11515,7 +11613,7 @@ function showCPExplainer() {
     </div>
     <div style="font-size:11px;color:var(--muted);margin-top:8px">💡 Toque em ℹ️ no time pra ver os Ploys específicos dele.</div>
   `;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 
 function ktChangeCP(playerId, delta) {
@@ -11794,7 +11892,7 @@ function showKTTokenPicker(teamId, instanceId) {
   }).join('');
   document.getElementById('rules-modal-body').innerHTML =
     `<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Marque os tokens/condições ativos neste operativo. "Ferido" é detectado automaticamente pelos ferimentos (e já aplica −1 APL).</div>${rows}`;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 function ktToggleToken(teamId, instanceId, tk) {
   const team = KT_SESSION.teams.find(t => t.playerId === teamId);
@@ -11824,7 +11922,7 @@ function ktShowInitiativePrompt() {
     `).join('')}
     <button class="btn btn-secondary btn-sm" style="opacity:.7;margin-top:4px" onclick="ktApplyTurnCP(null)">Pular (não ajustar CP agora)</button>
   `;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 
 function ktApplyTurnCP(initiativePlayerId) {
@@ -11922,7 +12020,8 @@ function show40KTerm(term) {
       <div class="rule-card-desc" style="font-size:13px;margin-top:6px">${desc}</div>
     </div>
     <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="document.getElementById('rules-modal').classList.remove('open');NAV.go('screen-rules-page',initRulesPage)">📖 Ver todas as regras e termos</button>`;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
+  rulesModalBackOnly();
 }
 
 let _rulesTab = '40k';
@@ -12366,7 +12465,7 @@ function ktShowDefWeaponPicker() {
         <div class="rule-card-name">${w.name}</div>
         <div class="rule-card-desc">A:${w.A} · Skill:${w.skill}+ · D:${w.D}/C:${w.CD}${w.tags&&w.tags.length?' · '+w.tags.join(', '):''}</div>
       </div>`).join('')}`;
-  document.getElementById('rules-modal').classList.add('open');
+  openRulesModal();
 }
 
 function ktConfirmDefWeapon(idx) {
@@ -12678,7 +12777,7 @@ function renderKTStatus() {
   <div class="sheet-hdr">
     <button class="hdr-back" id="rules-modal-back" style="display:none;flex-shrink:0;margin-right:4px" onclick="ktRulesGoBack()">←</button>
     <div class="sheet-title" id="rules-modal-title">ℹ️ REGRAS</div>
-    <button class="sheet-close" onclick="ktRulesBackStack.length=0;document.getElementById('rules-modal').classList.remove('open')">✕</button>
+    <button class="sheet-close" id="rules-modal-close" onclick="ktRulesBackStack.length=0;document.getElementById('rules-modal').classList.remove('open')">✕</button>
   </div>
   <div class="sheet-body" id="rules-modal-body"></div>
 </div>
