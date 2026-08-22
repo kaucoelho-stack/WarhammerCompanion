@@ -673,7 +673,17 @@ body::before{content:'';position:fixed;inset:0;
 .kt-lib-banner-fade{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--card) 100%);pointer-events:none}
 .kt-lib-banner-title{position:absolute;left:12px;bottom:8px;font-family:var(--ff);font-size:20px;letter-spacing:1px;z-index:2;text-shadow:0 2px 8px rgba(0,0,0,.85)}
 .kt-lib-team-meta{display:flex;justify-content:space-between;padding:9px 12px;font-size:11px;color:var(--muted);font-family:var(--fu);letter-spacing:.3px}
-.kt-lib-info-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.kt-lib-info-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;align-items:baseline}
+.tactics-card{background:linear-gradient(180deg,rgba(34,197,94,.07),rgba(34,197,94,.02));border:1px solid rgba(34,197,94,.3);border-radius:var(--r);padding:0;margin:16px 0;overflow:hidden}
+.tactics-hdr{font-family:var(--fu);font-size:10.5px;letter-spacing:2px;color:var(--hit);padding:13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.tactics-body{padding:0 13px 13px}
+.tactics-arrow{font-size:12px;transition:transform .2s}
+.tactics-card.open .tactics-arrow{transform:rotate(180deg)}
+.tactics-idea{font-size:13px;color:var(--text);font-weight:600;line-height:1.45;margin-bottom:10px;padding-top:2px}
+.tactics-list{margin:0;padding-left:17px;font-size:12px;color:var(--text2);line-height:1.6}
+.tactics-list li{margin-bottom:5px}
+.tactics-trap{font-size:11.5px;color:var(--text2);line-height:1.5;margin-top:9px;padding-top:9px;border-top:1px solid rgba(34,197,94,.2)}
+.tactics-trap strong{color:var(--wound)}
 .kt-lib-info-row span:first-child{color:var(--muted)}
 .kt-lib-info-row span:last-child{color:var(--text);text-align:right;font-family:var(--fu)}
 .kt-lib-op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
@@ -17103,6 +17113,181 @@ function renderKTLibTeams() {
       <div class="kt-lib-team-meta"><span>${t.faction}</span><span>${t.operatives.length} operativos · ${t.limit} no time</span></div>
     </div>`).join('') + ktRulesNote();
 }
+// ── DICAS TÁTICAS POR TIME ────────────────────────────
+// Conselho de jogador experiente para quem está começando com aquele time.
+// Objeto separado de KT_TEAMS de propósito: não mexe nos dados oficiais.
+const KT_TACTICS = {
+  'kt-kommandos': { idea:'Emboscada oportunista com muitos corpos.',
+    tips:['Fique em Conceal atrás de terreno Heavy e só mude para Engage quando puder atacar de verdade — os Kommandos são frágeis expostos.','Use o Bomb Squig como ferramenta descartável: ele não conta para o kill op do oponente, então gaste-o sem dó.','O Grot é o seu operário de objetivos: mande-o pegar marcadores enquanto os Boyz brigam.','Você tem mais corpos que a maioria — dispute dois objetivos ao mesmo tempo em vez de amontoar tudo num só.'],
+    trap:'Não saia correndo no primeiro turno. Kommando exposto morre rápido; a força do time é escolher a hora do bote.' },
+  'kt-wolfscouts': { idea:'Caçada em melee com infiltração.',
+    tips:['Feche a distância rápido: você quer estar no corpo a corpo, onde os Wolf Scouts ganham.','Use o terreno para chegar perto sem ser visto — Conceal até estar em distância de Charge.','Concentre dois operativos no mesmo alvo: matar rápido é melhor que ferir muitos.','Guarde CP para os ploys de combate no turno em que for engajar.'],
+    trap:'Trocar tiro de longe. Você perde essa disputa contra times de tiro — corra para cima.' },
+  'kt-krieg': { idea:'Trincheira: aguenta o rojão e segura objetivo.',
+    tips:['Não é um time de correr. Escolha um objetivo, entrincheire e force o oponente a vir até você.','Espalhe os operativos para não perder vários numa arma de Blast.','O time é numeroso: use os corpos extras para contestar marcadores mesmo com pouca vida.','Deixe o especialista de tiro parado e com linha de fogo limpa desde o começo.'],
+    trap:'Avançar em campo aberto. Krieg vence pela paciência, não pela velocidade.' },
+  'kt-legionaries': { idea:'Elite versátil com marcas do Caos.',
+    tips:['Poucos operativos e muito duros: cada morte dói, então evite trocas ruins.','Escolha a marca do Caos pensando no oponente, não só no que parece forte.','O Aspiring Champion é o seu motor — mantenha-o vivo e no meio da ação.','Use os ploys no turno em que for atacar, não "para garantir".'],
+    trap:'Espalhar demais. Legionaries funcionam concentrados, apoiando uns aos outros.' },
+  'kt-pathfinders': { idea:'Tiro coordenado com markerlight.',
+    tips:['Marque antes de atirar: o markerlight é o que transforma tiro ruim em tiro bom.','Fique longe e use a mesa toda. Pathfinder em melee é Pathfinder morto.','Os drones são escudos e ferramentas — não tenha pena de perdê-los.','Priorize alvos que se aproximam: matar quem vai te alcançar vale mais que dano em quem está longe.'],
+    trap:'Deixar o oponente encostar. Se ele chegar no corpo a corpo, a partida virou.' },
+  'kt-angelsofdeath': { idea:'Poucos operativos, cada um vale por dois.',
+    tips:['Você tem APL 3 e pode fazer duas ações Shoot ou duas Fight — planeje ativações que usem isso.','Como são poucos, cada operativo precisa estar fazendo algo útil todo turno.','Use a Combat Doctrine que combina com o seu plano do turno, não a "mais forte".','Save 3+ aguenta pressão: não tenha medo de disputar objetivo de frente.'],
+    trap:'Perder um operativo por descuido. Com 5-6 no time, uma morte boba é 20% da sua força.' },
+  'kt-nemesisclaw': { idea:'Terror psicológico e emboscada.',
+    tips:['Use as regras de medo para travar as ações do oponente perto dos seus operativos.','Ataque pelos flancos e por trás — o time premia posicionamento agressivo.','Alterne Conceal/Engage para controlar quando você pode ser alvejado.','Foque em isolar um operativo inimigo por vez.'],
+    trap:'Jogar como Space Marine comum. A força aqui é o controle, não o tiroteio direto.' },
+  'kt-deathwatch': { idea:'Especialistas: a ferramenta certa para cada alvo.',
+    tips:['Cada operativo tem uma função clara — escolha a composição pensando no oponente.','Só pode 1 GRAVIS: escolha entre o poder de fogo pesado ou o resistente conforme o cenário.','Use a munição especial no turno decisivo, não no primeiro tiro que aparecer.','O líder puxa o time: mantenha-o perto para os buffs.'],
+    trap:'Levar só o que parece forte. Deathwatch vence pela variedade de respostas.' },
+  'kt-plaguemarines': { idea:'Muralha lenta que não morre.',
+    tips:['Você é mais duro que rápido: escolha um caminho e avance sem pressa.','Deixe o oponente gastar ataques em você enquanto seus operativos seguram objetivos.','Espalhe um pouco: Blast e Torrent são o seu ponto fraco.','Use as regras de doença/veneno para desgastar quem passa perto.'],
+    trap:'Tentar correr atrás do oponente. Você nunca vai alcançar — force ele a vir.' },
+  'kt-blooded': { idea:'Horda com um núcleo de elite.',
+    tips:['Use os cultistas comuns para contestar objetivos e absorver tiro.','Os especialistas são a sua força real: proteja-os atrás dos corpos baratos.','Ative os operativos baratos primeiro para forçar respostas do oponente.','Não tenha medo de perder cultistas — eles existem para isso.'],
+    trap:'Tratar todo operativo como igual. Saber quem é descartável é metade do time.' },
+  'kt-mandrakes': { idea:'Sombras: aparecem, matam e somem.',
+    tips:['Explore ao máximo as regras de sombra e reposicionamento — você deve ser difícil de fixar.','Ataque quem está isolado, nunca o grupo.','Use a mobilidade para pegar objetivos no fim do turno, quando o oponente não pode responder.','Prefira melee contra alvos já feridos.'],
+    trap:'Ficar exposto depois de atacar. Ataque e volte para a sombra na mesma ativação.' },
+  'kt-vespid': { idea:'Voadores: mobilidade extrema e tiro de perto.',
+    tips:['Use o FLY para ignorar terreno e cair onde o oponente não espera.','Suas armas são melhores de perto: aproxime-se voando e atire no mesmo turno.','Ataque objetivos mal defendidos em vez de disputar de frente.','Não fique parado — o time perde valor se jogar como time de tiro estático.'],
+    trap:'Voar para o meio dos inimigos sem plano de saída. Chegue, faça o serviço e tenha rota de fuga.' },
+  'kt-hota': { idea:'Rapidez e crueldade drukhari.',
+    tips:['Você é rápido: chegue nos objetivos antes e obrigue o oponente a reagir.','O time é frágil — evite trocas diretas e prefira atacar quem já está machucado.','Use os especialistas (Flayer, Skysplinter) em alvos específicos, não em qualquer um.','Cada ativação deve gerar vantagem: ou pontos, ou uma morte.'],
+    trap:'Trocar golpe a golpe. Drukhari perde guerra de atrito — vença por pontos e velocidade.' },
+  'kt-insidiants': { idea:'Infiltração e execução silenciosa.',
+    tips:['Aproveite as regras de furtividade para chegar perto sem ser vista.','Escolha um alvo prioritário por turno e concentre esforços nele.','Use objetivos como isca: force o oponente a se expor para contestar.','Guarde recursos para o turno em que for executar o golpe.'],
+    trap:'Revelar a posição cedo demais sem ganhar nada com isso.' },
+  'kt-raveners': { idea:'Emboscada subterrânea.',
+    tips:['Comece a maioria underground: o oponente não pode atirar em quem não está na mesa.','Coloque o TUNNEL pensando em onde você vai querer emergir no turno 2 ou 3.','Emerja perto de alvos isolados e ataque no mesmo turno.','Use os ploys de Burrow para sumir depois de atacar.'],
+    trap:'Emergir cedo e no lugar errado. A paciência é a arma dos Raveners.' },
+  'kt-bladesofkhaine': { idea:'Aspectos: escolha a especialidade certa.',
+    tips:['Os três Exarchs mudam o time: Dire Avenger para tiro, Howling Banshee para melee rápido, Striking Scorpion para emboscada.','Monte o time em volta do aspecto escolhido, sem misturar demais.','Aeldari são rápidos mas frágeis: use a velocidade para escolher as brigas.','Ataque com vantagem numérica local, mesmo estando em desvantagem geral.'],
+    trap:'Misturar os três aspectos sem foco. Escolha um plano e comprometa-se.' },
+  'kt-hunterclade': { idea:'Protocolos: o time muda de postura a cada turno.',
+    tips:['O DOCTRINA IMPERATIVE é a decisão mais importante do turno — pense no que você vai fazer, não no que gostaria.','Protector para turnos de tiro, Conqueror para turnos de melee, Bulwark quando for apanhar.','Lembre que todo imperativo tem um custo: aceite o lado ruim conscientemente.','Use o Primary Mode uma vez para ignorar a penalidade no turno decisivo.'],
+    trap:'Esquecer de trocar o imperativo. Ficar no mesmo o jogo todo desperdiça metade do time.' },
+  'kt-hierotek': { idea:'Necrons: eles voltam.',
+    tips:['Não tenha medo de perder operativos — Reanimation Protocols traz de volta.','Living Metal cura todo turno: operativo ferido ainda é útil, não o esconda.','O Cryptek define o time. Escolha o que combina com o seu jeito de jogar.','Use Magnify para atirar através dos aliados e pegar ângulos impossíveis.'],
+    trap:'Jogar defensivo demais. Você tem resiliência de sobra — use-a para pressionar objetivos.' },
+  'kt-farstalker': { idea:'Bando grande de caçadores: marque a presa e cerque.',
+    tips:['Use o Call The Kill do Kill-broker todo turno — Balanced contra a marca é muito valor de graça.','Você tem 12 operativos: dispute vários pontos ao mesmo tempo e sufoque o oponente.','A regra Farstalker deixa trocar ordens fácil; abuse disso para atacar e voltar a esconder.','Os Hounds são rápidos e baratos: use-os para pegar marcadores, não para brigar.'],
+    trap:'Amontoar o bando. Espalhe para aproveitar a vantagem numérica.' },
+  'kt-kasrkin': { idea:'Tiro disciplinado com uma habilidade por turno.',
+    tips:['Escolha a SKILL AT ARMS pensando no turno: Light \'Em Up para atirar, Ice In Your Veins quando for apanhar.','Rapid Fire premia ficar parado: quem não move atira duas vezes.','Os especialistas (médico, sniper, sapador) são o coração do time — proteja-os.','Use o Vox-Trooper para dar APL a quem vai fazer a jogada decisiva.'],
+    trap:'Esquecer de escolher a Skill at Arms. É um bônus grátis todo turno.' },
+  'kt-corsair': { idea:'Piratas rápidos e cheios de especialistas.',
+    tips:['Todo operativo ganha Dash grátis: você deve estar sempre reposicionando.','O time premia disputar marcadores — o ploy Piratical Profiteers dá Balanced perto deles.','Cada especialista faz uma coisa muito bem; monte pensando no que você precisa.','Use a mobilidade para chegar nos objetivos primeiro e forçar a reação.'],
+    trap:'Jogar parado. Corsair que não se move joga com metade do time.' },
+  'kt-scoutsquad': { idea:'Preparação: você começa a partida na frente.',
+    tips:['O Forward Scouting é a jogada principal: escolha as seis opções pensando no plano, não no impulso.','Trip Alarm e Booby Trap atrapalham o avanço inimigo nos dois primeiros turnos.','Devise Plan dá CP grátis — quase sempre vale.','Scouts são frágeis: fique em cover e ataque de emboscada.'],
+    trap:'Gastar as opções de Forward Scouting sem plano. Elas decidem o começo da partida.' },
+  'kt-novitiates': { idea:'Fé como recurso: acumule e gaste na hora certa.',
+    tips:['Guarde Pontos de Fé para a sequência decisiva — Intervention (3 pontos) salva uma jogada perdida.','Militants devolvem os pontos ao incapacitar: use-os para atacar sem medo.','Você tem muitos operativos; use os baratos para contestar e os especialistas para matar.','O Superior e o Preceptor geram Fé matando: coloque-os onde vão conseguir kills.'],
+    trap:'Gastar Fé em toda sequência. Economizar dois turnos vale mais que gastar todo turno.' },
+  'kt-breachers': { idea:'Abordagem coordenada: dois operativos por vez.',
+    tips:['Breach and Clear é o motor: ative dois amigos em sequência para uma jogada dupla.','Os Armsmen já ativam em pares (Group Activation) — combine as duas regras.','Void Armour protege de Blast/Torrent: não tenha medo de agrupar contra esses times.','As shotguns são letais de perto: force o combate em corredores e curta distância.'],
+    trap:'Atirar de longe. Navis shotgun de longe é quase inofensiva — chegue perto.' },
+  'kt-wyrmblade': { idea:'Culto infiltrado: metade do time surge depois.',
+    tips:['Deixe um terço em HIDING e escolha bem onde emergir — mas lembre que quem ficar escondido até o fim do 2º turno morre.','Cult Ambush dá Ceaseless ao sair de Conceal: ataque no turno em que revelar.','Os Cult Agents (Kelermorph, Locus, Sanctus) valem 2 seleções mas ganham sozinhos as brigas.','Use os Neophytes baratos para contestar objetivos.'],
+    trap:'Esquecer de emergir a tempo. Operativo escondido no fim do 2º turno é morte grátis para o oponente.' },
+  'kt-warpcoven': { idea:'Cinco monstros psíquicos.',
+    tips:['Escolha os Boons of Tzeentch pensando no plano: Immaterial Flight para mobilidade, Twist of Fate para dano.','Os Rubrics precisam ficar a 9\" de um Sorcerer, senão perdem APL — mantenha o grupo coeso.','Astartes deixa fazer duas Shoot ou duas Fight: planeje ativações completas.','Save 2+ dos Rubrics aguenta muito: use-os para segurar objetivos.'],
+    trap:'Afastar os Rubrics do Sorcerer. Sozinhos eles ficam lentos e inúteis.' },
+  'kt-ratlings': { idea:'Snipers escorregadios que nunca estão onde você atirou.',
+    tips:['Scarper dá Dash grátis depois de cada ativação inimiga: você deve estar sempre mudando de posição.','Fique longe, em cover, e atire com o perfil stationary sempre que puder.','Você pode trocar vagas de Ogryn/Bullgryn por ploys grátis — considere isso se preferir jogar leve.','O Fixer marca alvos: use o Target Designation todo turno.'],
+    trap:'Deixar o inimigo encostar. Ratling em melee morre — recue sempre.' },
+  'kt-fellgor': { idea:'Bodes que não morrem de primeira.',
+    tips:['Frenzy dá uma sobrevida a cada operativo: use isso para trocas agressivas que pareceriam ruins.','Operativo em frenesi não faz objetivo — use-o só para brigar.','Cuidado: o oponente já marca o VP quando o marcador de frenesi aparece, não quando ele morre de vez.','Corra para o corpo a corpo; o time quase não tem tiro.'],
+    trap:'Contar com o operativo em frenesi para segurar objetivo. Ele não consegue.' },
+  'kt-goremongers': { idea:'Sanguavitae: mate de perto para ficar mais forte.',
+    tips:['Incapacite inimigos no control range para encher o GORE TANK.','Fury (duas ações Fight) e Mania (+1 APL) são as regras que ganham partidas.','Runes of Khorne limita a 8 PV perdidos por ação de Shoot: avance contra times de tiro sem medo.','Move 7\" é rápido para um time de melee — use isso para escolher a briga.'],
+    trap:'Gastar o tanque em regras pequenas. Guarde para Fury no turno decisivo.' },
+  'kt-chaoscult': { idea:'Comece fraco, termine monstruoso.',
+    tips:['Mute cedo e sempre: cada turno tem uma cota de mutações, não desperdice.','Escolha os Accursed Gifts pensando no time todo, já que valem para todos os Mutants/Torments.','Os Devotees são descartáveis: use-os para contestar e para virar Mutants ao matar.','Os Torments (13 PV) são a sua força real — chegue neles o quanto antes.'],
+    trap:'Esquecer o STRATEGIC GAMBIT de mutação. Sem mutar, o time é só uma horda fraca.' },
+  'kt-hearthkyn': { idea:'Kin duros que cobram cada morte.',
+    tips:['Grudge é acumulativo e não gasta: quem matou um Kin vira alvo prioritário pelo resto da partida.','Save 3+ e Move 5\": você não corre, mas aguenta. Escolha um objetivo e segure.','O Theyn marca alvos com Eye of the Ancestors mesmo sem ninguém ter morrido — use todo turno.','Os especialistas (Kinlynk, Kognitâar, Lokâtr) transformam o time; leve pelo menos um.'],
+    trap:'Ignorar os Grudge tokens. Eles são dano grátis contra quem já te feriu.' },
+  'kt-exaction': { idea:'Lei e ordem: marque o criminoso e execute.',
+    tips:['Marked for Justice todo turno: Punishing contra a marca é muito forte.','Ruthless Efficiency deixa atirar mesmo com aliados no meio — use para não perder tiro.','Os escudos (Repress) seguram melee muito bem: coloque Subductors na frente.','O Cyber-Mastiff prende o inimigo no lugar com Apprehend.'],
+    trap:'Esquecer de marcar a presa. É bônus grátis todo turno.' },
+  'kt-voiddancer': { idea:'Acrobatas letais e quase impossíveis de acertar.',
+    tips:['Escolha a alegoria (Epic para melee, Melodrama para tiro) conforme o seu plano.','Move 7\", APL 3 e atravessar o control range inimigo: você dita onde a briga acontece.','Distribua as ACCOLADES conforme cumprir a performance — o time fica melhor com o tempo.','Os Players têm Luck of the Laughing God: um ploy grátis por turno.'],
+    trap:'Ficar parado trocando tiro. Harlequin parado é Harlequin morto.' },
+  'kt-wreckakrew': { idea:'Orks explosivos que ficam melhores atacando.',
+    tips:['Cada 6 vira Wrecka point: quanto mais você ataca, mais fortes ficam os próximos ataques.','Tanked Up dá +1 APL ao atacar com Engage — praticamente sempre vale ficar em Engage.','Os Bomb Squigs são bombas ambulantes descartáveis; jogue-os no meio do inimigo.','O Demolisha tem uma explosão de D6+6 que ignora redução: guarde para o alvo certo.'],
+    trap:'Guardar Wrecka points sem usar. O limite é 6 — gaste antes de estourar.' },
+  'kt-phobos': { idea:'Marines furtivos de elite.',
+    tips:['Só 6 operativos, mas todos com APL 3 e duas Shoot ou duas Fight por ativação.','Escolha o Sergeant conforme o plano: Infiltrator (controle), Incursor (visão), Reiver (medo).','Omni-Scrambler trava a ativação de um inimigo — use no operativo mais perigoso dele.','O Veteran escolhe as regras da arma antes da batalha: adapte ao oponente.'],
+    trap:'Perder operativo por avanço afobado. Com 6 no time, cada um é 17% da sua força.' },
+  'kt-sanctifiers': { idea:'Fogo e fé: incendeie e pregue.',
+    tips:['Mantenha o ORADOR perto do grupo — o sermão reduz o dano que todo mundo sofre.','Blaze é dano contínuo: incendeie cedo, o dano se acumula todo turno.','Você tem 11 operativos: use os Preachers baratos para contestar.','O Confessor cancela uma ação inimiga uma vez por batalha; guarde para o momento decisivo.'],
+    trap:'Afastar o time do ORADOR. Sem o sermão, os Sanctifiers são frágeis.' },
+  'kt-hernkyn': { idea:'Comandos Kin: recursos e paciência.',
+    tips:['Resourceful dá pontos por turno: gaste em +1 APL na ativação que importa, ou em cura.','Fique em cover — o time é ótimo defendendo e ruim em campo aberto.','O Ironbraek coloca 5 marcadores de campo minado, sendo 2 falsos: o oponente não sabe quais.','Concealed Position do Riflekyn é um tiro grátis de alto dano no primeiro turno.'],
+    trap:'Deixar os Resourceful points expirarem. Eles somem no fim do turno.' },
+  'kt-broodbros': { idea:'Guarda infiltrada com um monstro opcional.',
+    tips:['Crossfire marca o inimigo a cada ataque: ataque com um operativo barato antes para marcar, e depois com o bom.','Decida cedo: levar o Patriarch (3 seleções) ou espalhar em mais operativos e ploys grátis.','Os Troopers ativam em pares (Group Activation) — use para jogadas duplas.','O Magus tem Mind Control: pode virar a partida contra um operativo-chave.'],
+    trap:'Esquecer de gastar os Crossfire tokens. Eles são re-rolls grátis acumulados.' },
+  'kt-canoptek': { idea:'Geometria: a matriz define tudo.',
+    tips:['Posicione os três OBELISK NODE a menos de 6\" entre si para formar a matriz — sem ela, metade dos ploys não funciona.','Mova os marcadores todo turno para acompanhar o avanço do time.','Os Warriors voltam a cada turno (A Ceaseless Scuttling): use-os sem medo.','Os Tomb Crawlers (18 PV) são âncoras: coloque-os onde o inimigo precisa passar.'],
+    trap:'Espalhar os marcadores. Sem matriz formada, o time perde a identidade.' },
+  'kt-battleclade': { idea:'Quebre a ordem de ativação.',
+    tips:['Transfer Power + Network Counteract deixa agir fora da sua vez: use para reagir ao oponente.','O Underseer pode fazer Network Override duas vezes por ativação — é o operativo mais importante.','O time é lento (Move 5\"): jogue por posição e objetivos, não por perseguição.','System Exorcism remove qualquer efeito que o oponente aplicou; guarde para um debuff grave.'],
+    trap:'Ativar tudo na ordem normal. O time inteiro existe para quebrar essa ordem.' },
+  'kt-starstriders': { idea:'Tripulação variada com apoio orbital.',
+    tips:['Use uma Warrant of Trade por vez, escolhendo pelo momento: Coordinate (CP), Coerce (posicionamento), Seize (iniciativa).','Os Privateer Support Assets são um por turno e um por batalha cada: guarde o Archeotech beam (6/7 de dano) para o alvo mais duro.','Elucia e o Voidmaster são os pesos-pesados; os Voidsmen seguram objetivos.','O Canid é ótimo para pegar marcadores e travar cargas.'],
+    trap:'Guardar os bombardeios orbitais para sempre. Se a batalha acabar com eles sem uso, você jogou com menos time.' },
+  'kt-inqagents': { idea:'Monte o time sob medida para o inimigo.',
+    tips:['A requisição define o time: Sisters of Silence contra psíquicos, Scions para tiro, Breachers para curta distância.','Absolute Authority cancela um ploy do oponente e devolve o CP dele — guarde para o ploy decisivo.','O Hexorcist desliga uma regra do inimigo com Chasten: use na habilidade que mais incomoda.','O Autosavant gera CP toda vez que o oponente repete um ploy.'],
+    trap:'Montar sempre igual. A força do time é adaptar a composição ao adversário.' },
+  'kt-xv26': { idea:'Invisíveis até decidirem aparecer.',
+    tips:['Com Conceal você não é visível a mais de 3\": use isso para atravessar a mesa sem tomar tiro.','Kauyon premia esperar: quanto mais perto do seu território o inimigo chega, mais Accurate você fica.','Os drones são escudos (Saviour Protocols) — gaste-os para salvar os battlesuits.','O Marker Drone e o Designator marcam alvos: sempre marque antes de atirar.'],
+    trap:'Avançar cedo. O time foi feito para deixar o inimigo vir e puni-lo perto de casa.' },
+  'kt-aquilons': { idea:'Chegam do céu no lugar que quiserem.',
+    tips:['Posicione os marcadores Drop pensando onde você quer estar no turno 2, não onde está agora.','Quem não descer até o fim do 2º turno morre — planeje as descidas.','Sudden Offensive premia atacar cedo na ordem de ativação.','O Precursor é o único que pode descer direto no control range inimigo: use-o para travar alguém.'],
+    trap:'Deixar operativos no ar tempo demais. É morte garantida.' },
+  'kt-spectre': { idea:'Reagir é atacar.',
+    tips:['Elite Fieldcraft é o coração: guarde os pontos para interromper a ativação inimiga na hora certa.','Camo Cloaks dão cover extra: fique sempre atrás de terreno.','O Vox-Operator dobra os Fieldcraft points — leve sempre.','O Vox-Relay Beacon é ignorado pelo kill op: use-o sem medo como fonte de APL.'],
+    trap:'Gastar os Fieldcraft points na primeira oportunidade. Espere o movimento errado do oponente.' },
+  'kt-gellerpox': { idea:'Monstros lentos que infectam quem chega perto.',
+    tips:['Escolha o TECHNO-CURSE pelo oponente: Barrelwarp contra tiro, Screaming Rustspikes contra melee.','Os Nightmare Hulks (20-21 PV) são muralhas: mande-os na frente e deixe o inimigo se gastar.','Os Glitchlings são pequenos e difíceis de mirar — use-os para objetivos.','Você não tem tiro: force o corpo a corpo o quanto antes.'],
+    trap:'Jogar espalhado. A infecção só funciona com o inimigo perto dos seus operativos.' },
+  'kt-murderwing': { idea:'Predadores aéreos.',
+    tips:['O BOOST deixa saltar por cima de terreno e operativos: use para chegar em quem se escondeu.','As BOOST actions (Snatch, Strike from Above) punem quem passa por baixo de você.','O Chaos Lord ganha poder com os pontos de Danação, mas arrisca tomar dano — aposte com critério.','Só 6 operativos com 14-15 PV: cada um precisa gerar valor todo turno.'],
+    trap:'Voar sem plano. Cair no meio do inimigo sem matar ninguém é morte certa.' },
+  'kt-exodite': { idea:'Cavalaria: velocidade é defesa.',
+    tips:['O SPEED é tudo: mova 7\" ou mais para ganhar defesas automáticas e ataques melhores.','Os cavaleiros ativam duas vezes por turno — pense na ativação como dois movimentos encadeados.','Você só move em linha reta (Sprint/Turn): planeje o ângulo antes, não depois.','Escolha os 2 upgrades de cada cavaleiro conforme o oponente.'],
+    trap:'Andar devagar. Exodite parado perde a defesa do SPEED e vira alvo fácil.' },
+};
+
+function renderTeamTactics(teamId) {
+  const tac = KT_TACTICS[teamId];
+  if (!tac) return '';
+  return `
+    <div class="tactics-card" id="tactics-${teamId}">
+      <div class="tactics-hdr" onclick="toggleTactics('${teamId}')">
+        <span>💡 COMO JOGAR COM ESTE TIME</span><span class="tactics-arrow">▼</span>
+      </div>
+      <div class="tactics-body" style="display:none">
+        <div class="tactics-idea">${tac.idea}</div>
+        <ul class="tactics-list">${tac.tips.map(x => `<li>${linkifyKeywords(x)}</li>`).join('')}</ul>
+        <div class="tactics-trap"><strong>⚠ Erro comum:</strong> ${linkifyKeywords(tac.trap)}</div>
+      </div>
+    </div>`;
+}
+function toggleTactics(teamId) {
+  const card = document.getElementById('tactics-' + teamId);
+  if (!card) return;
+  const body = card.querySelector('.tactics-body');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  card.classList.toggle('open', !open);
+  SFX.click();
+}
+
 function renderKTLibTeam(teamId) {
   const t = KT_DB.getTeam(teamId); if (!t) return;
   document.getElementById('kt-lib-team-name').innerHTML = `${t.emoji} <span>${t.name.toUpperCase()}</span>`;
@@ -17120,6 +17305,7 @@ function renderKTLibTeam(teamId) {
     <div class="kt-lib-info-row"><span>👥 Composição</span><span>${t.limit} operativos</span></div>
     <div class="kt-lib-info-row"><span>🎖 Líder</span><span>${leaderNames || '—'}</span></div>
     ${gravis.length ? `<div class="kt-lib-info-row"><span>🛡 GRAVIS (máx 1)</span><span>${gravis.join(', ')}</span></div>` : ''}
+    ${renderTeamTactics(t.id)}
     <button class="btn btn-primary" style="margin:12px 0" onclick="showKTTeamRulesModal('${t.id}')">⚡ Regras & Equipamento</button>
     <div class="sec-label">Operativos (${t.operatives.length})</div>
     <div class="kt-lib-op-grid">
