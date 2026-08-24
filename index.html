@@ -634,6 +634,14 @@ body::before{content:'';position:fixed;inset:0;
 .ktb-label{font-family:var(--fu);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .ktb-team{font-family:var(--ff);font-size:26px;letter-spacing:1px;color:#06b6d4;line-height:1}
 .ktb-sub{font-size:12px;color:var(--muted);font-family:var(--fu);margin-top:3px}
+.kt-pswitch{display:flex;gap:6px;margin-bottom:8px}
+.kt-pswitch-btn{flex:1;padding:8px 6px;border-radius:var(--rsm);background:var(--card2);border:1px solid var(--border);cursor:pointer;text-align:center;transition:all .15s}
+.kt-pswitch-btn.view{background:rgba(232,184,75,.12);border-color:var(--gold)}
+.kt-pswitch-btn.turn .kt-pswitch-name{color:var(--hit)}
+.kt-pswitch-btn.view .kt-pswitch-name{color:var(--gold)}
+.kt-pswitch-name{font-family:var(--fu);font-size:12px;color:var(--text2);letter-spacing:.3px;line-height:1.2}
+.kt-pswitch-meta{font-size:9px;color:var(--muted);font-family:var(--fu);margin-top:2px}
+.kt-pswitch-warn{font-size:10.5px;color:var(--text2);background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.28);border-radius:var(--rsm);padding:7px 9px;margin-bottom:8px;line-height:1.45}
 
 /* Operative cards */
 .kt-op-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;isolation:isolate}
@@ -709,8 +717,20 @@ body::before{content:'';position:fixed;inset:0;
 .kt-team-ov-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .kt-team-ov-name{font-family:var(--ff);font-size:16px;flex:1}
 .kt-team-ov-count{font-family:var(--fu);font-size:11px;color:var(--muted)}
-.kt-mini-ops{display:flex;flex-wrap:wrap;gap:5px}
+.kt-mini-ops{display:flex;flex-direction:column;gap:0}
+.kt-ov-legend{display:flex;gap:12px;font-size:9.5px;color:var(--muted);font-family:var(--fu);letter-spacing:.3px;margin-bottom:7px;flex-wrap:wrap}
 .kt-mini-op{width:34px;height:34px;border-radius:var(--rsm);background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;cursor:pointer;transition:all .2s}
+.kt-op-row{display:flex;align-items:center;gap:9px;padding:7px 9px;margin-bottom:5px;background:var(--card2);border:1px solid var(--border);border-left:3px solid var(--border2);border-radius:var(--rsm);cursor:pointer;transition:all .15s}
+.kt-op-row.activated{opacity:.5;filter:grayscale(.45)}
+.kt-op-row.dead{opacity:.32;filter:grayscale(1)}
+.kt-op-row-order{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:var(--bg)}
+.kt-op-row-main{flex:1;min-width:0}
+.kt-op-row-name{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.kt-op-row-bar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-top:4px}
+.kt-op-row-bar>div{height:100%;border-radius:2px;transition:width .3s}
+.kt-op-row-right{text-align:right;flex-shrink:0}
+.kt-op-row-hp{font-family:var(--fu);font-size:13px;line-height:1.1}
+.kt-op-row-tag{font-size:8.5px;color:var(--muted);font-family:var(--fu);letter-spacing:.5px;margin-top:1px}
 .kt-mini-op.dead{opacity:.25;filter:grayscale(1)}
 .kt-mini-op.activated{border-color:#22c55e !important;background:rgba(34,197,94,.22);opacity:.55;filter:grayscale(.5)}
 .kt-mini-op.ready{box-shadow:0 0 0 1px rgba(255,255,255,.06)}
@@ -6531,6 +6551,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
   <!-- ACTIVATION TAB -->
   <div id="kt-tab-activation-panel" class="screen-body">
     <!-- Turn header -->
+    <div id="kt-player-switch"></div>
     <div class="kt-turn-banner" id="kt-turn-banner">
       <div class="ktb-label">VEZ DE ATIVAR</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:8px">
@@ -16326,6 +16347,7 @@ const KT_TP_PHASES = [
   { ico:'🏁', name:'Fim', tips:['Resolva efeitos de fim de turno', 'Limpe ploys/tokens do turno', 'Toque em Finalizar Turno'] },
 ];
 let KT_TP_PHASE = 0;
+let _ktViewIdx = null; // time sendo consultado (null = o da vez)
 function renderKTTurnGuide() {
   const wrap = document.getElementById('kt-turn-guide');
   if (!wrap) return;
@@ -16348,9 +16370,36 @@ function ktNextTPPhase() {
   else if (typeof showToast === 'function') showToast('🏁 Toque em Finalizar Turno para avançar');
 }
 
+// Abas de jogador: trocar e consultar sem rolar a tela
+function renderKTPlayerSwitch() {
+  const el = document.getElementById('kt-player-switch');
+  if (!el || !KT_SESSION.teams || KT_SESSION.teams.length < 2) { if (el) el.innerHTML = ''; return; }
+  const viewIdx = (_ktViewIdx == null) ? KT_SESSION.activeIdx : _ktViewIdx;
+  el.innerHTML = `<div class="kt-pswitch">${KT_SESSION.teams.map((tm, i) => {
+    const isTurn = i === KT_SESSION.activeIdx;
+    const isView = i === viewIdx;
+    const alive = tm.operatives.filter(o => !o.dead).length;
+    const ready = tm.operatives.filter(o => !o.dead && !o.activated).length;
+    return `<button class="kt-pswitch-btn ${isView?'view':''} ${isTurn?'turn':''}" onclick="ktSetViewTeam(${i})">
+      <div class="kt-pswitch-name">${isTurn?'▶ ':''}${tm.playerName}</div>
+      <div class="kt-pswitch-meta">${ready} prontos · ${alive} vivos${tm.cp!=null?' · '+tm.cp+' CP':''}</div>
+    </button>`;
+  }).join('')}</div>
+  ${viewIdx !== KT_SESSION.activeIdx ? `<div class="kt-pswitch-warn">👁 Consultando <strong>${KT_SESSION.teams[viewIdx].playerName}</strong> — não é a vez dele. <span onclick="ktSetViewTeam(null)" style="color:var(--gold);cursor:pointer;text-decoration:underline">voltar para quem joga</span></div>` : ''}`;
+}
+function ktSetViewTeam(i) {
+  _ktViewIdx = (i === null || i === KT_SESSION.activeIdx) ? null : i;
+  SFX.click();
+  renderKTActivation();
+}
+
 function renderKTActivation() {
+  renderKTPlayerSwitch();
   renderKTTurnGuide();
-  const activeTeam = KT_SESSION.getActiveTeam();
+  const turnTeam = KT_SESSION.getActiveTeam();
+  // Time exibido: o da vez, ou outro que o jogador esteja consultando
+  const activeTeam = (_ktViewIdx != null && KT_SESSION.teams[_ktViewIdx]) ? KT_SESSION.teams[_ktViewIdx] : turnTeam;
+  const isViewingOther = activeTeam !== turnTeam;
   const banner = document.getElementById('ktb-team-name');
   const sub    = document.getElementById('ktb-sub');
   const label  = document.getElementById('kt-active-label');
@@ -16363,12 +16412,16 @@ function renderKTActivation() {
   const aliveOps = activeTeam.operatives.filter(op => !op.dead);
   const availOps = aliveOps.filter(op => !op.activated);
 
-  if (sub) sub.textContent = availOps.length > 0
-    ? `${availOps.length} operativo${availOps.length!==1?'s':''} disponível${availOps.length!==1?'s':''}`
-    : 'Todos ativados neste turno';
-  if (label) label.textContent = availOps.length > 0
-    ? `${activeTeam.playerName} — Escolha um operativo:`
-    : 'Aguardando adversário...';
+  if (sub) sub.textContent = isViewingOther
+    ? '👁 Modo consulta — ativação bloqueada'
+    : (availOps.length > 0
+        ? `${availOps.length} operativo${availOps.length!==1?'s':''} disponível${availOps.length!==1?'s':''}`
+        : 'Todos ativados neste turno');
+  if (label) label.textContent = isViewingOther
+    ? `${activeTeam.playerName} — consultando (não é a vez dele):`
+    : (availOps.length > 0
+        ? `${activeTeam.playerName} — Escolha um operativo:`
+        : 'Aguardando adversário...');
 
   // Active operatives
   const container = document.getElementById('kt-active-operatives');
@@ -16389,15 +16442,27 @@ function renderKTActivation() {
         <div class="kt-team-ov-name" style="color:${team.color}">${team.playerName}</div>
         <div class="kt-team-ov-count">${activated}/${alive} ativados</div>
       </div>
+      <div class="kt-ov-legend"><span><span style="color:#60a5fa">👁</span> Conceal</span><span><span style="color:#f97316">⚔</span> Engage</span><span style="opacity:.5">✓ já ativado</span></div>
       <div class="kt-mini-ops">
-        ${team.operatives.map(op => `
-          <div class="kt-mini-op ${op.dead?'dead':op.activated?'activated':'ready'}"
-            style="${op.dead||op.activated?'':`border-color:${op.order==='engage'?'#f97316':'#3b82f6'}`}"
-            onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')" title="${op.displayName} — ${op.dead?'Morto':op.activated?'JÁ ATIVADO':'Pronto · '+(op.order==='engage'?'Engage':'Conceal')}">
-            <span style="font-size:13px">${team.emoji}</span>
-            <div class="kt-mini-op-hp">${op.dead?'💀':op.curW}</div>
-            ${op.activated&&!op.dead?'<div class="kt-mini-op-done">✓</div>':''}
-          </div>`).join('')}
+        ${team.operatives.map(op => {
+          const pct = Math.max(0, Math.min(1, op.curW / op.W));
+          const injured = op.curW > 0 && op.curW * 2 <= op.W;
+          const hpCol = op.dead ? 'var(--muted)' : (injured ? 'var(--dmg)' : (pct < 1 ? 'var(--wound)' : 'var(--hit)'));
+          const eng = op.order === 'engage';
+          return `
+          <div class="kt-op-row ${op.dead?'dead':op.activated?'activated':'ready'}"
+            style="${op.dead?'':`border-left-color:${eng?'#f97316':'#3b82f6'}`}"
+            onclick="showKTOpDetail('${team.playerId}','${op.instanceId}')">
+            <div class="kt-op-row-order" style="${op.dead?'':`background:${eng?'rgba(249,115,22,.16)':'rgba(59,130,246,.16)'};color:${eng?'#f97316':'#60a5fa'}`}">${op.dead?'💀':(eng?'⚔':'👁')}</div>
+            <div class="kt-op-row-main">
+              <div class="kt-op-row-name">${op.displayName}${injured&&!op.dead?' <span style="color:var(--dmg);font-size:9px">🩸 ferido</span>':''}</div>
+              <div class="kt-op-row-bar"><div style="width:${pct*100}%;background:${hpCol}"></div></div>
+            </div>
+            <div class="kt-op-row-right">
+              <div class="kt-op-row-hp" style="color:${hpCol}">${op.dead?'—':op.curW+'/'+op.W}</div>
+              <div class="kt-op-row-tag">${op.dead?'morto':(op.activated?'✓ ativado':(eng?'Engage':'Conceal'))}</div>
+            </div>
+          </div>`;}).join('')}
       </div>`;
     overview.appendChild(div);
   });
@@ -16459,7 +16524,9 @@ function renderKTOpCard(op, team, container, clickable) {
       </div>
     </div>
     <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap">
-      <button class="btn btn-sm btn-gold" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktActivateOp('${team.playerId}','${op.instanceId}')">✓ ATIVAR</button>
+      ${(typeof _ktViewIdx !== 'undefined' && _ktViewIdx != null && KT_SESSION.teams[_ktViewIdx] === team)
+        ? `<button class="btn btn-sm btn-secondary" style="flex:1;font-size:12px" onclick="event.stopPropagation();ktSetViewTeam(null)">👁 consultando — voltar</button>`
+        : `<button class="btn btn-sm btn-gold" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktActivateOp('${team.playerId}','${op.instanceId}')">✓ ATIVAR</button>`}
       ${!KT_SIMPLE_MODE ? `<button class="btn btn-sm btn-secondary" style="flex:1;font-size:13px" onclick="event.stopPropagation();ktQuickCombat('${team.playerId}','${op.instanceId}')">⚔ Combate</button>` : ''}
       <button class="info-btn" onclick="event.stopPropagation();showKTOpDetail('${team.playerId}','${op.instanceId}')" style="flex-shrink:0">ℹ</button>
     </div>` : ''}`;
@@ -16645,6 +16712,7 @@ function ktActivateOp(teamId, instanceId) {
   op.activated = true;
   SFX.objective();
   // Pass to next team
+  _ktViewIdx = null; // volta o foco para quem realmente joga
   KT_SESSION.nextActivation();
   ktUpdateTurnDisplay();
   renderKTActivation();
