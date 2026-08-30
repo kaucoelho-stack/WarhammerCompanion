@@ -621,6 +621,18 @@ body::before{content:'';position:fixed;inset:0;
 .mode-40k::before{background:rgba(183,50,40,.1)}
 .mode-kt{background:linear-gradient(135deg,rgba(6,182,212,.2),rgba(6,182,212,.05));border-color:rgba(6,182,212,.4)}
 .mode-kt::before{background:rgba(6,182,212,.1)}
+.mode-auspex-test{background:linear-gradient(135deg,rgba(232,184,75,.18),rgba(6,182,212,.08));border-color:rgba(232,184,75,.48);text-align:left;padding:16px 62px 16px 16px}
+.mode-auspex-test::before{background:linear-gradient(90deg,rgba(232,184,75,.1),rgba(6,182,212,.08))}
+.mode-auspex-test .mode-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);margin:0;font-size:34px;color:var(--gold)}
+.mode-auspex-test .mode-name{color:var(--gold);font-size:18px}
+.mode-auspex-test .mode-sub{font-size:11px;line-height:1.45}
+.mode-auspex-kicker{font-family:var(--fu);font-size:9px;letter-spacing:2px;color:#67e8f9;margin-bottom:5px;text-transform:uppercase}
+.auspex-test-screen{overflow:hidden!important;background:#03080d}
+.auspex-test-hdr{position:relative;z-index:2;box-shadow:0 5px 22px rgba(0,0,0,.72);flex-shrink:0}
+.auspex-test-shell{position:relative;flex:1;min-height:0;background:radial-gradient(circle at 50% 45%,#112b3c,#03080d 68%);overflow:hidden}
+.auspex-test-frame{display:block;width:100%;height:100%;border:0;background:#03080d}
+.auspex-test-live{font-family:var(--fu);font-size:9px;letter-spacing:1.3px;color:#67e8f9;border:1px solid rgba(6,182,212,.38);background:rgba(6,182,212,.09);padding:4px 7px;border-radius:4px}
+#screen-auspex-test.active ~ #global-rules-fab,#screen-auspex-test.active ~ #global-settings-fab{display:none!important}
 .mode-icon{font-size:32px;margin-bottom:8px;filter:drop-shadow(0 0 8px currentColor)}
 .mode-name{font-family:var(--ff);font-size:16px;letter-spacing:1px;line-height:1;margin-bottom:4px}
 .mode-40k .mode-name{color:var(--blood2)}
@@ -1129,7 +1141,7 @@ const VFX = {
       </div>
     </div>
 
-    <div class="home-footer"><span class="home-version">v2.0 · 14/ago/2026</span><br>Criado por <strong>@coelhokau</strong><br><span onclick="showPixModal()" style="color:var(--gold);cursor:pointer">💜 Apoiar</span> &nbsp;·&nbsp; <span onclick="sendFeedback()" style="color:var(--gold);cursor:pointer">💬 Feedback</span></div>
+    <div class="home-footer"><span class="home-version">v2.1 · 27/ago/2026</span><br>Criado por <strong>@coelhokau</strong><br><span onclick="showPixModal()" style="color:var(--gold);cursor:pointer">💜 Apoiar</span> &nbsp;·&nbsp; <span onclick="sendFeedback()" style="color:var(--gold);cursor:pointer">💬 Feedback</span></div>
 
   </div>
 </div>
@@ -2830,6 +2842,10 @@ const NAV = {
     if (initFn) initFn();
   },
   back(initFn) {
+    if (this.current() === 'screen-auspex-test') {
+      const frame = document.getElementById('auspex-test-frame');
+      try { frame?.contentWindow?.postMessage({type:'auspex-suspend'}, '*'); } catch (e) {}
+    }
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     this.stack.pop();
     const id = this.stack[this.stack.length - 1];
@@ -4916,7 +4932,7 @@ function splitCoreRule(cr) {
 }
 
 // Data de atualização das fichas de Kill Team (troque quando reimportar dos PDFs oficiais)
-const KT_RULES_UPDATED = 'Jul/2026';
+const KT_RULES_UPDATED = 'Ago/2026';
 function ktRulesNote() {
   return `<div style="font-size:10.5px;color:var(--muted);text-align:center;line-height:1.5;margin-top:14px;padding:10px;border-top:1px solid var(--border)">📅 Fichas atualizadas em <strong style="color:var(--text2)">${KT_RULES_UPDATED}</strong>, com as erratas oficiais aplicadas.<br>Referência não-oficial — confira os documentos oficiais (ou o app da GW) para torneios.</div>`;
 }
@@ -6475,6 +6491,13 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
       <div class="kt-mode-check">✓</div>
     </div>
 
+    <div class="kt-mode-card mode-auspex-test" id="kt-mode-auspex-test" onclick="openAuspexTestTeam()">
+      <div class="mode-auspex-kicker">Simulador tático completo</div>
+      <div class="mode-icon">◉</div>
+      <div class="mode-name">AUSPEX TEST TEAM</div>
+      <div class="mode-sub">Jogue no mapa contra a IA ou em VS local, com movimento validado, terreno, objetivos, dados, combate e visão WebGL em primeira pessoa.</div>
+    </div>
+
     <div class="sec-label" style="margin-top:18px">Quantos turnos a partida terá?</div>
     <div class="kt-turns-stepper">
       <button class="kt-turns-btn" onclick="ktChangeTurnCount(-1)">−</button>
@@ -6492,6 +6515,18 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Padrão oficial: 2. Suportamos até 6 pra mesas com mais gente (regras adaptadas por vocês).</div>
 
     <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- ═══ KT: AUSPEX TEST TEAM ═══ -->
+<div class="screen auspex-test-screen" id="screen-auspex-test">
+  <div class="hdr auspex-test-hdr">
+    <button class="hdr-back" onclick="closeAuspexTestTeam()" aria-label="Voltar aos modos de Kill Team">←</button>
+    <div class="hdr-info"><div class="hdr-eyebrow">Kill Team · Simulador</div><div class="hdr-title">◉ <span>AUSPEX TEST TEAM</span></div></div>
+    <div class="auspex-test-live">WEBGL · IA · VS</div>
+  </div>
+  <div class="auspex-test-shell" id="auspex-test-shell">
+    <iframe class="auspex-test-frame" id="auspex-test-frame" title="AUSPEX Test Team — simulador de Kill Team" allow="fullscreen" loading="eager"></iframe>
   </div>
 </div>
 
@@ -7244,7 +7279,7 @@ const KT_TEAMS = [
         {name:'Cloaked by the Storm', desc:'Quando um operativo atira num WOLF SCOUT amigo que está dentro do seu STORM, você pode re-rolar um dos seus dados de defesa.'},
         {name:'Tempestuous Wrath', desc:'Quando um WOLF SCOUT amigo está lutando ou retaliando, se ele estiver dentro do seu STORM ou estava dentro do seu STORM no início da ativação, as armas melee dele ganham Balanced.'},
         {name:"Storm's Bite", desc:'Quando um WOLF SCOUT amigo está lutando contra um inimigo que está dentro do seu STORM, subtraia 1 do Atk das armas melee desse inimigo (mínimo de 3).'},
-        {name:'Savage Fighters', desc:'Quando um WOLF SCOUT amigo termina de retaliar, se não foi incapacitado, você pode causar D3+1 de dano no inimigo dessa sequência.'},
+        {name:'Savage Fighters', desc:'Sempre que um WOLF SCOUT amigo terminar de retaliar, se ele não foi incapacitado <strong>e ainda estiver no control range</strong> do inimigo daquela sequência, você pode causar D3+1 de dano nesse inimigo.'},
       ],
       firefight: [
         {name:'Acute Senses', desc:'Use quando um WOLF SCOUT amigo faz a ação Shoot e você está selecionando alvo válido. Até o fim da ação, as armas ranged dele ganham Range 6\" e Seek Light, e inimigos não podem estar obscured.'},
@@ -7263,7 +7298,7 @@ const KT_TEAMS = [
           {name:'Base 60x35mm', desc:'Ao medir movimento, nenhuma parte da base pode se mover mais que a distância permitida — se ele girar, conte a distância percorrida pela rotação.'},
         ],
         weapons:[
-          { name:'Fangs', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
+          { name:'Fangs', A:4, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
         ]},
       { id:'kt-ws-packleader', name:'Pack Leader', unique:true,
         M:'7\"', APL:3, GA:1, DF:3, SV:3, W:13,
@@ -7286,7 +7321,7 @@ const KT_TEAMS = [
           {name:'Healing Balms', ap:'1AP', desc:'Selecione um WOLF SCOUT amigo dentro do control range deste operativo para recuperar até D3+3 Wounds perdidos. Não pode ser feita no control range de inimigo.'},
         ],
         weapons:[
-          { name:'Absolvor bolt pistol', A:4, skill:3, D:4, CD:5, range:'short', tags:['Range 9\"','Piercing Crits 1'] },
+          { name:'Absolvor bolt pistol', A:4, skill:3, D:4, CD:5, range:'short', tags:['Range 8\"','Piercing Crits 1'] },
           { name:'Combat blade',         A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-ws-frosteye', name:'Frosteye', unique:true,
@@ -7333,7 +7368,7 @@ const KT_TEAMS = [
         ],
         weapons:[
           { name:'Bolt pistol',            A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
-          { name:'Jaws of the World Wolf', A:5, skill:3, D:3, CD:5, range:'long',  tags:['PSYCHIC','Blast 2\"','Severe'] },
+          { name:'Jaws of the World Wolf', A:4, skill:3, D:3, CD:5, range:'long',  tags:['PSYCHIC','Blast 2\"','Severe'] },
           { name:'Thunderclap',            A:5, skill:2, D:2, CD:2, range:'short', tags:['PSYCHIC','Range 6\"','Saturate','Seek Light','Stun','Torrent 2\"'] },
           { name:'Runic stave',            A:5, skill:3, D:4, CD:6, range:'melee', tags:['PSYCHIC','Shock'] },
         ]},
@@ -7569,7 +7604,7 @@ const KT_TEAMS = [
     limit: 12,
     coreRule: {
       name: 'Regras de Facção + Equipamento',
-      desc: '<strong>Composição.</strong> 1 Shas\'ui + 11 operativos da lista. Só SHAS\'LA e WEAPONS EXPERT podem repetir (máx. dois Weapons Expert); os demais uma vez cada. <strong>MB3 Recon Drone conta como duas seleções.</strong><br><br><strong>Markerlights.</strong> Alguns operativos (indicado no card) fazem a ação Markerlight (1AP): selecione um inimigo visível; ele ganha um Markerlight token seu (máx 4). Não pode no control range de inimigo. Uma vez em cada ativação, quando um inimigo com seus Markerlight tokens faz Dash/Charge/Fall Back/Reposition, remova um token dele. Todos os PATHFINDER amigos se beneficiam: ao atirar com arma do datacard (exceto fusion grenade do Assault Grenadier), aplica regras conforme o nº de tokens do alvo (cumulativo):<br>• 1 token: Saturate e Balanced.<br>• 2 tokens: +1 no Hit das armas ranged (máx 3+).<br>• 3 tokens: o alvo não pode estar obscured.<br>• 4 tokens: Seek Light.<br><br><strong>Pulse weapons.</strong> São: burst cannon, pulse carbine, suppressed pulse carbine, twin pulse carbine.<br><br><strong>EQUIP — Target Analysis Optic.</strong> Uma vez por turno, quando um PATHFINDER amigo (exceto DRONE) faz Shoot e seleciona alvo, até o fim da ação, se o alvo tem ≥1 Markerlight token seu, trate como se tivesse +1 (Blast/Torrent: só o primário).<br><br><strong>EQUIP — High-Intensity Markerlight.</strong> Até 2x por turno, quando um PATHFINDER amigo (exceto MV7 Marker Drone) faz Markerlight, o inimigo selecionado ganha dois tokens (em vez de um).<br><br><strong>EQUIP — Photon Grenade.</strong> Uma vez por turno, um PATHFINDER amigo com Markerlight no card (exceto DRONE) pode: selecionar um inimigo visível e rolar 1D6 — em 3+, até o fim da próxima ativação dele, -2" no Move. Não pode no control range de inimigo.<br><br><strong>EQUIP — Orbital Survey Uplink.</strong> Uma vez por turno, quando um PATHFINDER amigo faz Markerlight, você pode em vez disso selecionar um inimigo qualquer no killzone para ganhar um token (não precisa ser visível). Não cumulativo com High-Intensity Markerlight nem Analyse.'
+      desc: '<strong>Composição.</strong> 1 Shas\'ui + 11 operativos da lista. Só SHAS\'LA e WEAPONS EXPERT podem repetir (máx. dois Weapons Expert); os demais uma vez cada. <strong>MB3 Recon Drone conta como duas seleções.</strong><br><br><strong>Markerlights.</strong> Alguns operativos (indicado no card) fazem a ação Markerlight (1AP): selecione um inimigo visível; ele ganha um Markerlight token seu (máx 5). Não pode no control range de inimigo. Uma vez em cada ativação, quando um inimigo com seus Markerlight tokens faz Dash/Charge/Fall Back/Reposition, remova um token dele. Todos os PATHFINDER amigos se beneficiam: ao atirar com arma do datacard (exceto fusion grenade do Assault Grenadier), aplica regras conforme o nº de tokens do alvo (cumulativo):<br>• 1 token: Saturate e Balanced.<br>• 2 tokens: +1 no Hit das armas ranged (máx 3+).<br>• 3 tokens: o alvo não pode estar obscured.<br>• 4 tokens: Seek Light.<br>• 5 tokens: Seek.<br><br><strong>Pulse weapons.</strong> São: burst cannon, pulse carbine, suppressed pulse carbine, twin pulse carbine.<br><br><strong>EQUIP — Target Analysis Optic.</strong> Uma vez por turno, quando um PATHFINDER amigo (exceto DRONE) faz Shoot e seleciona alvo, até o fim da ação, se o alvo tem ≥1 Markerlight token seu, trate como se tivesse +1 (Blast/Torrent: só o primário).<br><br><strong>EQUIP — High-Intensity Markerlight.</strong> Até 2x por turno, quando um PATHFINDER amigo (exceto MV7 Marker Drone) faz Markerlight, o inimigo selecionado ganha dois tokens (em vez de um).<br><br><strong>EQUIP — Photon Grenade.</strong> Uma vez por turno, um PATHFINDER amigo com Markerlight no card (exceto DRONE) pode: selecionar um inimigo visível e rolar 1D6 — em 3+, até o fim da próxima ativação dele, -2" no Move. Não pode no control range de inimigo.<br><br><strong>EQUIP — Orbital Survey Uplink.</strong> Uma vez por turno, quando um PATHFINDER amigo faz Markerlight, você pode em vez disso selecionar um inimigo qualquer no killzone para ganhar um token (não precisa ser visível). Não cumulativo com High-Intensity Markerlight nem Analyse.'
     },
     ploys: {
       strategy: [
@@ -8347,7 +8382,7 @@ const KT_TEAMS = [
     desc:'Esquadrão genérico de Space Marines Primaris, adaptável a qualquer capítulo. Combina tiro preciso de bolter com poder de combate corpo a corpo — flexível e resistente.',
     style:'Versátil · Tiro/Melee',
     limit: 6,
-    coreRule: {name:"Astartes", desc:"Cada operativo pode fazer 2 ações de Tiro ou 2 de Luta na mesma ativação. Se forem 2 de Tiro, uma arma bolter deve ser usada em pelo menos uma; se for bolt sniper rifle ou heavy bolter, a segunda ação custa +1 AP. Pode contra-atacar independente da ordem."},
+    coreRule: {name:"Astartes", desc:"<strong>Astartes.</strong> Cada operativo pode fazer 2 ações Shoot ou 2 ações Fight na mesma ativação. Se forem 2 Shoot, uma arma bolt deve ser selecionada em pelo menos uma; se for bolt sniper rifle ou heavy bolter nas duas, a segunda custa +1 AP. Cada operativo pode counteractar independentemente da ordem.<br><br><strong>Chapter Tactics.</strong> Ao montar o time, escolha um CHAPTER TACTIC <strong>primário</strong> e um <strong>secundário</strong> para todos os operativos amigos terem na batalha (instâncias repetidas não são cumulativas). Numa campanha ou torneio, você deve usar os mesmos em todas as partidas (mas pode trocar o secundário com o ploy Adaptive Tactics).<br><br><strong>1. Aggressive.</strong> As armas melee dele ganham Rending.<br><strong>2. Dueller.</strong> Ao lutar ou retaliar, cada sucesso normal seu pode bloquear um crítico não resolvido (a menos que a arma do inimigo tenha Brutal).<br><strong>3. Resolute.</strong> Você pode ignorar mudanças no APL dele, e ele não é afetado pela regra Shock dos inimigos.<br><strong>4. Stealthy.</strong> Ao atirarem nele, se você puder reter algum cover save, pode reter um adicional, ou reter um cover save como crítico. Não é cumulativo com cover melhorado por terreno Vantage.<br><strong>5. Mobile.</strong> Faz Fall Back por 1 AP a menos; e pode fazer Charge estando no control range de inimigo, podendo sair dele (valem os requisitos normais do movimento).<br><strong>6. Hardy.</strong> Sempre que atirarem neste operativo, dados de defesa com resultado 5+ são sucessos críticos.<br><strong>7. Sharpshooter.</strong> Ao atirar numa ativação em que não fez Charge, Fall Back ou Reposition, as armas bolt dele ganham Accurate 1 e Severe.<br><strong>8. Siege Specialist.</strong> As armas ranged dele ganham Saturate. Ao lutar ou retaliar, inimigos não podem assistir.<br><br><strong>Bolt weapon.</strong> Qualquer arma ranged com \"bolt\" no nome (stalker bolt rifle, heavy bolt pistol etc.)."},
     ploys: {
       strategy: [
         {name:"Doutrina de Combate", desc:"Escolha Devastador, Tático ou Assalto — unidades ganham re-roll de 1 dado de ataque na situação escolhida neste turno."},
@@ -8645,7 +8680,7 @@ const KT_TEAMS = [
       strategy: [
         {
           name: 'Mission Tactics',
-          desc: 'Selecione Conceal ou Engage. Sempre que um DEATHWATCH amigo atira ou luta contra um inimigo que tem essa ordem, as armas desse amigo ganham Balanced.'
+          desc: 'Selecione Conceal ou Engage. Sempre que um DEATHWATCH amigo estiver atirando contra, lutando contra <strong>ou retaliando contra</strong> um inimigo que tenha essa ordem, as armas desse amigo ganham Balanced.'
         },
         {
           name: 'The Long Vigil',
@@ -8663,7 +8698,7 @@ const KT_TEAMS = [
       firefight: [
         {
           name: 'Suffer Not the Alien',
-          desc: 'Use depois de rolar seus dados de ataque de um DEATHWATCH amigo, se ele estiver atirando/lutando contra um operativo que NÃO tem o keyword CHAOS ou IMPERIUM. Re-role qualquer um dos seus dados de ataque.'
+          desc: 'Use depois de rolar os dados de ataque de um DEATHWATCH amigo, se ele estiver atirando contra, lutando contra <strong>ou retaliando contra</strong> um operativo que NÃO tenha a keyword CHAOS ou IMPERIUM. Você pode re-rolar quaisquer dos seus dados de ataque.'
         },
         {
           name: 'Auspicator Tracking',
@@ -9351,7 +9386,7 @@ const KT_TEAMS = [
         abilities:[
           {name:'LÍDER', desc:'Este operativo é o líder do time.'},
           {name:"Grandfather's Blessing", desc:'Sempre que um inimigo marcado com Poison perder PV a até 7" deste operativo, ele recupera 1 PV perdido (máx 3 por turno, e só se não estiver incapacitado).'},
-          {name:'Toxic', desc:'A Espada da Peste: contra inimigo marcado com Poison, +1 em ambos os valores de Dano.'},
+          {name:'Toxic', desc:'A Espada da Peste: contra um inimigo que <strong>tinha</strong> um marcador de Poison seu <strong>no início da ação</strong>, some 1 aos dois valores de Dano.'},
         ],
         weapons:[
           { name:'Pistola de Plasma', range:'short', profiles:[
@@ -9412,7 +9447,7 @@ const KT_TEAMS = [
         M:'5"', APL:3, GA:1, DF:3, SV:3, W:14,
         abilities:[
           {name:'Repulsive Fortitude', desc:'Ao ser alvo de tiro, dados de defesa com resultado 5+ são sucessos críticos.'},
-          {name:'Toxic', desc:'O Boltgun: contra inimigo marcado com Poison, +1 em ambos os valores de Dano.'},
+          {name:'Toxic', desc:'O Boltgun: contra um inimigo que <strong>tinha</strong> um marcador de Poison seu <strong>no início da ação</strong>, some 1 aos dois valores de Dano.'},
         ],
         weapons:[
           { name:'Boltgun',       A:4, skill:3, D:3, CD:4, range:'long', tags:['Toxic'] },
@@ -9983,7 +10018,7 @@ const KT_TEAMS = [
         },
         {
           name: 'Aerial Agility',
-          desc: 'Quando um operativo atira num VESPID amigo enquanto counteracting, ou numa ativação em que o atirador se moveu ou foi colocado, role 1D6 sempre que um dado de ataque fosse causar Normal Dmg: em 5+, ignore esse dano. Não pode ignorar mais de um dado por sequência de Shoot.'
+          desc: 'Sempre que um operativo estiver atirando num VESPID amigo enquanto <strong>counteracta ou interrompe</strong>, ou durante uma ativação em que esse atirador se moveu ou foi colocado, role 1D6 sempre que um dado de ataque fosse causar Dano Normal: em 5+, ignore aquele dano. Você não pode ignorar mais de um dado de ataque por sequência de Shoot desta forma.'
         },
         {
           name: 'Airborne Predators',
@@ -10031,7 +10066,7 @@ const KT_TEAMS = [
           },
           {
             name: 'Communion Helm',
-            desc: 'Uma vez em cada ativação deste operativo, você pode gastar 1 Communion point de graça.'
+            desc: 'Uma vez em cada ativação deste operativo, você pode fazer <strong>uma</strong> destas:<br>• Gastar 1 Communion point de graça.<br>• Gastar 1 Communion point e escolher um operativo VESPID STINGWING amigo a 3\" deste operativo: esse amigo pode fazer imediatamente uma ação de missão grátis de 1 AP (você ainda precisa gastar um Communion point para ele fazer a ação normalmente, e isso não pode ser ignorado com o equipamento Convergence Stimulant).'
           },
           {
             name: 'Commune',
@@ -11054,7 +11089,7 @@ const KT_TEAMS = [
     ploys: {
       strategy: [
         {name:'Death from Below', desc:'Quando um RAVENER amigo está lutando: se ele fez a ação Burrow durante essa ativação/counteraction, as armas melee dele ganham Balanced; se ele está no seu TUNNEL, as armas melee dele ganham Ceaseless.'},
-        {name:'Whipcord Emergence', desc:'Quando um operativo atira num RAVENER amigo: se esse amigo fez a ação Burrow durante este turno, você pode re-rolar um dos seus dados de defesa; se esse amigo está no seu TUNNEL, você pode re-rolar qualquer um dos seus dados de defesa.'},
+        {name:'Whipcord Emergence', desc:'Quando um operativo atira num RAVENER amigo: se esse amigo fez a ação Burrow durante este turno, você pode re-rolar um dos seus dados de defesa; se esse amigo está no seu TUNNEL, você pode re-rolar quaisquer dados de defesa <strong>de um mesmo resultado</strong> (ex.: todos os 2).'},
         {name:'Writhe out of Sight', desc:'Selecione um RAVENER amigo no killzone. Ele pode fazer imediatamente uma ação Burrow grátis. Se ele estiver a 2\" do seu TUNNEL, pode fazer antes disso uma ação Fall Back ou Reposition grátis.'},
         {name:'Tunnel Lurkers', desc:'Sempre que um RAVENER amigo está no seu TUNNEL, ele está em cover, a não ser que esteja a 2\" do operativo ativo. Trate como cover de terreno Light (portanto é afetado por regras que impedem isso, ex. Seek Light e terreno Vantage).'},
       ],
@@ -11067,7 +11102,7 @@ const KT_TEAMS = [
     },
     operatives: [
       { id:'kt-rav-prime', name:'Ravener Prime', unique:true,
-        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:21,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:19,
         abilities:[
           {name:'LÍDER', desc:'Este operativo é o líder do time e é obrigatório (1 PRIME + 4 da lista).'},
           {name:'Neuropredatory Crest', desc:'Ao determinar o controle de um marcador, trate o APL total dos inimigos que o contestam como 1 a menos se pelo menos um deles estiver a 3\" deste operativo (não é mudança no APL, então outras mudanças são cumulativas). Sempre que um inimigo estiver a 3\" deste operativo: o oponente gasta 1 AP adicional para esse inimigo fazer Pick Up Marker e ações de missão; e o oponente não pode re-rolar os dados de ataque ou defesa desse inimigo.'},
@@ -11078,10 +11113,10 @@ const KT_TEAMS = [
           { name:'Scything talons & rending claws', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
         ]},
       { id:'kt-rav-felltalon', name:'Ravener Felltalon', unique:true,
-        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:20,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:18,
         abilities:[
           {name:'Poison', desc:'No passo Resolve Attack Dice, se você causar dano com algum sucesso crítico, o operativo alvo desta arma ganha um Poison token seu (se ainda não tiver). Sempre que um operativo com um Poison token seu é ativado, cause D3 de dano nele.'},
-          {name:'Toxic Lunge', ap:'1AP', desc:'Selecione um inimigo a 2\" deste operativo. Alternativamente, se este operativo estiver underground, selecione um inimigo no seu TUNNEL. Cause D3+2 de dano nesse inimigo e ele ganha um Poison token seu (se ainda não tiver). Este operativo pode fazer esta ação enquanto está underground (isso tem precedência sobre as regras normais de Burrow).'},
+          {name:'Toxic Lunge', ap:'1AP', desc:'Selecione um inimigo visível e a 2\" deste operativo. Se houver inimigos no control range deste operativo, você não pode escolher um que não esteja. Alternativamente, se este operativo estiver underground, selecione um inimigo no seu TUNNEL. Cause D3+2 de dano nesse inimigo e ele ganha um Poison token seu (se ainda não tiver). Este operativo pode fazer esta ação enquanto está underground (isso tem precedência sobre as regras normais de Burrow).'},
         ],
         weapons:[
           { name:'Pincer tail',   A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 3\"','Silent'] },
@@ -11089,7 +11124,7 @@ const KT_TEAMS = [
           { name:'Toxic scythes', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Lethal 5+','Shock','Poison'] },
         ]},
       { id:'kt-rav-tremorscythe', name:'Ravener Tremorscythe', unique:true,
-        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:20,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:18,
         abilities:[
           {name:'Subterranean Ambush', desc:'Uma vez por turno na Firefight phase, depois que um inimigo faz uma ação em que move mais de 2\" e termina a 2\" do seu TUNNEL, se este operativo estiver underground e estiver ready ou não tiver feito counteract neste turno, você pode interromper para usar esta regra.<br>Se usar, ative ou faça counteract com este operativo (conforme apropriado), mas durante essa ativação/counteraction ele deve lutar contra ou atirar contra aquele inimigo, e não pode fazer isso contra nenhum outro inimigo antes disso (se não for possível, a ativação/counteraction é cancelada e a regra não foi usada). Depois de completá-la, continue a ativação/counteraction do inimigo (se possível e relevante).'},
           {name:'Hypersensory Hunter', desc:'Este operativo pode fazer a ação Charge mesmo com ordem Conceal, se tiver feito a ação Burrow durante a mesma ativação/counteraction.'},
@@ -11099,7 +11134,7 @@ const KT_TEAMS = [
           { name:'Scything talons & rending claws', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Rending'] },
         ]},
       { id:'kt-rav-venomspitter', name:'Ravener Venomspitter', unique:true,
-        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:20,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:18,
         abilities:[
           {name:'Poison', desc:'No passo Resolve Attack Dice, se você causar dano com algum sucesso crítico, o operativo alvo desta arma ganha um Poison token seu (se ainda não tiver). Sempre que um operativo com um Poison token seu é ativado, cause D3 de dano nele.'},
           {name:'Distend Dorsal Sac', ap:'1AP', desc:'Até este operativo atirar com o venom bolt, até ele repetir esta ação ou até ele fazer a ação Burrow (o que vier primeiro), todos os perfis do venom bolt dele ganham Lethal 5+, +1 no Atk e perdem a regra Range 8\".'},
@@ -11113,7 +11148,7 @@ const KT_TEAMS = [
           { name:'Scything talons', A:5, skill:3, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-rav-wrecker', name:'Ravener Wrecker', unique:true,
-        M:'7\"', APL:3, GA:1, DF:3, SV:4, W:20,
+        M:'7\"', APL:3, GA:1, DF:3, SV:4, W:18,
         abilities:[
           {name:'Reinforced Carapace', desc:'Normal e Critical Dmg de 4 ou mais causam 1 de dano a menos neste operativo.'},
           {name:'Crush', desc:'Sempre que você strike com as scything talons & crushing claws, você e o oponente fazem um roll-off, somando 1 ao seu resultado se o operativo alvo tiver Wounds 9 ou menos. Se você vencer, cause dano adicional nele igual à diferença entre os dados (máximo de 3 de dano adicional).'},
@@ -11123,7 +11158,7 @@ const KT_TEAMS = [
           { name:'Scything talons & crushing claws', A:5, skill:3, D:4, CD:5, range:'melee', tags:['Crush'] },
         ]},
       { id:'kt-rav-warrior', name:'Ravener Warrior', unique:false, count:4,
-        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:20,
+        M:'7\"', APL:3, GA:1, DF:3, SV:5, W:18,
         abilities:[
           {name:'Instinctive Behaviour', desc:'Quando este operativo está atirando contra, lutando contra ou retaliando contra um inimigo ferido (wounded), ou contra um inimigo que fez a ação Fall Back neste turno, as armas dele ganham Lethal 5+.'},
         ],
@@ -11444,7 +11479,7 @@ const KT_TEAMS = [
     emoji:'⚰', color:'#16a34a', limit:8,
     style:'Elite · Ressurreição · Suporte',
     desc:'Necrons liderados por um Cryptek ambicioso, apoiados por constructos Canoptek. Não são rápidos, mas são duríssimos: recuperam PV todo turno (Living Metal) e literalmente voltam dos mortos (Reanimation Protocols). O Cryptek e o Apprentek comandam os subordinados com ações SUPPORT e atiram através deles com a regra Magnify.',
-    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 CRYPTEK (Chronomancer, Psychomancer ou Technomancer — é o líder) + 1 PLASMACYTE ACCELERATOR + 1 PLASMACYTE REANIMATOR + 5 operativos da lista (Apprentek, Deathmark, Despotek, Guardian). Fora DEATHMARK e GUARDIAN, cada operativo só entra uma vez.<br><br><strong>Reanimation Protocols.</strong> Na primeira vez que cada operativo HIEROTEK CIRCLE amigo é incapacitado, antes de removê-lo do killzone, coloque um dos seus marcadores de Reanimation no control range dele. Depois remova-o como incapacitado, retirando também todos os tokens e efeitos que ele tinha (ex.: Chronometron, tokens de Poison, mudanças de APL, estar implantado etc.).<br><br>No passo Ready de cada Strategy phase, escolha um dos seus marcadores de Reanimation e role 1D6: em 1-2, deixe o marcador no killzone e repita com outro marcador seu (se houver); em 3+, um operativo é REANIMATED. Você só pode escolher cada marcador uma vez por turno e, assim que tirar 3+, não escolhe mais nenhum naquele turno.<br><br>Quando um operativo é REANIMATED: coloque de volta o operativo daquele marcador (ele deixa de estar incapacitado), a até 3\" do marcador e fora do control range de inimigos (se não for possível, trate como 1-2); ele volta com 1 PV; tem a ordem que você quiser e está pronto; remova o marcador.<br><br>Como operativos REANIMATED deixam de estar incapacitados, para o kill op o kill grade do oponente pode cair durante a batalha (ele perde VP). Isso não muda retroativamente outros VP que ele já marcou (ex.: de tac ops).<br><br><strong>Living Metal.</strong> No passo Ready de cada Strategy phase, depois de resolver todas as outras regras desse passo (ex.: Reanimation Protocols), cada operativo HIEROTEK CIRCLE amigo recupera até D3+1 PV perdidos (role separado para cada).<br><br><strong>Magnify.</strong> Algumas armas de APPRENTEK e CRYPTEK têm a regra Magnify: sempre que este operativo fizer a ação Shoot com essa arma, se o alvo for visível a ele e outro operativo HIEROTEK CIRCLE APPRENTEK ou CRYPTEK amigo com ordem Engage e fora do control range de inimigos for visível a ele, você pode usar esta regra. Se usar, trate esse outro operativo como o operativo ativo para determinar alvo válido, as condições daquela ação Shoot, cover e obscured. Se usar, a arma ganha Ceaseless até o fim da ação.<br><br><strong>EQUIP — Magnification Conduits.</strong> Uma vez por turno, quando um APPRENTEK ou CRYPTEK amigo faz a ação Shoot, você pode usar esta regra: escolha outro operativo HIEROTEK CIRCLE amigo (exceto PLASMACYTE) com ordem Engage e visível a ele. Até o fim da ação, esse outro amigo pode ser tratado como o operativo ativo para a regra Magnify.<br><br><strong>EQUIP — Tesla Weave.</strong> Uma vez por turno, quando um inimigo termina a ação Charge com operativos HIEROTEK CIRCLE amigos no control range dele, você pode usar esta regra: cause D3+1 de dano nesse inimigo.<br><br><strong>EQUIP — Phase Shifter.</strong> Uma vez por turno, quando um operativo atira num CRYPTEK amigo, no início do passo Roll Defence Dice você pode usar esta regra: piore em 1 o x da regra Piercing (se houver) até o fim da sequência. Ou seja, Piercing 1 passa a ser ignorado.<br><br><strong>EQUIP — Tesseract Cube.</strong> No passo Ready de cada Strategy phase, ao ganhar CP, se um CRYPTEK amigo não estiver incapacitado, não estiver no control range de inimigos e não tiver sido REANIMATED neste turno, você pode usar esta regra: role 1D6 — em 1, você não pode mais usar esta regra pelo resto da batalha; em 4+, ganhe 1 CP. Depois de ganhar 2 CP com esta regra, não pode mais usá-la na batalha.'},
+    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 CRYPTEK (Chronomancer, Psychomancer ou Technomancer — é o líder) + 1 PLASMACYTE ACCELERATOR + 1 PLASMACYTE REANIMATOR + 5 operativos da lista (Apprentek, Deathmark, Despotek, Guardian). Fora DEATHMARK e GUARDIAN, cada operativo só entra uma vez.<br><br><strong>Reanimation Protocols.</strong> Na primeira vez que cada operativo HIEROTEK CIRCLE amigo é incapacitado, antes de removê-lo do killzone, coloque um dos seus marcadores de Reanimation no control range dele. Depois remova-o como incapacitado, retirando também todos os tokens e efeitos que ele tinha (ex.: Chronometron, tokens de Poison, mudanças de APL, estar implantado etc.).<br><br>No passo Ready de cada Strategy phase, escolha um dos seus marcadores de Reanimation e role 1D6: em 1-2, deixe o marcador no killzone e repita com outro marcador seu (se houver); em 3+, um operativo é REANIMATED. Você só pode escolher cada marcador uma vez por turno e, assim que tirar 3+, não escolhe mais nenhum naquele turno.<br><br>Quando um operativo é REANIMATED: coloque de volta o operativo daquele marcador (ele deixa de estar incapacitado), a até 3\" do marcador e fora do control range de inimigos (se não for possível, trate como 1-2); ele volta com 1 PV; tem a ordem que você quiser e está pronto; remova o marcador.<br><br>Como operativos REANIMATED deixam de estar incapacitados, para o kill op o kill grade do oponente pode cair durante a batalha (ele perde VP). Isso não muda retroativamente outros VP que ele já marcou (ex.: de tac ops).<br><br><strong>Living Metal.</strong> No passo Ready de cada Strategy phase, <strong>antes</strong> de resolver todas as outras regras de facção desse passo (ex.: Reanimation Protocols), cada operativo HIEROTEK CIRCLE amigo recupera até D3+1 PV perdidos (role separado para cada).<br><br><strong>Magnify.</strong> Algumas armas de APPRENTEK e CRYPTEK têm a regra Magnify: sempre que este operativo fizer a ação Shoot com essa arma, se o alvo for visível a ele e outro operativo HIEROTEK CIRCLE APPRENTEK ou CRYPTEK amigo com ordem Engage e fora do control range de inimigos for visível a ele, você pode usar esta regra. Se usar, trate esse outro operativo como o operativo ativo para determinar alvo válido, as condições daquela ação Shoot, cover e obscured. Se usar, a arma ganha Ceaseless até o fim da ação.<br><br><strong>EQUIP — Magnification Conduits.</strong> Uma vez por turno, quando um APPRENTEK ou CRYPTEK amigo faz a ação Shoot, você pode usar esta regra: escolha outro operativo HIEROTEK CIRCLE amigo (exceto PLASMACYTE) que tenha ordem Engage, não esteja no control range de inimigos e seja visível a ele. Até o fim da ação, esse outro amigo pode ser tratado como o operativo ativo para a regra Magnify.<br><br><strong>EQUIP — Tesla Weave.</strong> Uma vez por turno, quando um inimigo termina a ação Charge com operativos HIEROTEK CIRCLE amigos no control range dele, você pode usar esta regra: cause D3+1 de dano nesse inimigo.<br><br><strong>EQUIP — Phase Shifter.</strong> Uma vez por turno, quando um operativo atira num CRYPTEK amigo, no início do passo Roll Defence Dice você pode usar esta regra: piore em 1 o x da regra Piercing (se houver) até o fim da sequência. Ou seja, Piercing 1 passa a ser ignorado.<br><br><strong>EQUIP — Tesseract Cube.</strong> No passo Ready de cada Strategy phase, ao ganhar CP, se um CRYPTEK amigo não estiver incapacitado, não estiver no control range de inimigos e não tiver sido REANIMATED neste turno, você pode usar esta regra: role 1D6 — em 1, você não pode mais usar esta regra pelo resto da batalha; em 4+, ganhe 1 CP. Depois de ganhar 2 CP com esta regra, não pode mais usá-la na batalha.'},
     ploys:{
       strategy:[
         {name:'Relentless Onslaught', desc:'Sempre que um operativo HIEROTEK CIRCLE amigo estiver atirando num operativo a 8\" dele, as armas ranged desse amigo ganham Balanced. Ao usar a regra Magnify, este operativo ainda precisa estar a 8\" do alvo para usar esta regra (não o outro amigo pelo qual você determina alvo válido).'},
@@ -11465,9 +11500,9 @@ const KT_TEAMS = [
         abilities:[
           {name:'LÍDER', desc:'Pode ser o líder do time. Escolha exatamente 1 CRYPTEK entre Chronomancer, Psychomancer e Technomancer.'},
           {name:'Opções de arma', desc:'Escolha aeonstave OU entropic lance (cada um tem perfil ranged e melee).'},
-          {name:'COUNTERTEMPORAL NANOMINE (1 AP)', desc:'Coloque o seu marcador Countertemporal Nanomine visível a este operativo, ou em terreno Vantage de uma peça visível a ele. Sempre que um inimigo estiver a 4\" desse marcador, subtraia 2\" do Move dele. Quando este operativo for ativado de novo, for incapacitado, ou esta ação for feita de novo por um amigo (o que vier primeiro), remova o marcador. Não pode fazer esta ação no control range de um inimigo.'},
+          {name:'COUNTERTEMPORAL NANOMINE (1 AP)', desc:'Coloque o seu marcador Countertemporal Nanomine visível a este operativo e a 8\" dele, ou a 8\" dele e em terreno Vantage de uma peça visível a ele. Sempre que um inimigo estiver a 4\" desse marcador, subtraia 2\" do Move dele. Quando este operativo for ativado de novo, for incapacitado, ou esta ação for feita de novo por um amigo (o que vier primeiro), remova o marcador. Não pode fazer esta ação no control range de um inimigo.'},
           {name:'CHRONOMETRON (1 AP)', desc:'SUPPORT. Escolha um operativo HIEROTEK CIRCLE amigo visível e a 6\" deste operativo. Até o início da próxima ativação dele, até este operativo ser incapacitado, ou até a ação ser refeita por um amigo (o que vier primeiro), subtraia 1 do Atk das armas de um operativo sempre que ele estiver atirando contra, lutando contra ou retaliando contra o amigo selecionado. Não pode fazer esta ação no control range de um inimigo.'},
-          {name:'TIMESPLINTER (1 AP)', desc:'SUPPORT. Escolha outro operativo HIEROTEK CIRCLE amigo já ativado (expended), visível e a 5\" deste operativo. Remova-o do killzone e recoloque-o visível e a até 5\" na horizontal deste operativo, num local válido. Um Comms Device do equipamento universal só afeta a primeira distância desta regra. Não pode fazer esta ação no control range de um inimigo, no primeiro turno, ou se um amigo já a fez neste turno.'},
+          {name:'TIMESPLINTER (1 AP)', desc:'Escolha outro operativo HIEROTEK CIRCLE amigo já ativado (expended), visível e a 5\" deste operativo. Remova-o do killzone e recoloque-o visível e a até 5\" na horizontal deste operativo, num local válido. Um Comms Device do equipamento universal só afeta a primeira distância desta regra. Não pode fazer esta ação no control range de um inimigo, no primeiro turno, ou se um amigo já a fez neste turno.'},
           {name:'INTERSTITIAL COMMAND (1 AP)', desc:'SUPPORT. Escolha outro operativo HIEROTEK CIRCLE amigo (exceto APPRENTEK e CRYPTEK) visível e a 6\" deste operativo, ou visível e a 6\" de um DESPOTEK amigo que seja visível a este operativo. Esse operativo pode imediatamente fazer uma ação de 1 AP grátis; ele não pode mover nem ser removido/recolocado mais de 2\" durante essa ação, nem fazer uma ação que já fez neste turno, nem repetir essa ação neste turno. Não pode fazer esta ação no control range de um inimigo, nem ao counteractar.'},
         ],
         weapons:[
@@ -12166,7 +12201,7 @@ const KT_TEAMS = [
       { id:'kt-nv-exactor', name:'Novitiate Exactor', unique:true,
         M:'6\"', APL:2, GA:1, DF:3, SV:4, W:7,
         abilities:[
-          {name:'WHIP INTO FRENZY (1 AP)', desc:'Escolha outro operativo NOVITIATE amigo (exceto SUPERIOR) visível e a 3\" deste operativo que não esteja sob efeito desta ação. Até o fim da próxima ativação dele, some 1\" ao Move dele, e ele pode fazer duas ações Fight na próxima ativação, sendo uma delas grátis. Não pode fazer esta ação no control range de um inimigo.'},
+          {name:'WHIP INTO FRENZY (1 AP)', desc:'Escolha outro operativo NOVITIATE amigo (exceto SUPERIOR) visível e a 3\" deste operativo que não esteja sob efeito desta ação. Até o fim da próxima ativação dele, <strong>some 1 ao APL dele</strong>, some 1\" ao Move dele, e ele pode fazer duas ações Fight na próxima ativação, sendo uma delas grátis. Não pode fazer esta ação no control range de um inimigo.'},
         ],
         weapons:[
           { name:'Neural whips (ranged)', A:5, skill:3, D:2, CD:3, range:'short', tags:['Range 3\"','Lethal 5+','Stun'] },
@@ -12250,7 +12285,7 @@ const KT_TEAMS = [
     emoji:'⚓', color:'#0369a1', limit:11,
     style:'Curta distância · Abordagem · Grupo',
     desc:'Voidsmen da Marinha Imperial treinados para abordagem de naves. Brutais de perto (shotguns e machados), resistentes a explosões pela Void Armour, e coordenados: o Breach and Clear deixa ativar dois operativos em sequência. Trazem drones (C.A.T. e Gheistskull) para reconhecimento e sabotagem.',
-    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 SERGEANT-AT-ARMS (líder) + 10 operativos da lista. Fora ARMSMAN, cada operativo só entra uma vez. Máximo de 2 GUNNER. O time só pode incluir um GHEISTSKULL se também incluir um VOID-JAMMER, e só pode incluir um C.A.T. UNIT se também incluir um SURVEYOR — esses contam como meia seleção cada (os dois juntos valem uma).<br><br><strong>Breach and Clear.</strong> Uma vez por turno, quando um operativo amigo pronto é ativado, você pode usar esta regra: escolha outro amigo pronto visível e a 3\" dele. Quando o primeiro terminar a ativação, você pode ativar esse outro antes do oponente ativar. Quando o segundo terminar, o oponente ativa normalmente.<br><br><strong>Void Armour.</strong> Sempre que um operativo estiver atirando num amigo, se a arma ranged tiver Blast ou Torrent (exceto armas com perfil sweeping), você pode re-rolar um dos seus dados de defesa — ou até dois se o amigo for um GRENADIER. Os operativos amigos também não são afetados pela regra x\" Devastating x (Devastating com distância) a não ser que sejam o alvo daquela sequência.<br><br><strong>EQUIP — Slugs.</strong> Até três vezes por turno, quando um amigo faz a ação Shoot e você seleciona uma Navis shotgun (long range), você pode usar esta regra: até o fim da ação, melhore o Hit dela em 1 e some 1 aos dois valores de Dano.<br><br><strong>EQUIP — Combat Stimms.</strong> Você pode ignorar as mudanças no Move dos operativos amigos por eles estarem injured.<br><br><strong>EQUIP — Rebreathers.</strong> Você pode ignorar as mudanças no APL dos operativos amigos, e eles não são afetados pela regra Shock dos inimigos.<br><br><strong>EQUIP — System Override Device.</strong> Uma vez por turno, um operativo amigo pode fazer a ação Operate Hatch por 1 AP a menos.'},
+    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 SERGEANT-AT-ARMS (líder) + 10 operativos da lista. Fora ARMSMAN, cada operativo só entra uma vez. Máximo de 2 GUNNER. O time só pode incluir um GHEISTSKULL se também incluir um VOID-JAMMER, e só pode incluir um C.A.T. UNIT se também incluir um SURVEYOR — esses contam como meia seleção cada (os dois juntos valem uma).<br><br><strong>Breach and Clear.</strong> Uma vez por turno, quando um operativo amigo pronto é ativado, você pode usar esta regra: escolha outro amigo pronto visível e a 3\" dele. Quando o primeiro terminar a ativação, você pode ativar esse outro antes do oponente ativar. Quando o segundo terminar, o oponente ativa normalmente.<br><br><strong>Void Armour.</strong> Sempre que um operativo estiver atirando num amigo, se a arma ranged tiver Blast ou Torrent (exceto armas com perfil sweeping), você pode re-rolar um dos seus dados de defesa — ou até dois se o amigo for um GRENADIER. Os operativos amigos também não são afetados pela regra x\" Devastating x (Devastating com distância) a não ser que sejam o alvo daquela sequência.<br><br><strong>EQUIP — Slugs.</strong> Até três vezes por turno, quando um amigo faz a ação Shoot e você seleciona uma Navis shotgun (long range), você pode usar esta regra: até o fim da ação, melhore o Hit dela em 1, some 1 aos dois valores de Dano, e a arma ganha Accurate 1.<br><br><strong>EQUIP — Combat Stimms.</strong> Você pode ignorar as mudanças no Move dos operativos amigos por eles estarem injured.<br><br><strong>EQUIP — Rebreathers.</strong> Você pode ignorar as mudanças no APL dos operativos amigos, e eles não são afetados pela regra Shock dos inimigos.<br><br><strong>EQUIP — System Override Device.</strong> Uma vez por turno, um operativo amigo pode fazer a ação Operate Hatch por 1 AP a menos.'},
     ploys:{
       strategy:[
         {name:'Attack Order', desc:'Coloque o seu marcador Attack Order no killzone. Sempre que um amigo a 3\" desse marcador estiver atirando, lutando ou retaliando, as armas dele ganham Ceaseless. No passo Ready da próxima Strategy phase, remova o marcador. Não pode usar este ploy e o Defence Order na mesma Strategy phase.'},
@@ -12335,7 +12370,7 @@ const KT_TEAMS = [
         abilities:[
           {name:'Machine', desc:'Este operativo só pode fazer Boost, Charge, Dash, Fall Back e Reposition. Não pode retaliar nem ajudar num fight. Ao determinar controle de marcador, trate o APL dele como 1 a menos. Com ordem Conceal e em cover, não pode ser escolhido como alvo válido (precedência sobre Seek/Vantage), exceto estar a 2\".'},
           {name:'Expendable', desc:'Este operativo é ignorado para o kill/elimination op do oponente (ao ser incapacitado e ao contar o número inicial de operativos). Também é ignorado para condições de vitória e VP que exijam operativos "escapar", "sobreviver" ou ser incapacitados por inimigos.'},
-          {name:'BOOST (1 AP)', desc:'Até o fim da ativação, some 6\" ao Move deste operativo. Não pode fazer esta ação mais de uma vez por batalha, nem no primeiro turno.'},
+          {name:'BOOST (1 AP)', desc:'Na próxima vez que este operativo fizer a ação Charge durante esta ativação, some 4\" à distância que ele pode mover (em vez de 2\"). Não pode fazer esta ação mais de uma vez por batalha, nem no primeiro turno.'},
           {name:'Requer VOID-JAMMER', desc:'O time só pode incluir este operativo se também incluir um VOID-JAMMER. Conta como meia seleção.'},
         ],
         weapons:[
@@ -12896,7 +12931,7 @@ const KT_TEAMS = [
     emoji:'🐐', color:'#78350f', limit:10,
     style:'Melee · Fúria · Resiliência',
     desc:'Beastmen do Caos que canalizam dor em fúria. A regra Frenzy é o coração do time: em vez de morrer, o operativo ganha um marcador de Frenesi e continua lutando — mais frágil e sem poder fazer objetivos, mas ainda cortando. Time de melee brutal com uma variedade enorme de especialistas.',
-    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 IRONHORN (líder) + 9 operativos da lista. Fora WARRIOR, cada operativo só entra uma vez.<br><br><strong>Frenzy.</strong> Sempre que um operativo amigo que não tenha um marcador de Frenesi for incapacitado durante a batalha, ele não é incapacitado e ganha um marcador de Frenesi. Todos os dados de ataque restantes são descartados (inclusive os seus, se ele estiver lutando ou retaliando). Se ele tiver ordem Conceal, mude para Engage.<br><br>Enquanto um amigo tiver um marcador de Frenesi: ele só é incapacitado nas condições abaixo; não pode ter ordem Conceal; está injured; não pode fazer Pick Up Marker, ações únicas (exceto Sweeping Blow do VANDAL) nem ações de missão (exceto Operate Hatch); e, para determinar controle de marcadores e áreas do killzone, trate o APL dele como 1 (precedência sobre qualquer mudança de stat).<br><br><strong>Como um operativo em Frenesi é incapacitado:</strong> quando a ativação/counteraction dele termina; quando um inimigo luta ou retalia contra ele e o oponente golpeia com sucesso crítico; quando um inimigo luta ou retalia e o golpeia pela segunda vez com sucesso normal (podem ser golpes de duas ações Fight diferentes); quando um inimigo atira nele e causa Dano Crítico; ou quando a batalha termina.<br><br>O oponente trata um operativo FELLGOR como incapacitado (em vez de quando ele seria incapacitado normalmente) no momento em que ele ganha o marcador de Frenesi, para fins de VP (ex.: kill op) e regras de facção que exijam incapacitação.<br><br><strong>EQUIP — Chaos Sigil.</strong> Uma vez por turno, quando um operativo atira num amigo, no início do passo Roll Defence Dice você pode usar esta regra: piore em 1 o x da regra Piercing (se houver) até o fim da sequência. Ou seja, Piercing 1 passa a ser ignorado.<br><br><strong>EQUIP — War Paint.</strong> Você pode ignorar as mudanças no Move dos operativos amigos por eles estarem injured.<br><br><strong>EQUIP — Brass Adornments.</strong> Uma vez por batalha, você pode usar os firefight ploys Animalistic Fury e Wild Rage por 0 CP cada.<br><br><strong>EQUIP — Gore Marks.</strong> Uma vez por turno, quando um amigo estiver lutando ou retaliando, você pode usar esta regra: cause 1 de dano nele e re-role um dos seus dados de ataque. Se o resultado for falha, cause 1 de dano adicional nele.'},
+    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 IRONHORN (líder) + 9 operativos da lista. Fora WARRIOR, cada operativo só entra uma vez.<br><br><strong>Frenzy.</strong> Sempre que um operativo amigo que não tenha um marcador de Frenesi for incapacitado durante a batalha, ele não é incapacitado e ganha um marcador de Frenesi. Todos os dados de ataque restantes são descartados (inclusive os seus, se ele estiver lutando ou retaliando). Se ele tiver ordem Conceal, mude para Engage.<br><br>Enquanto um amigo tiver um marcador de Frenesi: ele só é incapacitado nas condições abaixo; não pode ter ordem Conceal; está injured; não pode fazer Pick Up Marker, ações únicas (exceto Sweeping Blow do VANDAL) nem ações de missão (exceto Operate Hatch); e, para determinar controle de marcadores e áreas do killzone, trate o APL dele como 1 (precedência sobre qualquer mudança de stat).<br><br><strong>Como um operativo em Frenesi é incapacitado:</strong> quando a ativação/counteraction dele termina; quando um inimigo luta ou retalia contra ele e o oponente golpeia com sucesso crítico; quando um inimigo luta ou retalia e o golpeia pela segunda vez com sucesso normal (podem ser golpes de duas ações Fight diferentes); quando um inimigo atira nele e causa Dano Crítico; <strong>quando um inimigo atira nele e causa Dano Normal com dois ou mais dados de ataque</strong>; ou quando a batalha termina.<br><br>O oponente trata um operativo FELLGOR como incapacitado (em vez de quando ele seria incapacitado normalmente) no momento em que ele ganha o marcador de Frenesi, para fins de VP (ex.: kill op) e regras de facção que exijam incapacitação.<br><br><strong>EQUIP — Chaos Sigil.</strong> Uma vez por turno, quando um operativo atira num amigo, no início do passo Roll Defence Dice você pode usar esta regra: piore em 1 o x da regra Piercing (se houver) até o fim da sequência. Ou seja, Piercing 1 passa a ser ignorado.<br><br><strong>EQUIP — War Paint.</strong> Você pode ignorar as mudanças no Move dos operativos amigos por eles estarem injured.<br><br><strong>EQUIP — Brass Adornments.</strong> Uma vez por batalha, você pode usar os firefight ploys Animalistic Fury e Wild Rage por 0 CP cada.<br><br><strong>EQUIP — Gore Marks.</strong> Uma vez por turno, quando um amigo estiver lutando ou retaliando, você pode usar esta regra: cause 1 de dano nele e re-role um dos seus dados de ataque. Se o resultado for falha, cause 1 de dano adicional nele.'},
     ploys:{
       strategy:[
         {name:'Ambush', desc:'Sempre que um amigo é ativado, se a ordem dele mudar de Conceal para Engage, ele está emboscando naquela ativação. Sempre que um amigo emboscando estiver lutando, você pode reter um dos seus sucessos normais como crítico. Um operativo com marcador de Frenesi não pode emboscar.'},
@@ -12933,7 +12968,7 @@ const KT_TEAMS = [
         abilities:[
           {name:'Icon Bearer', desc:'Este operativo não é afetado pelo item de controle de marcador da regra Frenzy. Ao determinar o controle de um marcador, trate o APL dele como 1 a mais. Não é mudança no APL, então outras mudanças são cumulativas.'},
           {name:'War Gong', desc:'Sempre que um dado de ataque for causar Dano Crítico num amigo a 3\" deste operativo, se este operativo não tiver marcador de Frenesi, você pode escolher que aquele dado cause Dano Normal no lugar.'},
-          {name:'GONG KNELL (1 AP)', desc:'Até o início da próxima ativação deste operativo ou até ele ser incapacitado (o que vier primeiro), sempre que um operativo estiver atirando nele, melhore o Save dele em 1 e ignore a regra Piercing.'},
+          {name:'GONG KNELL (1 AP)', desc:'Até o início da próxima ativação deste operativo ou até ele ser incapacitado (o que vier primeiro), sempre que um operativo estiver atirando nele, melhore o Save dele em 1.'},
         ],
         weapons:[
           { name:'Autopistol', A:4, skill:4, D:2, CD:3, range:'short', tags:['Range 8\"'] },
@@ -12972,7 +13007,7 @@ const KT_TEAMS = [
         M:'6\"', APL:2, GA:1, DF:3, SV:5, W:10,
         abilities:[
           {name:'Whip Control', desc:'Sempre que um inimigo estiver visível e a 3\" deste operativo, se este operativo não estiver no control range de nenhum outro inimigo: subtraia 1 do Atk das armas melee daquele inimigo (mínimo de 1); e o oponente deve gastar 1 AP adicional para aquele inimigo fazer a ação Fall Back.'},
-          {name:'INCITE FURY (1 AP)', desc:'SUPPORT. Escolha outro operativo amigo (exceto SHAMAN ou IRONHORN) visível e a 3\" deste operativo. Até o fim da próxima ativação dele, some 1 ao APL dele. Não pode fazer esta ação no control range de um inimigo.'},
+          {name:'INCITE FURY (1 AP)', desc:'Escolha outro operativo amigo (exceto SHAMAN ou IRONHORN) visível e a 3\" deste operativo. Até o fim da próxima ativação dele, some 1 ao APL dele. Não pode fazer esta ação no control range de um inimigo.'},
         ],
         weapons:[
           { name:'Autopistol',             A:4, skill:4, D:2, CD:3, range:'short', tags:['Range 8\"'] },
@@ -12987,7 +13022,7 @@ const KT_TEAMS = [
           {name:'Tactual Hunter', desc:'Sempre que este operativo estiver lutando com esta arma contra um operativo já ativado (expended), na primeira vez que você golpear com um sucesso crítico naquela sequência, pode resolver imediatamente outro dos seus sucessos como golpe (antes do oponente).'},
         ],
         weapons:[
-          { name:'Vicious claws', A:4, skill:3, D:4, CD:6, range:'melee', tags:['Ceaseless','Tactual Hunter'] },
+          { name:'Vicious claws', A:4, skill:4, D:4, CD:6, range:'melee', tags:['Ceaseless','Tactual Hunter'] },
         ]},
       { id:'kt-fg-shaman', name:'Fellgor Shaman', unique:true,
         M:'6\"', APL:2, GA:1, DF:3, SV:5, W:10,
@@ -13037,7 +13072,7 @@ const KT_TEAMS = [
     emoji:'🩸', color:'#991b1b', limit:8,
     style:'Melee · Recurso · Agressivo',
     desc:'Cultistas de Khorne movidos a sanguavitae. Cada operativo tem um GORE TANK (vazio/meio/cheio) que enche ao matar de perto e é gasto para ativar regras SANGUAVITAE poderosas. Rápidos (Move 7\"), letais no corpo a corpo, e resistentes a tiro — não perdem mais de 8 PV por ação de Shoot.',
-    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 BLOOD HERALD (líder) + 7 operativos da lista. Fora ASPIRANT, cada operativo só entra uma vez.<br><br><strong>Gore Tanks.</strong> Cada operativo GOREMONGER amigo tem um GORE TANK com três níveis: cheio, meio e vazio. Todos começam a batalha em MEIO. Quando o tanque aumenta, sobe um nível; quando diminui, desce um. Não pode aumentar se já estiver cheio, nem diminuir se já estiver vazio.<br><br>Sempre que um amigo incapacitar um operativo no control range dele, ou visível e a 2\" dele, você pode aumentar o GORE TANK dele. Sempre que um amigo usar uma regra SANGUAVITAE, você deve diminuir o GORE TANK dele.<br><br><strong>Runes of Khorne.</strong> Cada operativo amigo não pode perder mais de 8 PV por ação de Shoot.<br><br><strong>Sanguavitae.</strong> Cada regra especifica quando pode ser usada, e você deve diminuir o GORE TANK do operativo para usá-la. Não pode usar a mesma regra mais de uma vez por ativação/counteraction, nem mais de duas regras SANGUAVITAE por ativação/counteraction. Não pode usar Mania e Fury na mesma ativação.<br><br><strong>Mania.</strong> Durante a ativação de um amigo, antes ou depois de uma ação: até o início da próxima ativação dele, some 1 ao APL dele.<br><br><strong>Fury.</strong> Durante a ativação de um amigo, antes ou depois de uma ação: ele pode fazer duas ações Fight naquela ativação, e a segunda é grátis.<br><br><strong>Rejuvenate.</strong> Durante a ativação ou counteraction de um amigo, antes ou depois de uma ação: ele recupera D3+1 PV perdidos.<br><br><strong>Rage.</strong> Quando um amigo faz a ação Fight: até o fim da ação, some 1 ao Atk das armas melee dele.<br><br><strong>Rake.</strong> Quando um amigo faz a ação Charge durante a ativação dele: ao terminar o movimento, você pode causar D3 de dano num inimigo no control range dele.<br><br><strong>Surge.</strong> Quando um amigo faz a ação Charge ou Reposition: até o fim da ação, some 1\" ao Move dele.<br><br><strong>EQUIP — Chaos Sigil.</strong> Uma vez por turno, quando um operativo atira num amigo, no início do passo Roll Defence Dice você pode usar esta regra: piore em 1 o x da regra Piercing (se houver) até o fim da sequência.<br><br><strong>EQUIP — Wrist Chains.</strong> Uma vez por turno, quando um amigo faz a ação Shoot e você está selecionando a arma ranged, você pode usar esta regra: até o fim da ação, estas armas melee são tratadas como ranged com Range 2\" — chainblade, chainglaive, great chainaxe (ignore o Brutal dela) e pickrippers.<br><br><strong>EQUIP — Gory Totem.</strong> Antes da batalha, coloque um marcador Gory Totem totalmente no seu território e a mais de 2\" de outros marcadores (exceto o Bloody Cadaver). Sempre que um inimigo a 3\" dele estiver atirando, lutando ou retaliando, o oponente não pode re-rolar os dados de ataque.<br><br><strong>EQUIP — Bloody Cadaver.</strong> Antes da batalha, coloque um marcador Bloody Cadaver totalmente no seu território e a mais de 2\" de outros marcadores (exceto o Gory Totem). Os amigos podem fazer Pick Up Marker nele. No passo Ready de cada Strategy phase, você pode aumentar o GORE TANK de um amigo que controle esse marcador, a menos que ele esteja no control range de um inimigo.'},
+    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 BLOOD HERALD (líder) + 7 operativos da lista. Fora ASPIRANT, cada operativo só entra uma vez.<br><br><strong>Gore Tanks.</strong> Cada operativo GOREMONGER amigo tem um GORE TANK com três níveis: cheio, meio e vazio. Todos começam a batalha em MEIO. Quando o tanque aumenta, sobe um nível; quando diminui, desce um. Não pode aumentar se já estiver cheio, nem diminuir se já estiver vazio.<br><br>Sempre que um amigo incapacitar um operativo no control range dele, ou visível e a 2\" dele, você pode aumentar o GORE TANK dele. Sempre que um amigo usar uma regra SANGUAVITAE, você deve diminuir o GORE TANK dele.<br><br><strong>Runes of Khorne.</strong> Cada operativo amigo não pode perder mais de 8 PV por ação de Shoot.<br><br><strong>Sanguavitae.</strong> Cada regra especifica quando pode ser usada, e você deve diminuir o GORE TANK do operativo para usá-la. Não pode usar a mesma regra mais de uma vez por ativação/counteraction, nem mais de duas regras SANGUAVITAE por ativação/counteraction. Não pode usar Mania e Fury na mesma ativação.<br><br><strong>Mania.</strong> Durante a ativação de um amigo, antes ou depois de uma ação: até o início da próxima ativação dele, some 1 ao APL dele.<br><br><strong>Fury.</strong> Durante a ativação de um amigo, antes ou depois de uma ação: ele pode fazer duas ações Fight naquela ativação, e a segunda é grátis.<br><br><strong>Rejuvenate.</strong> Durante a ativação ou counteraction de um amigo, antes ou depois de uma ação: ele recupera D3+1 PV perdidos.<br><br><strong>Rage.</strong> Quando um amigo faz a ação Fight: até o fim da ação, some 1 ao Atk das armas melee dele.<br><br><strong>Rake.</strong> Quando um amigo faz a ação Charge durante a ativação dele: ao terminar o movimento, você pode causar D3 de dano num inimigo no control range dele.<br><br><strong>Surge.</strong> Quando um amigo faz a ação Charge ou Reposition: até o fim da ação, some 1\" ao Move dele.<br><br><strong>EQUIP — Chaos Sigil.</strong> Uma vez por turno, quando um operativo atira num amigo, no início do passo Roll Defence Dice você pode usar esta regra: piore em 1 o x da regra Piercing (se houver) até o fim da sequência.<br><br><strong>EQUIP — Wrist Chains.</strong> Uma vez por turno, quando um amigo faz a ação Shoot e você está selecionando a arma ranged, você pode usar esta regra: até o fim da ação, estas armas melee são tratadas como ranged com Range 2\" — chainblade, chainglaive, great chainaxe (ignore o Brutal dela) e pickrippers. Se a arma melee tiver Balanced ou Relentless pelo ploy Enhanced Violence, ela mantém essas regras enquanto for tratada como arma ranged.<br><br><strong>EQUIP — Gory Totem.</strong> Antes da batalha, coloque um marcador Gory Totem totalmente no seu território e a mais de 2\" de outros marcadores (exceto o Bloody Cadaver). Sempre que um inimigo a 3\" dele estiver atirando, lutando ou retaliando, o oponente não pode re-rolar os dados de ataque.<br><br><strong>EQUIP — Bloody Cadaver.</strong> Antes da batalha, coloque um marcador Bloody Cadaver totalmente no seu território e a mais de 2\" de outros marcadores (exceto o Gory Totem). Os amigos podem fazer Pick Up Marker nele. No passo Ready de cada Strategy phase, você pode aumentar o GORE TANK de um amigo que controle esse marcador, a menos que ele esteja no control range de um inimigo.'},
     ploys:{
       strategy:[
         {name:'Enhanced Violence', desc:'Sempre que o GORE TANK de um amigo estiver: MEIO, as armas melee dele ganham Balanced; CHEIO, as armas melee dele ganham Relentless.'},
@@ -13067,7 +13102,7 @@ const KT_TEAMS = [
       { id:'kt-gm-aspirant', name:'Goremonger Aspirant', unique:false, count:7,
         M:'7\"', APL:2, GA:1, DF:3, SV:5, W:10,
         abilities:[
-          {name:'Obsessive Bloodlust', desc:'Uma vez em cada ativação deste operativo, quando ele terminar a ação Fight, se não estiver mais no control range de inimigos, você pode usar esta regra: ele faz imediatamente uma ação Charge grátis (mesmo que já tenha feito Charge naquela ativação), mas sem mover mais de 2\". Isso não o impede de fazer Charge, Dash ou Reposition depois na mesma ativação.'},
+          {name:'Obsessive Bloodlust', desc:'Uma vez por turno, quando um operativo com esta regra terminar a ação Fight, se não estiver mais no control range de inimigos, você pode usar esta regra: ele faz imediatamente uma ação Charge grátis (mesmo que já tenha feito Charge naquela ativação), mas sem mover mais de 2\". Isso não o impede de fazer Charge, Dash ou Reposition depois na mesma ativação.'},
         ],
         weapons:[
           { name:'Autopistol',  A:4, skill:4, D:2, CD:3, range:'short', tags:['Range 8\"'] },
@@ -13087,11 +13122,11 @@ const KT_TEAMS = [
         M:'7\"', APL:2, GA:1, DF:3, SV:5, W:10,
         abilities:[
           {name:'Drag', desc:'Sempre que este operativo estiver atirando com o fleshskewer, no início do passo Resolve Attack Dice (antes de causar dano), você pode mover o alvo até X\". X é o número total de dados de ataque bem-sucedidos e não bloqueados, multiplicado por 2. O alvo deve ser movido para um local válido o mais perto possível deste operativo. O movimento é feito em um ou mais incrementos em linha reta, sempre arredondados para cima. Se o alvo cair durante esse movimento, ignore a distância vertical.'},
-          {name:'Prey', desc:'Sempre que este operativo estiver atirando com o fleshskewer, no passo Resolve Attack Dice, depois de resolver a regra Drag (se usar), você pode descartar quaisquer dos seus dados de ataque bem-sucedidos e não bloqueados — ou seja, pode escolher não causar dano com eles.'},
-        ],
+          {name:'GORE-FUEL (1 AP)', desc:'Diminua o GORE TANK deste operativo. Até ele usar qualquer perfil do fleshskewer, todos os perfis ganham a regra Severe. Não pode fazer esta ação no control range de um inimigo, nem se o GORE TANK estiver vazio.'},
+          ],
         weapons:[
           { name:'Autopistol',           A:4, skill:4, D:2, CD:3, range:'short', tags:['Range 8\"'] },
-          { name:'Fleshskewer (ranged)', A:4, skill:3, D:4, CD:5, range:'short', tags:['Range 8\"','Stun','Drag','Prey'] },
+          { name:'Fleshskewer (ranged)', A:4, skill:3, D:4, CD:5, range:'short', tags:['Range 8\"','Piercing Crits 1','Stun','Drag'] },
           { name:'Fleshskewer (stab)',   A:4, skill:3, D:3, CD:4, range:'melee', tags:[] },
         ]},
       { id:'kt-gm-inciter', name:'Goremonger Inciter', unique:true,
@@ -14059,7 +14094,7 @@ const KT_TEAMS = [
     emoji:'🧭', color:'#0d9488', limit:10,
     style:'Furtividade · Recurso · Resiliência',
     desc:'Comandos Kin exploradores. Lentos (Move 5\") mas resistentes e furtivos, ótimos usando cobertura. O motor é o RESOURCEFUL: a cada turno o time acumula pontos (conforme quantos operativos estão vivos e livres) e gasta pra ganhar APL extra ou recuperar PV durante as ativações.',
-    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 THEYN (líder) + 9 operativos da lista. Fora WARRIOR, cada operativo só entra uma vez.<br><br><strong>Resourceful.</strong> No passo Ready de cada Strategy phase depois da primeira, você ganha Resourceful points conforme o número de operativos amigos no killzone que não estejam no control range de inimigos: 5 ou mais operativos = 2 pontos; 1 a 4 operativos = 1 ponto. No fim de cada turno, descarte os pontos restantes.<br><br>Você pode gastar 1 Resourceful point durante cada ativação de cada operativo amigo para fazer uma destas: (1) antes ou depois de uma ação, se ele não estiver no control range de inimigos, some 1 ao APL dele até o fim da ativação; ou (2) ao ser ativado, se não estiver no control range de inimigos, ele recupera até D3+1 PV perdidos.<br><br><strong>Dauntless Explorers.</strong> STRATEGIC GAMBIT no primeiro turno: cada operativo amigo totalmente dentro da sua drop zone pode fazer imediatamente uma ação Reposition grátis, terminando totalmente a 4\" da sua drop zone.<br><br><strong>EQUIP — Stabilised Bolt Shells.</strong> Até duas vezes por turno, quando um amigo faz a ação Shoot e você seleciona bolt shotgun (long range), melhore o Hit da arma em 1 e some 1 aos dois valores de Dano até o fim da ação.<br><br><strong>EQUIP — Firestorm Bolt Shells.</strong> Uma vez por turno, quando um amigo faz a ação Shoot e você seleciona bolt shotgun (short range), a arma ganha Blast 1\" até o fim da ação.<br><br><strong>EQUIP — Plasma Knives.</strong> Os operativos amigos ganham a arma melee Plasma knife: Atk 3, Hit 4+, Dano 3/5, Lethal 5+. Quem já tem essa arma com stats melhores usa a versão melhor, e ela ganha Balanced na batalha.<br><br><strong>EQUIP — KV-Ceramide Undersuit.</strong> Sempre que um operativo atirar num amigo, se a arma tiver Blast ou Torrent, você pode re-rolar um dos seus dados de defesa. Além disso, os amigos não são afetados pela regra x\" Devastating x (Devastating com distância) a não ser que sejam o alvo daquela sequência.'},
+    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 THEYN (líder) + 9 operativos da lista. Fora WARRIOR, cada operativo só entra uma vez.<br><br><strong>Resourceful.</strong> No passo Ready de cada Strategy phase depois da primeira, você ganha Resourceful points conforme o número de operativos amigos no killzone que não estejam no control range de inimigos: 5 ou mais operativos = 2 pontos; 1 a 4 operativos = 1 ponto. No fim de cada turno, descarte os pontos restantes.<br><br>Você pode gastar 1 Resourceful point durante cada ativação de cada operativo amigo para fazer uma destas: (1) antes ou depois de uma ação, se ele não estiver no control range de inimigos, some 1 ao APL dele até o fim da ativação; ou (2) ao ser ativado, se não estiver no control range de inimigos, ele recupera até D3+1 PV perdidos.<br><br><strong>Dauntless Explorers.</strong> STRATEGIC GAMBIT no primeiro turno: cada operativo amigo totalmente dentro da sua drop zone pode fazer imediatamente uma ação Reposition grátis, terminando totalmente a 4\" da sua drop zone.<br><br><strong>EQUIP — Stabilised Bolt Shells.</strong> Até duas vezes por turno, quando um amigo faz a ação Shoot e você seleciona bolt shotgun (long range), melhore o Hit da arma em 1, some 1 aos dois valores de Dano, e a arma ganha Accurate 1 até o fim da ação.<br><br><strong>EQUIP — Firestorm Bolt Shells.</strong> Uma vez por turno, quando um amigo faz a ação Shoot e você seleciona bolt shotgun (short range), a arma ganha Blast 1\" até o fim da ação.<br><br><strong>EQUIP — Plasma Knives.</strong> Os operativos amigos ganham a arma melee Plasma knife: Atk 3, Hit 4+, Dano 3/5, Lethal 5+. Quem já tem essa arma com stats melhores usa a versão melhor, e ela ganha Balanced na batalha.<br><br><strong>EQUIP — KV-Ceramide Undersuit.</strong> Sempre que um operativo atirar num amigo, se a arma tiver Blast ou Torrent, você pode re-rolar um dos seus dados de defesa. Além disso, os amigos não são afetados pela regra x\" Devastating x (Devastating com distância) a não ser que sejam o alvo daquela sequência.'},
     ploys:{
       strategy:[
         {name:'Masterful Bladework', desc:'Sempre que um amigo estiver lutando, ou tiver ordem Conceal e estiver retaliando, some 1 ao Atk das armas melee dele (máximo de 4) e elas ganham Balanced; se a arma já tiver Balanced, ganha Ceaseless no lugar.'},
@@ -14086,7 +14121,7 @@ const KT_TEAMS = [
           { name:'Bolt revolver', A:4, skill:3, D:3, CD:5, range:'short', tags:['Range 8\"'] },
           { name:'Bolt shotgun', range:'short', profiles:[
             { name:'short range', A:4, skill:3, D:4, CD:4, tags:['Range 6\"'] },
-            { name:'long range',  A:4, skill:5, D:2, CD:2, range:'long', tags:[] },
+            { name:'long range',  A:4, skill:5, D:2, CD:3, range:'long', tags:[] },
           ]},
           { name:'Plasma knife', A:4, skill:3, D:3, CD:5, range:'melee', tags:['Lethal 5+'] },
         ]},
@@ -14168,7 +14203,7 @@ const KT_TEAMS = [
           { name:'Bolt revolver', A:4, skill:4, D:3, CD:5, range:'short', tags:['Range 8\"'] },
           { name:'Bolt shotgun', range:'short', profiles:[
             { name:'short range', A:4, skill:3, D:4, CD:4, tags:['Range 6\"'] },
-            { name:'long range',  A:4, skill:5, D:2, CD:2, range:'long', tags:[] },
+            { name:'long range',  A:4, skill:5, D:2, CD:3, range:'long', tags:[] },
           ]},
           { name:'Plasma knife', A:4, skill:4, D:3, CD:5, range:'melee', tags:['Lethal 5+'] },
           { name:'Fists',        A:3, skill:4, D:2, CD:3, range:'melee', tags:[] },
@@ -14340,7 +14375,7 @@ const KT_TEAMS = [
         abilities:[
           {name:'BROODCOVEN (2 seleções)', desc:'Conta como duas seleções da lista especial. O time só pode incluir 1 BROODCOVEN, e o COMMANDER perde a keyword LEADER se ele for usado.'},
           {name:'Spiritual Leader', desc:'STRATEGIC GAMBIT, se este operativo estiver no killzone. Escolha uma opção para os amigos terem até o fim do turno ou até ele ser incapacitado: (1) sempre que um operativo estiver atirando num amigo, ignore a regra Piercing; (2) você pode ignorar as mudanças nos stats dos amigos por estarem injured (incluindo armas); ou (3) você pode ignorar as mudanças no APL dos amigos.'},
-          {name:'TELEPATHIC OVERLOAD (1 AP)', desc:'PSYCHIC. Escolha um inimigo visível a este operativo. Até o fim da próxima ativação dele, subtraia 1 do APL dele. Não pode fazer esta ação no control range de um inimigo.'},
+          {name:'TELEPATHIC OVERLOAD (1 AP)', desc:'PSYCHIC. Escolha um inimigo que seja alvo válido para este operativo. Até o fim da <strong>ativação atual</strong> dele, subtraia 1 do APL dele. Não pode fazer esta ação no control range de um inimigo.'},
           {name:'MENTAL ONSLAUGHT (1 AP)', desc:'PSYCHIC. Escolha um inimigo que seja alvo válido para este operativo. Cause 2 de dano nele, ou 4 se ele estiver a 6\" deste operativo. Depois role 1D6: se o resultado for maior que o APL dele, cause mais 2 de dano (ou 4 se a 6\"). Continue rolando assim até tirar igual ou menos que o APL dele, até ele ser incapacitado, ou até causar 8 de dano nesta ação. Não pode fazer esta ação no control range de um inimigo.'},
           {name:'MIND CONTROL (2 AP)', desc:'PSYCHIC. Escolha um inimigo visível e a 2\" deste operativo. Os dois jogadores rolam 1D6 e somam o APL do respectivo operativo. Se o seu total for maior, você pode resolver o segundo efeito: até o fim da ativação, aquele inimigo é um operativo amigo, você pode mudar a ordem dele e ele pode fazer imediatamente uma ação grátis (não pode fazer ação em que se move além de Dash). Você só pode resolver o segundo efeito uma vez por batalha.'},
         ],
@@ -14402,7 +14437,7 @@ const KT_TEAMS = [
         M:'6\"', APL:3, GA:1, DF:3, SV:3, W:14,
         abilities:[
           {name:'LÍDER', desc:'Este operativo é o líder do time e é obrigatório (composição fixa).'},
-          {name:'Obelisk Node Control', desc:'Sempre que este operativo for fazer uma ação de missão (exceto Retrieve), se ela exigir que ele controle um marcador de objetivo, você pode determinar o controle a partir de um dos seus marcadores OBELISK NODE. Sempre que ele for fazer Operate Hatch, pode abrir ou fechar uma escotilha cujo access point esteja a 1\" de um dos seus marcadores OBELISK NODE. As condições da ação ainda precisam ser cumpridas.'},
+          {name:'Obelisk Node Control', desc:'Sempre que este operativo for fazer uma ação de missão (exceto <strong>Pick Up Marker</strong> ou Retrieve), se ela exigir que ele controle um marcador de objetivo, você pode determinar o controle a partir de um dos seus marcadores OBELISK NODE. Sempre que ele for fazer Operate Hatch, pode abrir ou fechar uma escotilha cujo access point esteja a 1\" de um dos seus marcadores OBELISK NODE. As condições da ação ainda precisam ser cumpridas.'},
           {name:'GEOMANTIC DISTURBANCE (1 AP)', desc:'Escolha um ponto numa peça de terreno visível e a 8\" deste operativo. Role 2D6 separadamente para cada operativo a 2\" daquele ponto: se o resultado for maior que os PV restantes dele, cause dano igual à diferença. Não pode fazer esta ação com ordem Conceal, nem no control range de um inimigo.'},
           {name:'CANOPTEK CONTROL (1 AP)', desc:'SUPPORT. Escolha um operativo CANOPTEK amigo visível e a 6\" deste operativo — ou, alternativamente, um CANOPTEK amigo visível a ele e dentro da sua OBELISK NODE MATRIX (o SUPPORT não se aplica a essa seleção). Esse operativo pode fazer imediatamente uma ação de 1 AP grátis; durante ela, não pode mover mais de 2\", ou deve ser recolocado totalmente a 2\" se for removido e recolocado. Não pode fazer esta ação no control range de um inimigo, nem ao counteractar.'},
           {name:'MOLECULAR BREACH (1 AP)', desc:'SUPPORT. Escolha um amigo visível e a 6\" deste operativo — ou um amigo visível a ele e dentro da sua OBELISK NODE MATRIX. Na próxima vez que o selecionado fizer uma ação em que se move, não o mova: remova-o do killzone e recoloque-o totalmente a uma distância igual ao Move dele (ou 3\" se for Dash) na horizontal do local original. Não ganha distância extra na Charge e, fora da Charge, não pode terminar no control range de inimigo. Não pode fazer esta ação no control range de um inimigo.'},
@@ -14418,7 +14453,7 @@ const KT_TEAMS = [
         M:'5\"', APL:2, GA:1, DF:3, SV:3, W:18,
         abilities:[
           {name:'OBRIGATÓRIO (×2)', desc:'O time inclui exatamente 2 Tomb Crawlers. Escolha separadamente para cada: twin gauss reapers + claws; ou transdimensional isolator + claws. Máx. 1 transdimensional isolator no time.'},
-          {name:'Dimensional Banishment', desc:'Depois de usar esta arma, se você causou dano ou reteve algum sucesso crítico e o alvo não foi incapacitado, role 2D6: se o resultado for maior que os PV restantes dele, o alvo é incapacitado (com precedência sobre regras que impedem incapacitação, ex.: Medic!, Frenzy dos Fellgor) e o oponente não pode colocar marcador de Reanimation por ele.'},
+          {name:'Dimensional Banishment', desc:'Depois de usar esta arma, se você causou dano ou reteve algum sucesso crítico e o alvo não foi incapacitado, role 2D6: se o resultado for maior que os PV restantes dele, o alvo é incapacitado (com precedência sobre regras que impedem incapacitação, ex.: Medic!, Frenzy dos Fellgor) e o oponente não pode colocar marcador de Reanimation por ele. Esta regra <strong>não tem efeito</strong> se o alvo for um operativo NEMESIS ou o Red Terror (NPO).'},
           {name:'Weapon Sentinel', desc:'Sempre que o oponente estiver escolhendo alvo válido, se este operativo tiver ordem Conceal, ele não pode usar terreno Light como cobertura (pode permitir que seja alvejado, mas não remove o cover save dele).'},
           {name:'Steadfast', desc:'Ao determinar o controle de um marcador, você pode tratar o APL deste operativo como 3. Se fizer, tem precedência sobre todas as outras regras (mudanças no APL são ignoradas para isso).'},
         ],
@@ -14475,7 +14510,7 @@ const KT_TEAMS = [
     emoji:'⚙', color:'#a16207', limit:10,
     style:'Suporte · Servitors · Ordem de ativação',
     desc:'Tech-Priests comandando servitors cibernéticos. O time é lento, mas quebra a ordem de ativação como nenhum outro: a NOOSPHERIC NETWORK deixa transferir AP entre servitors e fazer contra-ativações extras, criando combos que o oponente não consegue prever.',
-    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição (fixa).</strong> 1 TECHNOARCHEOLOGIST (líder) + 1 SERVITOR UNDERSEER + 8 operativos da lista. Fora COMBAT SERVITOR, cada operativo só entra uma vez. Máximo de 1 COMBAT SERVITOR com meltagun e até 3 com incendine igniter.<br><br><strong>Noospheric Network.</strong> Uma vez durante a ativação de cada SERVITOR amigo, antes ou depois de uma ação, você pode gastar 1 AP para TRANSFER POWER.<br><br>Depois daquela ativação, você pode NETWORK COUNTERACT com outro SERVITOR amigo antes do oponente ativar. Ao fazer isso: primeiro escolha a ordem dele; depois ele pode fazer uma ação de 1 AP grátis, mas sem mover mais de 2\" durante ela. Feito isso, o oponente ativa normalmente.<br><br>Um operativo não pode fazer TRANSFER POWER nem NETWORK COUNTERACT se o APL dele for menor que 2. O NETWORK COUNTERACT é uma counteraction, mas o operativo não precisa estar já ativado nem com ordem Engage — se estiver pronto, ainda pode ser ativado normalmente depois no turno. Quem fez NETWORK COUNTERACT não pode fazê-lo de novo nem counteractar no mesmo turno.<br><br><strong>EQUIP — Electromantic Capacitors.</strong> As armas melee dos amigos ganham Shock. Sempre que um amigo estiver retaliando, as armas melee dele também ganham Severe.<br><br><strong>EQUIP — Concealed Apparatus.</strong> Uma vez por batalha, um COMBAT SERVITOR ou GUN SERVITOR pode usar outra opção de arma do datacard dele que não foi selecionada para a batalha.<br><br><strong>EQUIP — Covert Guises.</strong> Ao revelar este equipamento, role 1D3. Como STRATEGIC GAMBIT no primeiro turno, um número de amigos igual ao resultado, totalmente dentro da sua drop zone, pode fazer uma ação Reposition grátis, terminando totalmente a 3\" da sua drop zone.<br><br><strong>EQUIP — Neurocyclic Reserve Cells.</strong> Ao revelar este equipamento, role 1D3. Uma vez por turno, ao fazer TRANSFER POWER, você pode usar esta regra: fazer o TRANSFER POWER por 0 AP (precedência sobre as regras normais da Noospheric Network).'},
+    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição (fixa).</strong> 1 TECHNOARCHEOLOGIST (líder) + 1 SERVITOR UNDERSEER + 8 operativos da lista. Fora COMBAT SERVITOR, cada operativo só entra uma vez. Máximo de 1 COMBAT SERVITOR com meltagun e até 3 com incendine igniter.<br><br><strong>Noospheric Network.</strong> Uma vez durante a ativação de cada SERVITOR amigo, antes ou depois de uma ação, você pode gastar 1 AP para TRANSFER POWER.<br><br>Depois daquela ativação, você pode NETWORK COUNTERACT com outro SERVITOR amigo antes do oponente ativar. Ao fazer isso: primeiro escolha a ordem dele; depois ele pode fazer uma ação de 1 AP grátis, mas sem mover mais de 2\" durante ela. Feito isso, o oponente ativa normalmente.<br><br>Um operativo não pode fazer TRANSFER POWER nem NETWORK COUNTERACT se o APL dele for menor que 2. O NETWORK COUNTERACT é uma counteraction, mas o operativo não precisa estar já ativado nem com ordem Engage — se estiver pronto, ainda pode ser ativado normalmente depois no turno. Quem fez NETWORK COUNTERACT não pode fazê-lo de novo nem counteractar no mesmo turno.<br><br><strong>EQUIP — Electromantic Capacitors.</strong> As armas melee dos amigos ganham Shock. Sempre que um amigo estiver retaliando, as armas melee dele também ganham Severe.<br><br><strong>EQUIP — Concealed Apparatus.</strong> Uma vez por batalha, um COMBAT SERVITOR ou GUN SERVITOR pode usar outra opção de arma do datacard dele que não foi selecionada para a batalha.<br><br><strong>EQUIP — Covert Guises.</strong> Ao revelar este equipamento, role 1D3. Como STRATEGIC GAMBIT no primeiro turno, um número de amigos igual ao resultado, totalmente dentro da sua drop zone, pode fazer uma ação Reposition grátis, terminando totalmente a 3\" da sua drop zone.<br><br><strong>EQUIP — Neurocyclic Reserve Cells.</strong> Uma vez por turno, ao fazer TRANSFER POWER, você pode usar esta regra: fazer o TRANSFER POWER por 0 AP (precedência sobre as regras normais da Noospheric Network).'},
     ploys:{
       strategy:[
         {name:'Duty of Reclamation', desc:'Uma vez por ação, você pode usar o firefight ploy Command Re-roll por 0 CP se o dado de ataque ou defesa foi rolado para um amigo que conteste um marcador de objetivo ou um dos seus marcadores de missão.'},
@@ -14500,14 +14535,14 @@ const KT_TEAMS = [
         ],
         weapons:[
           { name:'Eradication pistol', A:4, skill:3, D:4, CD:2, range:'short', tags:['Range 8\"','1\" Devastating 3','Lethal 5+'] },
-          { name:'Servo-arc claw',     A:4, skill:4, D:3, CD:4, range:'melee', tags:['Severe','Shock'] },
+          { name:'Servo-arc claw',     A:4, skill:3, D:3, CD:4, range:'melee', tags:['Severe','Shock'] },
         ]},
       { id:'kt-bc-underseer', name:'Servitor Underseer', unique:true, required:true,
         M:'6\"', APL:3, GA:1, DF:3, SV:3, W:9,
         abilities:[
           {name:'OBRIGATÓRIO', desc:'O time inclui exatamente 1 Servitor Underseer.'},
           {name:'DATACORONAL ACCUMULATOR (1 AP)', desc:'SUPPORT. Determine os amigos a 6\" deste operativo e/ou de um AUTO-PROXY amigo, depois role 1D3. Se o resultado for igual ou menor que o número de marcadores de objetivo que esses amigos contestam, você ganha 1 CP. Não pode fazer esta ação no control range de um inimigo.'},
-          {name:'NETWORK OVERRIDE (1 AP)', desc:'SUPPORT. Escolha um SERVITOR amigo a 6\" deste operativo ou de um AUTO-PROXY amigo para imediatamente fazer NETWORK COUNTERACT (sem precisar de TRANSFER POWER) ou uma ação Dash grátis. Depois continue a ativação deste operativo. Ele pode fazer esta ação duas vezes na ativação dele, mas não no control range de um inimigo.'},
+          {name:'NETWORK OVERRIDE (1 AP)', desc:'SUPPORT. Escolha um SERVITOR amigo a 6\" deste operativo ou de um AUTO-PROXY amigo para imediatamente fazer NETWORK COUNTERACT (sem precisar de TRANSFER POWER) ou uma ação Dash grátis. Depois continue a ativação deste operativo. Ele pode fazer esta ação duas vezes na ativação dele, mas <strong>deve escolher um operativo amigo diferente a cada vez</strong>, e não pode fazê-la no control range de um inimigo.'},
         ],
         weapons:[
           { name:'Master-crafted radium pistol', A:4, skill:3, D:2, CD:4, range:'short', tags:['Range 8\"','Balanced','Rending'] },
@@ -14708,7 +14743,7 @@ const KT_TEAMS = [
         M:'6\"', APL:2, GA:1, DF:3, SV:5, W:8,
         abilities:[
           {name:'LÍDER', desc:'Este operativo é o líder do time e é obrigatório.'},
-          {name:'Inquisitorial Tomes', desc:'STRATEGIC GAMBIT se este operativo estiver no killzone e/ou quando ele for ativado. Escolha uma regra INQUISITORIAL TOME para ele e uma para o TOME-SKULL amigo (podem ser a mesma): DENUNCIATION — sempre que um amigo estiver atirando contra, lutando contra ou retaliando contra um inimigo a 2\" de amigos com esta regra, some 1 ao Atk das armas desse amigo; ou SANCTIFICATION — sempre que um inimigo estiver atirando contra, lutando contra ou retaliando contra um amigo a 2\" de amigos com esta regra, subtraia 1 do Atk das armas desse inimigo.'},
+          {name:'Inquisitorial Tomes', desc:'STRATEGIC GAMBIT se este operativo estiver no killzone e/ou quando ele for ativado. Escolha uma regra INQUISITORIAL TOME para ele e uma para o TOME-SKULL amigo (<strong>não podem ser a mesma</strong>, e ignore a regra que você não escolheu para cada um): DENUNCIATION — sempre que um amigo estiver atirando contra, lutando contra ou retaliando contra um inimigo a 2\" de amigos com esta regra, some 1 ao Atk das armas desse amigo; ou SANCTIFICATION — sempre que um inimigo estiver atirando contra, lutando contra ou retaliando contra um amigo a 2\" de amigos com esta regra, subtraia 1 do Atk das armas desse inimigo.'},
         ],
         weapons:[
           { name:'Extended stock relic autopistol', A:4, skill:3, D:2, CD:4, range:'long',  tags:['Range 12\"','Lethal 5+'] },
@@ -14920,7 +14955,7 @@ const KT_TEAMS = [
     emoji:'👁', color:'#0891b2', limit:7,
     style:'Furtividade · Elite · Emboscada',
     desc:'Battlesuits furtivos T\'au. Só 7 operativos, mas praticamente invisíveis: com ordem Conceal não podem ser vistos a mais de 3\". O KAUYON premia a paciência — quanto mais perto o inimigo chega do seu território, mais Accurate as suas armas ficam. Time de emboscada e controle.',
-    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição (fixa).</strong> 1 SHAS\'VRE (líder, com pulse pistol + burst cannon ou fusion blaster) + 1 MV75 MARKER DRONE + 1 MV15 GUN DRONE + 4 operativos da lista (Designator, Infiltrator, Liberator, Lodestar, Neutraliser). Fora INFILTRATOR, cada operativo só entra uma vez. Máximo de 2 fusion blasters no time.<br><br><strong>Stealth Fields.</strong> Sempre que um amigo tiver ordem Conceal, ele não pode ser visível a inimigos a mais de 3\" dele (precedência sobre todas as outras regras). Sempre que tiver ordem Conceal, ele também faz a ação Fall Back por 1 AP a menos.<br><br><strong>Kauyon.</strong> Sempre que um amigo estiver atirando num inimigo, as armas ranged dele ganham Accurate X, conforme a posição do inimigo: a 3\" do SEU território = Accurate 1; dentro do SEU território = Accurate 2; a 3\" da SUA drop zone = Accurate 3.<br><br><strong>EQUIP — Advanced Blacksun Filters.</strong> Sempre que um amigo estiver atirando num operativo obscured, você não precisa descartar um sucesso por causa daquela regra. Os outros efeitos de obscured valem normalmente.<br><br><strong>EQUIP — Hardwired Target Locks.</strong> Sempre que você for counteractar, pode fazê-lo com um amigo que tenha ordem Conceal e esteja a mais de 3\" de inimigos — mas antes você deve mudar a ordem dele para Engage, e ele só pode fazer a ação Shoot naquela counteraction.<br><br><strong>EQUIP — XV26 Multitrackers.</strong> Uma vez por turno, quando um amigo faz a ação Shoot e você seleciona burst cannon (sweeping), a arma ganha Torrent 2\" até o fim da ação.<br><br><strong>EQUIP — Counter-Network Jammers.</strong> STRATEGIC GAMBIT: escolha um marcador de objetivo ou de missão. Até o fim do turno, ao determinar o controle dele, trate o APL total dos inimigos que o contestam como 1 a menos, se pelo menos um deles estiver a 3\" de amigos. Não é mudança no APL, então outras mudanças são cumulativas.'},
+    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição (fixa).</strong> 1 SHAS\'VRE (líder, com pulse pistol + burst cannon ou fusion blaster) + 1 MV75 MARKER DRONE + 1 MV15 GUN DRONE + 4 operativos da lista (Designator, Infiltrator, Liberator, Lodestar, Neutraliser). Fora INFILTRATOR, cada operativo só entra uma vez. Máximo de 2 fusion blasters no time.<br><br><strong>Stealth Fields.</strong> Sempre que um amigo tiver ordem Conceal, ele não pode ser visível a inimigos a mais de 3\" dele (precedência sobre todas as outras regras). Sempre que tiver ordem Conceal, ele também faz a ação Fall Back por 1 AP a menos.<br><br><strong>Kauyon.</strong> Sempre que um amigo estiver atirando num inimigo, as armas ranged dele ganham Accurate X, conforme a posição do inimigo: a 3\" do SEU território = Accurate 1; dentro do SEU território = Accurate 2; a 3\" da SUA drop zone = Accurate 3.<br><br><strong>EQUIP — Advanced Blacksun Filters.</strong> Sempre que um amigo estiver atirando num operativo obscured, você não precisa descartar um sucesso por causa daquela regra. Os outros efeitos de obscured valem normalmente.<br><br><strong>EQUIP — Hardwired Target Locks.</strong> Sempre que você for counteractar, pode fazê-lo com um amigo que tenha ordem Conceal e esteja a mais de 3\" de inimigos — mas antes você deve mudar a ordem dele para Engage, e ele só pode fazer a ação Shoot naquela counteraction.<br><br><strong>EQUIP — XV26 Multitrackers.</strong> Uma vez por turno, quando um amigo faz a ação Shoot e você seleciona burst cannon (sweeping), escolha uma opção até o fim da ação: a arma ganha <strong>Torrent 2\"</strong>; ou a arma ganha <strong>Torrent 3\"</strong>, mas você não pode escolher mais de um alvo secundário.<br><br><strong>EQUIP — Counter-Network Jammers.</strong> STRATEGIC GAMBIT: escolha um marcador de objetivo ou de missão. Até o fim do turno, ao determinar o controle dele, trate o APL total dos inimigos que o contestam como 1 a menos, se pelo menos um deles estiver a 3\" de amigos. Não é mudança no APL, então outras mudanças são cumulativas.'},
     ploys:{
       strategy:[
         {name:'Prepare Ambush', desc:'Coloque um dos seus marcadores Ambush totalmente no seu território e a mais de 2\" de inimigos. Sempre que um amigo estiver atirando num inimigo a 2\" desse marcador, você pode usar esta regra: as armas ranged dele ganham Seek até o fim da ação. Remova o marcador no fim daquela ação ou no passo Ready do próximo turno (o que vier primeiro).'},
@@ -14931,7 +14966,7 @@ const KT_TEAMS = [
       firefight:[
         {name:'Engage Jet Pack', desc:'Use quando um amigo (exceto DRONE) é ativado ou counteracta. Até o fim daquela ativação/counteraction, você pode ignorar a distância vertical de uma subida e de uma queda.'},
         {name:'Saviour Protocols', desc:'Use quando um amigo (exceto DRONE) é selecionado como alvo válido de uma ação Shoot. Escolha um DRONE amigo visível e a 3\" dele para virar o alvo no lugar (mesmo que normalmente não fosse válido). Esse DRONE só está em cover ou obscured se o alvo original estava. Sem efeito se a arma tiver Blast ou Torrent.'},
-        {name:'Vectored Retro-Thrusters', desc:'Use quando um inimigo terminar a ação Charge no control range de um amigo (exceto DRONE). Interrompa a ação: esse amigo pode fazer imediatamente uma ação Fall Back grátis, sem mover mais de 3\". Depois, aquele inimigo pode fazer imediatamente uma ação Reposition grátis usando a distância que sobrou da Charge — mesmo que tenha feito uma ação que normalmente impediria isso.'},
+        {name:'Vectored Retro-Thrusters', desc:'Use quando um inimigo terminar a ação Charge no control range de um amigo (exceto DRONE). Interrompa a ação: esse amigo pode fazer imediatamente uma ação Fall Back grátis, sem mover mais de 3\". <strong>Essa ação não pode ser impedida pelas regras do oponente</strong> (tem precedência sobre todas elas). Depois, aquele inimigo pode fazer imediatamente uma ação Reposition grátis usando a distância que sobrou da Charge — mesmo que tenha feito uma ação que normalmente impediria isso.'},
         {name:'Ghostshroud', desc:'Use no fim da ativação de um amigo. Se ele tiver ordem Engage, mude para Conceal. Você não pode usar este ploy para cada amigo mais de uma vez por batalha.'},
       ]
     },
@@ -15010,7 +15045,7 @@ const KT_TEAMS = [
         M:'6\"', APL:3, GA:1, DF:3, SV:3, W:12,
         abilities:[
           {name:'Electrochaff Launcher', desc:'Uma vez por turno, quando um inimigo está fazendo a ação Shoot e o oponente seleciona um alvo válido (exceto DRONE), você pode usar esta regra, desde que este operativo não esteja no control range de inimigos. Até o fim daquela ação, sempre que um inimigo estiver atirando num amigo que esteja visível e a 3\" deste operativo e a mais de 2\" daquele inimigo: ignore a regra Piercing; e aquele amigo está obscured.'},
-          {name:'Homing Beacon', desc:'Este operativo carrega o seu marcador Homing Beacon. Operativos (exceto DRONE) podem fazer Pick Up Marker nele. Na primeira vez que um inimigo fizer Pick Up Marker nesse marcador, descarte-o (remova da batalha). No passo Ready de cada Strategy phase, ao ganhar CP, se o marcador estiver no killzone: role 1D6 se estiver a mais de 6\" da sua drop zone; 2D6 se estiver no território do oponente; 3D6 se estiver a 6\" da drop zone do oponente. Se algum resultado for 4+, você ganha 1 CP adicional.'},
+          {name:'Homing Beacon', desc:'Este operativo carrega o seu marcador Homing Beacon. Operativos (exceto DRONE) podem fazer Pick Up Marker nele. Na primeira vez que um inimigo fizer Pick Up Marker nesse marcador, descarte-o (remova da batalha). No passo Ready de cada Strategy phase, ao ganhar CP, se o marcador estiver no killzone, role 1D6 somando 1 ao resultado para cada marcador de objetivo que o Homing Beacon esteja a 6\": em 5+, você ganha 1 CP.'},
         ],
         weapons:[
           { name:'Burst cannon', range:'long', profiles:[
@@ -15173,7 +15208,7 @@ const KT_TEAMS = [
         abilities:[
           {name:'Descida agressiva', desc:'Ao descer pela regra Drop Insertion, este operativo pode ser posicionado no control range de um inimigo (os outros não podem).'},
           {name:'Vicious Knife Fighter', desc:'Sempre que este operativo estiver lutando, depois de resolver o seu primeiro dado de ataque naquela sequência, você pode resolver outro imediatamente (antes do oponente).'},
-          {name:'Dynamic', desc:'Sempre que este operativo fizer a ação Shoot ou Fight, ele pode fazer imediatamente uma ação Dash grátis depois. Pode fazer isso mesmo que tenha feito Charge nesta ativação, mas só usando a distância que sobrou daquela Charge (máximo de 3\").'},
+          {name:'Dynamic', desc:'Sempre que este operativo fizer a ação Shoot ou Fight, ele pode fazer imediatamente uma ação Dash grátis depois. Pode fazer isso mesmo que tenha feito a ação Charge nesta ativação (<strong>sem limite de distância restante</strong>).'},
         ],
         weapons:[
           { name:'Hot-shot laspistol', A:4, skill:3, D:3, CD:4, range:'short', tags:['Range 8\"'] },
@@ -15359,7 +15394,7 @@ const KT_TEAMS = [
     ploys:{
       strategy:[
         {name:'Drawn to the Hum', desc:'Escolha um marcador de objetivo. Sempre que um amigo fizer Reposition ou Charge durante a ativação dele, você pode usar esta regra: some 1\" ao Move dele até o fim daquela ativação, mas ele deve terminar o movimento a 2\" daquele objetivo.'},
-        {name:'Rust Emanations', desc:'Sempre que um NIGHTMARE HULK amigo estiver lutando, o oponente não pode reter resultados 3 como sucessos.'},
+        {name:'Rust Emanations', desc:'Sempre que um NIGHTMARE HULK amigo (exceto MUTOID VERMIN) estiver lutando <strong>ou retaliando</strong>, o oponente não pode reter resultados 3 como sucessos.'},
         {name:'Plagueridden Determination', desc:'Sempre que um operativo estiver atirando num amigo (exceto MUTOID VERMIN) que tenha ordem Engage, você pode re-rolar um dos seus dados de defesa.'},
         {name:'Blessings of Infection', desc:'Sempre que um amigo estiver lutando ou retaliando, você pode: (1) se rolar três ou mais falhas, descartar uma delas para reter outra como sucesso normal; ou (2) se rolar três ou mais sucessos, descartar uma falha para reter um dos seus sucessos normais como crítico.'},
       ],
@@ -15482,7 +15517,7 @@ const KT_TEAMS = [
     emoji:'🦇', color:'#6b21a8', limit:6,
     style:'Mobilidade aérea · Melee · Elite',
     desc:'Raptors do Caos com jump packs. Só 6 operativos, mas a melhor mobilidade do jogo: o BOOST deixa saltar por cima de terreno e operativos, e ainda executar ações especiais em quem você sobrevoou. Time de emboscada aérea — some no alto e desce em cima da presa.',
-    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 CHAOS LORD (líder) + 5 operativos da lista. Fora RAPTOR, cada operativo só entra uma vez. Você não pode selecionar mais de dois operativos com armas especiais (plasma pistol, meltagun, plasma gun) no total.<br><br><strong>Jump Pack.</strong> Sempre que um amigo fizer Charge, Fall Back ou Reposition durante a ativação dele, no início de qualquer incremento em linha reta — desde que nenhuma parte da base esteja embaixo de terreno Vantage — ele pode fazer um BOOST naquele incremento. Se fizer, não o mova: remova-o do killzone e recoloque-o totalmente a x\" na horizontal do local original. X é uma distância à sua escolha, somada ao total de movimento daquela ação. Ao fazer BOOST na Charge, não some os 2\" extras.<br><br>Ele deve ser colocado num local válido e sem nenhuma parte da base embaixo de terreno Vantage. Exceto na Charge, não pode ser colocado no control range de um inimigo. Pode continuar movendo depois do BOOST se sobrar distância.<br><br><strong>BOOST Actions.</strong> Algumas ações são BOOST actions: feitas durante outras ações, quando um BOOST é usado. Cada operativo não pode fazer mais de uma BOOST action por ativação/counteraction. A maioria afeta inimigos dentro da BOOST ZONE: a área horizontal entre a posição atual do amigo e o local de onde ele fez o BOOST. Inimigos com qualquer parte da base embaixo de terreno Vantage não estão na BOOST ZONE.<br><br><strong>Astartes.</strong> Durante a ativação de cada amigo, ele pode fazer duas ações Shoot ou duas ações Fight. Se forem duas Shoot, um bolt pistol deve ser selecionado em pelo menos uma. Cada amigo pode counteractar independentemente da ordem.<br><br><strong>EQUIP — Clawed Armour.</strong> Os amigos ganham a ação CLAWED CHARGE (0 AP): BOOST action — cause 1 de dano num inimigo no control range dele, depois a ação Charge termina. Só pode ser feita durante a Charge, depois de um BOOST.<br><br><strong>EQUIP — Bladefins.</strong> Os amigos ganham a ação SLICE FROM ABOVE (1 AP): BOOST action — cause D3+1 de dano num inimigo na BOOST ZONE dele. Só pode ser feita durante Fall Back ou Reposition, depois de um BOOST.<br><br><strong>EQUIP — Warp Fuel.</strong> Uma vez por turno, quando um inimigo terminar a ação Fall Back durante a ativação dele, se pelo menos um amigo estava no control range dele no início da ação, um desses amigos pode fazer imediatamente uma ação Reposition ou Charge grátis, sem usar mais de 3\" de movimento.<br><br><strong>EQUIP — Vox-casters.</strong> Uma vez por turno, um amigo pode fazer a ação VOX-CRY (1 AP): cada inimigo a 2\" dele faz um stun test (role 1D6: em 3+, subtraia 1 do APL dele até o fim da próxima ativação). Não pode fazer com ordem Conceal.'},
+    coreRule:{name:'Regras de Facção + Equipamento', desc:'<strong>Composição.</strong> 1 CHAOS LORD (líder) + 5 operativos da lista. Fora RAPTOR, cada operativo só entra uma vez. Você não pode selecionar mais de dois operativos com armas especiais (plasma pistol, meltagun, plasma gun) no total.<br><br><strong>Jump Pack.</strong> Sempre que um amigo fizer Charge, Fall Back ou Reposition durante a ativação dele, no início de qualquer incremento em linha reta — desde que nenhuma parte da base esteja embaixo de terreno Vantage — ele pode fazer um BOOST naquele incremento. Se fizer, não o mova: remova-o do killzone e recoloque-o totalmente a x\" na horizontal do local original. X é uma distância à sua escolha, somada ao total de movimento daquela ação. Se fizer BOOST durante a ação Charge, o total de movimento dele <strong>não pode passar de 6\"</strong>.<br><br>Ele deve ser colocado num local válido e sem nenhuma parte da base embaixo de terreno Vantage. Exceto na Charge, não pode ser colocado no control range de um inimigo. Pode continuar movendo depois do BOOST se sobrar distância.<br><br><strong>BOOST Actions.</strong> Algumas ações são BOOST actions: feitas durante outras ações, quando um BOOST é usado. Cada operativo não pode fazer mais de uma BOOST action por ativação/counteraction. A maioria afeta inimigos dentro da BOOST ZONE: a área horizontal entre a posição atual do amigo e o local de onde ele fez o BOOST. Inimigos com qualquer parte da base embaixo de terreno Vantage não estão na BOOST ZONE.<br><br><strong>Astartes.</strong> Durante a ativação de cada amigo, ele pode fazer duas ações Shoot ou duas ações Fight. Se forem duas Shoot, um bolt pistol deve ser selecionado em pelo menos uma. Cada amigo pode counteractar independentemente da ordem.<br><br><strong>EQUIP — Clawed Armour.</strong> Os amigos ganham a ação CLAWED CHARGE (0 AP): BOOST action — cause 1 de dano num inimigo no control range dele, depois a ação Charge termina. Só pode ser feita durante a Charge, depois de um BOOST.<br><br><strong>EQUIP — Bladefins.</strong> Os amigos ganham a ação SLICE FROM ABOVE (1 AP): BOOST action — cause D3+1 de dano num inimigo na BOOST ZONE dele. Só pode ser feita durante Fall Back ou Reposition, depois de um BOOST.<br><br><strong>EQUIP — Warp Fuel.</strong> Uma vez por turno, quando um inimigo terminar a ação Fall Back durante a ativação dele, se pelo menos um amigo estava no control range dele no início da ação, um desses amigos pode fazer imediatamente uma ação Reposition ou Charge grátis, sem usar mais de 3\" de movimento.<br><br><strong>EQUIP — Vox-casters.</strong> Uma vez por turno, um amigo pode fazer a ação VOX-CRY (1 AP): cada inimigo a 2\" dele faz um stun test (role 1D6: em 3+, subtraia 1 do APL dele até o fim da próxima ativação). Não pode fazer com ordem Conceal.'},
     ploys:{
       strategy:[
         {name:'Cull the Weak', desc:'Sempre que um amigo estiver atirando ou lutando, as armas dele ganham Punishing se algo disto for verdade sobre o alvo: ele está pelo menos 2\" mais baixo que o amigo; o APL dele está menor que o normal; ou ele estava wounded no início da ativação/counteraction.'},
@@ -15818,6 +15853,21 @@ let ktRosterIdx = 0;
 function onStartKillTeam() {
   SFX.buttonPress();
   VFX.warpTransition(() => NAV.go('screen-kt-mode-select', initKTModeSelect));
+}
+
+function openAuspexTestTeam() {
+  SFX.buttonPress();
+  VFX.warpTransition(() => NAV.go('screen-auspex-test', () => {
+    const frame = document.getElementById('auspex-test-frame');
+    if (frame && !frame.getAttribute('src')) frame.src = 'auspex-test-team/index.html';
+  }));
+}
+
+function closeAuspexTestTeam() {
+  const frame = document.getElementById('auspex-test-frame');
+  try { frame?.contentWindow?.postMessage({type:'auspex-suspend'}, '*'); } catch (e) {}
+  SFX.click();
+  NAV.back(initKTModeSelect);
 }
 
 let KT_SIMPLE_MODE = false;
