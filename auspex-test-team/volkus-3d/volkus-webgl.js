@@ -5,7 +5,7 @@
 
   const S={renderer:null,scene:null,camera:null,canvas:null,world:null,units:null,markers:null,particles:null,
     viewer:null,data:null,raf:0,clock:new T.Clock(),ready:false,loading:false,closed:true,unitMeshes:[],occluders:[],
-    textureCache:{},modelCache:{},focusId:null,focusTick:0,quality:1,unitMask:null,statusTimer:0};
+    textureCache:{},modelCache:{},focusId:null,focusTick:0,quality:1,unitMask:null,particleMap:null,statusTimer:0};
   const BASE='volkus-3d/';
   const texLoader=new T.TextureLoader(),gltfLoader=T.GLTFLoader?new T.GLTFLoader():null;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -46,8 +46,8 @@
     // Silhueta deliberadamente larga: preserva pés, capas e armas das artes 2D.
     x.beginPath();x.ellipse(256,120,92,105,0,0,Math.PI*2);x.fill();
     x.beginPath();x.moveTo(118,150);x.lineTo(394,150);x.lineTo(480,352);x.lineTo(391,526);x.lineTo(326,492);x.lineTo(302,615);x.lineTo(270,650);x.lineTo(242,650);x.lineTo(210,615);x.lineTo(186,492);x.lineTo(121,526);x.lineTo(32,352);x.closePath();x.fill();
-    x.beginPath();x.moveTo(178,455);x.lineTo(257,480);x.lineTo(247,672);x.lineTo(226,818);x.lineTo(34,818);x.lineTo(154,638);x.closePath();x.fill();
-    x.beginPath();x.moveTo(334,455);x.lineTo(255,480);x.lineTo(265,672);x.lineTo(286,818);x.lineTo(478,818);x.lineTo(358,638);x.closePath();x.fill();
+    x.beginPath();x.moveTo(68,395);x.lineTo(267,410);x.lineTo(259,670);x.lineTo(244,818);x.lineTo(8,818);x.lineTo(116,620);x.closePath();x.fill();
+    x.beginPath();x.moveTo(444,395);x.lineTo(245,410);x.lineTo(253,670);x.lineTo(268,818);x.lineTo(504,818);x.lineTo(396,620);x.closePath();x.fill();
     const tx=new T.CanvasTexture(c);S.unitMask=tx;return tx;
   }
   function setMeshShadows(root){root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.material=o.material?.clone?.()||o.material;}});}
@@ -134,7 +134,6 @@
       const b=box(S.world,w,h,d,x,h/2,z,i%3?M.wall2:M.wall,{solid:false,shadow:false});b.material=b.material.clone();b.material.color.multiplyScalar(.48+.2*rng(i+11));
       if(i%3===0){const ant=box(S.world,.08,2,.08,x,h+1,z,M.edge,{solid:false,shadow:false});ant.castShadow=false;}
     }
-    for(let i=0;i<38;i++){const x=-1+(i*7.37)%32,z=-1+(i*11.81)%24;if(x>0&&x<30&&z>0&&z<22){const s=.08+(i%4)*.035;const r=box(S.world,s,.05,s*2,x,.03,z,i%2?M.edge:M.dark,{solid:false,shadow:false});r.rotation.y=i*.73;}}
   }
   function makeStreetProps(M){
     // Detalhes puramente visuais, posicionados fora das rotas centrais para não mudar as regras.
@@ -146,9 +145,14 @@
     });
     [[4.2,20.6],[25.8,2.1],[29,17.2]].forEach(([x,z],i)=>{const p=new T.Mesh(new T.CylinderGeometry(.13,.13,1.35,12),M.dark);p.position.set(x,.16,z);p.rotation.z=Math.PI/2;p.rotation.y=i*.7;p.castShadow=true;p.userData.solid=false;S.world.add(p);});
   }
+  function particleTexture(){
+    if(S.particleMap)return S.particleMap;const c=document.createElement('canvas'),x=c.getContext('2d');c.width=c.height=64;
+    const g=x.createRadialGradient(32,32,0,32,32,31);g.addColorStop(0,'rgba(255,244,205,1)');g.addColorStop(.16,'rgba(255,181,91,.95)');g.addColorStop(.48,'rgba(255,91,35,.46)');g.addColorStop(1,'rgba(255,62,20,0)');x.fillStyle=g;x.fillRect(0,0,64,64);
+    S.particleMap=new T.CanvasTexture(c);return S.particleMap;
+  }
   function makeEmbers(){
     const n=S.quality>0?500:220,pos=new Float32Array(n*3);for(let i=0;i<n;i++){pos[i*3]=-5+Math.random()*40;pos[i*3+1]=.3+Math.random()*15;pos[i*3+2]=-4+Math.random()*30;}
-    const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));const m=new T.PointsMaterial({color:'#ff8a46',size:.035,transparent:true,opacity:.62,depthWrite:false,blending:T.AdditiveBlending});S.particles=new T.Points(g,m);S.scene.add(S.particles);
+    const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));const m=new T.PointsMaterial({color:'#ff9a52',map:particleTexture(),size:.09,sizeAttenuation:true,transparent:true,opacity:.72,alphaTest:.025,depthWrite:false,blending:T.AdditiveBlending});S.particles=new T.Points(g,m);S.scene.add(S.particles);
   }
   async function addHeroAssets(M){
     setStatus('CARREGANDO ARQUITETURA INDUSTRIAL',62);
@@ -171,7 +175,7 @@
       resolve();},undefined,()=>resolve()));
   }
   function disposeGroup(g){if(!g)return;g.traverse(o=>{if(o.geometry)o.geometry.dispose?.();if(o.material){const a=Array.isArray(o.material)?o.material:[o.material];a.forEach(m=>{if(m.map?.isCanvasTexture)m.map.dispose();m.dispose?.();});}});g.parent?.remove(g);}
-  function clearWorld(){disposeGroup(S.world);disposeGroup(S.units);disposeGroup(S.markers);disposeGroup(S.particles);S.particles=null;S.occluders=[];S.unitMeshes=[];S.world=new T.Group();S.units=new T.Group();S.markers=new T.Group();S.scene.add(S.world,S.units,S.markers);}
+  function clearWorld(){disposeGroup(S.world);disposeGroup(S.units);disposeGroup(S.markers);disposeGroup(S.particles);S.particles=null;S.particleMap=null;S.occluders=[];S.unitMeshes=[];S.world=new T.Group();S.units=new T.Group();S.markers=new T.Group();S.scene.add(S.world,S.units,S.markers);}
   async function build(data){
     S.data=data;clearWorld();setStatus('MATERIALIZANDO DISTRITO VOLKUS',18);const M=await makeMaterials();if(S.closed)return;
     makeGround(M);data.terrain.forEach((t,i)=>t.t==='l'?makeLight(t,i,M):makeHeavy(t,i,M));data.stairs.forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeCity(M);makeStreetProps(M);makeEmbers();

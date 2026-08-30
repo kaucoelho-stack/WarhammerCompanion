@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v8-webgl-fixes';
+const CACHE = 'auspex-v10-mobile-los';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = ['./', './index.html', './manifest.json'];
 

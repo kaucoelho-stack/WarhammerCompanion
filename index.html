@@ -632,6 +632,7 @@ body::before{content:'';position:fixed;inset:0;
 .auspex-test-shell{position:relative;flex:1;min-height:0;background:radial-gradient(circle at 50% 45%,#112b3c,#03080d 68%);overflow:hidden}
 .auspex-test-frame{display:block;width:100%;height:100%;border:0;background:#03080d}
 .auspex-test-live{font-family:var(--fu);font-size:9px;letter-spacing:1.3px;color:#67e8f9;border:1px solid rgba(6,182,212,.38);background:rgba(6,182,212,.09);padding:4px 7px;border-radius:4px}
+.auspex-test-screen.fpv-active .auspex-test-hdr{display:none}
 #screen-auspex-test.active ~ #global-rules-fab,#screen-auspex-test.active ~ #global-settings-fab{display:none!important}
 .mode-icon{font-size:32px;margin-bottom:8px;filter:drop-shadow(0 0 8px currentColor)}
 .mode-name{font-family:var(--ff);font-size:16px;letter-spacing:1px;line-height:1;margin-bottom:4px}
@@ -15866,9 +15867,16 @@ function openAuspexTestTeam() {
 function closeAuspexTestTeam() {
   const frame = document.getElementById('auspex-test-frame');
   try { frame?.contentWindow?.postMessage({type:'auspex-suspend'}, '*'); } catch (e) {}
+  document.getElementById('screen-auspex-test')?.classList.remove('fpv-active');
   SFX.click();
   NAV.back(initKTModeSelect);
 }
+
+window.addEventListener('message', e => {
+  const frame = document.getElementById('auspex-test-frame');
+  if (!frame || e.source !== frame.contentWindow || e.data?.type !== 'auspex-fpv') return;
+  document.getElementById('screen-auspex-test')?.classList.toggle('fpv-active', !!e.data.active);
+});
 
 let KT_SIMPLE_MODE = false;
 let KT_TOTAL_TURNS = 4;
