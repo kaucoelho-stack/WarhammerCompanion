@@ -177,7 +177,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.3;
   font:700 8px var(--fd);letter-spacing:2px;color:#547086}
 #kzname{position:absolute;left:18px;top:23px;z-index:25;color:#9edcf0;font:700 8px var(--fd);letter-spacing:1px;
   text-shadow:0 0 8px currentColor;pointer-events:none}
-.maplegend{position:absolute;right:14px;top:10px;display:flex;gap:5px;z-index:25;pointer-events:none;
+.maplegend{position:absolute;right:14px;top:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;max-width:78%;gap:5px;z-index:25;pointer-events:none;
   color:#91aabd;font:700 7px var(--fd);letter-spacing:.7px}
 .maplegend span{display:flex;align-items:center;gap:4px;padding:3px 6px;border:1px solid #2e4659;border-radius:4px;background:#07111bd9}
 .maplegend i{display:block;width:9px;height:9px;border-radius:2px}
@@ -185,6 +185,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.3;
 .maplegend .lg-vantage{background:#263d50;border-top:2px solid #9db8cb;box-shadow:1px 2px #0c1720}
 .maplegend .lg-obj{border-radius:50%;border:1px solid #5cff9d;background:#245a45;box-shadow:0 0 5px #5cff9d}
 .maplegend .lg-stair{background:repeating-linear-gradient(0deg,#c49a55 0 2px,#3c2d1b 2px 3px)}
+.maplegend .lg-building{background:#213746;border:1px solid #8ccce8;box-shadow:inset 0 0 0 2px #09151e}
+.maplegend .lg-door{background:#55efad;border:1px solid #d5ffea;box-shadow:0 0 5px #55efad}
 html[data-killzone="forge"] #board{filter:sepia(.13);box-shadow:0 0 0 5px #120d08,0 0 0 6px #684c31,0 28px 60px #000c,0 0 45px #b76a2122}
 html[data-killzone="forge"] #kzname{color:#ffb454}
 html[data-killzone="wastes"] #board{filter:sepia(.22) saturate(.8);background-color:#17130e}
@@ -231,6 +233,14 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
 .obj .objid{position:absolute;top:-9px;padding:1px 4px;border-radius:3px;background:#06100c;color:currentColor;
   font:700 7px var(--fd);letter-spacing:1px;box-shadow:0 0 6px currentColor}
 .obj .objscore{position:relative;z-index:2;font-weight:700}
+.terr.building{background:repeating-linear-gradient(0deg,rgba(20,39,52,.76) 0 1px,rgba(8,20,29,.68) 1px 16px),repeating-linear-gradient(90deg,transparent 0 16px,rgba(102,180,207,.1) 16px 17px);border:3px solid #7699ae;box-shadow:0 0 0 1px #071018 inset,5px 9px 0 #111923,8px 13px 18px #000b}
+.terr.building::before{content:'INTERIOR · 2 PISOS';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;font:700 7px var(--fm);letter-spacing:1px;color:#a6ddeb;background:#061018dd;padding:2px 5px;border:1px solid #477287}
+.terr.building::after{content:'▲ 2″ / 4″';position:absolute;right:3px;top:3px;font:700 7px var(--fm);color:#d8f6ff;background:#07131dcc;padding:2px 3px}
+.door{position:absolute;z-index:4;background:#5effb5;border:1px solid #d4ffe9;box-shadow:0 0 9px #41ffa6;color:#baffd9;font:800 6px var(--fm);text-align:center;line-height:7px}
+.door.n,.door.s{width:var(--cs);height:5px;transform:translateX(-50%)}
+.door.n{top:-4px}.door.s{bottom:-4px}.door.e,.door.w{height:var(--cs);width:5px;transform:translateY(-50%)}
+.door.e{right:-4px}.door.w{left:-4px}
+.stair.level2{filter:hue-rotate(155deg) brightness(1.25);border-color:#8de4ff}
 @keyframes beacon{50%{filter:brightness(1.28);box-shadow:0 0 0 3px transparent,0 0 24px currentColor,inset 0 0 20px currentColor}}
 .visionring{position:absolute;border:1px solid #7ce7ff28;border-radius:50%;pointer-events:none;z-index:2;
   background:radial-gradient(circle,transparent 66%,rgba(82,213,255,.035) 68%,transparent 71%);
@@ -384,7 +394,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
   .ov{padding-bottom:env(safe-area-inset-bottom)}
   #top{gap:5px;padding:5px}.pchip{padding:5px 7px}.pchip.act::before{display:none}#tp{padding:4px 6px}
   .btn{padding:8px 9px}.terr.vantage{transform:translate(-4px,-7px)}
-  .maplegend{top:2px;right:4px;gap:2px}.maplegend span{padding:2px 3px;font-size:5px}.maplegend i{width:6px;height:6px}
+  .maplegend{top:2px;right:4px;gap:2px;max-width:92%}.maplegend span{padding:2px 3px;font-size:5px}.maplegend i{width:6px;height:6px}
   #kzname{display:none}.kzgrid{grid-template-columns:1fr}.kzpreview{height:54px}
   .fp-top{margin:9px;font-size:8px}.fp-actions{bottom:12px;width:96%;justify-content:center}.fp-actions button{padding:9px 8px;font-size:7px}.fp-vignette{box-shadow:inset 0 0 90px 36px #000;border-width:5px}
   .fp-help{left:8px;bottom:58px;font-size:6px;padding:5px 7px}.fp-card{right:7px;top:70px;width:54vw;max-height:70vh;overflow:auto}.fp-card-head{grid-template-columns:55px 1fr}.fp-card-stats{grid-template-columns:repeat(2,1fr)}
@@ -405,7 +415,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
       <button class="mode-btn ai" onclick="chooseGameMode('ai')"><i>01</i><b>1 JOGADOR vs IA</b><small>Enfrente o controlador tático AUSPEX. A IA seleciona, posiciona, move, atira, luta e disputa objetivos.</small></button>
       <button class="mode-btn" onclick="chooseGameMode('pvp')"><i>02</i><b>2 JOGADORES · VS</b><small>Partida local no mesmo aparelho, com escolhas e ativações alternadas.</small></button>
     </div>
-    <div class="title-foot">OFFLINE · 3 KILLZONES · 4 KILL TEAMS · 4 TURNING POINTS</div>
+    <div class="title-foot">OFFLINE · 3 KILLZONES · 15 KILL TEAMS · MOTOR DE REGRAS · 4 TURNING POINTS</div>
   </div>
 </div>
 <div id="top">
@@ -426,6 +436,8 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
     <span><i class="lg-light"></i> COBERTURA LEVE</span>
     <span><i class="lg-vantage"></i> VANTAGE 2&quot;</span>
     <span><i class="lg-stair"></i> ESCADA</span>
+    <span><i class="lg-building"></i> EDIFÍCIO 2 PISOS</span>
+    <span><i class="lg-door"></i> PORTA ABERTA</span>
     <span><i class="lg-obj"></i> OBJETIVO</span>
   </div>
   <div id="board"></div>
@@ -454,6 +466,8 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
 <script src="vendor/three-r128/three.min.js"></script>
 <script src="vendor/three-r128/GLTFLoader.js"></script>
 <script src="vendor/three-r128/RGBELoader.js"></script>
+<script src="../killteam_data.js"></script>
+<script src="auspex-rules.js"></script>
 <script src="volkus-3d/volkus-webgl.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════
@@ -615,12 +629,21 @@ const TEAMS={
           {n:'Gun butt',t:'m',a:3,h:5,d:2,c:3,tags:[]}],abl:[]
    }))]}
 };
+const RULES=window.AuspexRules;
+RULES.importTeams(TEAMS,KT_TEAMS);
 
 /* ---------- KILLZONES, TERRENO E OBJETIVOS ---------- */
 const KILLZONES={
- volkus:{name:'Distrito Volkus',sub:'Fortaleza simétrica · Vantage abundante',ico:'▦',tone:'#69d9ff',
-  terrain:[{x:6,y:4,w:4,h:2,t:'h',z:2},{x:20,y:4,w:4,h:2,t:'h',z:2},{x:13,y:2,w:4,h:2,t:'l'},{x:13,y:18,w:4,h:2,t:'l'},{x:3,y:10,w:3,h:3,t:'h',z:2},{x:24,y:10,w:3,h:3,t:'h',z:2},{x:9,y:9,w:2,h:4,t:'l'},{x:19,y:9,w:2,h:4,t:'l'},{x:6,y:16,w:4,h:2,t:'h',z:2},{x:20,y:16,w:4,h:2,t:'h',z:2},{x:13,y:10,w:4,h:2,t:'h',z:2}],
-  stairs:[{x:5,y:4,tx:6,ty:4,z:2},{x:24,y:4,tx:23,ty:4,z:2},{x:2,y:11,tx:3,ty:11,z:2},{x:27,y:11,tx:26,ty:11,z:2},{x:5,y:16,tx:6,ty:16,z:2},{x:24,y:16,tx:23,ty:16,z:2},{x:12,y:10,tx:13,ty:10,z:2}],
+ volkus:{name:'Distrito Volkus',sub:'Edifícios transitáveis · 2 pisos · portas e acessos duplos',ico:'▦',tone:'#69d9ff',
+  terrain:[
+   {x:5,y:3,w:5,h:4,t:'h',z:4,building:true,floors:2,doors:[{side:'n',offset:2},{side:'s',offset:2}]},
+   {x:20,y:3,w:5,h:4,t:'h',z:4,building:true,floors:2,doors:[{side:'n',offset:2},{side:'s',offset:2}]},
+   {x:5,y:15,w:5,h:4,t:'h',z:4,building:true,floors:2,doors:[{side:'n',offset:2},{side:'s',offset:2}]},
+   {x:20,y:15,w:5,h:4,t:'h',z:4,building:true,floors:2,doors:[{side:'n',offset:2},{side:'s',offset:2}]},
+   {x:12,y:8,w:6,h:6,t:'h',z:4,building:true,floors:2,doors:[{side:'w',offset:2},{side:'e',offset:3}]},
+   {x:10,y:4,w:2,h:1,t:'l'},{x:18,y:4,w:2,h:1,t:'l'},{x:10,y:17,w:2,h:1,t:'l'},{x:18,y:17,w:2,h:1,t:'l'},
+   {x:3,y:10,w:3,h:1,t:'l'},{x:24,y:11,w:3,h:1,t:'l'}],
+  stairs:[],
   objs:[{x:15,y:5},{x:15,y:16},{x:6,y:11},{x:24,y:11},{x:15,y:11}]},
  forge:{name:'Forja Ferrum-9',sub:'Corredores industriais · Torre central',ico:'⚙',tone:'#ffb454',
   terrain:[{x:5,y:3,w:5,h:2,t:'h',z:2},{x:20,y:3,w:5,h:2,t:'h',z:2},{x:5,y:17,w:5,h:2,t:'h',z:2},{x:20,y:17,w:5,h:2,t:'h',z:2},{x:13,y:8,w:4,h:6,t:'h',z:2},{x:10,y:6,w:2,h:5,t:'l'},{x:18,y:11,w:2,h:5,t:'l'},{x:11,y:3,w:3,h:2,t:'l'},{x:16,y:17,w:3,h:2,t:'l'}],
@@ -633,11 +656,30 @@ const KILLZONES={
 };
 let ACTIVE_KZ='volkus',TERRAIN=[],STAIRS=[],OBJS=[];
 const TMAP=[];
+const insideFeature=(t,x,y)=>x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h;
+function doorAt(t,x,y){return !!(t.building&&(t.doors||[]).some(d=>
+  d.side==='n'?y===t.y&&x===t.x+d.offset:
+  d.side==='s'?y===t.y+t.h-1&&x===t.x+d.offset:
+  d.side==='w'?x===t.x&&y===t.y+d.offset:
+  x===t.x+t.w-1&&y===t.y+d.offset));}
+function perimeterAt(t,x,y){return insideFeature(t,x,y)&&(x===t.x||x===t.x+t.w-1||y===t.y||y===t.y+t.h-1);}
+function generatedBuildingStairs(t){if(!t.building)return[];const z1=2,z2=Math.max(2,t.z||2),bid=t.id||`${t.x}-${t.y}`;
+  const outside=(d)=>d.side==='n'?{x:t.x+d.offset,y:t.y-1,tx:t.x+d.offset,ty:t.y}:
+    d.side==='s'?{x:t.x+d.offset,y:t.y+t.h,tx:t.x+d.offset,ty:t.y+t.h-1}:
+    d.side==='w'?{x:t.x-1,y:t.y+d.offset,tx:t.x,ty:t.y+d.offset}:
+    {x:t.x+t.w,y:t.y+d.offset,tx:t.x+t.w-1,ty:t.y+d.offset};
+  const external=(t.doors||[]).slice(0,2).map(d=>{const limit=(d.side==='n'||d.side==='s')?t.w:t.h,
+      stairDoor={...d,offset:Math.max(1,Math.min(limit-2,d.offset+((d.side==='s'||d.side==='e')?1:-1)))};
+    return{...outside(stairDoor),fromZ:0,toZ:z1,z:z1,building:bid,side:d.side};});
+  return[...external,...(z2>z1?[{x:t.x+1,y:t.y+1,tx:t.x+2,ty:t.y+1,fromZ:z1,toZ:z2,z:z2,building:bid,internal:true},
+    {x:t.x+t.w-2,y:t.y+t.h-2,tx:t.x+t.w-3,ty:t.y+t.h-2,fromZ:z1,toZ:z2,z:z2,building:bid,internal:true}]:[])];}
 function applyKillzone(id){
   ACTIVE_KZ=id;const k=KILLZONES[id];
-  TERRAIN=k.terrain.map(x=>({...x}));STAIRS=k.stairs.map(x=>({...x}));OBJS=k.objs.map(x=>({...x}));
+  TERRAIN=k.terrain.map((x,i)=>({...x,id:x.id||`${id}-t${i}`}));
+  STAIRS=[...k.stairs.map(x=>({...x,fromZ:x.fromZ||0,toZ:x.toZ||x.z||2})),...TERRAIN.flatMap(generatedBuildingStairs)];OBJS=k.objs.map(x=>({...x}));
   for(let y=0;y<H;y++){TMAP[y]=[];for(let x=0;x<W;x++)TMAP[y][x]=null;}
-  TERRAIN.forEach(t=>{for(let y=t.y;y<t.y+t.h;y++)for(let x=t.x;x<t.x+t.w;x++)if(y>=0&&y<H&&x>=0&&x<W)TMAP[y][x]=t.t;});
+  TERRAIN.forEach(t=>{for(let y=t.y;y<t.y+t.h;y++)for(let x=t.x;x<t.x+t.w;x++)if(y>=0&&y<H&&x>=0&&x<W){
+    if(t.building)TMAP[y][x]=perimeterAt(t,x,y)&&!doorAt(t,x,y)?'h':null;else TMAP[y][x]=t.t;}});
   document.documentElement.dataset.killzone=id;
   const label=document.getElementById('kzname');if(label)label.textContent=`${k.ico} ${k.name}`;
 }
@@ -645,7 +687,10 @@ applyKillzone(ACTIVE_KZ);
 /* ---------- MAPA DE TERRENO (lookup rápido) ---------- */
 const terrAt=(x,y)=>(x<0||y<0||x>=W||y>=H)?null:TMAP[y][x];
 const roofAt=(x,y)=>TERRAIN.find(t=>t.t==='h'&&t.z&&x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h);
+const surfaceAt=(x,y,z)=>TERRAIN.some(t=>t.t==='h'&&insideFeature(t,x,y)&&(t.building?(z>0&&z<=t.z&&z%2===0):z===t.z));
 const zOf=o=>o.z||0;
+const surfaceFeature=o=>TERRAIN.find(t=>t.t==='h'&&insideFeature(t,o.x,o.y)&&
+  (t.building?(zOf(o)>0&&zOf(o)<=t.z&&zOf(o)%2===0):zOf(o)===t.z));
 
 /* ---------- LINHA DE VISÃO (Bresenham) ----------
    Retorna {vis, cover, obscured}. Heavy bloqueia; Light dá cobertura.
@@ -664,6 +709,53 @@ function traceLine(a,b){
   }
   return cells;
 }
+function segmentRectInterval(ax,ay,bx,by,r){
+  const dx=bx-ax,dy=by-ay;let lo=0,hi=1;
+  for(const[p,d,mn,mx]of[[ax,dx,r.x,r.x+r.w],[ay,dy,r.y,r.y+r.h]]){
+    if(Math.abs(d)<1e-8){if(p<mn||p>mx)return null;continue;}
+    let a=(mn-p)/d,b=(mx-p)/d;if(a>b)[a,b]=[b,a];lo=Math.max(lo,a);hi=Math.min(hi,b);if(lo>hi)return null;
+  }
+  return[lo,hi];
+}
+function doorOpeningAt(t,side,coord,rayZ){
+  if(rayZ<-.02||rayZ>1.9)return false;
+  return(t.doors||[]).some(d=>d.side===side&&coord>=((side==='n'||side==='s'?t.x:t.y)+d.offset)-.02&&
+    coord<=((side==='n'||side==='s'?t.x:t.y)+d.offset+1)+.02);
+}
+function inStairOpening(t,x,y,level){
+  return STAIRS.some(s=>s.building===t.id&&(s.fromZ===level||s.toZ===level)&&
+    (Math.hypot(x-(s.x+.5),y-(s.y+.5))<.78||Math.hypot(x-(s.tx+.5),y-(s.ty+.5))<.78));
+}
+/* Parede é matéria sólida: Seek, Vantage e qualquer ploy nunca passam por ela.
+   Portas são aberturas reais e só liberam a linha que atravessa o vão. */
+function physicalShotBlock(from,to){
+  const ax=from.x+.5,ay=from.y+.5,bx=to.x+.5,by=to.y+.5,dx=bx-ax,dy=by-ay;
+  const az=zOf(from)+1.55,bz=zOf(to)+1.55,rayZ=q=>az+(bz-az)*q,eps=.002;
+  for(const t of TERRAIN){
+    if(t.t!=='h')continue;
+    if(!t.building){
+      const hit=segmentRectInterval(ax,ay,bx,by,t);if(!hit)continue;
+      const lo=Math.max(.025,hit[0]+eps),hi=Math.min(.975,hit[1]-eps);if(lo>hi)continue;
+      if([lo,(lo+hi)/2,hi].some(q=>rayZ(q)<=(t.z||2)+.02))return{blocked:true,feature:t,kind:'solid'};
+      continue;
+    }
+    const crossings=[];
+    if(Math.abs(dx)>1e-8){
+      for(const[wallX,side]of[[t.x,'w'],[t.x+t.w,'e']]){const q=(wallX-ax)/dx,y=ay+dy*q;if(q>.025&&q<.975&&y>t.y+eps&&y<t.y+t.h-eps)crossings.push({q,side,coord:y});}
+    }
+    if(Math.abs(dy)>1e-8){
+      for(const[wallY,side]of[[t.y,'n'],[t.y+t.h,'s']]){const q=(wallY-ay)/dy,x=ax+dx*q;if(q>.025&&q<.975&&x>t.x+eps&&x<t.x+t.w-eps)crossings.push({q,side,coord:x});}
+    }
+    for(const c of crossings){const z=rayZ(c.q);if(z<=t.z+.02&&!doorOpeningAt(t,c.side,c.coord,z))return{blocked:true,feature:t,kind:'wall',side:c.side};}
+    // Lajes impedem mirar verticalmente entre pisos, exceto no vão da escada.
+    for(let level=2;level<=t.z;level+=2){
+      if((az-level)*(bz-level)>=0||Math.abs(bz-az)<1e-8)continue;
+      const q=(level-az)/(bz-az),x=ax+dx*q,y=ay+dy*q;
+      if(q>.025&&q<.975&&x>t.x&&x<t.x+t.w&&y>t.y&&y<t.y+t.h&&!inStairOpening(t,x,y,level))return{blocked:true,feature:t,kind:'floor'};
+    }
+  }
+  return null;
+}
 function stairOccludes(from,to){
   const ax=from.x+.5,ay=from.y+.5,bx=to.x+.5,by=to.y+.5,dx=bx-ax,dy=by-ay;
   const eyeA=zOf(from)+1.55,eyeB=zOf(to)+1.55,len=1.18,halfW=.48;
@@ -677,39 +769,44 @@ function stairOccludes(from,to){
       let q1=(mn-p)/d,q2=(mx-p)/d;if(q1>q2)[q1,q2]=[q2,q1];lo=Math.max(lo,q1);hi=Math.min(hi,q2);if(lo>hi)return false;
     }
     if(hi<=.035||lo>=.965)return false;
-    return [lo,(lo+hi)/2,hi].some(q=>{const u=au+du*q,rise=Math.max(0,Math.min(1,(u+len/2)/len))*(s.z||2),ray=eyeA+(eyeB-eyeA)*q;return rise+.08>=ray;});
+    return [lo,(lo+hi)/2,hi].some(q=>{const u=au+du*q,p=Math.max(0,Math.min(1,(u+len/2)/len)),
+      fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,rise=fromZ+p*(toZ-fromZ),ray=eyeA+(eyeB-eyeA)*q;return rise+.08>=ray;});
   });
 }
 function checkLoS(from,to){
   const cells=traceLine(from,to);
-  const fz=zOf(from),tz=zOf(to),total=Math.max(1,cells.length+1);
-  const heavy=cells.filter((c,i)=>{
-    if(c.t!=='h')return false;
-    const feature=roofAt(c.x,c.y),ray=1+fz+(tz-fz)*((i+1)/total);
-    const connectedFrom=feature&&fz===feature.z&&roofAt(from.x,from.y)===feature;
-    const connectedTo=feature&&tz===feature.z&&roofAt(to.x,to.y)===feature;
-    return !connectedFrom&&!connectedTo&&(feature?.z||2)>=ray;
-  }).length;
+  const fz=zOf(from),tz=zOf(to),physical=physicalShotBlock(from,to);
   const d=dist(from,to);
-  if(heavy>=2||stairOccludes(from,to))return {vis:false,cover:false,coverType:null,obscured:true,vantage:false};
+  if(physical||stairOccludes(from,to))return {vis:false,cover:false,coverType:null,obscured:true,vantage:false,blocked:true,blockKind:physical?.kind||'stair'};
   // terreno adjacente ao alvo dá cobertura
-  const targetRoof=roofAt(to.x,to.y),fromRoof=roofAt(from.x,from.y);
+  const targetRoof=surfaceFeature(to),fromRoof=surfaceFeature(from);
   const near=cells.filter(c=>c.t&&Math.hypot(c.x-to.x,c.y-to.y)<=1.001&&
-    !(targetRoof&&tz===targetRoof.z&&roofAt(c.x,c.y)===targetRoof));
-  const roofParapet=!!(targetRoof&&tz===targetRoof.z&&fromRoof!==targetRoof);
+    !(targetRoof&&surfaceFeature({x:c.x,y:c.y,z:tz})===targetRoof));
+  const roofParapet=!!(targetRoof&&fromRoof!==targetRoof);
   const cover=d>2&&(near.length>0||roofParapet);
   const coverType=cover?(roofParapet||near.some(c=>c.t==='l')?'light':'heavy'):null;
   const vantage=fz-tz>=2;
-  return {vis:true,cover,coverType,obscured:heavy>=1&&d>2,vantage,
+  const midnight=RULES.engine(to,TEAMS).midnight&&d>8&&TERRAIN.some(t=>t.t==='h'&&Math.hypot(to.x-(t.x+t.w/2),to.y-(t.y+t.h/2))<=Math.max(t.w,t.h)/2+1);
+  return {vis:true,cover,coverType,obscured:midnight,vantage,blocked:false,
     vantageReveal:vantage&&coverType==='light'};
+}
+function geometrySelfTest(){
+  const solidWall=checkLoS({x:3,y:4,z:0},{x:11,y:4,z:0}),alignedDoors=checkLoS({x:7,y:1,z:0},{x:7,y:8,z:0}),
+    offDoor=checkLoS({x:6,y:1,z:0},{x:6,y:8,z:0}),insideDoor=checkLoS({x:7,y:4,z:0},{x:7,y:1,z:0}),insideWall=checkLoS({x:6,y:4,z:0},{x:3,y:4,z:0});
+  return{pass:!solidWall.vis&&alignedDoors.vis&&!offDoor.vis&&insideDoor.vis&&!insideWall.vis,
+    solidWall,alignedDoors,offDoor,insideDoor,insideWall,
+    counts:{buildings:TERRAIN.filter(t=>t.building).length,doors:TERRAIN.reduce((n,t)=>n+(t.doors?.length||0),0),stairs:STAIRS.length}};
+}
+if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
+  const report=geometrySelfTest();window.__AUSPEX_SELFTEST__=report;document.documentElement.dataset.auspexSelftest=JSON.stringify(report);
 }
 /* ═══════════════ ESTADO DO JOGO ═══════════════ */
 let G={
   phase:'select',      // select | deploy | strategy | firefight | over
   tp:1, init:0, cur:0, // turning point, quem tem iniciativa, jogador da vez
   players:[
-    {n:'Jogador 1',team:null,cp:2,vp:0,col:'var(--p1)',ops:[],deployed:0},
-    {n:'Jogador 2',team:null,cp:2,vp:0,col:'var(--p2)',ops:[],deployed:0}],
+    {n:'Jogador 1',team:null,cp:2,vp:0,col:'var(--p1)',ops:[],deployed:0,communion:0},
+    {n:'Jogador 2',team:null,cp:2,vp:0,col:'var(--p2)',ops:[],deployed:0,communion:0}],
   ops:[],              // todos os operativos em jogo
   sel:null,            // operativo selecionado
   mode:null,           // null | move | charge | shoot | fight
@@ -731,7 +828,8 @@ const MINI_SOURCES={
 function initMiniatures(){Object.entries(MINI_SOURCES).forEach(([id,src])=>{const im=new Image();im.decoding='async';im.onload=()=>{MINI_IMAGES[id]=im;if(document.getElementById('fpv').classList.contains('on'))renderFPV();};im.src=src;});}
 const miniKey=o=>`${o.teamId}:${o.unitId||''}`;
 const miniImage=o=>MINI_IMAGES[miniKey(o)]||MINI_IMAGES[o.teamId];
-const miniSource=o=>MINI_SOURCES[miniKey(o)]||MINI_SOURCES[o.teamId];
+const miniFallback=o=>`data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 420"><defs><linearGradient id="a" x2="0" y2="1"><stop stop-color="${o.pi===0?'#e3a83c':'#55c4df'}"/><stop offset="1" stop-color="#172635"/></linearGradient></defs><g fill="url(#a)" stroke="#d9f6ff" stroke-width="5"><path d="M78 82Q130 25 182 82l-15 70H93z"/><path d="M55 155l48-25h54l48 25 28 115-48 18-17-78-9 92 38 108h-54l-17-76-17 76H59l38-108-9-92-17 78-48-18z"/></g><text x="130" y="205" text-anchor="middle" fill="#071018" font-size="54" font-family="Arial" font-weight="900">${String(o.ico||o.n?.[0]||'?').slice(0,2)}</text></svg>`)}`;
+const miniSource=o=>MINI_SOURCES[miniKey(o)]||MINI_SOURCES[o.teamId]||miniFallback(o);
 function log(s){G.log.unshift(s);if(G.log.length>60)G.log.pop();}
 
 /* ═══════════════ MOVIMENTO ═══════════════
@@ -753,7 +851,7 @@ function reachable(op,maxDist,opts={}){
       const nx=c.x+dx,ny=c.y+dy,nz=c.z,k=nx+','+ny+','+nz;
       if(nx<0||ny<0||nx>=W||ny>=H||seen[k]!==undefined)continue;
       if(!fly&&nz===0&&terrAt(nx,ny)==='h')continue;
-      if(!fly&&nz>0&&(!roofAt(nx,ny)||roofAt(nx,ny).z!==nz))continue;
+      if(!fly&&nz>0&&!surfaceAt(nx,ny,nz))continue;
       if(occupied(nx,ny,op,nz))continue;
       const cr=inEnemyCR(nx,ny,op.pi,nz);if(cr&&!ignoreCR&&!endInCR)continue;
       const nd=c.d+Math.hypot(dx,dy);if(nd>maxDist+0.001)continue;
@@ -761,9 +859,9 @@ function reachable(op,maxDist,opts={}){
       if(endInCR?true:!cr)out.push({x:nx,y:ny,z:nz,d:nd});
     }
     if(allowClimb){for(const s of STAIRS){
-      let v=null;
-      if(c.z===0&&c.x===s.x&&c.y===s.y)v={x:s.tx,y:s.ty,z:s.z,d:c.d+s.z};
-      else if(c.z===s.z&&c.x===s.tx&&c.y===s.ty)v={x:s.x,y:s.y,z:0,d:c.d+s.z};
+      let v=null;const fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,rise=Math.abs(toZ-fromZ);
+      if(c.z===fromZ&&c.x===s.x&&c.y===s.y)v={x:s.tx,y:s.ty,z:toZ,d:c.d+rise};
+      else if(c.z===toZ&&c.x===s.tx&&c.y===s.ty)v={x:s.x,y:s.y,z:fromZ,d:c.d+rise};
       if(!v||v.d>maxDist+0.001||occupied(v.x,v.y,op,v.z))continue;
       const k=v.x+','+v.y+','+v.z;if(seen[k]!==undefined)continue;
       const cr=inEnemyCR(v.x,v.y,op.pi,v.z);if(cr&&!ignoreCR&&!endInCR)continue;
@@ -772,11 +870,31 @@ function reachable(op,maxDist,opts={}){
   }
   return out;
 }
+if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
+  const ext=STAIRS.find(s=>s.building&&s.fromZ===0),inner=STAIRS.find(s=>s.building&&s.fromZ===2),
+    extReach=reachable({x:ext.x,y:ext.y,z:ext.fromZ,pi:0},2.01),innerReach=reachable({x:inner.x,y:inner.y,z:inner.fromZ,pi:0},2.01),
+    doorway=reachable({x:7,y:2,z:0,pi:0},2.01),wall=reachable({x:6,y:2,z:0,pi:0},1.1),
+    movement={externalStair:extReach.some(c=>c.x===ext.tx&&c.y===ext.ty&&c.z===ext.toZ),
+      internalStair:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===inner.toZ),
+      doorEntry:doorway.some(c=>c.x===7&&c.y===4&&c.z===0),wallEntryBlocked:!wall.some(c=>c.x===6&&c.y===3&&c.z===0)};
+  movement.pass=Object.values(movement).every(Boolean);document.documentElement.dataset.auspexMovement=JSON.stringify(movement);
+}
 
 /* ═══════════════ COMBATE ═══════════════ */
 const hasTag=(w,t)=>w.tags.some(x=>x===t||x.startsWith(t+' '));
 const tagVal=(w,t)=>{const f=w.tags.find(x=>x.startsWith(t+' '));return f?parseInt(f.split(' ')[1]):0;};
 const moSeekLight=(op,tgt,w)=>hasTag(w,'Seek')||(op.teamId==='pth'&&(tgt.marks||0)>=4);
+const weaponsOf=(op,type)=>op.wpn.filter(w=>w.t===type);
+const bestWeapon=(op,type)=>[...weaponsOf(op,type)].sort((a,b)=>(b.a*((7-b.h)/6)*((b.d+b.c)/2))-(a.a*((7-a.h)/6)*((a.d+a.c)/2)))[0];
+function pickWeapon(op,type,title,callback){
+  const ws=weaponsOf(op,type);if(!ws.length)return null;
+  if(ws.length===1||isAI(op.pi))return callback(ws.length===1?ws[0]:bestWeapon(op,type));
+  openOv(title,`<div class="tlist">${ws.map((w,i)=>`<button class="trow" onclick="chooseWeapon(${i})">
+    <div class="ic">${type==='r'?'▹':'⚔'}</div><div><div class="tn">${w.n}</div>
+    <div class="td">A${w.a} · ${w.h}+ · ${w.d}/${w.c}${w.tags.length?` · ${w.tags.join(' · ')}`:''}</div></div></button>`).join('')}</div>`);
+  G.pendingWeapon={op,type,ws,callback};return null;
+}
+function chooseWeapon(i){const p=G.pendingWeapon,w=p?.ws?.[i];if(!p||!w)return;G.pendingWeapon=null;closeOv();p.callback(w);}
 
 // Coleta modificadores de ploys/habilidades ativos
 function mods(op,tgt,wpn,isShoot){
@@ -784,16 +902,29 @@ function mods(op,tgt,wpn,isShoot){
            lethal:6,crit:0,def5crit:false,autoSave:0,pierce:0,devast:0,accurate:0};
   const pl=G.ploys[op.pi]||[];
   const has=id=>pl.includes(id);
+  const ployText=(TEAMS[op.teamId].ploys||[]).filter(p=>pl.includes(p.id)).map(p=>p.d).join(' ').toLowerCase();
+  const semanticApplies=(!isShoot&&!/tiro|ranged|shoot/.test(ployText))||(isShoot&&!/corpo a corpo|melee|fight/.test(ployText));
   if(op.hp<op.maxhp/2)m.hit+=1;
   if(isShoot&&tgt&&tgt.order==='engage'&&zOf(op)-zOf(tgt)>=2)m.accurate=1;
-  // Balanced/Ceaseless
+  if(RULES.engine(op,TEAMS).blooded&&op.blooded)m.accurate=Math.max(1,m.accurate);
+  // Regras universais da arma e modificadores de ploy.
+  m.balanced=hasTag(wpn,'Balanced');
+  m.ceaseless=hasTag(wpn,'Ceaseless');
+  m.relentless=hasTag(wpn,'Relentless');
+  m.saturate=hasTag(wpn,'Saturate');
+  if(semanticApplies&&/balanced/.test(ployText))m.balanced=true;
+  if(semanticApplies&&/ceaseless/.test(ployText))m.ceaseless=true;
+  if(semanticApplies&&/relentless/.test(ployText))m.relentless=true;
+  if(semanticApplies&&/saturate/.test(ployText))m.saturate=true;
+  if(semanticApplies&&/re-rol(?:e|ar).*falh|rerrol.*falh/.test(ployText))m.rrFail=true;
+  else if(semanticApplies&&/re-rol|rerrol/.test(ployText))m.balanced=true;
   if(has('aod_doc'))m.balanced=true;
   if(has('ko_dakk')&&isShoot)m.ceaseless=true;
   if(has('ko_waa')&&!isShoot)m.balanced=true;
   if(has('pm_lumb')&&!op.movedFar)m.ceaseless=true;
   if(has('tau_kau')&&isShoot&&!op.moved)m.balanced=true;
   // Lethal / Severe / Rending vindo da arma
-  if(hasTag(wpn,'Lethal 5+'))m.lethal=5;
+  const lethalTag=wpn.tags.find(t=>t.startsWith('Lethal '));if(lethalTag)m.lethal=tagVal(wpn,'Lethal')||6;
   // Markerlight (T'au) — bônus cumulativo
   if(isShoot&&tgt&&tgt.marks>0){
     if(tgt.marks>=1)m.saturate=true;
@@ -806,6 +937,7 @@ function mods(op,tgt,wpn,isShoot){
   const foePl=G.ploys[1-op.pi]||[];
   if(foePl.includes('pm_cont')&&enemiesOf(op.pi).some(e=>dist(e,op)<=3))m.hit+=1;
   m.pierce=tagVal(wpn,'Piercing');
+  if(TEAMS[op.teamId].sourceId==='kt-vespid'&&op.moved&&/neutron/i.test(wpn.n))m.pierce=Math.max(1,m.pierce);
   m.devast=tagVal(wpn,'Devastating');
   return m;
 }
@@ -839,16 +971,24 @@ function rollAtk(wpn,mo,n){
   }
   return res;
 }
-function rollDef(op,n,cover,pierce,extra){
+function rollDef(op,n,cover,pierce,extra,wpn=null){
   // Piercing reduz a quantidade coletada antes da rolagem. Cover retém um dos
   // dados coletados, em vez de criar um quarto dado.
   n=Math.max(0,n-pierce);
   const coverCount=Math.min(n,Number(cover)||0);
   let dice=[];for(let i=0;i<n-coverCount;i++)dice.push(d6());
-  const sv=op.sv;
+  const soulstrike=wpn&&hasTag(wpn,'Soulstrike');
+  const inShadow=zOf(op)>0||TERRAIN.some(t=>t.t==='h'&&Math.hypot(op.x-(t.x+t.w/2),op.y-(t.y+t.h/2))<=Math.max(t.w,t.h)/2+1);
+  const baseSv=RULES.engine(op,TEAMS).shadowSave&&inShadow?Math.max(2,op.sv-1):op.sv;
+  const sv=soulstrike?Math.max(2,Math.min(5,op.apl)):baseSv;
   const def5 = op.def5 || (G.ploys[op.pi]||[]).includes('aod_hardy');
-  let res=dice.map(v=>({v,k:v===1?'fail':(v>=6?'crit':(def5&&v>=5?'crit':(v>=sv?'suc':'fail')))}));
+  let res=dice.map(v=>soulstrike
+    ?({v,k:v===1?'crit':(v===6?'fail':(v<=sv?'suc':'fail'))})
+    :({v,k:v===1?'fail':(v>=6?'crit':(def5&&v>=5?'crit':(v>=sv?'suc':'fail')))}));
   for(let i=0;i<coverCount;i++)res.push({v:'C',k:'suc',cover:true});
+  if(RULES.engine(op,TEAMS).synapse&&alive(op.pi).some(a=>a!==op&&dist(a,op)<=6&&/synapse/i.test((a.abl||[]).map(x=>x.n+' '+x.d).join(' ')))){
+    const i=res.findIndex(d=>d.k==='fail');if(i>=0){const v=d6();res[i]={v,k:v===1?'fail':(v>=6?'crit':(v>=sv?'suc':'fail')),reroll:true};}
+  }
   if(extra&&res.length){const i=res.findIndex(d=>d.k==='fail');if(i>=0)res[i]={v:'★',k:'suc',auto:true};}
   return res;
 }
@@ -868,9 +1008,9 @@ function resolveShoot(att,tgt,wpn){
   let cover=(los.cover&&!hasTag(wpn,'Saturate')&&!mo.saturate)
     ?(los.vantageReveal&&tgt.order==='conceal'?2:1):0;
   const extra=(G.ploys[att.pi===0?1:0]||[]).includes('tau_shield');
-  let pierce=mo.pierce;
+  let pierce=RULES.engine(tgt,TEAMS).ignorePiercing?0:mo.pierce;
   if(hasTag(wpn,'PiercingCrits')&&atk.some(r=>r.k==='crit'))pierce=tagVal(wpn,'PiercingCrits');
-  let def=rollDef(tgt,3,cover,pierce,extra);
+  let def=rollDef(tgt,tgt.df||3,cover,pierce,extra,wpn);
   // Devastating: críticos causam dano direto, ignoram defesa
   let dmg=0, devastHits=0;
   let atkLeft=atk.filter(r=>r.k!=='fail');
@@ -889,7 +1029,8 @@ function resolveShoot(att,tgt,wpn){
   while(nCrit>0&&dNorm>=2){nCrit--;dNorm-=2;}
   while(nNorm>0&&dNorm>0){nNorm--;dNorm--;}
   while(nNorm>0&&dCrit>0){nNorm--;dCrit--;}
-  dmg += nCrit*wpn.c + nNorm*wpn.d;
+  const melta=hasTag(wpn,'Melta')?2:0;
+  dmg += nCrit*(wpn.c+melta) + nNorm*wpn.d;
   return {atk,def,dmg,cover,los,devastHits,nCrit,nNorm};
 }
 
@@ -900,6 +1041,10 @@ function resolveFight(att,def,aw,dw){
   let aSuc=A.filter(r=>r.k!=='fail'), dSuc=D.filter(r=>r.k!=='fail');
   let dmgA=0,dmgD=0;                       // dano no defensor / no atacante
   const brutalA=hasTag(aw,'Brutal'), brutalD=hasTag(dw,'Brutal');
+  const shockA=hasTag(aw,'Shock')&&aSuc.some(s=>s.k==='crit'),shockD=hasTag(dw,'Shock')&&dSuc.some(s=>s.k==='crit');
+  if(shockA){const i=dSuc.findIndex(s=>s.k==='suc');if(i>=0)dSuc.splice(i,1);}
+  if(shockD){const i=aSuc.findIndex(s=>s.k==='suc');if(i>=0)aSuc.splice(i,1);}
+  const shieldD=hasTag(dw,'Shield')||hasTag(dw,'Tangle')||RULES.hasAbility(def,/cada bloqueio.*2 sucessos/i);
   let turn=0;                               // 0=atacante, 1=defensor
   while(aSuc.length||dSuc.length){
     if(turn===0&&aSuc.length){
@@ -911,7 +1056,7 @@ function resolveFight(att,def,aw,dw){
       const inDanger = (def.hp - dmgA) <= (aSuc.length? (aSuc[0].k==='crit'?aw.c:aw.d):0);
       if(inDanger&&aSuc.length&&!(brutalA&&s.k!=='crit')){
         dSuc.shift();                       // usa para bloquear
-        aSuc.shift();
+        aSuc.shift();if(shieldD&&aSuc.length)aSuc.shift();
       } else { dSuc.shift(); dmgD += s.k==='crit'?dw.c:dw.d; }
     }
     turn=1-turn;
@@ -919,7 +1064,7 @@ function resolveFight(att,def,aw,dw){
     if(turn===0&&!aSuc.length)turn=1;
     if(turn===1&&!dSuc.length)turn=0;
   }
-  return {A,D,dmgA,dmgD};
+  return {A,D,dmgA,dmgD,stunDef:hasTag(aw,'Stun')&&A.some(s=>s.k==='crit'),stunAtt:hasTag(dw,'Stun')&&D.some(s=>s.k==='crit')};
 }
 
 /* Aplica dano com as regras de resiliência */
@@ -927,10 +1072,11 @@ function applyDmg(op,dmg,src){
   if(dmg<=0)return 0;
   let total=dmg;
   // Nojentamente Resiliente (Plague Marines)
-  if(op.teamId==='pmr'&&dmg>=3){
+  if(RULES.engine(op,TEAMS).resilient&&dmg>=3){
     const auto=(G.ploys[op.pi]||[]).includes('pm_sick');
     if(auto||d6()>=4)total=Math.max(1,total-1);
   }
+  if(dmg>=3&&RULES.hasAbility(op,/\btough\b|resistente/i))total=Math.max(1,total-1);
   op.hp-=total;
   if(op.hp<=0){op.hp=0;op.dead=true;
     log(`💀 ${op.n} (${P(op.pi).n}) foi incapacitado`);
@@ -938,7 +1084,7 @@ function applyDmg(op,dmg,src){
   return total;
 }
 function checkElimination(){
-  const a0=alive(0).length,a1=alive(1).length;
+  const a0=alive(0).filter(RULES.countsForElimination).length,a1=alive(1).filter(RULES.countsForElimination).length;
   if(a0&&a1)return false;
   const winner=a0&&!a1?0:(a1&&!a0?1:-1);
   setTimeout(()=>endGame('ELIMINAÇÃO TOTAL',winner),0);
@@ -959,7 +1105,7 @@ function showKillzonePicker(){
     <div class="kzgrid">${Object.entries(KILLZONES).map(([id,k])=>`
       <button class="kzcard" data-kz="${id}" onclick="pickKillzone('${id}')" style="--kz:${k.tone}">
         <div class="kzpreview"><i></i><i></i><i></i><span>${k.ico}</span></div>
-        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · ${k.stairs.length} acessos</em>
+        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · ${k.stairs.length+k.terrain.filter(t=>t.building).length*4} acessos</em>
       </button>`).join('')}</div>`,true);
 }
 function pickKillzone(id){
@@ -980,11 +1126,11 @@ function pickTeam(pi,k){
   P(pi).team=k;
   const t=TEAMS[k];
   P(pi).ops=t.ops.slice(0,t.limit).map((o,i)=>({
-    ...o, unitId:o.id, id:`p${pi}_${o.id}_${i}`, pi, teamId:k, n:o.n,
+    ...o, unitId:o.id, templateId:o.sourceId||o.id, id:`p${pi}_${o.id}_${i}`, pi, teamId:k, n:o.n,
     hp:o.w, maxhp:o.w, x:-1,y:-1,z:0, order:'conceal', ap:o.apl,
     activated:false, dead:false, marks:0, moved:false, movedFar:false,
     chargedThis:false, shotThis:0, foughtThis:0, usedActs:[], orderLocked:false,
-    counteracted:false, def5:o.abl.some(a=>a.def5)
+    counteracted:false, def5:o.abl.some(a=>a.def5),weaponUses:{},poisoned:0,terrorchem:0,aplPenalty:0,pain:0,blooded:0
   }));
   closeOv();
   if(pi===0&&G.gameMode==='ai'){
@@ -1029,9 +1175,11 @@ function aiDeploy(){
   if(!cells.length)return;cells.sort((a,b)=>a.score-b.score);msg(`<b class="ai-pulse" style="color:var(--p2)">IA posicionando ${op.n}…</b>`);deployAt(cells[0].x,cells[0].y);
 }
 function startTP(){
-  G.phase='strategy';
+  G.phase='strategy';G.gaRequired=null;
   G.ops.forEach(o=>{o.activated=false;o.ap=o.apl;o.moved=false;o.movedFar=false;
-    o.chargedThis=false;o.shotThis=0;o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;});
+    o.chargedThis=false;o.shotThis=0;o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;});
+  [0,1].forEach(pi=>{if(RULES.engine(alive(pi)[0],TEAMS).blooded){const mark=alive(pi).find(o=>!o.blooded)||alive(pi)[0];if(mark)mark.blooded=1;}});
+  [0,1].forEach(pi=>{if(TEAMS[P(pi).team]?.sourceId==='kt-vespid')P(pi).communion=(d6()%3+1)+(alive(pi).some(o=>/oversight drone/i.test(o.n))?1:0);});
   G.ploys={0:[],1:[]};
   // Atualiza o tabuleiro antes do painel de estratégia: o último operativo
   // posicionado também precisa aparecer imediatamente, sem aguardar a próxima fase.
@@ -1073,8 +1221,8 @@ function renderPloys(ty){
     t.ploys.filter(p=>p.ty===ty).map(p=>{
       const used=G.ploys[pi].includes(p.id), can=P(pi).cp>=p.cp&&!used&&!isAI(pi);
       return `<div class="plc ${can?'':'dis'}" ${can?`onclick="usePloy(${pi},'${p.id}')"`:''}>
-        <div class="pn"><span>${used?'✓ ':''}${p.n}</span><span class="cpb">${p.cp} CP</span></div>
-        <div class="pd">${p.d}</div></div>`;}).join('');
+        <div class="pn"><span>${used?'✓ ':''}${p.n}${p.fx?.reference?' · GUIADO':''}</span><span class="cpb">${p.cp} CP</span></div>
+        <div class="pd">${p.d}${p.fx?.reference?'<br><em>O motor registra o uso; decisões desta regra são aplicadas pelos jogadores.</em>':''}</div></div>`;}).join('');
   }).join('');
 }
 function usePloy(pi,id){
@@ -1094,7 +1242,7 @@ function nextActivation(){
   if(!rdy(0).length&&!rdy(1).length){endTP();return;}
   G.counterMode=false;
   if(!rdy(G.cur).length&&rdy(1-G.cur).length){
-    const eligible=alive(G.cur).filter(o=>o.activated&&!o.counteracted&&(o.order==='engage'||o.teamId==='aod'||o.teamId==='pmr'));
+    const eligible=alive(G.cur).filter(o=>o.activated&&!o.counteracted&&RULES.canCounter(o,TEAMS));
     if(eligible.length){
       G.counterMode=true;G.sel=null;G.mode=null;
       msg(`<b style="color:${P(G.cur).col}">${P(G.cur).n}</b> — escolha um operativo para <b class="hl">Counteract</b> (1 ação grátis; movimento máx. 2").`);
@@ -1109,7 +1257,7 @@ function nextActivation(){
 }
 function aiTurn(){
   if(G.phase!=='firefight'||!isAI(G.cur)||G.aiBusy)return;G.aiBusy=true;
-  const pool=G.counterMode?alive(G.ai).filter(o=>o.activated&&!o.counteracted&&(o.order==='engage'||o.teamId==='aod'||o.teamId==='pmr')):alive(G.ai).filter(o=>!o.activated);
+  const pool=G.counterMode?alive(G.ai).filter(o=>o.activated&&!o.counteracted&&RULES.canCounter(o,TEAMS)):alive(G.ai).filter(o=>!o.activated&&(!G.gaRequired||o.templateId===G.gaRequired));
   if(!pool.length){G.aiBusy=false;nextActivation();return;}
   const enemies=alive(0),score=o=>Math.min(...enemies.map(e=>dist(o,e)))-o.hp*.025;
   pool.sort((a,b)=>score(a)-score(b));const op=pool[0];selectOp(op);
@@ -1120,16 +1268,16 @@ function aiAct(op,step){
   if(step>=5||op.ap<=0){G.aiBusy=false;finishOp(op);return;}
   G.sel=op;
   const melee=enemiesOf(op.pi).filter(e=>dist(op,e)<=1).sort((a,b)=>a.hp-b.hp);
-  if(melee.length&&op.ap>=1&&op.foughtThis<((op.teamId==='aod'||op.teamId==='pmr')?2:1)){
-    op.order='engage';actFight();if(G.targets.length){const tgt=melee[0],wpn=op.wpn.find(w=>w.t==='m');
+  if(melee.length&&op.ap>=1&&op.foughtThis<RULES.maxAction(op,'fight',TEAMS)){
+    op.order='engage';actFight();if(G.targets.length){const tgt=melee[0],wpn=G.weapon||bestWeapon(op,'m');
       showAIAttackWarning('COMBATE',op,tgt,wpn,()=>doFight(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}));return;}
   }
   if(op.ap>=1&&!actionUsed(op,'objective')&&OBJS.some(o=>dist(op,o)<=1)){
     actPickUp();setTimeout(()=>aiAct(op,step+1),800);return;
   }
-  if(op.ap>=1&&op.shotThis<((op.teamId==='aod'||op.teamId==='pmr')?2:1)&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&!(op.moved&&hasTag(op.wpn.find(w=>w.t==='r'),'Heavy'))){
+  if(op.ap>=1&&op.shotThis<RULES.maxAction(op,'shoot',TEAMS)&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&weaponsOf(op,'r').some(w=>!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w))){
     if(!op.orderLocked)op.order='engage';actShoot();
-    if(G.mode==='shoot'&&G.targets.length){const tgt=[...G.targets].sort((a,b)=>a.hp-b.hp||dist(op,a)-dist(op,b))[0],wpn=op.wpn.find(w=>w.t==='r');
+    if(G.mode==='shoot'&&G.targets.length){const tgt=[...G.targets].sort((a,b)=>a.hp-b.hp||dist(op,a)-dist(op,b))[0],wpn=G.weapon||bestWeapon(op,'r');
       showAIAttackWarning('TIRO',op,tgt,wpn,()=>doShoot(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}));return;}
   }
   const kind=!actionUsed(op,'reposition')?'reposition':(!actionUsed(op,'dash')?'dash':null);
@@ -1158,7 +1306,7 @@ function scoreObjectives(){
   let s=[0,0];
   OBJS.forEach(o=>{
     const c=[0,1].map(pi=>alive(pi).filter(op=>dist(op,o)<=3)
-      .reduce((n,op)=>n+op.apl+(op.abl.some(a=>a.oc)?1:0),0));
+      .reduce((n,op)=>n+RULES.objectiveAPL(op),0));
     if(c[0]>c[1])s[0]++;else if(c[1]>c[0])s[1]++;
   });
   P(0).vp+=s[0];P(1).vp+=s[1];
@@ -1184,9 +1332,15 @@ function endGame(reason='FIM DO QUARTO TURNING POINT',forcedWinner=null){
 /* ═══════════════ AÇÕES ═══════════════ */
 function selectOp(op){
   if(G.phase!=='firefight')return;
-  const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&(op.order==='engage'||op.teamId==='aod'||op.teamId==='pmr');
+  if(G.gaRequired&&op.templateId!==G.gaRequired){msg('<b class="hl">Group Activation:</b> ative agora outro operativo do mesmo tipo.');return;}
+  const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&RULES.canCounter(op,TEAMS);
   if(op.pi!==G.cur||(!counterOK&&op.activated)||op.dead){showCard(op);return;}
   if(counterOK){op.ap=1;op.usedActs=[];op.orderLocked=true;op._countering=true;}
+  if(!op.activationStarted){op.activationStarted=true;
+    if(op.aplPenalty){op.ap=Math.max(1,op.ap-op.aplPenalty);op.aplPenalty=0;}
+    const statusDmg=op.terrorchem?d6()%3+1:(op.poisoned?1:0);
+    if(statusDmg){const d=applyDmg(op,statusDmg);log(`${op.n} sofreu ${d} de dano de ${op.terrorchem?'Terrorchem':'Poison'} ao ser ativado`);if(op.dead){render();checkElimination();return;}}
+  }
   G.sel=op;G.mode=null;G.moveCells=[];G.targets=[];
   render();
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
@@ -1199,6 +1353,9 @@ function finishOp(op){
   op.activated=true;G.sel=null;G.mode=null;
   const delay=isAI(op.pi)?1050:260;if(isAI(op.pi))G.aiBusy=false;
   if(op._countering){op.counteracted=true;op._countering=false;G.counterMode=false;setTimeout(()=>{if(G.phase==='over')return;G.cur=1-G.cur;nextActivation();},delay);return;}
+  const mate=op.ga>1&&!G.gaRequired?alive(op.pi).find(o=>!o.activated&&o.templateId===op.templateId):null;
+  if(mate){G.gaRequired=op.templateId;G.cur=op.pi;setTimeout(()=>{if(G.phase==='over')return;msg(`<b class="hl">Group Activation ${op.ga}:</b> ${P(op.pi).n} ativa outro ${mate.n}.`);nextActivation();},delay);return;}
+  if(G.gaRequired)G.gaRequired=null;
   setTimeout(()=>{if(G.phase==='over')return;G.cur=1-G.cur;nextActivation();},delay);
 }
 function actMove(kind){
@@ -1216,7 +1373,7 @@ function actMove(kind){
   let d = kind==='dash'?3:(kind==='charge'?baseMove+2:baseMove);
   if(op._countering)d=Math.min(d,2);
   const fly=op.abl.some(a=>a.fly);
-  if(kind==='charge'&&op.order==='conceal'&&op.teamId!=='kom'){msg('<b class="hl">Charge exige ordem Engage.</b> Mude a ordem primeiro.');return;}
+  if(kind==='charge'&&op.order==='conceal'&&!RULES.canChargeConcealed(op,TEAMS)){msg('<b class="hl">Charge exige ordem Engage.</b> Mude a ordem primeiro.');return;}
   const opts={fly,ignoreCR:kind==='fallback',endInCR:kind==='charge',allowClimb:kind!=='dash'};
   let cells=reachable(op,d,opts);
   if(kind==='charge')cells=cells.filter(c=>inEnemyCR(c.x,c.y,op.pi,c.z));
@@ -1239,70 +1396,88 @@ function doMove(x,y,z=0){
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
   if(!op.activated)msg(`<b>${op.n}</b> moveu. Restam <b class="hl">${op.ap} AP</b>.`);
 }
-function actShoot(){
+function actShoot(chosen=null){
   const op=G.sel;if(!op||!canAct(op,1))return;
-  const w=op.wpn.find(w=>w.t==='r');
+  if(!chosen)return pickWeapon(op,'r','Escolha a arma de tiro',w=>actShoot(w));
+  const w=chosen;
   if(op.order==='conceal'&&!hasTag(w,'Silent')){msg('<b class="hl">Atirar exige Engage, exceto com arma Silent.</b>');return;}
   if(inEnemyCR(op.x,op.y,op.pi,zOf(op))){msg('<b class="hl">Não pode atirar</b> com inimigo no control range.');return;}
-  if(hasTag(w,'Heavy')&&op.moved){msg('<b class="hl">Arma Heavy:</b> não pode atirar depois de se mover.');return;}
-  const maxT=(op.teamId==='aod'||op.teamId==='pmr')?2:1;
+  if(RULES.heavyBlocked(op,w)){msg('<b class="hl">Arma Heavy:</b> o movimento feito nesta ativação não permite esse disparo.');return;}
+  if(RULES.limitedBlocked(op,w)){msg('<b class="hl">Limited:</b> esta arma já atingiu o limite de usos da batalha.');return;}
+  const maxT=RULES.maxAction(op,'shoot',TEAMS);
   if(op.shotThis>=maxT||actionUsed(op,'shoot')&&maxT===1){msg('<b class="hl">Já atirou</b> o máximo nesta ativação.');return;}
-  const rng=tagVal(w,'Range')||99;
-  const tg=enemiesOf(op.pi).filter(e=>{
+  const rng=RULES.rangeOf(w);
+  let tg=enemiesOf(op.pi).filter(e=>{
     if(dist(op,e)>rng)return false;
     const l=checkLoS(op,e);
-    if(!l.vis||l.obscured)return false;
+    if(!l.vis||(l.obscured&&!(op.teamId==='pth'&&(e.marks||0)>=3)))return false;
     // Conceal + cobertura = não pode ser alvo (a mais de 2")
     if(e.order==='conceal'&&l.cover&&dist(op,e)>2&&!l.vantageReveal&&!moSeekLight(op,e,w))return false;
     if(inEnemyCR(e.x,e.y,e.pi,zOf(e)))return false;   // aliado do alvo em CR
     return true;});
+  if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)&&P(op.pi).communion<=0){const near=[...tg].filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(near)tg=[near];}
   if(!tg.length){msg('<b class="hl">Nenhum alvo válido.</b> Verifique linha de visão, alcance e ordens.');return;}
-  G.mode='shoot';G.targets=tg;render();
+  G.mode='shoot';G.targets=tg;G.weapon=w;render();
   msg(`<b>Atirar</b> com ${w.n} — toque num alvo destacado. <span style="color:var(--mut)">${tg.length} válido(s)</span>`);
 }
 function doShoot(tgt,opts={}){
-  const op=G.sel,w=op.wpn.find(w=>w.t==='r');
+  const op=G.sel,w=G.weapon||bestWeapon(op,'r');
   const losNow=checkLoS(op,tgt);
-  if(!G.targets.includes(tgt)||!losNow.vis||losNow.obscured){G.mode=null;G.targets=[];render();msg('<b class="hl">Tiro cancelado:</b> o alvo não está numa linha de visão válida.');return;}
+  if(!G.targets.includes(tgt)||!losNow.vis||(losNow.obscured&&!(op.teamId==='pth'&&(tgt.marks||0)>=3))){G.mode=null;G.targets=[];render();msg('<b class="hl">Tiro cancelado:</b> o alvo não está numa linha de visão válida.');return;}
+  if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){const nearest=enemiesOf(op.pi).filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(nearest&&nearest!==tgt){if(P(op.pi).communion<1){G.mode=null;G.targets=[];render();msg('<b class="hl">Communion:</b> sem pontos para ignorar o inimigo mais próximo.');return;}P(op.pi).communion--;}}
   const wasAlive=new Set(G.ops.filter(o=>!o.dead).map(o=>o.id));
   const r=resolveShoot(op,tgt,w);
   op.shotThis++;
+  RULES.useWeapon(op,w);
   recordAction(op,'shoot');
   let extra=[];
   // Blast / Torrent atingem vizinhos
   const splash=tagVal(w,'Blast')||tagVal(w,'Torrent');
   if(splash&&!r.marker){
-    enemiesOf(op.pi).filter(e=>e!==tgt&&dist(e,tgt)<=splash).forEach(e=>{
+    enemiesOf(op.pi).filter(e=>e!==tgt&&dist(e,tgt)<=splash&&checkLoS(tgt,e).vis).forEach(e=>{
       const r2=resolveShoot(op,e,w);const d2=applyDmg(e,r2.dmg);
       if(d2)extra.push(`${e.n} −${d2}`);});
   }
   const dealt=r.marker?0:applyDmg(tgt,r.dmg);
+  if(dealt>0&&(hasTag(w,'Poison')||hasTag(w,'Toxic')))tgt.poisoned=Math.max(1,tgt.poisoned||0);
+  if(r.atk.some(d=>d.k==='crit')&&hasTag(w,'Stun'))tgt.aplPenalty=Math.max(1,tgt.aplPenalty||0);
+  if(dealt>0&&r.atk.some(d=>d.k==='crit')&&hasTag(w,'Terrorchem'))tgt.terrorchem=1;
+  if(dealt>0&&TEAMS[op.teamId].sourceId==='kt-hota')op.pain=(op.pain||0)+(tgt.dead&&tgt.maxhp>=12?2:1);
+  if(tgt.dead&&hasTag(w,'Stinger'))enemiesOf(op.pi).filter(e=>e!==tgt&&dist(e,tgt)<=2).forEach(e=>{const sd=d6()%3+1,got=applyDmg(e,sd);if(got)extra.push(`${e.n} −${got} por Stinger`);});
+  const hot=hasTag(w,'Hot')&&r.atk.some(d=>d.v===1)?applyDmg(op,3):0;
   const casualties=G.ops.filter(o=>wasAlive.has(o.id)&&o.dead);
-  log(`${op.n} atirou em ${tgt.n} com ${w.n}: ${dealt} de dano${tgt.dead?' · INCAPACITADO':''}`);
-  G.mode=null;G.targets=[];
+  log(`${op.n} atirou em ${tgt.n} com ${w.n}: ${dealt} de dano${hot?` · Hot causou ${hot} em ${op.n}`:''}${tgt.dead?' · INCAPACITADO':''}`);
+  if(hot)extra.push(`${op.n} sofreu −${hot} por Hot`);G.mode=null;G.targets=[];G.weapon=null;
   showCombat('TIRO',op,tgt,w,r,dealt,extra,opts.onContinue?()=>opts.onContinue({casualties,dealt,target:tgt}):null,!!opts.ai);
   spend(op,1,!!opts.ai);render();if(!opts.ai)checkElimination();
 }
-function actFight(){
+function actFight(chosen=null){
   const op=G.sel;if(!op||!canAct(op,1))return;
-  const maxF=(op.teamId==='aod'||op.teamId==='pmr')?2:1;
+  if(!chosen)return pickWeapon(op,'m','Escolha a arma corpo a corpo',w=>actFight(w));
+  const maxF=RULES.maxAction(op,'fight',TEAMS);
   if(op.foughtThis>=maxF||actionUsed(op,'fight')&&maxF===1){msg('<b class="hl">Já lutou</b> o máximo nesta ativação.');return;}
   const tg=enemiesOf(op.pi).filter(e=>dist(op,e)<=1);
   if(!tg.length){msg('<b class="hl">Nenhum inimigo no control range</b> para lutar.');return;}
-  G.mode='fight';G.targets=tg;render();
+  G.mode='fight';G.targets=tg;G.weapon=chosen;render();
   msg('<b>Lutar</b> — toque no inimigo adjacente.');
 }
 function doFight(tgt,opts={}){
   const op=G.sel;
   const wasAlive=new Set(G.ops.filter(o=>!o.dead).map(o=>o.id));
-  const aw=op.wpn.find(w=>w.t==='m'), dw=tgt.wpn.find(w=>w.t==='m');
+  const aw=G.weapon||bestWeapon(op,'m'), dw=bestWeapon(tgt,'m');
   const r=resolveFight(op,tgt,aw,dw);
   op.foughtThis++;
   recordAction(op,'fight');
   const dA=applyDmg(tgt,r.dmgA), dD=applyDmg(op,r.dmgD);
+  if(r.stunDef)tgt.aplPenalty=Math.max(1,tgt.aplPenalty||0);if(r.stunAtt)op.aplPenalty=Math.max(1,op.aplPenalty||0);
+  if(dA>0&&(hasTag(aw,'Poison')||hasTag(aw,'Toxic')))tgt.poisoned=1;
+  if(dD>0&&(hasTag(dw,'Poison')||hasTag(dw,'Toxic')))op.poisoned=1;
+  if(dA>0&&r.A.some(d=>d.k==='crit')&&hasTag(aw,'Terrorchem'))tgt.terrorchem=1;
+  if(r.A.some(d=>d.k==='crit')&&hasTag(aw,'Flay'))op.pain=(op.pain||0)+1;
+  if(dA>0&&TEAMS[op.teamId].sourceId==='kt-hota')op.pain=(op.pain||0)+(tgt.dead&&tgt.maxhp>=12?2:1);
   const casualties=G.ops.filter(o=>wasAlive.has(o.id)&&o.dead);
   log(`${op.n} lutou contra ${tgt.n}: ${dA} de dano causado · ${dD} sofrido${casualties.length?' · INCAPACITAÇÃO':''}`);
-  G.mode=null;G.targets=[];
+  G.mode=null;G.targets=[];G.weapon=null;
   showCombat('COMBATE',op,tgt,aw,{atk:r.A,def:r.D,dmg:r.dmgA,melee:true},dA,
     dD?[`${op.n} sofreu −${dD} ao retaliar`]:[],opts.onContinue?()=>opts.onContinue({casualties,dealt:dA,target:tgt}):null,!!opts.ai);
   spend(op,1,!!opts.ai);render();if(!opts.ai)checkElimination();
@@ -1319,6 +1494,7 @@ function actPickUp(){
   if(actionUsed(op,'objective')){msg('<b class="hl">Ação de missão já realizada nesta ativação.</b>');return;}
   const o=OBJS.find(o=>dist(op,o)<=1);
   if(!o){msg('<b class="hl">Nenhum objetivo</b> no control range.');return;}
+  if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){if(P(op.pi).communion<1){msg('<b class="hl">Communion:</b> é necessário 1 ponto para uma ação de missão.');return;}P(op.pi).communion--;}
   const oi=OBJS.indexOf(o);G.secured=G.secured||{};const key=G.tp+':'+oi;
   if(G.secured[key]===op.pi){msg('<b class="hl">Este objetivo já foi assegurado por você neste Turning Point.</b>');return;}
   G.secured[key]=op.pi;log(`${op.n} assegurou o objetivo`);recordAction(op,'objective');
@@ -1353,8 +1529,10 @@ function render(){
     h+=`<div class="visionring" style="left:${G.sel.x*CS+CS/2-rr-(zOf(G.sel)?4:0)}px;top:${G.sel.y*CS+CS/2-rr-(zOf(G.sel)?7:0)}px;width:${rr*2}px;height:${rr*2}px"></div>`;
   }
   // terreno
-  TERRAIN.forEach(t=>{h+=`<div class="terr ${t.t==='h'?'heavy':''} ${t.z?'vantage':'light'}" style="left:${t.x*CS}px;top:${t.y*CS}px;width:${t.w*CS}px;height:${t.h*CS}px"></div>`;});
-  STAIRS.forEach(s=>{h+=`<div class="stair" title="Escada: Vantage ${s.z}&quot;" style="left:${s.x*CS+5}px;top:${s.y*CS+1}px;width:${CS-10}px;height:${CS-2}px"></div>`;});
+  TERRAIN.forEach(t=>{const doors=t.building?(t.doors||[]).map(d=>{const axis=(d.side==='n'||d.side==='s')?'left':'top',pos=(d.offset+.5)*CS;
+      return`<i class="door ${d.side}" title="Porta aberta · linha de visão física" style="${axis}:${pos}px;--cs:${CS}px">PORTA</i>`;}).join(''):'';
+    h+=`<div class="terr ${t.t==='h'?'heavy':''} ${t.z?'vantage':'light'} ${t.building?'building':''}" title="${t.building?'Edifício transitável · pisos 0″, 2″ e 4″':t.t==='l'?'Cobertura leve':'Terreno pesado'}" style="left:${t.x*CS}px;top:${t.y*CS}px;width:${t.w*CS}px;height:${t.h*CS}px;--cs:${CS}">${doors}</div>`;});
+  STAIRS.forEach(s=>{h+=`<div class="stair ${s.fromZ?'level2':''}" title="Escada: ${s.fromZ||0}&quot; → ${s.toZ||s.z||2}&quot;" style="left:${s.x*CS+5}px;top:${s.y*CS+1}px;width:${CS-10}px;height:${CS-2}px"></div>`;});
   // zonas de deploy
   if(G.phase==='deploy'){
     h+=`<div class="terr" style="left:0;top:0;width:${4*CS}px;height:${H*CS}px;background:rgba(232,163,61,.07);border-right:1px dashed var(--p1)"></div>`;
@@ -1412,26 +1590,27 @@ function renderActs(){
   const op=G.sel;
   if(!op){
     const rdy=G.counterMode
-      ?alive(G.cur).filter(o=>o.activated&&!o.counteracted&&(o.order==='engage'||o.teamId==='aod'||o.teamId==='pmr'))
-      :alive(G.cur).filter(o=>!o.activated);
+      ?alive(G.cur).filter(o=>o.activated&&!o.counteracted&&RULES.canCounter(o,TEAMS))
+      :alive(G.cur).filter(o=>!o.activated&&(!G.gaRequired||o.templateId===G.gaRequired));
     el.innerHTML=rdy.map(o=>`<button class="btn" onclick="selectOp(opById('${o.id}'))">
       ${o.ico} ${o.n} <span class="ap">${o.hp}PV</span></button>`).join('')
       +`<button class="btn" onclick="showLog()">📜 Log</button>`;
     return;
   }
-  const w=op.wpn.find(w=>w.t==='r'), m=op.wpn.find(w=>w.t==='m');
+  const ranged=weaponsOf(op,'r'), melee=weaponsOf(op,'m');
   const inCR=inEnemyCR(op.x,op.y,op.pi,zOf(op));
-  const maxT=(op.teamId==='aod'||op.teamId==='pmr')?2:1, maxF=(op.teamId==='aod'||op.teamId==='pmr')?2:1;
+  const maxT=RULES.maxAction(op,'shoot',TEAMS),maxF=RULES.maxAction(op,'fight',TEAMS);
+  const canShootWeapon=ranged.some(w=>!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w)&&(op.order==='engage'||hasTag(w,'Silent')));
   const b=(lbl,fn,cost,dis,cls='')=>`<button class="btn ${cls}" ${dis?'disabled':''} onclick="${fn}">${lbl}<span class="ap">${cost}AP</span></button>`;
   el.innerHTML=
     `<button class="btn" onclick="showCard(opById('${op.id}'))" style="border-color:${op.pi===0?'var(--p1)':'var(--p2)'}">
        ${op.ico} ${op.n} · ${op.hp}/${op.maxhp} PV · ${op.ap} AP</button>`
    + b('Reposicionar',"actMove('reposition')",1,op.ap<1||inCR||op.chargedThis||actionUsed(op,'reposition')||actionUsed(op,'charge')||actionUsed(op,'fallback'))
    + b('Arrancada',"actMove('dash')",1,op.ap<1||inCR||actionUsed(op,'dash')||actionUsed(op,'charge'))
-   + b('Investir',"actMove('charge')",1,op.ap<1||inCR||(op.order==='conceal'&&op.teamId!=='kom')||actionUsed(op,'charge')||actionUsed(op,'reposition')||actionUsed(op,'dash')||actionUsed(op,'fallback'))
+   + b('Investir',"actMove('charge')",1,op.ap<1||inCR||(op.order==='conceal'&&!RULES.canChargeConcealed(op,TEAMS))||actionUsed(op,'charge')||actionUsed(op,'reposition')||actionUsed(op,'dash')||actionUsed(op,'fallback'))
    + b('Recuar',"actMove('fallback')",2,op.ap<2||!inCR||actionUsed(op,'fallback')||actionUsed(op,'reposition')||actionUsed(op,'charge'))
-   + b('Atirar',"actShoot()",1,op.ap<1||(op.order==='conceal'&&!hasTag(w,'Silent'))||inCR||op.shotThis>=maxT,'pri')
-   + b('Lutar',"actFight()",1,op.ap<1||!inCR||op.foughtThis>=maxF,'pri')
+   + b(`Atirar${ranged.length>1?' ▾':''}`,"actShoot()",1,op.ap<1||!canShootWeapon||inCR||op.shotThis>=maxT,'pri')
+   + b(`Lutar${melee.length>1?' ▾':''}`,"actFight()",1,op.ap<1||!inCR||!melee.length||op.foughtThis>=maxF,'pri')
     + b('Objetivo',"actPickUp()",1,op.ap<1||actionUsed(op,'objective')||!OBJS.some(o=>dist(op,o)<=1))
     + `<button class="btn fpbtn" onclick="showFirstPerson()">◉ Visão 1ª pessoa</button>`
     + `<button class="btn" ${op.orderLocked?'disabled':''} onclick="toggleOrder()">${op.order==='conceal'?'👁 → Engage':'⚔ → Conceal'}</button>`
@@ -1609,7 +1788,7 @@ function renderFPVLegacy(){
       let a=(mn-p)/d,b=(mx-p)/d;if(a>b)[a,b]=[b,a];lo=Math.max(lo,a);hi=Math.min(hi,b);if(lo>hi)return null;}return lo;};
   const sampleVisible=(o,h)=>{const tx=o.x+.5,ty=o.y+.5,tz=zOf(o)+h;return !TERRAIN.some(t=>{const q=rectHit(cam.x,cam.y,tx,ty,t);if(q===null||q<=.025||q>=.975)return false;
       const obstacle=t.t==='l'?.72:(t.z||2.35),rayZ=cam.z+(tz-cam.z)*q;return obstacle>=rayZ-.015;});};
-  G.ops.filter(o=>!o.dead&&o!==op).forEach(o=>{const los=checkLoS(op,o);if(!los.vis||los.obscured)return;const exposure=[.42,1.05,1.7].filter(h=>sampleVisible(o,h));if(!exposure.length)return;
+  G.ops.filter(o=>!o.dead&&o!==op).forEach(o=>{const los=checkLoS(op,o);if(!los.vis||(los.obscured&&!(op.teamId==='pth'&&(o.marks||0)>=3)))return;const exposure=[.42,1.05,1.7].filter(h=>sampleVisible(o,h));if(!exposure.length)return;
     const base=camera(o.x+.5,o.y+.5,zOf(o)),top=camera(o.x+.5,o.y+.5,zOf(o)+1.8);if(base.d<=near||top.d<=near)return;
     const b=proj(base),t=proj(top);if(b.x<-120||b.x>ww+120)return;sprites.push({o,b,t,depth:base.d,exposure:exposure.length});});
   const drawFace=f=>{poly(f.pts);ctx.fillStyle=f.fill;ctx.fill();const fog=Math.min(.52,Math.max(0,f.depth/52));ctx.fillStyle=th.sky;ctx.globalAlpha=fog;ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=f.t.t==='stair'?'#ffd17ecc':(f.t.t==='l'?'#ffd291aa':'#9dc9db88');ctx.lineWidth=f.t.t==='stair'?1.4:1.2;ctx.stroke();
@@ -1647,8 +1826,8 @@ function renderFPVLegacy(){
 }
 function fpvWebGLData(op){
   const units=G.ops.filter(o=>!o.dead&&o!==op).map(o=>{const los=checkLoS(op,o);return{
-    id:o.id,name:o.n,x:o.x,y:o.y,z:zOf(o),dead:o.dead,hostile:o.pi!==op.pi,distance:dist(op,o),image:miniSource(o),imageElement:miniImage(o)||null,visible:los.vis&&!los.obscured,
-    cover:los.cover,coverType:los.coverType};});
+    id:o.id,name:o.n,x:o.x,y:o.y,z:zOf(o),dead:o.dead,hostile:o.pi!==op.pi,distance:dist(op,o),image:miniSource(o),imageElement:miniImage(o)||null,
+    cover:los.cover,coverType:los.coverType,visible:los.vis&&(!los.obscured||(op.teamId==='pth'&&(o.marks||0)>=3))};});
   return{heading:G.fpvHeading,pitch:G.fpvPitch,fov:G.fpvFov,viewer:{id:op.id,x:op.x,y:op.y,z:zOf(op)},units,
     terrain:TERRAIN.map(t=>({...t})),stairs:STAIRS.map(s=>({...s})),objectives:OBJS.map(o=>({...o}))};
 }

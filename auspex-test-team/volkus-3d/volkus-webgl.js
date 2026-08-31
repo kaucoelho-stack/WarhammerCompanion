@@ -90,6 +90,7 @@
     box(S.world,30.5,.16,.18,15,.07,22.14,M.dark,{solid:false});box(S.world,.18,.16,22.5,-.14,.07,11,M.dark,{solid:false});box(S.world,.18,.16,22.5,30.14,.07,11,M.dark,{solid:false});
   }
   function makeHeavy(t,i,M){
+    if(t.building)return makeBuilding(t,i,M);
     const h=t.z||2,grp=new T.Group();grp.position.set(t.x,0,t.y);S.world.add(grp);
     box(grp,t.w,h,t.h,t.w/2,h/2,t.h/2,i%2?M.wall:M.wall2);
     // Parapeito de cobertura leve: visível em primeira pessoa e considerado pelas regras no telhado.
@@ -102,6 +103,34 @@
     }
     if(t.w>=4){const tank=new T.Mesh(new T.CylinderGeometry(.34,.34,.85,14),M.dark);tank.rotation.z=Math.PI/2;tank.position.set(t.w*.72,h+.4,t.h*.54);tank.castShadow=true;grp.add(tank);}
   }
+  function makeBuilding(t,i,M){
+    const h=t.z||4,grp=new T.Group(),wall=i%2?M.wall:M.wall2,th=.14,openH=1.9;grp.position.set(t.x,0,t.y);S.world.add(grp);
+    const door=(side)=>(t.doors||[]).find(d=>d.side===side);
+    const run=(side,total,center,depth)=>{
+      const d=door(side),ns=side==='n'||side==='s';
+      const add=(len,at,y,hh)=>{if(len<=.015)return;ns?box(grp,len,hh,th,at,y,depth,wall):box(grp,th,hh,len,depth,y,at,wall);};
+      if(!d){add(total,total/2,h/2,h);return;}
+      add(d.offset,d.offset/2,h/2,h);add(total-d.offset-1,d.offset+1+(total-d.offset-1)/2,h/2,h);
+      add(1,d.offset+.5,openH+(h-openH)/2,h-openH);
+      // Moldura luminosa torna a abertura legível sem fechar a passagem.
+      const frameMat=M.edge,edge=.055;
+      if(ns){box(grp,edge,openH,th*1.35,d.offset,openH/2,depth,frameMat,{solid:false});box(grp,edge,openH,th*1.35,d.offset+1,openH/2,depth,frameMat,{solid:false});box(grp,1,edge,th*1.35,d.offset+.5,openH,depth,frameMat,{solid:false});}
+      else{box(grp,th*1.35,openH,edge,depth,openH/2,d.offset,frameMat,{solid:false});box(grp,th*1.35,openH,edge,depth,openH/2,d.offset+1,frameMat,{solid:false});box(grp,th*1.35,edge,1,depth,openH,d.offset+.5,frameMat,{solid:false});}
+    };
+    run('n',t.w,t.w/2,0);run('s',t.w,t.w/2,t.h);run('w',t.h,t.h/2,0);run('e',t.h,t.h/2,t.w);
+    const stairs=(S.data?.stairs||[]).filter(s=>s.building===t.id);
+    for(let level=2;level<=h;level+=2){
+      for(let y=0;y<t.h;y++)for(let x=0;x<t.w;x++){
+        const wx=t.x+x,wy=t.y+y,opening=stairs.some(s=>(s.fromZ===level||s.toZ===level)&&
+          ((s.x===wx&&s.y===wy)||(s.tx===wx&&s.ty===wy)));
+        if(!opening)box(grp,.98,.1,.98,x+.5,level-.05,y+.5,level===h?M.roof:M.dark);
+      }
+    }
+    // Parapeito no segundo piso: cobertura leve em todas as bordas do high ground.
+    const rim=.16,rh=.48;box(grp,t.w+rim*2,rh,rim,t.w/2,h+rh/2,-rim/2,M.edge);box(grp,t.w+rim*2,rh,rim,t.w/2,h+rh/2,t.h+rim/2,M.edge);
+    box(grp,rim,rh,t.h,-rim/2,h+rh/2,t.h/2,M.edge);box(grp,rim,rh,t.h,t.w+rim/2,h+rh/2,t.h/2,M.edge);
+    const sign=textSprite('ENTRADA  //  NÍVEIS 0 · 2 · 4', '#74e7ff',.12);sign.position.set(t.w/2,1.56,.1);grp.add(sign);
+  }
   function makeLight(t,i,M){
     const h=.72,grp=new T.Group();grp.position.set(t.x,0,t.y);S.world.add(grp);
     box(grp,t.w,h,t.h,t.w/2,h/2,t.h/2,M.barrier);
@@ -112,8 +141,8 @@
     }
   }
   function makeStair(s,M){
-    const g=new T.Group(),tx=s.tx??s.x,ty=s.ty??s.y,dx=tx-s.x,dz=ty-s.y,ang=Math.atan2(dz,dx),steps=8,w=.88,len=1.15,h=s.z||2;
-    g.position.set(s.x+.5,0,s.y+.5);g.rotation.y=-ang;S.world.add(g);
+    const g=new T.Group(),tx=s.tx??s.x,ty=s.ty??s.y,dx=tx-s.x,dz=ty-s.y,ang=Math.atan2(dz,dx),steps=8,w=.88,len=Math.max(1.15,Math.hypot(dx,dz)+.15),fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,h=Math.abs(toZ-fromZ);
+    g.position.set((s.x+tx)/2+.5,Math.min(fromZ,toZ),(s.y+ty)/2+.5);g.rotation.y=-ang;S.world.add(g);
     for(let i=0;i<steps;i++){const sh=(i+1)/steps*h,sl=len/steps+.035;box(g,sl,sh,w,-len/2+(i+.5)*len/steps,sh/2,0,i%2?M.stair:M.edge);}
     [-1,1].forEach(side=>{
       const railH=.42,railLen=Math.hypot(len+.12,h),rail=box(g,railLen,.055,.055,0,h/2+railH,side*w*.59,M.stair,{solid:false});
@@ -162,9 +191,9 @@
       loadModel(BASE+'models/ladder_sectioned_01/ladder_sectioned_01_1k.gltf'),
       loadModel(BASE+'models/old_tyre/old_tyre_1k.gltf')]);
     if(S.closed)return;
-    const heavy=S.data.terrain.filter(t=>t.t==='h');heavy.slice(0,5).forEach((t,i)=>fitClone(facade,{x:Math.max(1,t.w*.92),y:Math.max(1.3,(t.z||2)*.92),z:.32},{x:t.x+t.w/2,y:.03,z:t.y-.05},i%2?Math.PI:0));
+    const heavy=S.data.terrain.filter(t=>t.t==='h'&&!t.building);heavy.slice(0,5).forEach((t,i)=>fitClone(facade,{x:Math.max(1,t.w*.92),y:Math.max(1.3,(t.z||2)*.92),z:.32},{x:t.x+t.w/2,y:.03,z:t.y-.05},i%2?Math.PI:0));
     S.data.terrain.filter(t=>t.t==='l').slice(0,5).forEach((t,i)=>fitClone(barrier,{x:Math.max(.7,t.w*.62),y:.62,z:Math.max(.32,t.h*.66)},{x:t.x+t.w/2,y:.02,z:t.y+t.h/2},i%2?Math.PI/2:0));
-    S.data.stairs.forEach((s,i)=>fitClone(ladder,{x:.78,y:s.z||2,z:.25},{x:(s.x+(s.tx??s.x))/2+.25,y:.02,z:(s.y+(s.ty??s.y))/2+.25},Math.atan2((s.ty??s.y)-s.y,(s.tx??s.x)-s.x)+Math.PI/2));
+    S.data.stairs.filter(s=>!s.building).forEach((s,i)=>fitClone(ladder,{x:.78,y:Math.abs((s.toZ||s.z||2)-(s.fromZ||0)),z:.25},{x:(s.x+(s.tx??s.x))/2+.25,y:s.fromZ||.02,z:(s.y+(s.ty??s.y))/2+.25},Math.atan2((s.ty??s.y)-s.y,(s.tx??s.x)-s.x)+Math.PI/2));
     [[2,2,0],[27,3,.7],[11,6,1.5],[18,15,.1],[3,19,1.2],[26,19,.4],[7,1.2,.9],[22,20.7,1.6],[29,10,.25],[1,13,1.1]].forEach(([x,z,r])=>fitClone(tyre,{x:.7,y:.7,z:.35},{x,y:.02,z},r));
     setStatus('SINCRONIZANDO AUSPEX',91);
   }

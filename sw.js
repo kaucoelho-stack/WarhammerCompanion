@@ -1,6 +1,13 @@
-const CACHE = 'auspex-v10-mobile-los';
+const CACHE = 'auspex-v12-solid-los-buildings';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
-const ASSETS = ['./', './index.html', './manifest.json'];
+const ASSETS = [
+  './','./index.html','./manifest.json','./killteam_data.js',
+  './auspex-test-team/','./auspex-test-team/index.html','./auspex-test-team/auspex-rules.js',
+  './auspex-test-team/volkus-3d/volkus-webgl.js',
+  './auspex-test-team/vendor/three-r128/three.min.js',
+  './auspex-test-team/vendor/three-r128/GLTFLoader.js',
+  './auspex-test-team/vendor/three-r128/RGBELoader.js'
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(
