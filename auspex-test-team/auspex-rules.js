@@ -29,22 +29,49 @@
       oc:/porta.?\u00edcone|icon bearer/i.test(`${a.name||''} ${a.desc||''}`)?1:0,
       expendable:/expendable|descart\u00e1vel/i.test(`${a.name||''} ${a.desc||''}`)}));
   }
-  function rosterFor(team,key){
-    const chosen=[],templates=team.operatives||[];
-    const push=(op,n)=>{for(let i=0;i<n&&chosen.length<team.limit;i++)chosen.push({op,copy:i});};
-    templates.filter(o=>o.unique!==false).forEach(o=>push(o,1));
-    templates.filter(o=>o.unique===false).forEach(o=>push(o,Math.min(o.count||team.limit,team.limit-chosen.length)));
-    if(chosen.length<team.limit&&templates.length){let i=0;while(chosen.length<team.limit&&i<team.limit*3){const o=templates[i%templates.length];if(o.unique===false)push(o,1);i++;}}
-    return chosen.slice(0,team.limit).map(({op,copy},i)=>{
+  function operativeFrom(op,key,team){
       const weapons=(op.weapons||[]).flatMap(weaponProfiles);
       if(!weapons.some(w=>w.t==='m'))weapons.push({n:'Combate desarmado',t:'m',a:3,h:4,d:2,c:3,tags:[]});
       if(!weapons.some(w=>w.t==='r'))weapons.push({n:'Arma de curto alcance',t:'r',a:3,h:4,d:2,c:3,tags:['Range 6']});
       const ab=abilitiesOf(op);
       if(key==='vsp'&&!/drone/i.test(op.name||''))ab.push({n:'Fly',d:'Pode atravessar terreno durante ações de movimento.',fly:1});
-      return{id:`${safeId(op.id)}-${i}`,sourceId:op.id,n:op.name+(copy?` ${copy+1}`:''),ico:(op.name||'?').trim()[0].toUpperCase(),
+      return{id:safeId(op.id),sourceId:op.id,n:op.name,ico:(op.name||'?').trim()[0].toUpperCase(),
         apl:number(op.APL)||2,ga:number(op.GA)||1,df:number(op.DF)||3,mv:number(op.M)||6,sv:number(op.SV)||5,w:number(op.W)||7,
         wpn:weapons,abl:ab,expendable:ab.some(a=>a.expendable),engine:{sourceTeam:team.id}}
-    });
+  }
+  function leaderIds(team){
+    if(team.id==='kt-angelsofdeath')return new Set(['kt-aod-captain','kt-aod-asgt','kt-aod-isgt']);
+    const first=team.operatives?.[0]?.id;return new Set(first?[first]:[]);
+  }
+  function catalogFor(team,key){
+    const leaders=leaderIds(team);
+    return(team.operatives||[]).map((op,i)=>({...operativeFrom(op,key,team),catalogIndex:i,
+      max:op.unique===false?Math.max(1,number(op.count)||team.limit):1,unique:op.unique!==false,
+      leader:leaders.has(op.id),leaderGroup:leaders.has(op.id)?'leader':null}));
+  }
+  function defaultSelection(team){
+    const counts={},cat=team.catalog||[];let left=team.limit||0;
+    const leader=cat.find(o=>o.leader);if(leader&&left){counts[leader.id]=1;left--;}
+    const ordered=[...cat.filter(o=>!o.leader&&o.unique),...cat.filter(o=>!o.leader&&!o.unique)];
+    for(const o of ordered){const n=Math.min(o.max,left);if(n){counts[o.id]=n;left-=n;}if(!left)break;}
+    return counts;
+  }
+  function validateRoster(team,counts={}){
+    const cat=team.catalog||[],errors=[];let total=0,leaders=0;
+    for(const o of cat){const n=Math.max(0,Math.floor(number(counts[o.id])));total+=n;if(o.leader)leaders+=n;if(n>o.max)errors.push(`${o.n}: máximo ${o.max}`);}
+    for(const id of Object.keys(counts))if(!cat.some(o=>o.id===id)&&number(counts[id])>0)errors.push(`Operativo desconhecido: ${id}`);
+    if(total!==(team.limit||0))errors.push(`Selecione exatamente ${team.limit} operativos (${total}/${team.limit})`);
+    if(cat.some(o=>o.leader)&&leaders!==1)errors.push(`Selecione exatamente 1 líder (${leaders}/1)`);
+    return{valid:errors.length===0,errors,total,leaders,size:team.limit||0};
+  }
+  function buildRoster(team,counts={}){
+    const check=validateRoster(team,counts);if(!check.valid)return[];const out=[];
+    for(const o of team.catalog||[])for(let copy=0;copy<(counts[o.id]||0);copy++)out.push({...o,
+      id:`${o.id}-${copy}`,n:o.n+(copy?` ${copy+1}`:''),catalogId:o.id});
+    return out;
+  }
+  function rosterFor(team,key){
+    const meta={limit:team.limit,catalog:catalogFor(team,key)};return buildRoster(meta,defaultSelection(meta));
   }
   function inferEngine(team,key){
     const core=text(team.coreRule?.desc||team.coreRule?.d).toLowerCase();
@@ -64,10 +91,15 @@
   function importTeams(target,source){
     if(!target||!Array.isArray(source))return 0;
     for(const t of source){
-      const key=TEAM_KEYS[t.id]||safeId(t.id).slice(0,5);if(EXISTING.has(key)||target[key])continue;
+      const key=TEAM_KEYS[t.id]||safeId(t.id).slice(0,5),catalog=catalogFor(t,key);
+      if(target[key]){
+        const current=target[key];current.limit=t.limit;current.catalog=catalog;current.composition={size:t.limit,leaderMin:1,leaderMax:1};current.sourceId=t.id;
+        current.ops=buildRoster(current,defaultSelection(current));continue;
+      }
       target[key]={name:t.name,fac:t.faction,ico:TEAM_ICONS[key]||t.emoji||'\u25C9',col:t.color||'#7bd6e8',limit:t.limit,
         rule:{n:t.coreRule?.name||'Regra de fac\u00e7\u00e3o',d:String(t.coreRule?.desc||'').replace(/<[^>]+>/g,' ')},
-        ploys:ploysFor(t,key),ops:rosterFor(t,key),engine:inferEngine(t,key),sourceId:t.id};
+        ploys:ploysFor(t,key),catalog,composition:{size:t.limit,leaderMin:1,leaderMax:1},engine:inferEngine(t,key),sourceId:t.id};
+      target[key].ops=buildRoster(target[key],defaultSelection(target[key]));
     }
     Object.entries(target).forEach(([key,t])=>{t.engine={...inferEngine({coreRule:{desc:t.rule?.d||''}},key),...(t.engine||{})};
       (t.ops||[]).forEach(o=>{o.df=o.df||3;o.ga=o.ga||1;o.expendable=o.expendable||o.abl?.some(a=>a.expendable);});});
@@ -92,5 +124,5 @@
   const rangeOf=w=>{const t=(w.tags||[]).find(x=>String(x).startsWith('Range '));return t?(number(t)||99):99;};
 
   window.AuspexRules={importTeams,team,engine,canCounter,canChargeConcealed,maxAction,heavyBlocked,limitedBlocked,useWeapon,
-    hasAbility,objectiveAPL,countsForElimination,rangeOf,version:'2.0'};
+    hasAbility,objectiveAPL,countsForElimination,rangeOf,defaultSelection,validateRoster,buildRoster,version:'2.1'};
 })();

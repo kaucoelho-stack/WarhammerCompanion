@@ -119,17 +119,21 @@
     };
     run('n',t.w,t.w/2,0);run('s',t.w,t.w/2,t.h);run('w',t.h,t.h/2,0);run('e',t.h,t.h/2,t.w);
     const stairs=(S.data?.stairs||[]).filter(s=>s.building===t.id);
+    box(grp,t.w-.28,.035,t.h-.28,t.w/2,.005,t.h/2,M.roof,{solid:false,shadow:false});
     for(let level=2;level<=h;level+=2){
       for(let y=0;y<t.h;y++)for(let x=0;x<t.w;x++){
-        const wx=t.x+x,wy=t.y+y,opening=stairs.some(s=>(s.fromZ===level||s.toZ===level)&&
-          ((s.x===wx&&s.y===wy)||(s.tx===wx&&s.ty===wy)));
-        if(!opening)box(grp,.98,.1,.98,x+.5,level-.05,y+.5,level===h?M.roof:M.dark);
+        const wx=t.x+x,wy=t.y+y,opening=stairs.some(s=>s.internal&&
+          ((s.fromZ===level&&s.x===wx&&s.y===wy)||(s.toZ===level&&s.tx===wx&&s.ty===wy)));
+        if(!opening)box(grp,.98,.1,.98,x+.5,level-.05,y+.5,M.roof);
       }
     }
+    // Iluminação e acabamento internos deixam portas, pisos e vazios de escada legíveis.
+    [1.72,3.72].filter(y=>y<h).forEach((y,n)=>{for(let x=.8;x<t.w-.4;x+=1.6)box(grp,.72,.035,.08,x,y,t.h/2,M.glass,{solid:false,shadow:false});
+      const light=new T.PointLight('#63dfff',.22,Math.max(t.w,t.h)*1.25,2);light.position.set(t.w/2,y-.3,t.h/2);grp.add(light);});
     // Parapeito no segundo piso: cobertura leve em todas as bordas do high ground.
     const rim=.16,rh=.48;box(grp,t.w+rim*2,rh,rim,t.w/2,h+rh/2,-rim/2,M.edge);box(grp,t.w+rim*2,rh,rim,t.w/2,h+rh/2,t.h+rim/2,M.edge);
     box(grp,rim,rh,t.h,-rim/2,h+rh/2,t.h/2,M.edge);box(grp,rim,rh,t.h,t.w+rim/2,h+rh/2,t.h/2,M.edge);
-    const sign=textSprite('ENTRADA  //  NÍVEIS 0 · 2 · 4', '#74e7ff',.12);sign.position.set(t.w/2,1.56,.1);grp.add(sign);
+    const sign=textSprite('ENTRADA  //  NÍVEIS 0 · 2 · 4', '#74e7ff',.105);sign.position.set(t.w/2,1.56,-.12);grp.add(sign);
   }
   function makeLight(t,i,M){
     const h=.72,grp=new T.Group();grp.position.set(t.x,0,t.y);S.world.add(grp);
@@ -141,14 +145,11 @@
     }
   }
   function makeStair(s,M){
-    const g=new T.Group(),tx=s.tx??s.x,ty=s.ty??s.y,dx=tx-s.x,dz=ty-s.y,ang=Math.atan2(dz,dx),steps=8,w=.88,len=Math.max(1.15,Math.hypot(dx,dz)+.15),fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,h=Math.abs(toZ-fromZ);
+    const g=new T.Group(),tx=s.tx??s.x,ty=s.ty??s.y,dx=tx-s.x,dz=ty-s.y,ang=Math.atan2(dz,dx),rungs=7,w=.54,len=Math.max(.72,Math.hypot(dx,dz)*.72),fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,h=Math.abs(toZ-fromZ),railLen=Math.hypot(len,h),slope=Math.atan2(h,len);
     g.position.set((s.x+tx)/2+.5,Math.min(fromZ,toZ),(s.y+ty)/2+.5);g.rotation.y=-ang;S.world.add(g);
-    for(let i=0;i<steps;i++){const sh=(i+1)/steps*h,sl=len/steps+.035;box(g,sl,sh,w,-len/2+(i+.5)*len/steps,sh/2,0,i%2?M.stair:M.edge);}
-    [-1,1].forEach(side=>{
-      const railH=.42,railLen=Math.hypot(len+.12,h),rail=box(g,railLen,.055,.055,0,h/2+railH,side*w*.59,M.stair,{solid:false});
-      rail.rotation.z=Math.atan2(h,len+.12);
-      for(let i=0;i<=4;i++){const t=i/4,base=.06+t*h;box(g,.045,railH,.045,-len/2+t*len,base+railH/2,side*w*.59,M.stair,{solid:false});}
-    });
+    [-1,1].forEach(side=>{const rail=box(g,railLen,.055,.055,0,h/2,side*w/2,M.stair,{solid:false});rail.rotation.z=slope;});
+    for(let i=0;i<rungs;i++){const p=(i+.5)/rungs;box(g,.055,.055,w,-len/2+p*len,p*h,0,i%2?M.stair:M.edge,{solid:false});}
+    const glow=new T.PointLight(s.fromZ?'#68dfff':'#ffbd65',.14,2.6,2);glow.position.set(0,h/2,0);g.add(glow);
   }
   function makeObjective(o,i){
     const g=new T.Group();g.position.set(o.x,.02,o.y);S.markers.add(g);

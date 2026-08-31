@@ -240,7 +240,11 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
 .door.n,.door.s{width:var(--cs);height:5px;transform:translateX(-50%)}
 .door.n{top:-4px}.door.s{bottom:-4px}.door.e,.door.w{height:var(--cs);width:5px;transform:translateY(-50%)}
 .door.e{right:-4px}.door.w{left:-4px}
+.stair{height:6px!important;transform:none;border:0;border-radius:2px;background:linear-gradient(#d8b77b 0 1px,transparent 1px 5px,#d8b77b 5px 6px),repeating-linear-gradient(90deg,transparent 0 6px,#e2c58d 6px 7px);box-shadow:0 1px 3px #000;transform-origin:0 50%}
+.stair::after{content:'⇧';position:absolute;left:50%;top:-7px;transform:translateX(-50%);font:800 7px var(--fd);color:#ffd998;text-shadow:0 1px 2px #000}
 .stair.level2{filter:hue-rotate(155deg) brightness(1.25);border-color:#8de4ff}
+.cell.mv.interior{background:radial-gradient(circle,#5bd7ff66 0 34%,transparent 38%);border-color:#65dcff}.cell.mv.floor2{background:radial-gradient(circle,#be78ff66 0 34%,transparent 38%);border-color:#c88aff}.cell.mv.roof4{background:radial-gradient(circle,#7dff9d77 0 34%,transparent 38%);border-color:#8fffaa}
+.cell[data-dest]::after{content:attr(data-dest);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;padding:1px 3px;border-radius:3px;background:#031018e8;color:#ddf8ff;font:800 6px var(--fm);letter-spacing:.4px;box-shadow:0 1px 3px #000}
 @keyframes beacon{50%{filter:brightness(1.28);box-shadow:0 0 0 3px transparent,0 0 24px currentColor,inset 0 0 20px currentColor}}
 .visionring{position:absolute;border:1px solid #7ce7ff28;border-radius:50%;pointer-events:none;z-index:2;
   background:radial-gradient(circle,transparent 66%,rgba(82,213,255,.035) 68%,transparent 71%);
@@ -310,6 +314,17 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
 .kzpreview i:nth-child(1){width:31%;height:18%;left:10%;top:18%}.kzpreview i:nth-child(2){width:22%;height:38%;right:12%;top:35%}
 .kzpreview i:nth-child(3){width:34%;height:17%;left:27%;bottom:11%}.kzpreview span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--kz);font-size:25px;text-shadow:0 0 12px var(--kz)}
 .kzcard[data-kz="forge"] .kzpreview i:nth-child(2){height:62%;top:16%}.kzcard[data-kz="wastes"] .kzpreview i{transform:rotate(-9deg);width:22%}
+.roster-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;margin-bottom:8px;border:1px solid #35526a;border-radius:8px;background:#091621}
+.roster-head strong{font:700 15px var(--fd);color:var(--team)}.roster-head small{display:block;color:var(--txt2);margin-top:2px}.roster-total{text-align:right;font:800 17px var(--fd);color:#dff8ff}.roster-total.bad{color:#ff8d84}.roster-total span{display:block;font:600 7px var(--fm);letter-spacing:1px;color:var(--mut)}
+.roster-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:min(57vh,560px);overflow:auto;padding:2px}
+.roster-op{display:grid;grid-template-columns:42px 1fr auto;gap:8px;align-items:center;min-width:0;padding:8px;border:1px solid #2d455a;border-radius:8px;background:linear-gradient(145deg,#142536,#0a141e)}
+.roster-op.chosen{border-color:var(--team);box-shadow:inset 3px 0 var(--team),0 0 12px color-mix(in srgb,var(--team) 12%,transparent)}
+.roster-icon{width:39px;height:39px;border:1px solid var(--team);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--team);font:800 17px var(--fd);background:#06111a}
+.roster-info{min-width:0}.roster-info b{display:block;color:#e7f8ff;font:700 11px var(--fd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.roster-info small{display:block;color:var(--txt2);font-size:8px;line-height:1.3;margin-top:2px}.roster-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px}.roster-tags i{font:700 6px var(--fm);font-style:normal;letter-spacing:.5px;padding:2px 4px;border:1px solid #38566d;border-radius:3px;color:#9dc9db}.roster-tags i.leader{border-color:#d5a447;color:#ffd875}
+.roster-step{display:grid;grid-template-columns:25px 28px 25px;align-items:center}.roster-step button{height:28px;border:1px solid #3d5a70;background:#142638;color:#dff7ff;font:800 15px var(--fd);border-radius:5px}.roster-step button:disabled{opacity:.22}.roster-step b{text-align:center;color:var(--team);font:800 14px var(--fd)}
+.roster-errors{min-height:19px;margin:7px 0 4px;padding:5px 8px;border-left:2px solid #ff756d;background:#32161988;color:#ffc0ba;font-size:8px}.roster-errors.ok{border-color:#5ee7a0;background:#0b2c2088;color:#9ff7c5}
+.roster-actions{display:flex;justify-content:space-between;gap:7px;margin-top:7px}.roster-actions .btn{flex:1}.roster-actions .confirm{flex:1.5}
+@media(max-width:650px){.roster-grid{grid-template-columns:1fr;max-height:53vh}.roster-op{grid-template-columns:36px 1fr auto;padding:6px}.roster-icon{width:34px;height:34px}.roster-head{padding:7px}.roster-head strong{font-size:12px}}
 /* ===== VISÃO EM PRIMEIRA PESSOA ===== */
 .fpv{--origin-x:50%;--origin-y:50%;position:fixed;inset:0;z-index:180;display:none;overflow:hidden;
   background:#03080d;color:#d8f5ff;opacity:0;clip-path:circle(0 at var(--origin-x) var(--origin-y))}
@@ -435,7 +450,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
   <div class="maplegend" aria-label="Legenda do mapa">
     <span><i class="lg-light"></i> COBERTURA LEVE</span>
     <span><i class="lg-vantage"></i> VANTAGE 2&quot;</span>
-    <span><i class="lg-stair"></i> ESCADA</span>
+    <span><i class="lg-stair"></i> ESCADA FINA</span>
     <span><i class="lg-building"></i> EDIFÍCIO 2 PISOS</span>
     <span><i class="lg-door"></i> PORTA ABERTA</span>
     <span><i class="lg-obj"></i> OBJETIVO</span>
@@ -756,6 +771,14 @@ function physicalShotBlock(from,to){
   }
   return null;
 }
+function movementWallBlock(from,to){
+  if(zOf(from)!==0||zOf(to)!==0)return false;const ax=from.x+.5,ay=from.y+.5,bx=to.x+.5,by=to.y+.5,dx=bx-ax,dy=by-ay,eps=.003;
+  return TERRAIN.some(t=>{if(!t.building)return false;const hits=[];
+    if(Math.abs(dx)>1e-8)for(const[wallX,side]of[[t.x,'w'],[t.x+t.w,'e']]){const q=(wallX-ax)/dx,y=ay+dy*q;if(q>.01&&q<.99&&y>=t.y-eps&&y<=t.y+t.h+eps)hits.push({side,coord:y});}
+    if(Math.abs(dy)>1e-8)for(const[wallY,side]of[[t.y,'n'],[t.y+t.h,'s']]){const q=(wallY-ay)/dy,x=ax+dx*q;if(q>.01&&q<.99&&x>=t.x-eps&&x<=t.x+t.w+eps)hits.push({side,coord:x});}
+    return hits.some(h=>!doorOpeningAt(t,h.side,h.coord,1));
+  });
+}
 function stairOccludes(from,to){
   const ax=from.x+.5,ay=from.y+.5,bx=to.x+.5,by=to.y+.5,dx=bx-ax,dy=by-ay;
   const eyeA=zOf(from)+1.55,eyeB=zOf(to)+1.55,len=1.18,halfW=.48;
@@ -777,7 +800,7 @@ function checkLoS(from,to){
   const cells=traceLine(from,to);
   const fz=zOf(from),tz=zOf(to),physical=physicalShotBlock(from,to);
   const d=dist(from,to);
-  if(physical||stairOccludes(from,to))return {vis:false,cover:false,coverType:null,obscured:true,vantage:false,blocked:true,blockKind:physical?.kind||'stair'};
+  if(physical)return {vis:false,cover:false,coverType:null,obscured:true,vantage:false,blocked:true,blockKind:physical.kind};
   // terreno adjacente ao alvo dá cobertura
   const targetRoof=surfaceFeature(to),fromRoof=surfaceFeature(from);
   const near=cells.filter(c=>c.t&&Math.hypot(c.x-to.x,c.y-to.y)<=1.001&&
@@ -812,7 +835,7 @@ let G={
   mode:null,           // null | move | charge | shoot | fight
   moveCells:[], targets:[],
   ploys:{0:[],1:[]},   // ploys ativos no turno
-  log:[], selIdx:0, killzone:'volkus', gameMode:null, ai:1, aiBusy:false,
+  log:[], selIdx:0, killzone:'volkus', gameMode:null, ai:1, aiBusy:false,rosterDraft:null,
   fpvHeading:0, fpvPitch:0, fpvFov:76, fpvOp:null, fpvFocus:null
 };
 const P=i=>G.players[i];
@@ -851,6 +874,7 @@ function reachable(op,maxDist,opts={}){
       const nx=c.x+dx,ny=c.y+dy,nz=c.z,k=nx+','+ny+','+nz;
       if(nx<0||ny<0||nx>=W||ny>=H||seen[k]!==undefined)continue;
       if(!fly&&nz===0&&terrAt(nx,ny)==='h')continue;
+      if(!fly&&nz===0&&movementWallBlock(c,{x:nx,y:ny,z:nz}))continue;
       if(!fly&&nz>0&&!surfaceAt(nx,ny,nz))continue;
       if(occupied(nx,ny,op,nz))continue;
       const cr=inEnemyCR(nx,ny,op.pi,nz);if(cr&&!ignoreCR&&!endInCR)continue;
@@ -876,7 +900,8 @@ if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
     doorway=reachable({x:7,y:2,z:0,pi:0},2.01),wall=reachable({x:6,y:2,z:0,pi:0},1.1),
     movement={externalStair:extReach.some(c=>c.x===ext.tx&&c.y===ext.ty&&c.z===ext.toZ),
       internalStair:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===inner.toZ),
-      doorEntry:doorway.some(c=>c.x===7&&c.y===4&&c.z===0),wallEntryBlocked:!wall.some(c=>c.x===6&&c.y===3&&c.z===0)};
+      doorEntry:doorway.some(c=>c.x===7&&c.y===4&&c.z===0),wallEntryBlocked:!wall.some(c=>c.x===6&&c.y===3&&c.z===0),
+      cornerEntryBlocked:movementWallBlock({x:4,y:2,z:0},{x:5,y:3,z:0})};
   movement.pass=Object.values(movement).every(Boolean);document.documentElement.dataset.auspexMovement=JSON.stringify(movement);
 }
 
@@ -1113,33 +1138,46 @@ function pickKillzone(id){
   setTimeout(()=>showTeamPicker(0),180);
 }
 function showTeamPicker(pi){
-  const other=P(1-pi).team;
   openOv(`${P(pi).n} — escolha o kill team`,
     `<div class="tlist">${Object.entries(TEAMS).map(([k,t])=>`
       <button class="trow" onclick="pickTeam(${pi},'${k}')">
         <div class="ic" style="border-color:${t.col};color:${t.col}">${t.ico}</div>
         <div><div class="tn">${t.name}</div>
-        <div class="td">${t.fac} · ${t.limit} operativos<br><span style="color:${t.col}">${t.rule.n}:</span> ${t.rule.d}</div></div>
+        <div class="td">${t.fac} · monte exatamente ${t.limit} operativos · 1 líder<br><span style="color:${t.col}">${t.rule.n}:</span> ${t.rule.d}</div></div>
       </button>`).join('')}</div>`,true);
 }
-function pickTeam(pi,k){
-  P(pi).team=k;
-  const t=TEAMS[k];
-  P(pi).ops=t.ops.slice(0,t.limit).map((o,i)=>({
+function pickTeam(pi,k){showRosterBuilder(pi,k,true);}
+function showRosterBuilder(pi,k,reset=false){
+  const t=TEAMS[k];if(reset||!G.rosterDraft||G.rosterDraft.pi!==pi||G.rosterDraft.k!==k)G.rosterDraft={pi,k,counts:RULES.defaultSelection(t)};
+  const counts=G.rosterDraft.counts,check=RULES.validateRoster(t,counts),errorText=check.valid?'FORMAÇÃO VÁLIDA · PRONTA PARA O KILLZONE':check.errors.join(' · ');
+  openOv(`${P(pi).n} — montar ${t.name}`,`<div class="roster-head" style="--team:${t.col}"><div><strong>${t.ico} ${t.name}</strong><small>${t.fac} · escolha os operativos antes da batalha</small></div><div class="roster-total ${check.valid?'':'bad'}">${check.total}/${t.limit}<span>OPERATIVOS · ${check.leaders}/1 LÍDER</span></div></div>
+    <div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,totalFull=check.total>=t.limit,canPlus=n<o.max&&(o.leader||!totalFull),weapon=o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
+      <div class="roster-icon">${o.ico}</div><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.leader?'<i class="leader">LÍDER · ESCOLHA 1</i>':''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
+      <div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
+    <div class="roster-errors ${check.valid?'ok':''}">${errorText}</div><div class="roster-actions"><button class="btn" onclick="showTeamPicker(${pi})">← TROCAR TIME</button><button class="btn" onclick="recommendedRoster()">FORMAÇÃO RECOMENDADA</button><button class="btn pri confirm" onclick="confirmRoster()" ${check.valid?'':'disabled'}>CONFIRMAR E POSICIONAR</button></div>`,true);
+}
+function changeRoster(id,delta){
+  const d=G.rosterDraft;if(!d)return;const t=TEAMS[d.k],o=t.catalog.find(x=>x.id===id);if(!o)return;
+  if(delta>0&&o.leader)t.catalog.filter(x=>x.leader).forEach(x=>d.counts[x.id]=0);
+  d.counts[id]=Math.max(0,Math.min(o.max,(d.counts[id]||0)+delta));showRosterBuilder(d.pi,d.k,false);
+}
+function recommendedRoster(){const d=G.rosterDraft;if(!d)return;d.counts=RULES.defaultSelection(TEAMS[d.k]);showRosterBuilder(d.pi,d.k,false);}
+function setPlayerRoster(pi,k,counts){
+  const t=TEAMS[k],built=RULES.buildRoster(t,counts);P(pi).team=k;
+  P(pi).ops=built.map((o,i)=>({
     ...o, unitId:o.id, templateId:o.sourceId||o.id, id:`p${pi}_${o.id}_${i}`, pi, teamId:k, n:o.n,
-    hp:o.w, maxhp:o.w, x:-1,y:-1,z:0, order:'conceal', ap:o.apl,
-    activated:false, dead:false, marks:0, moved:false, movedFar:false,
-    chargedThis:false, shotThis:0, foughtThis:0, usedActs:[], orderLocked:false,
-    counteracted:false, def5:o.abl.some(a=>a.def5),weaponUses:{},poisoned:0,terrorchem:0,aplPenalty:0,pain:0,blooded:0
+    hp:o.w,maxhp:o.w,x:-1,y:-1,z:0,order:'conceal',ap:o.apl,activated:false,dead:false,marks:0,moved:false,movedFar:false,
+    chargedThis:false,shotThis:0,foughtThis:0,usedActs:[],orderLocked:false,counteracted:false,def5:o.abl.some(a=>a.def5),weaponUses:{},poisoned:0,terrorchem:0,aplPenalty:0,pain:0,blooded:0
   }));
-  closeOv();
+}
+function confirmRoster(){
+  const d=G.rosterDraft;if(!d)return;const t=TEAMS[d.k],check=RULES.validateRoster(t,d.counts);if(!check.valid)return showRosterBuilder(d.pi,d.k,false);
+  const pi=d.pi,k=d.k;setPlayerRoster(pi,k,d.counts);G.rosterDraft=null;closeOv();
   if(pi===0&&G.gameMode==='ai'){
     const choices=Object.keys(TEAMS).filter(id=>id!==k),pick=choices[Math.floor(Math.random()*choices.length)];
-    msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX analisando os times…</b>`);
-    setTimeout(()=>pickTeam(1,pick),520);
-  }
-  else if(pi===0){setTimeout(()=>showTeamPicker(1),200);}
-  else{startDeploy();}
+    msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX montando uma formação válida…</b>`);
+    setTimeout(()=>{setPlayerRoster(1,pick,RULES.defaultSelection(TEAMS[pick]));startDeploy();},520);
+  }else if(pi===0)setTimeout(()=>showTeamPicker(1),200);else startDeploy();
 }
 function startDeploy(){
   G.phase='deploy';G.cur=0;G.ops=[...P(0).ops,...P(1).ops];
@@ -1335,6 +1373,10 @@ function selectOp(op){
   if(G.gaRequired&&op.templateId!==G.gaRequired){msg('<b class="hl">Group Activation:</b> ative agora outro operativo do mesmo tipo.');return;}
   const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&RULES.canCounter(op,TEAMS);
   if(op.pi!==G.cur||(!counterOK&&op.activated)||op.dead){showCard(op);return;}
+  if(G.sel&&G.sel!==op&&!G.sel.activated&&G.sel.activationStarted){
+    msg(`<b class="hl">${G.sel.n} ainda está ativado.</b> Termine os AP ou use “Encerrar ativação” antes de escolher outro operativo.`);
+    requestAnimationFrame(()=>focusBoard(G.sel.x,G.sel.y,true));return;
+  }
   if(counterOK){op.ap=1;op.usedActs=[];op.orderLocked=true;op._countering=true;}
   if(!op.activationStarted){op.activationStarted=true;
     if(op.aplPenalty){op.ap=Math.max(1,op.ap-op.aplPenalty);op.aplPenalty=0;}
@@ -1350,7 +1392,7 @@ function actionUsed(op,name){return op.usedActs.includes(name);}
 function recordAction(op,name){op.orderLocked=true;op.usedActs.push(name);}
 function spend(op,n,deferFinish=false){op.ap-=n;if(op.ap<=0&&!deferFinish)finishOp(op);}
 function finishOp(op){
-  op.activated=true;G.sel=null;G.mode=null;
+  op.activated=true;G.sel=null;G.mode=null;G.moveCells=[];G.targets=[];
   const delay=isAI(op.pi)?1050:260;if(isAI(op.pi))G.aiBusy=false;
   if(op._countering){op.counteracted=true;op._countering=false;G.counterMode=false;setTimeout(()=>{if(G.phase==='over')return;G.cur=1-G.cur;nextActivation();},delay);return;}
   const mate=op.ga>1&&!G.gaRequired?alive(op.pi).find(o=>!o.activated&&o.templateId===op.templateId):null;
@@ -1380,7 +1422,7 @@ function actMove(kind){
   if(!cells.length){msg('<b class="hl">Nenhum destino válido</b> para essa ação.');return;}
   G.mode=kind;G.moveCells=cells;render();
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
-  msg(`<b>${kind==='charge'?'Investida':kind==='fallback'?'Recuar':kind==='dash'?'Arrancada':'Reposicionar'}</b> — toque numa célula destacada. <span style="color:var(--mut)">${cost} AP</span>`);
+  msg(`<b>${kind==='charge'?'Investida':kind==='fallback'?'Recuar':kind==='dash'?'Arrancada':'Reposicionar'}</b> — escolha um destino. <span style="color:#65dcff">AZUL: interior</span> · <span style="color:#c88aff">ROXO: piso 2″</span> · <span style="color:#8fffaa">VERDE: cobertura 4″</span>. <span style="color:var(--mut)">${cost} AP</span>`);
 }
 function doMove(x,y,z=0){
   const op=G.sel,kind=G.mode;
@@ -1394,7 +1436,8 @@ function doMove(x,y,z=0){
   G.mode=null;G.moveCells=[];
   spend(op,cost);render();
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
-  if(!op.activated)msg(`<b>${op.n}</b> moveu. Restam <b class="hl">${op.ap} AP</b>.`);
+  if(!op.activated){const b=TERRAIN.find(t=>t.building&&insideFeature(t,op.x,op.y)),where=b?(z===0?' · dentro da estrutura':z===2?' · no piso 2″':' · na cobertura 4″'):'';
+    msg(`<b>${op.n}</b> moveu${where}. Restam <b class="hl">${op.ap} AP</b>.`);}
 }
 function actShoot(chosen=null){
   const op=G.sel;if(!op||!canAct(op,1))return;
@@ -1532,7 +1575,8 @@ function render(){
   TERRAIN.forEach(t=>{const doors=t.building?(t.doors||[]).map(d=>{const axis=(d.side==='n'||d.side==='s')?'left':'top',pos=(d.offset+.5)*CS;
       return`<i class="door ${d.side}" title="Porta aberta · linha de visão física" style="${axis}:${pos}px;--cs:${CS}px">PORTA</i>`;}).join(''):'';
     h+=`<div class="terr ${t.t==='h'?'heavy':''} ${t.z?'vantage':'light'} ${t.building?'building':''}" title="${t.building?'Edifício transitável · pisos 0″, 2″ e 4″':t.t==='l'?'Cobertura leve':'Terreno pesado'}" style="left:${t.x*CS}px;top:${t.y*CS}px;width:${t.w*CS}px;height:${t.h*CS}px;--cs:${CS}">${doors}</div>`;});
-  STAIRS.forEach(s=>{h+=`<div class="stair ${s.fromZ?'level2':''}" title="Escada: ${s.fromZ||0}&quot; → ${s.toZ||s.z||2}&quot;" style="left:${s.x*CS+5}px;top:${s.y*CS+1}px;width:${CS-10}px;height:${CS-2}px"></div>`;});
+  STAIRS.forEach(s=>{const x1=(s.x+.5)*CS,y1=(s.y+.5)*CS,x2=((s.tx??s.x)+.5)*CS,y2=((s.ty??s.y)+.5)*CS,len=Math.hypot(x2-x1,y2-y1),ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+    h+=`<div class="stair ${s.fromZ?'level2':''}" title="Escada vertical: ${s.fromZ||0}&quot; → ${s.toZ||s.z||2}&quot;" style="left:${x1}px;top:${y1-3}px;width:${len}px;transform:rotate(${ang}deg)"></div>`;});
   // zonas de deploy
   if(G.phase==='deploy'){
     h+=`<div class="terr" style="left:0;top:0;width:${4*CS}px;height:${H*CS}px;background:rgba(232,163,61,.07);border-right:1px dashed var(--p1)"></div>`;
@@ -1546,7 +1590,8 @@ function render(){
     h+=`<div class="obj ${cls}" style="left:${(o.x-1)*CS}px;top:${(o.y-1)*CS}px;width:${CS*3}px;height:${CS*3}px"><span class="objid">OBJ ${i+1}</span><span class="objscore">${c[0]}·${c[1]}</span></div>`;
   });
   // células de movimento/alvo
-  G.moveCells.forEach(c=>{const lift=c.z?7:0;h+=`<div class="cell ${G.mode==='charge'?'ch':'mv'}" title="Destino: altura ${c.z||0}&quot;" style="left:${c.x*CS+1-((c.z||0)?4:0)}px;top:${c.y*CS+1-lift}px;width:${CS-2}px;height:${CS-2}px" onclick="doMove(${c.x},${c.y},${c.z||0})"></div>`;});
+  G.moveCells.forEach(c=>{const lift=c.z?7:0,b=TERRAIN.find(t=>t.building&&insideFeature(t,c.x,c.y)),zone=b?(c.z===0?'interior':(c.z===2?'floor2':'roof4')):'',label=zone?(zone==='interior'?'INTERIOR 0″':zone==='floor2'?'PISO 2″':'COBERTURA 4″'):'';
+    h+=`<div class="cell ${G.mode==='charge'?'ch':'mv'} ${zone}" ${label?`data-dest="${label}"`:''} title="Destino: ${label||`altura ${c.z||0}&quot;`}" style="left:${c.x*CS+1-((c.z||0)?4:0)}px;top:${c.y*CS+1-lift}px;width:${CS-2}px;height:${CS-2}px" onclick="doMove(${c.x},${c.y},${c.z||0})"></div>`;});
   G.targets.forEach(t=>{h+=`<div class="cell tg" title="ALVO: ${t.n} · altura ${zOf(t)}&quot;" style="left:${t.x*CS-2-(zOf(t)?4:0)}px;top:${t.y*CS-2-(zOf(t)?7:0)}px;width:${CS+4}px;height:${CS+4}px" onclick="${G.mode==='shoot'?'doShoot':'doFight'}(opById('${t.id}'))"></div>`;});
   // linha de tiro
   if(G.sel&&G.mode==='shoot')G.targets.forEach(t=>{

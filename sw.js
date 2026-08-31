@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v12-solid-los-buildings';
+const CACHE = 'auspex-v13-rosters-ladders-activation';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',
