@@ -1,0 +1,10 @@
+TIME: Tyranid Warriors
+ID DA PASTA: tyr
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+warrior-prime.png — Warrior Prime
+warrior.png — Warrior
+
+Caminho usado pelo jogo:
+assets/miniatures/tyr/<id-do-operativo>.png

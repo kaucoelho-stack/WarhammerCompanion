@@ -1,0 +1,504 @@
+[
+  {
+    "teamId": "aod",
+    "name": "Angels of Death",
+    "operatives": [
+      {
+        "id": "aod-captain",
+        "name": "Space Marine Captain"
+      },
+      {
+        "id": "aod-asgt",
+        "name": "Assault Intercessor Sergeant"
+      },
+      {
+        "id": "aod-isgt",
+        "name": "Intercessor Sergeant"
+      },
+      {
+        "id": "aod-grenadier",
+        "name": "Assault Intercessor Grenadier"
+      },
+      {
+        "id": "aod-awarrior",
+        "name": "Assault Intercessor Warrior"
+      },
+      {
+        "id": "aod-heavygunner",
+        "name": "Heavy Intercessor Gunner"
+      },
+      {
+        "id": "aod-gunner",
+        "name": "Intercessor Gunner"
+      },
+      {
+        "id": "aod-iwarrior",
+        "name": "Intercessor Warrior"
+      },
+      {
+        "id": "aod-eliminator",
+        "name": "Eliminator Sniper"
+      }
+    ]
+  },
+  {
+    "teamId": "bld",
+    "name": "Blooded",
+    "operatives": [
+      {
+        "id": "bl-chieftain",
+        "name": "Traitor Chieftain"
+      },
+      {
+        "id": "bl-grenadier",
+        "name": "Brimstone Grenadier"
+      },
+      {
+        "id": "bl-butcher",
+        "name": "Butcher"
+      },
+      {
+        "id": "bl-commsman",
+        "name": "Commsman"
+      },
+      {
+        "id": "bl-corpseman",
+        "name": "Corpseman"
+      },
+      {
+        "id": "bl-enforcer",
+        "name": "Enforcer"
+      },
+      {
+        "id": "bl-flenser",
+        "name": "Flenser"
+      },
+      {
+        "id": "bl-gunner",
+        "name": "Gunner"
+      },
+      {
+        "id": "bl-ogryn",
+        "name": "Ogryn"
+      },
+      {
+        "id": "bl-sharpshooter",
+        "name": "Sharpshooter"
+      },
+      {
+        "id": "bl-thug",
+        "name": "Thug"
+      },
+      {
+        "id": "bl-trenchsweeper",
+        "name": "Trench Sweeper"
+      },
+      {
+        "id": "bl-trooper",
+        "name": "Trooper"
+      }
+    ]
+  },
+  {
+    "teamId": "krg",
+    "name": "Death Korps of Krieg",
+    "operatives": [
+      {
+        "id": "krieg-watchmaster",
+        "name": "Watchmaster"
+      },
+      {
+        "id": "krieg-gunner",
+        "name": "Krieg Guardsman"
+      },
+      {
+        "id": "krieg-melta",
+        "name": "Gunner com Meltagun"
+      },
+      {
+        "id": "krieg-grenadier",
+        "name": "Grenadier"
+      }
+    ]
+  },
+  {
+    "teamId": "dwt",
+    "name": "Deathwatch",
+    "operatives": [
+      {
+        "id": "dw-sergeant",
+        "name": "Watch Sergeant"
+      },
+      {
+        "id": "dw-aegis",
+        "name": "Aegis Veteran"
+      },
+      {
+        "id": "dw-blademaster",
+        "name": "Blademaster Veteran"
+      },
+      {
+        "id": "dw-bombard",
+        "name": "Bombard Veteran"
+      },
+      {
+        "id": "dw-breacher",
+        "name": "Breacher Veteran"
+      },
+      {
+        "id": "dw-demolisher",
+        "name": "Demolisher Veteran"
+      },
+      {
+        "id": "dw-disruptor",
+        "name": "Disruptor Veteran"
+      },
+      {
+        "id": "dw-gunner",
+        "name": "Gunner Veteran"
+      },
+      {
+        "id": "dw-headtaker",
+        "name": "Headtaker Veteran"
+      },
+      {
+        "id": "dw-hordeslayer",
+        "name": "Horde-Slayer Veteran"
+      },
+      {
+        "id": "dw-marksman",
+        "name": "Marksman Veteran"
+      }
+    ]
+  },
+  {
+    "teamId": "hoa",
+    "name": "Hand of the Archon",
+    "operatives": [
+      {
+        "id": "hota-archsybarite",
+        "name": "Archsybarite"
+      },
+      {
+        "id": "hota-agent",
+        "name": "Agent"
+      },
+      {
+        "id": "hota-crimsonduellist",
+        "name": "Crimson Duellist"
+      },
+      {
+        "id": "hota-disciple",
+        "name": "Disciple of Yaelindra"
+      },
+      {
+        "id": "hota-elixicant",
+        "name": "Elixicant"
+      },
+      {
+        "id": "hota-flayer",
+        "name": "Flayer"
+      },
+      {
+        "id": "hota-gunner",
+        "name": "Gunner"
+      },
+      {
+        "id": "hota-heavygunner",
+        "name": "Heavy Gunner"
+      },
+      {
+        "id": "hota-skysplinter",
+        "name": "Skysplinter Assassin"
+      }
+    ]
+  },
+  {
+    "teamId": "int",
+    "name": "Intercession Squad",
+    "operatives": [
+      {
+        "id": "intercessor-sgt",
+        "name": "Sargento Intercessor"
+      },
+      {
+        "id": "intercessor",
+        "name": "Guerreiro Intercessor"
+      },
+      {
+        "id": "intercessor-heavy",
+        "name": "Guerreiro com Arma Pesada"
+      }
+    ]
+  },
+  {
+    "teamId": "kom",
+    "name": "Kommandos",
+    "operatives": [
+      {
+        "id": "kommando-boss",
+        "name": "Boss Nob"
+      },
+      {
+        "id": "kommando-boy",
+        "name": "Kommando Boy"
+      },
+      {
+        "id": "kommando-bombsquig",
+        "name": "Bomb Squig"
+      },
+      {
+        "id": "kommando-breacha",
+        "name": "Breacha Boy"
+      },
+      {
+        "id": "kommando-burna",
+        "name": "Burna Boy"
+      },
+      {
+        "id": "kommando-comms",
+        "name": "Comms Boy"
+      },
+      {
+        "id": "kommando-dakka",
+        "name": "Dakka Boy"
+      },
+      {
+        "id": "kommando-grot",
+        "name": "Grot"
+      },
+      {
+        "id": "kommando-rokkit",
+        "name": "Rokkit Boy"
+      },
+      {
+        "id": "kommando-slasha",
+        "name": "Slasha Boy"
+      },
+      {
+        "id": "kommando-snipa",
+        "name": "Kommando Snipa"
+      }
+    ]
+  },
+  {
+    "teamId": "leg",
+    "name": "Legionaries",
+    "operatives": [
+      {
+        "id": "legionary-aspiring",
+        "name": "Aspiring Champion"
+      },
+      {
+        "id": "legionary",
+        "name": "Legionary"
+      }
+    ]
+  },
+  {
+    "teamId": "mnd",
+    "name": "Mandrakes",
+    "operatives": [
+      {
+        "id": "mand-nightfiend",
+        "name": "Nightfiend"
+      },
+      {
+        "id": "mand-abyssal",
+        "name": "Abyssal"
+      },
+      {
+        "id": "mand-chooser",
+        "name": "Chooser of the Flesh"
+      },
+      {
+        "id": "mand-dirgemaw",
+        "name": "Dirgemaw"
+      },
+      {
+        "id": "mand-shadeweaver",
+        "name": "Shadeweaver"
+      },
+      {
+        "id": "mand-warrior",
+        "name": "Warrior"
+      }
+    ]
+  },
+  {
+    "teamId": "nmc",
+    "name": "Nemesis Claw",
+    "operatives": [
+      {
+        "id": "nc-visionary",
+        "name": "Visionary"
+      },
+      {
+        "id": "nc-fearmonger",
+        "name": "Fearmonger"
+      },
+      {
+        "id": "nc-gunner",
+        "name": "Gunner"
+      },
+      {
+        "id": "nc-heavygunner",
+        "name": "Heavy Gunner"
+      },
+      {
+        "id": "nc-screecher",
+        "name": "Screecher"
+      },
+      {
+        "id": "nc-skinthief",
+        "name": "Skinthief"
+      },
+      {
+        "id": "nc-ventrilokar",
+        "name": "Ventrilokar"
+      },
+      {
+        "id": "nc-warrior",
+        "name": "Warrior"
+      }
+    ]
+  },
+  {
+    "teamId": "pth",
+    "name": "Pathfinders",
+    "operatives": [
+      {
+        "id": "pathfinder-shas",
+        "name": "Shas'ui Pathfinder"
+      },
+      {
+        "id": "pathfinder",
+        "name": "Pathfinder"
+      },
+      {
+        "id": "pathfinder-drone",
+        "name": "Recon Drone"
+      }
+    ]
+  },
+  {
+    "teamId": "pmr",
+    "name": "Plague Marines",
+    "operatives": [
+      {
+        "id": "pm-champion",
+        "name": "Champion"
+      },
+      {
+        "id": "pm-plaguecaster",
+        "name": "Malignant Plaguecaster"
+      },
+      {
+        "id": "pm-bombardier",
+        "name": "Bombardier"
+      },
+      {
+        "id": "pm-fighter",
+        "name": "Fighter"
+      },
+      {
+        "id": "pm-heavygunner",
+        "name": "Heavy Gunner"
+      },
+      {
+        "id": "pm-iconbearer",
+        "name": "Icon Bearer"
+      },
+      {
+        "id": "pm-warrior",
+        "name": "Warrior"
+      }
+    ]
+  },
+  {
+    "teamId": "tyr",
+    "name": "Tyranid Warriors",
+    "operatives": [
+      {
+        "id": "warrior-prime",
+        "name": "Warrior Prime"
+      },
+      {
+        "id": "warrior",
+        "name": "Warrior"
+      }
+    ]
+  },
+  {
+    "teamId": "vsp",
+    "name": "Vespid Stingwings",
+    "operatives": [
+      {
+        "id": "vesp-strainleader",
+        "name": "Strain Leader"
+      },
+      {
+        "id": "vesp-oversightdrone",
+        "name": "Oversight Drone"
+      },
+      {
+        "id": "vesp-longsting",
+        "name": "Longsting"
+      },
+      {
+        "id": "vesp-shadestrain",
+        "name": "Shadestrain"
+      },
+      {
+        "id": "vesp-skyblast",
+        "name": "Skyblast"
+      },
+      {
+        "id": "vesp-swarmguard",
+        "name": "Swarmguard"
+      },
+      {
+        "id": "vesp-warrior",
+        "name": "Warrior"
+      }
+    ]
+  },
+  {
+    "teamId": "wlf",
+    "name": "Wolf Scouts",
+    "operatives": [
+      {
+        "id": "ws-packleader",
+        "name": "Pack Leader"
+      },
+      {
+        "id": "ws-fangbearer",
+        "name": "Fangbearer"
+      },
+      {
+        "id": "ws-frosteye",
+        "name": "Frosteye"
+      },
+      {
+        "id": "ws-gunner",
+        "name": "Gunner"
+      },
+      {
+        "id": "ws-hunter",
+        "name": "Hunter"
+      },
+      {
+        "id": "ws-skjald",
+        "name": "Rune Priest Skjald"
+      },
+      {
+        "id": "ws-trapmaster",
+        "name": "Trapmaster"
+      },
+      {
+        "id": "ws-wolf",
+        "name": "Lobo Fenrisiano"
+      }
+    ]
+  }
+]

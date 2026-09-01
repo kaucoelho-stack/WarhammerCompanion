@@ -1,0 +1,17 @@
+TIME: Angels of Death
+ID DA PASTA: aod
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+aod-captain.png — Space Marine Captain
+aod-asgt.png — Assault Intercessor Sergeant
+aod-isgt.png — Intercessor Sergeant
+aod-grenadier.png — Assault Intercessor Grenadier
+aod-awarrior.png — Assault Intercessor Warrior
+aod-heavygunner.png — Heavy Intercessor Gunner
+aod-gunner.png — Intercessor Gunner
+aod-iwarrior.png — Intercessor Warrior
+aod-eliminator.png — Eliminator Sniper
+
+Caminho usado pelo jogo:
+assets/miniatures/aod/<id-do-operativo>.png

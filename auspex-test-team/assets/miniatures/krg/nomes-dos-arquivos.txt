@@ -1,0 +1,12 @@
+TIME: Death Korps of Krieg
+ID DA PASTA: krg
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+krieg-watchmaster.png — Watchmaster
+krieg-gunner.png — Krieg Guardsman
+krieg-melta.png — Gunner com Meltagun
+krieg-grenadier.png — Grenadier
+
+Caminho usado pelo jogo:
+assets/miniatures/krg/<id-do-operativo>.png

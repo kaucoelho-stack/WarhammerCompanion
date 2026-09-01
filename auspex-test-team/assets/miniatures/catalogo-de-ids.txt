@@ -1,0 +1,137 @@
+CATALOGO DE MINIATURAS — AUSPEX TEST TEAM
+
+Formato: assets/miniatures/<time>/<operativo>.png
+Use PNG com fundo transparente. Nao altere o nome das pastas.
+
+[aod] Angels of Death
+  aod-captain.png — Space Marine Captain
+  aod-asgt.png — Assault Intercessor Sergeant
+  aod-isgt.png — Intercessor Sergeant
+  aod-grenadier.png — Assault Intercessor Grenadier
+  aod-awarrior.png — Assault Intercessor Warrior
+  aod-heavygunner.png — Heavy Intercessor Gunner
+  aod-gunner.png — Intercessor Gunner
+  aod-iwarrior.png — Intercessor Warrior
+  aod-eliminator.png — Eliminator Sniper
+
+[bld] Blooded
+  bl-chieftain.png — Traitor Chieftain
+  bl-grenadier.png — Brimstone Grenadier
+  bl-butcher.png — Butcher
+  bl-commsman.png — Commsman
+  bl-corpseman.png — Corpseman
+  bl-enforcer.png — Enforcer
+  bl-flenser.png — Flenser
+  bl-gunner.png — Gunner
+  bl-ogryn.png — Ogryn
+  bl-sharpshooter.png — Sharpshooter
+  bl-thug.png — Thug
+  bl-trenchsweeper.png — Trench Sweeper
+  bl-trooper.png — Trooper
+
+[krg] Death Korps of Krieg
+  krieg-watchmaster.png — Watchmaster
+  krieg-gunner.png — Krieg Guardsman
+  krieg-melta.png — Gunner com Meltagun
+  krieg-grenadier.png — Grenadier
+
+[dwt] Deathwatch
+  dw-sergeant.png — Watch Sergeant
+  dw-aegis.png — Aegis Veteran
+  dw-blademaster.png — Blademaster Veteran
+  dw-bombard.png — Bombard Veteran
+  dw-breacher.png — Breacher Veteran
+  dw-demolisher.png — Demolisher Veteran
+  dw-disruptor.png — Disruptor Veteran
+  dw-gunner.png — Gunner Veteran
+  dw-headtaker.png — Headtaker Veteran
+  dw-hordeslayer.png — Horde-Slayer Veteran
+  dw-marksman.png — Marksman Veteran
+
+[hoa] Hand of the Archon
+  hota-archsybarite.png — Archsybarite
+  hota-agent.png — Agent
+  hota-crimsonduellist.png — Crimson Duellist
+  hota-disciple.png — Disciple of Yaelindra
+  hota-elixicant.png — Elixicant
+  hota-flayer.png — Flayer
+  hota-gunner.png — Gunner
+  hota-heavygunner.png — Heavy Gunner
+  hota-skysplinter.png — Skysplinter Assassin
+
+[int] Intercession Squad
+  intercessor-sgt.png — Sargento Intercessor
+  intercessor.png — Guerreiro Intercessor
+  intercessor-heavy.png — Guerreiro com Arma Pesada
+
+[kom] Kommandos
+  kommando-boss.png — Boss Nob
+  kommando-boy.png — Kommando Boy
+  kommando-bombsquig.png — Bomb Squig
+  kommando-breacha.png — Breacha Boy
+  kommando-burna.png — Burna Boy
+  kommando-comms.png — Comms Boy
+  kommando-dakka.png — Dakka Boy
+  kommando-grot.png — Grot
+  kommando-rokkit.png — Rokkit Boy
+  kommando-slasha.png — Slasha Boy
+  kommando-snipa.png — Kommando Snipa
+
+[leg] Legionaries
+  legionary-aspiring.png — Aspiring Champion
+  legionary.png — Legionary
+
+[mnd] Mandrakes
+  mand-nightfiend.png — Nightfiend
+  mand-abyssal.png — Abyssal
+  mand-chooser.png — Chooser of the Flesh
+  mand-dirgemaw.png — Dirgemaw
+  mand-shadeweaver.png — Shadeweaver
+  mand-warrior.png — Warrior
+
+[nmc] Nemesis Claw
+  nc-visionary.png — Visionary
+  nc-fearmonger.png — Fearmonger
+  nc-gunner.png — Gunner
+  nc-heavygunner.png — Heavy Gunner
+  nc-screecher.png — Screecher
+  nc-skinthief.png — Skinthief
+  nc-ventrilokar.png — Ventrilokar
+  nc-warrior.png — Warrior
+
+[pth] Pathfinders
+  pathfinder-shas.png — Shas'ui Pathfinder
+  pathfinder.png — Pathfinder
+  pathfinder-drone.png — Recon Drone
+
+[pmr] Plague Marines
+  pm-champion.png — Champion
+  pm-plaguecaster.png — Malignant Plaguecaster
+  pm-bombardier.png — Bombardier
+  pm-fighter.png — Fighter
+  pm-heavygunner.png — Heavy Gunner
+  pm-iconbearer.png — Icon Bearer
+  pm-warrior.png — Warrior
+
+[tyr] Tyranid Warriors
+  warrior-prime.png — Warrior Prime
+  warrior.png — Warrior
+
+[vsp] Vespid Stingwings
+  vesp-strainleader.png — Strain Leader
+  vesp-oversightdrone.png — Oversight Drone
+  vesp-longsting.png — Longsting
+  vesp-shadestrain.png — Shadestrain
+  vesp-skyblast.png — Skyblast
+  vesp-swarmguard.png — Swarmguard
+  vesp-warrior.png — Warrior
+
+[wlf] Wolf Scouts
+  ws-packleader.png — Pack Leader
+  ws-fangbearer.png — Fangbearer
+  ws-frosteye.png — Frosteye
+  ws-gunner.png — Gunner
+  ws-hunter.png — Hunter
+  ws-skjald.png — Rune Priest Skjald
+  ws-trapmaster.png — Trapmaster
+  ws-wolf.png — Lobo Fenrisiano

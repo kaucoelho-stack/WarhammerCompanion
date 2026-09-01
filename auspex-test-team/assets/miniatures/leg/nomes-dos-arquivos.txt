@@ -1,0 +1,10 @@
+TIME: Legionaries
+ID DA PASTA: leg
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+legionary-aspiring.png — Aspiring Champion
+legionary.png — Legionary
+
+Caminho usado pelo jogo:
+assets/miniatures/leg/<id-do-operativo>.png

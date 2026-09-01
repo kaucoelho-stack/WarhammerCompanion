@@ -1,0 +1,19 @@
+TIME: Deathwatch
+ID DA PASTA: dwt
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+dw-sergeant.png — Watch Sergeant
+dw-aegis.png — Aegis Veteran
+dw-blademaster.png — Blademaster Veteran
+dw-bombard.png — Bombard Veteran
+dw-breacher.png — Breacher Veteran
+dw-demolisher.png — Demolisher Veteran
+dw-disruptor.png — Disruptor Veteran
+dw-gunner.png — Gunner Veteran
+dw-headtaker.png — Headtaker Veteran
+dw-hordeslayer.png — Horde-Slayer Veteran
+dw-marksman.png — Marksman Veteran
+
+Caminho usado pelo jogo:
+assets/miniatures/dwt/<id-do-operativo>.png

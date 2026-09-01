@@ -1,0 +1,15 @@
+TIME: Vespid Stingwings
+ID DA PASTA: vsp
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+vesp-strainleader.png — Strain Leader
+vesp-oversightdrone.png — Oversight Drone
+vesp-longsting.png — Longsting
+vesp-shadestrain.png — Shadestrain
+vesp-skyblast.png — Skyblast
+vesp-swarmguard.png — Swarmguard
+vesp-warrior.png — Warrior
+
+Caminho usado pelo jogo:
+assets/miniatures/vsp/<id-do-operativo>.png

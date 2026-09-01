@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v13-rosters-ladders-activation';
+const CACHE = 'auspex-v16-miniature-team-folders';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',
@@ -31,10 +31,13 @@ self.addEventListener('fetch', e => {
   // Só interceptamos GET do próprio site
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
 
+  const large3D = /\.glb(?:$|\?)/i.test(req.url);
   e.respondWith(
-    fetch(req, { cache: 'no-store' })
+    fetch(req, { cache: large3D ? 'default' : 'no-store' })
       .then(r => {
-        if (r && r.ok) {
+        // Evita duplicar o GLB grande na memória durante o primeiro acesso móvel.
+        // O próprio cache HTTP do navegador continua disponível para esse arquivo.
+        if (r && r.ok && !large3D) {
           const copy = r.clone();
           caches.open(CACHE).then(c => c.put(req, copy));
         }

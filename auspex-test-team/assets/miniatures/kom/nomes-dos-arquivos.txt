@@ -1,0 +1,19 @@
+TIME: Kommandos
+ID DA PASTA: kom
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+kommando-boss.png — Boss Nob
+kommando-boy.png — Kommando Boy
+kommando-bombsquig.png — Bomb Squig
+kommando-breacha.png — Breacha Boy
+kommando-burna.png — Burna Boy
+kommando-comms.png — Comms Boy
+kommando-dakka.png — Dakka Boy
+kommando-grot.png — Grot
+kommando-rokkit.png — Rokkit Boy
+kommando-slasha.png — Slasha Boy
+kommando-snipa.png — Kommando Snipa
+
+Caminho usado pelo jogo:
+assets/miniatures/kom/<id-do-operativo>.png

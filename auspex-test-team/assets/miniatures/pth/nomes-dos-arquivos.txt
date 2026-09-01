@@ -1,0 +1,11 @@
+TIME: Pathfinders
+ID DA PASTA: pth
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+pathfinder-shas.png — Shas'ui Pathfinder
+pathfinder.png — Pathfinder
+pathfinder-drone.png — Recon Drone
+
+Caminho usado pelo jogo:
+assets/miniatures/pth/<id-do-operativo>.png

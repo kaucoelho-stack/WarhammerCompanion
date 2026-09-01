@@ -4,7 +4,7 @@
   if(!T){window.Volkus3D={available:false,error:'Three.js não carregou'};return;}
 
   const S={renderer:null,scene:null,camera:null,canvas:null,world:null,units:null,markers:null,particles:null,
-    viewer:null,data:null,raf:0,clock:new T.Clock(),ready:false,loading:false,closed:true,unitMeshes:[],occluders:[],
+    viewer:null,data:null,raf:0,clock:new T.Clock(),ready:false,loading:false,closed:true,worldKey:null,unitMeshes:[],occluders:[],
     textureCache:{},modelCache:{},focusId:null,focusTick:0,quality:1,unitMask:null,particleMap:null,statusTimer:0};
   const BASE='volkus-3d/';
   const texLoader=new T.TextureLoader(),gltfLoader=T.GLTFLoader?new T.GLTFLoader():null;
@@ -89,6 +89,13 @@
     const border=box(S.world,30.5,.16,.18,15,.07,-.14,M.dark,{solid:false});border.castShadow=false;
     box(S.world,30.5,.16,.18,15,.07,22.14,M.dark,{solid:false});box(S.world,.18,.16,22.5,-.14,.07,11,M.dark,{solid:false});box(S.world,.18,.16,22.5,30.14,.07,11,M.dark,{solid:false});
   }
+  function makeRuleOccluders(data,M){
+    const invisible=new T.MeshBasicMaterial({transparent:true,opacity:0,colorWrite:false,depthWrite:false});
+    data.terrain.filter(t=>t.t==='h').forEach(t=>{const z=t.z||2;box(S.world,t.w,z,t.h,t.x+t.w/2,z/2,t.y+t.h/2,invisible,{shadow:false});
+      box(S.world,Math.max(.3,t.w-.12),.055,Math.max(.3,t.h-.12),t.x+t.w/2,z+.028,t.y+t.h/2,M.roof,{solid:false});
+      const rim=.12,rh=.42;box(S.world,t.w+rim*2,rh,rim,t.x+t.w/2,z+rh/2,t.y-rim/2,M.edge,{solid:false});box(S.world,t.w+rim*2,rh,rim,t.x+t.w/2,z+rh/2,t.y+t.h+rim/2,M.edge,{solid:false});
+      box(S.world,rim,rh,t.h,t.x-rim/2,z+rh/2,t.y+t.h/2,M.edge,{solid:false});box(S.world,rim,rh,t.h,t.x+t.w+rim/2,z+rh/2,t.y+t.h/2,M.edge,{solid:false});});
+  }
   function makeHeavy(t,i,M){
     if(t.building)return makeBuilding(t,i,M);
     const h=t.z||2,grp=new T.Group();grp.position.set(t.x,0,t.y);S.world.add(grp);
@@ -122,8 +129,8 @@
     box(grp,t.w-.28,.035,t.h-.28,t.w/2,.005,t.h/2,M.roof,{solid:false,shadow:false});
     for(let level=2;level<=h;level+=2){
       for(let y=0;y<t.h;y++)for(let x=0;x<t.w;x++){
-        const wx=t.x+x,wy=t.y+y,opening=stairs.some(s=>s.internal&&
-          ((s.fromZ===level&&s.x===wx&&s.y===wy)||(s.toZ===level&&s.tx===wx&&s.ty===wy)));
+        const wx=t.x+x,wy=t.y+y,opening=stairs.some(s=>s.internal&&(s.levels||[s.fromZ||0,s.toZ||s.z||2]).includes(level)&&
+          ((s.x===wx&&s.y===wy)||(s.tx===wx&&s.ty===wy)));
         if(!opening)box(grp,.98,.1,.98,x+.5,level-.05,y+.5,M.roof);
       }
     }
@@ -198,18 +205,32 @@
     [[2,2,0],[27,3,.7],[11,6,1.5],[18,15,.1],[3,19,1.2],[26,19,.4],[7,1.2,.9],[22,20.7,1.6],[29,10,.25],[1,13,1.1]].forEach(([x,z,r])=>fitClone(tyre,{x:.7,y:.7,z:.35},{x,y:.02,z},r));
     setStatus('SINCRONIZANDO AUSPEX',91);
   }
+  async function addRuinedCity(data){
+    const visual=data.visual||{};setStatus('CARREGANDO CIDADE DEVASTADA · 46 MB',36);
+    const source=await loadModel(visual.model||'ruined-city/ruined_city_free_5.glb');if(S.closed||!source)return;
+    const city=source.clone(true),scale=Number(visual.scale)||1,pos=visual.position||[16.05,.405,25];city.scale.setScalar(scale);city.position.set(pos[0],pos[1],pos[2]);
+    city.name='Cidade Devastada · malha visual';city.traverse(o=>{if(!o.isMesh)return;o.castShadow=S.quality>0;o.receiveShadow=true;o.userData.solid=false;o.userData.keepCachedAssets=true;
+      const mats=Array.isArray(o.material)?o.material:[o.material];mats.filter(Boolean).forEach(m=>{if(m.map)m.map.anisotropy=Math.min(6,S.renderer?.capabilities.getMaxAnisotropy?.()||1);});});
+    S.world.add(city);setStatus('ALINHANDO TELHADOS E ESCADAS',88);
+  }
   async function tryHDRI(){
     if(!T.RGBELoader)return;await new Promise(resolve=>new T.RGBELoader().setDataType(T.UnsignedByteType).load(BASE+'sky/abandoned_hopper_terminal_03_2k.hdr',hdr=>{
       if(S.closed){hdr.dispose();return resolve();}hdr.mapping=T.EquirectangularReflectionMapping;S.scene.environment=hdr;
       // O dome estilizado continua como céu; o HDRI ilumina os materiais PBR.
       resolve();},undefined,()=>resolve()));
   }
-  function disposeGroup(g){if(!g)return;g.traverse(o=>{if(o.geometry)o.geometry.dispose?.();if(o.material){const a=Array.isArray(o.material)?o.material:[o.material];a.forEach(m=>{if(m.map?.isCanvasTexture)m.map.dispose();m.dispose?.();});}});g.parent?.remove(g);}
+  function disposeGroup(g){if(!g)return;g.traverse(o=>{if(o.geometry&&!o.userData.keepCachedAssets)o.geometry.dispose?.();if(o.material&&!o.userData.keepCachedAssets){const a=Array.isArray(o.material)?o.material:[o.material];a.forEach(m=>{if(m.map?.isCanvasTexture)m.map.dispose();m.dispose?.();});}});g.parent?.remove(g);}
   function clearWorld(){disposeGroup(S.world);disposeGroup(S.units);disposeGroup(S.markers);disposeGroup(S.particles);S.particles=null;S.particleMap=null;S.occluders=[];S.unitMeshes=[];S.world=new T.Group();S.units=new T.Group();S.markers=new T.Group();S.scene.add(S.world,S.units,S.markers);}
   async function build(data){
-    S.data=data;clearWorld();setStatus('MATERIALIZANDO DISTRITO VOLKUS',18);const M=await makeMaterials();if(S.closed)return;
-    makeGround(M);data.terrain.forEach((t,i)=>t.t==='l'?makeLight(t,i,M):makeHeavy(t,i,M));data.stairs.forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeCity(M);makeStreetProps(M);makeEmbers();
-    updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',46);await Promise.all([tryHDRI(),addHeroAssets(M)]);if(!S.closed){S.ready=true;setStatus('VISÃO DO OPERATIVO ONLINE',100);}
+    S.data=data;S.ready=false;S.worldKey=data.killzone||'volkus';clearWorld();setStatus(data.visual?.kind==='ruined-city'?'PREPARANDO SETOR DA CIDADE':'MATERIALIZANDO DISTRITO VOLKUS',18);const M=await makeMaterials();if(S.closed)return;
+    makeGround(M);
+    if(data.visual?.kind==='ruined-city'){
+      makeRuleOccluders(data,M);data.stairs.forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeEmbers();updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',28);await Promise.all([tryHDRI(),addRuinedCity(data)]);
+    }else{
+      data.terrain.forEach((t,i)=>t.t==='l'?makeLight(t,i,M):makeHeavy(t,i,M));data.stairs.forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeCity(M);makeStreetProps(M);makeEmbers();
+      updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',46);await Promise.all([tryHDRI(),addHeroAssets(M)]);
+    }
+    if(!S.closed){S.ready=true;setStatus('VISÃO DO OPERATIVO ONLINE',100);}
   }
   function unitPlane(o,data){
     const key=o.image||'';let tx=key?S.textureCache[key]:null;if(!tx&&o.imageElement){tx=new T.Texture(o.imageElement);tx.encoding=T.sRGBEncoding;tx.needsUpdate=true;S.textureCache[key]=tx;}
@@ -251,9 +272,9 @@
   }
   const API={
     available:true,
-    open(data){const canvas=document.getElementById('fp-webgl');if(!canvas||!ensure(canvas))return false;S.closed=false;canvas.style.display='block';document.getElementById('fp-canvas').style.display='none';const loading=document.getElementById('fp-3d-loading');loading?.classList.toggle('hidden',S.ready);if(!S.ready)loading?.classList.remove('done');
-      updateCamera(data);if((!S.world||!S.ready)&&!S.loading){S.loading=true;build(data).finally(()=>S.loading=false);}else{updateUnits(data);}cancelAnimationFrame(S.raf);loop();return true;},
-    update(data){if(S.closed)return;updateCamera(data);if(data.refreshUnits)updateUnits(data);},
+    open(data){const canvas=document.getElementById('fp-webgl');if(!canvas||!ensure(canvas))return false;S.closed=false;const key=data.killzone||'volkus',rebuild=!S.world||!S.ready||S.worldKey!==key;if(S.worldKey!==key)S.ready=false;canvas.style.display='block';document.getElementById('fp-canvas').style.display='none';const loading=document.getElementById('fp-3d-loading');loading?.classList.toggle('hidden',!rebuild);if(rebuild)loading?.classList.remove('done','hidden');
+      updateCamera(data);if(rebuild&&!S.loading){S.loading=true;build(data).finally(()=>S.loading=false);}else if(!rebuild){updateUnits(data);}cancelAnimationFrame(S.raf);loop();return true;},
+    update(data){if(S.closed)return;updateCamera(data);if(S.worldKey!==(data.killzone||'volkus'))return;if(data.refreshUnits)updateUnits(data);},
     close(){S.closed=true;cancelAnimationFrame(S.raf);clearTimeout(S.statusTimer);S.focusId=null;window.Volkus3DHandlers?.onFocus?.(null,0);document.getElementById('fp-3d-loading')?.classList.add('hidden');if(S.canvas)S.canvas.style.display='none';},
     isOpen(){return !S.closed},
     stats(){return{contacts:S.unitMeshes.length,ready:S.ready,quality:S.quality}}

@@ -1,0 +1,11 @@
+TIME: Intercession Squad
+ID DA PASTA: int
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+intercessor-sgt.png — Sargento Intercessor
+intercessor.png — Guerreiro Intercessor
+intercessor-heavy.png — Guerreiro com Arma Pesada
+
+Caminho usado pelo jogo:
+assets/miniatures/int/<id-do-operativo>.png

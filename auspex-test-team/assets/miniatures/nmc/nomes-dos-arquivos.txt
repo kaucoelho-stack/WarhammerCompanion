@@ -1,0 +1,16 @@
+TIME: Nemesis Claw
+ID DA PASTA: nmc
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+nc-visionary.png — Visionary
+nc-fearmonger.png — Fearmonger
+nc-gunner.png — Gunner
+nc-heavygunner.png — Heavy Gunner
+nc-screecher.png — Screecher
+nc-skinthief.png — Skinthief
+nc-ventrilokar.png — Ventrilokar
+nc-warrior.png — Warrior
+
+Caminho usado pelo jogo:
+assets/miniatures/nmc/<id-do-operativo>.png

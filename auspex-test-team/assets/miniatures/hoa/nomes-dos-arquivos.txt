@@ -1,0 +1,17 @@
+TIME: Hand of the Archon
+ID DA PASTA: hoa
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+hota-archsybarite.png — Archsybarite
+hota-agent.png — Agent
+hota-crimsonduellist.png — Crimson Duellist
+hota-disciple.png — Disciple of Yaelindra
+hota-elixicant.png — Elixicant
+hota-flayer.png — Flayer
+hota-gunner.png — Gunner
+hota-heavygunner.png — Heavy Gunner
+hota-skysplinter.png — Skysplinter Assassin
+
+Caminho usado pelo jogo:
+assets/miniatures/hoa/<id-do-operativo>.png

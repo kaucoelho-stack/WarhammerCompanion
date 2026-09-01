@@ -1,0 +1,16 @@
+TIME: Wolf Scouts
+ID DA PASTA: wlf
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+ws-packleader.png — Pack Leader
+ws-fangbearer.png — Fangbearer
+ws-frosteye.png — Frosteye
+ws-gunner.png — Gunner
+ws-hunter.png — Hunter
+ws-skjald.png — Rune Priest Skjald
+ws-trapmaster.png — Trapmaster
+ws-wolf.png — Lobo Fenrisiano
+
+Caminho usado pelo jogo:
+assets/miniatures/wlf/<id-do-operativo>.png

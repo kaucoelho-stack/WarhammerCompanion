@@ -1,0 +1,21 @@
+TIME: Blooded
+ID DA PASTA: bld
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+bl-chieftain.png — Traitor Chieftain
+bl-grenadier.png — Brimstone Grenadier
+bl-butcher.png — Butcher
+bl-commsman.png — Commsman
+bl-corpseman.png — Corpseman
+bl-enforcer.png — Enforcer
+bl-flenser.png — Flenser
+bl-gunner.png — Gunner
+bl-ogryn.png — Ogryn
+bl-sharpshooter.png — Sharpshooter
+bl-thug.png — Thug
+bl-trenchsweeper.png — Trench Sweeper
+bl-trooper.png — Trooper
+
+Caminho usado pelo jogo:
+assets/miniatures/bld/<id-do-operativo>.png

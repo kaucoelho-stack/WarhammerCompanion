@@ -28,6 +28,11 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:n
 .pchip .nm{font-family:var(--fd);font-size:12px;letter-spacing:.5px;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
 .pchip .st{font-size:10px;color:var(--txt2);margin-top:1px;font-variant-numeric:tabular-nums}
+#scorebar{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;padding:5px 10px;background:#071019;border-bottom:1px solid #294158;flex-shrink:0;position:relative;z-index:29}
+.score-side{display:grid;grid-template-columns:repeat(4,minmax(38px,1fr));gap:4px;padding:4px 6px;border:1px solid #294155;border-radius:7px;background:#0d1a26}
+.score-side.p1{box-shadow:inset 3px 0 var(--p1)}.score-side.p2{box-shadow:inset -3px 0 var(--p2)}
+.score-item{text-align:center;min-width:0}.score-item b{display:block;font:800 13px var(--fd);font-variant-numeric:tabular-nums}.score-item small{display:block;color:#7891a5;font:700 6px var(--fd);letter-spacing:.7px;white-space:nowrap}
+.score-live{align-self:center;text-align:center;min-width:86px;color:#9ec8da;font:700 7px var(--fd);letter-spacing:.7px}.score-live b{display:block;color:#67e5aa;font-size:11px;margin-top:2px}
 
 /* ===== TABULEIRO ===== */
 #boardwrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;
@@ -191,6 +196,13 @@ html[data-killzone="forge"] #board{filter:sepia(.13);box-shadow:0 0 0 5px #120d0
 html[data-killzone="forge"] #kzname{color:#ffb454}
 html[data-killzone="wastes"] #board{filter:sepia(.22) saturate(.8);background-color:#17130e}
 html[data-killzone="wastes"] #kzname{color:#e8a96a}
+html[data-killzone="ruins"] #board{background-color:#0a1115;background-image:
+  linear-gradient(rgba(69,174,198,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(69,174,198,.13) 1px,transparent 1px),
+  linear-gradient(rgba(3,8,11,.42),rgba(3,8,11,.42)),url('ruined-city/ruined-city-tactical.jpg');
+  background-position:0 0,0 0,0 0,center;background-repeat:repeat,repeat,no-repeat,no-repeat;background-size:var(--grid-size,24px) var(--grid-size,24px),var(--grid-size,24px) var(--grid-size,24px),cover,cover;
+  box-shadow:0 0 0 5px #080d0f,0 0 0 6px #526168,0 28px 60px #000c,0 0 45px #d0834526}
+html[data-killzone="ruins"] #kzname{color:#f0b677}
+html[data-killzone="ruins"] .terr.heavy{background:linear-gradient(135deg,rgba(239,196,146,.26),rgba(25,36,42,.58));border-color:#b5a38d}
 #board{border:1px solid #42617c;border-radius:3px;transform:rotateX(2deg);transform-origin:center;
   overflow:hidden;
   background-color:#08121c;background-image:
@@ -210,7 +222,7 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
   box-shadow:2px 3px 0 #1a2a38,4px 6px 0 #152432,6px 10px 0 #0c1721,10px 17px 20px #000c,inset 0 0 16px #07101a}
 .terr.vantage::before{content:'';position:absolute;left:3px;right:3px;bottom:-8px;height:7px;
   background:repeating-linear-gradient(90deg,#172838 0 7px,#263d50 7px 9px);transform:skewX(-32deg);transform-origin:top}
-.terr.vantage::after{content:'VANTAGE 2"';right:4px;top:3px;padding:2px 4px;border-radius:3px;
+.terr.vantage::after{content:'VANTAGE ' attr(data-height);right:4px;top:3px;padding:2px 4px;border-radius:3px;
   background:#07111bd9;color:#bcecff;letter-spacing:.6px;text-shadow:0 0 6px var(--glow)}
 .terr.light{border:1px solid #8eb2c8;background:
   linear-gradient(180deg,rgba(179,210,226,.38),rgba(52,81,100,.72)),
@@ -234,8 +246,8 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
   font:700 7px var(--fd);letter-spacing:1px;box-shadow:0 0 6px currentColor}
 .obj .objscore{position:relative;z-index:2;font-weight:700}
 .terr.building{background:repeating-linear-gradient(0deg,rgba(20,39,52,.76) 0 1px,rgba(8,20,29,.68) 1px 16px),repeating-linear-gradient(90deg,transparent 0 16px,rgba(102,180,207,.1) 16px 17px);border:3px solid #7699ae;box-shadow:0 0 0 1px #071018 inset,5px 9px 0 #111923,8px 13px 18px #000b}
-.terr.building::before{content:'INTERIOR · 2 PISOS';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;font:700 7px var(--fm);letter-spacing:1px;color:#a6ddeb;background:#061018dd;padding:2px 5px;border:1px solid #477287}
-.terr.building::after{content:'▲ 2″ / 4″';position:absolute;right:3px;top:3px;font:700 7px var(--fm);color:#d8f6ff;background:#07131dcc;padding:2px 3px}
+.terr.building::before{content:'PRÉDIO';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;font:700 7px var(--fm);letter-spacing:1px;color:#a6ddeb;background:#061018cc;padding:2px 5px;border:1px solid #477287}
+.terr.building::after{content:'0 · 2 · 4″';position:absolute;right:3px;top:3px;font:700 6px var(--fm);color:#d8f6ff;background:#07131dcc;padding:2px 3px}
 .door{position:absolute;z-index:4;background:#5effb5;border:1px solid #d4ffe9;box-shadow:0 0 9px #41ffa6;color:#baffd9;font:800 6px var(--fm);text-align:center;line-height:7px}
 .door.n,.door.s{width:var(--cs);height:5px;transform:translateX(-50%)}
 .door.n{top:-4px}.door.s{bottom:-4px}.door.e,.door.w{height:var(--cs);width:5px;transform:translateY(-50%)}
@@ -244,7 +256,9 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
 .stair::after{content:'⇧';position:absolute;left:50%;top:-7px;transform:translateX(-50%);font:800 7px var(--fd);color:#ffd998;text-shadow:0 1px 2px #000}
 .stair.level2{filter:hue-rotate(155deg) brightness(1.25);border-color:#8de4ff}
 .cell.mv.interior{background:radial-gradient(circle,#5bd7ff66 0 34%,transparent 38%);border-color:#65dcff}.cell.mv.floor2{background:radial-gradient(circle,#be78ff66 0 34%,transparent 38%);border-color:#c88aff}.cell.mv.roof4{background:radial-gradient(circle,#7dff9d77 0 34%,transparent 38%);border-color:#8fffaa}
-.cell[data-dest]::after{content:attr(data-dest);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;padding:1px 3px;border-radius:3px;background:#031018e8;color:#ddf8ff;font:800 6px var(--fm);letter-spacing:.4px;box-shadow:0 1px 3px #000}
+.move-levels{display:flex;gap:6px;flex-wrap:wrap;width:100%;padding:3px 0}.move-levels .btn{flex:1;min-width:92px}.move-levels .btn.on{border-color:#dff8ff;background:#26445c;box-shadow:0 0 12px #5bd7ff44}.move-levels small{display:block;font:700 7px var(--fm);color:#8da7b9;margin-top:2px}
+.inspect-banner{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;border:1px solid #3d6078;border-radius:7px;background:#0a1824;color:#a8c7d8;font-size:9px}.inspect-banner b{color:#eaf9ff;font-family:var(--fd)}
+.shot-preview{padding:11px;border:1px solid #40617a;border-radius:8px;background:linear-gradient(145deg,#142536,#09141e)}.shot-range{display:flex;align-items:center;justify-content:center;gap:10px;margin:12px 0}.shot-range strong{font:800 30px var(--fd);color:#ffcf65}.shot-range span{font:700 10px var(--fd);color:#8da7ba;letter-spacing:1px}.shot-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.shot-meta div{text-align:center;padding:6px;border:1px solid #2d465a;border-radius:5px;background:#09151f}.shot-meta b{display:block;font:700 12px var(--fd)}.shot-meta small{color:#738da1;font:700 6px var(--fd);letter-spacing:.6px}
 @keyframes beacon{50%{filter:brightness(1.28);box-shadow:0 0 0 3px transparent,0 0 24px currentColor,inset 0 0 20px currentColor}}
 .visionring{position:absolute;border:1px solid #7ce7ff28;border-radius:50%;pointer-events:none;z-index:2;
   background:radial-gradient(circle,transparent 66%,rgba(82,213,255,.035) 68%,transparent 71%);
@@ -301,7 +315,7 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
 .d{transform:rotate(2deg);box-shadow:0 4px 0 #05080b,0 6px 10px #0008,inset 0 0 10px currentColor}
 .d:nth-child(even){transform:rotate(-3deg)}
 .kzintro{font-size:12px;color:var(--txt2);line-height:1.5;margin-bottom:12px}
-.kzgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.kzgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
 .kzcard{padding:8px;border:1px solid #365067;border-radius:9px;background:linear-gradient(160deg,#1b2b3c,#0b151f);
   text-align:left;box-shadow:0 5px 14px #0006;transition:.18s}
 .kzcard:hover{transform:translateY(-3px);border-color:var(--kz);box-shadow:0 8px 20px #0009,0 0 15px color-mix(in srgb,var(--kz) 18%,transparent)}
@@ -314,6 +328,8 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
 .kzpreview i:nth-child(1){width:31%;height:18%;left:10%;top:18%}.kzpreview i:nth-child(2){width:22%;height:38%;right:12%;top:35%}
 .kzpreview i:nth-child(3){width:34%;height:17%;left:27%;bottom:11%}.kzpreview span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--kz);font-size:25px;text-shadow:0 0 12px var(--kz)}
 .kzcard[data-kz="forge"] .kzpreview i:nth-child(2){height:62%;top:16%}.kzcard[data-kz="wastes"] .kzpreview i{transform:rotate(-9deg);width:22%}
+.kzcard[data-kz="ruins"] .kzpreview{background-image:linear-gradient(#07101866,#071018aa),url('ruined-city/ruined-city-tactical.jpg');background-size:cover;background-position:center}
+.kzcard[data-kz="ruins"] .kzpreview i{opacity:.3}.kzcard[data-kz="ruins"] .kzpreview span{font-size:31px}
 .roster-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;margin-bottom:8px;border:1px solid #35526a;border-radius:8px;background:#091621}
 .roster-head strong{font:700 15px var(--fd);color:var(--team)}.roster-head small{display:block;color:var(--txt2);margin-top:2px}.roster-total{text-align:right;font:800 17px var(--fd);color:#dff8ff}.roster-total.bad{color:#ff8d84}.roster-total span{display:block;font:600 7px var(--fm);letter-spacing:1px;color:var(--mut)}
 .roster-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:min(57vh,560px);overflow:auto;padding:2px}
@@ -408,6 +424,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
   .sheet{max-height:92dvh}.x{width:44px;height:44px}.mode-btn{min-height:86px}
   .ov{padding-bottom:env(safe-area-inset-bottom)}
   #top{gap:5px;padding:5px}.pchip{padding:5px 7px}.pchip.act::before{display:none}#tp{padding:4px 6px}
+  #scorebar{grid-template-columns:1fr 1fr;padding:4px;gap:4px}.score-live{grid-column:1/-1;grid-row:2;min-height:18px}.score-side{padding:3px;gap:2px}.score-item b{font-size:11px}.score-item small{font-size:5px}
   .btn{padding:8px 9px}.terr.vantage{transform:translate(-4px,-7px)}
   .maplegend{top:2px;right:4px;gap:2px;max-width:92%}.maplegend span{padding:2px 3px;font-size:5px}.maplegend i{width:6px;height:6px}
   #kzname{display:none}.kzgrid{grid-template-columns:1fr}.kzpreview{height:54px}
@@ -430,13 +447,18 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
       <button class="mode-btn ai" onclick="chooseGameMode('ai')"><i>01</i><b>1 JOGADOR vs IA</b><small>Enfrente o controlador tático AUSPEX. A IA seleciona, posiciona, move, atira, luta e disputa objetivos.</small></button>
       <button class="mode-btn" onclick="chooseGameMode('pvp')"><i>02</i><b>2 JOGADORES · VS</b><small>Partida local no mesmo aparelho, com escolhas e ativações alternadas.</small></button>
     </div>
-    <div class="title-foot">OFFLINE · 3 KILLZONES · 15 KILL TEAMS · MOTOR DE REGRAS · 4 TURNING POINTS</div>
+    <div class="title-foot">OFFLINE · 4 KILLZONES · 15 KILL TEAMS · MOTOR DE REGRAS · 4 TURNING POINTS</div>
   </div>
 </div>
 <div id="top">
   <div id="tp">TP <b id="tpn">1</b>/4</div>
   <div class="pchip" id="pc0" style="color:var(--p1)"><div class="nm" id="pn0">—</div><div class="st" id="ps0"></div></div>
   <div class="pchip" id="pc1" style="color:var(--p2)"><div class="nm" id="pn1">—</div><div class="st" id="ps1"></div></div>
+</div>
+<div id="scorebar" aria-label="Placar em tempo real">
+  <div class="score-side p1" id="score0"></div>
+  <div class="score-live">CONTROLE AGORA<b id="scorelive">0 OBJ · 0 OBJ</b></div>
+  <div class="score-side p2" id="score1"></div>
 </div>
 <div id="maptools" aria-label="Controles do mapa">
   <span class="pan-hint">↔ ARRASTE O MAPA</span>
@@ -667,7 +689,16 @@ const KILLZONES={
  wastes:{name:'Ermos de Cinder',sub:'Campo aberto · Ruínas e tiros longos',ico:'◇',tone:'#e8a96a',
   terrain:[{x:7,y:5,w:3,h:3,t:'h',z:2},{x:20,y:14,w:3,h:3,t:'h',z:2},{x:13,y:9,w:4,h:4,t:'h',z:2},{x:4,y:14,w:4,h:1,t:'l'},{x:22,y:7,w:4,h:1,t:'l'},{x:10,y:3,w:1,h:4,t:'l'},{x:19,y:16,w:1,h:4,t:'l'},{x:4,y:8,w:2,h:1,t:'l'},{x:24,y:13,w:2,h:1,t:'l'}],
   stairs:[{x:6,y:6,tx:7,ty:6,z:2},{x:23,y:15,tx:22,ty:15,z:2},{x:12,y:10,tx:13,ty:10,z:2}],
-  objs:[{x:5,y:5},{x:25,y:17},{x:15,y:5},{x:15,y:17},{x:15,y:11}]}
+  objs:[{x:5,y:5},{x:25,y:17},{x:15,y:5},{x:15,y:17},{x:15,y:11}]},
+ ruins:{name:'Cidade Devastada',sub:'Cidade 3D · prédios fechados · telhados altos e 2 escadas por estrutura',ico:'▥',tone:'#f0b677',
+  visual:{kind:'ruined-city',model:'ruined-city/ruined_city_free_5.glb',scale:1,position:[16.05,.405,25]},
+  terrain:[
+   {x:8,y:0,w:7,h:5,t:'h',z:10,rooftop:true},{x:18,y:2,w:4,h:3,t:'h',z:6,rooftop:true},
+   {x:5,y:6,w:4,h:3,t:'h',z:6,rooftop:true},{x:11,y:6,w:4,h:3,t:'h',z:1.5,rooftop:true},{x:21,y:6,w:4,h:3,t:'h',z:6,rooftop:true},
+   {x:7,y:12,w:5,h:4,t:'h',z:5,rooftop:true},{x:12,y:11,w:5,h:4,t:'h',z:6,rooftop:true},{x:18,y:12,w:4,h:5,t:'h',z:6,rooftop:true},
+   {x:8,y:17,w:3,h:5,t:'h',z:5.5,rooftop:true},{x:18,y:17,w:7,h:5,t:'h',z:7.5,rooftop:true},
+   {x:14,y:4,w:2,h:1,t:'l'},{x:16,y:9,w:2,h:1,t:'l'},{x:5,y:10,w:3,h:1,t:'l'},{x:23,y:10,w:2,h:1,t:'l'}],
+  stairs:[],objs:[{x:4,y:4},{x:16,y:3},{x:10,y:10},{x:20,y:10},{x:15,y:18},{x:26,y:18}]}
 };
 let ACTIVE_KZ='volkus',TERRAIN=[],STAIRS=[],OBJS=[];
 const TMAP=[];
@@ -686,12 +717,19 @@ function generatedBuildingStairs(t){if(!t.building)return[];const z1=2,z2=Math.m
   const external=(t.doors||[]).slice(0,2).map(d=>{const limit=(d.side==='n'||d.side==='s')?t.w:t.h,
       stairDoor={...d,offset:Math.max(1,Math.min(limit-2,d.offset+((d.side==='s'||d.side==='e')?1:-1)))};
     return{...outside(stairDoor),fromZ:0,toZ:z1,z:z1,building:bid,side:d.side};});
-  return[...external,...(z2>z1?[{x:t.x+1,y:t.y+1,tx:t.x+2,ty:t.y+1,fromZ:z1,toZ:z2,z:z2,building:bid,internal:true},
-    {x:t.x+t.w-2,y:t.y+t.h-2,tx:t.x+t.w-3,ty:t.y+t.h-2,fromZ:z1,toZ:z2,z:z2,building:bid,internal:true}]:[])];}
+  const levels=[0,z1,...(z2>z1?[z2]:[])];
+  const shafts=z2>z1?[{x:t.x+1,y:t.y+1,tx:t.x+2,ty:t.y+1,fromZ:0,toZ:z2,z:z2,levels,building:bid,internal:true,shaft:true},
+    {x:t.x+t.w-2,y:t.y+t.h-2,tx:t.x+t.w-3,ty:t.y+t.h-2,fromZ:0,toZ:z2,z:z2,levels,building:bid,internal:true,shaft:true}]:[];
+  return[...external,...shafts];}
+function generatedRooftopStairs(t){if(!t.rooftop)return[];const z=t.z||2,bid=t.id||`${t.x}-${t.y}`,aY=t.y+Math.min(t.h-1,1),bY=t.y+Math.max(0,t.h-2),aX=t.x+Math.min(t.w-1,1),bX=t.x+Math.max(0,t.w-2);
+  const candidates=[{x:t.x-1,y:aY,tx:t.x,ty:aY,side:'w'},{x:t.x+t.w,y:bY,tx:t.x+t.w-1,ty:bY,side:'e'},
+    {x:aX,y:t.y-1,tx:aX,ty:t.y,side:'n'},{x:bX,y:t.y+t.h,tx:bX,ty:t.y+t.h-1,side:'s'}];
+  return candidates.filter(s=>s.x>=0&&s.y>=0&&s.x<W&&s.y<H&&!TERRAIN.some(o=>o!==t&&o.t==='h'&&insideFeature(o,s.x,s.y))).slice(0,2)
+    .map(s=>({...s,fromZ:0,toZ:z,z,building:bid,roofLadder:true}));}
 function applyKillzone(id){
   ACTIVE_KZ=id;const k=KILLZONES[id];
   TERRAIN=k.terrain.map((x,i)=>({...x,id:x.id||`${id}-t${i}`}));
-  STAIRS=[...k.stairs.map(x=>({...x,fromZ:x.fromZ||0,toZ:x.toZ||x.z||2})),...TERRAIN.flatMap(generatedBuildingStairs)];OBJS=k.objs.map(x=>({...x}));
+  STAIRS=[...k.stairs.map(x=>({...x,fromZ:x.fromZ||0,toZ:x.toZ||x.z||2})),...TERRAIN.flatMap(generatedBuildingStairs),...TERRAIN.flatMap(generatedRooftopStairs)];OBJS=k.objs.map(x=>({...x}));
   for(let y=0;y<H;y++){TMAP[y]=[];for(let x=0;x<W;x++)TMAP[y][x]=null;}
   TERRAIN.forEach(t=>{for(let y=t.y;y<t.y+t.h;y++)for(let x=t.x;x<t.x+t.w;x++)if(y>=0&&y<H&&x>=0&&x<W){
     if(t.building)TMAP[y][x]=perimeterAt(t,x,y)&&!doorAt(t,x,y)?'h':null;else TMAP[y][x]=t.t;}});
@@ -738,7 +776,7 @@ function doorOpeningAt(t,side,coord,rayZ){
     coord<=((side==='n'||side==='s'?t.x:t.y)+d.offset+1)+.02);
 }
 function inStairOpening(t,x,y,level){
-  return STAIRS.some(s=>s.building===t.id&&(s.fromZ===level||s.toZ===level)&&
+  return STAIRS.some(s=>s.building===t.id&&((s.levels||[s.fromZ||0,s.toZ||s.z||2]).includes(level))&&
     (Math.hypot(x-(s.x+.5),y-(s.y+.5))<.78||Math.hypot(x-(s.tx+.5),y-(s.ty+.5))<.78));
 }
 /* Parede é matéria sólida: Seek, Vantage e qualquer ploy nunca passam por ela.
@@ -828,14 +866,14 @@ let G={
   phase:'select',      // select | deploy | strategy | firefight | over
   tp:1, init:0, cur:0, // turning point, quem tem iniciativa, jogador da vez
   players:[
-    {n:'Jogador 1',team:null,cp:2,vp:0,col:'var(--p1)',ops:[],deployed:0,communion:0},
-    {n:'Jogador 2',team:null,cp:2,vp:0,col:'var(--p2)',ops:[],deployed:0,communion:0}],
+    {n:'Jogador 1',team:null,cp:2,vp:0,objectiveVP:0,tacVP:0,kills:0,col:'var(--p1)',ops:[],deployed:0,communion:0},
+    {n:'Jogador 2',team:null,cp:2,vp:0,objectiveVP:0,tacVP:0,kills:0,col:'var(--p2)',ops:[],deployed:0,communion:0}],
   ops:[],              // todos os operativos em jogo
   sel:null,            // operativo selecionado
   mode:null,           // null | move | charge | shoot | fight
   moveCells:[], targets:[],
   ploys:{0:[],1:[]},   // ploys ativos no turno
-  log:[], selIdx:0, killzone:'volkus', gameMode:null, ai:1, aiBusy:false,rosterDraft:null,
+  log:[], selIdx:0, killzone:'volkus', gameMode:null, ai:1, aiBusy:false,rosterDraft:null,moveLevel:0,pendingWeapon:null,
   fpvHeading:0, fpvPitch:0, fpvFov:76, fpvOp:null, fpvFocus:null
 };
 const P=i=>G.players[i];
@@ -847,12 +885,14 @@ const MINI_SOURCES={
  aod:'assets/mini-aod.png',pmr:'assets/mini-pmr.png',kom:'assets/mini-kom.png',pth:'assets/mini-pth.png',
  'aod:cap':'assets/aod-cap.png','aod:sgt':'assets/aod-sgt.png','aod:gun':'assets/aod-gun.png',
  'aod:snp':'assets/aod-snp.png','aod:wa1':'assets/aod-wa1.png','aod:wa2':'assets/aod-wa2.png'
-},MINI_IMAGES={};
-function initMiniatures(){Object.entries(MINI_SOURCES).forEach(([id,src])=>{const im=new Image();im.decoding='async';im.onload=()=>{MINI_IMAGES[id]=im;if(document.getElementById('fpv').classList.contains('on'))renderFPV();};im.src=src;});}
+},MINI_IMAGES={},MINI_PATHS={},MINI_PRIORITY={},MINI_ATTEMPTED={};
+const registerMiniature=(id,src,priority=0)=>{const im=new Image();im.decoding='async';im.onload=()=>{if(priority>=(MINI_PRIORITY[id]??-1)){MINI_PRIORITY[id]=priority;MINI_IMAGES[id]=im;MINI_PATHS[id]=src;if(document.getElementById('fpv').classList.contains('on'))renderFPV();}};im.src=src;};
+function initMiniatures(){Object.entries(MINI_SOURCES).forEach(([id,src])=>registerMiniature(id,src,id.includes(':')?1:0));}
 const miniKey=o=>`${o.teamId}:${o.unitId||''}`;
+const ensureMiniature=o=>{const key=miniKey(o);if(MINI_ATTEMPTED[key])return;MINI_ATTEMPTED[key]=1;registerMiniature(key,`assets/miniatures/${o.teamId}/${o.unitId}.png`,2);};
 const miniImage=o=>MINI_IMAGES[miniKey(o)]||MINI_IMAGES[o.teamId];
 const miniFallback=o=>`data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 420"><defs><linearGradient id="a" x2="0" y2="1"><stop stop-color="${o.pi===0?'#e3a83c':'#55c4df'}"/><stop offset="1" stop-color="#172635"/></linearGradient></defs><g fill="url(#a)" stroke="#d9f6ff" stroke-width="5"><path d="M78 82Q130 25 182 82l-15 70H93z"/><path d="M55 155l48-25h54l48 25 28 115-48 18-17-78-9 92 38 108h-54l-17-76-17 76H59l38-108-9-92-17 78-48-18z"/></g><text x="130" y="205" text-anchor="middle" fill="#071018" font-size="54" font-family="Arial" font-weight="900">${String(o.ico||o.n?.[0]||'?').slice(0,2)}</text></svg>`)}`;
-const miniSource=o=>MINI_SOURCES[miniKey(o)]||MINI_SOURCES[o.teamId]||miniFallback(o);
+const miniSource=o=>MINI_PATHS[miniKey(o)]||MINI_PATHS[o.teamId]||MINI_SOURCES[miniKey(o)]||MINI_SOURCES[o.teamId]||miniFallback(o);
 function log(s){G.log.unshift(s);if(G.log.length>60)G.log.pop();}
 
 /* ═══════════════ MOVIMENTO ═══════════════
@@ -883,25 +923,30 @@ function reachable(op,maxDist,opts={}){
       if(endInCR?true:!cr)out.push({x:nx,y:ny,z:nz,d:nd});
     }
     if(allowClimb){for(const s of STAIRS){
-      let v=null;const fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,rise=Math.abs(toZ-fromZ);
-      if(c.z===fromZ&&c.x===s.x&&c.y===s.y)v={x:s.tx,y:s.ty,z:toZ,d:c.d+rise};
-      else if(c.z===toZ&&c.x===s.tx&&c.y===s.ty)v={x:s.x,y:s.y,z:fromZ,d:c.d+rise};
-      if(!v||v.d>maxDist+0.001||occupied(v.x,v.y,op,v.z))continue;
-      const k=v.x+','+v.y+','+v.z;if(seen[k]!==undefined)continue;
-      const cr=inEnemyCR(v.x,v.y,op.pi,v.z);if(cr&&!ignoreCR&&!endInCR)continue;
-      seen[k]=v.d;q.push(v);if(endInCR?true:!cr)out.push(v);
+      const fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,levels=s.levels||[fromZ,toZ],atA=c.x===s.x&&c.y===s.y,atB=c.x===s.tx&&c.y===s.ty;
+      if(!atA&&!atB)continue;
+      const destinations=s.shaft?levels.filter(z=>z!==c.z).map(z=>({x:atA?s.tx:s.x,y:atA?s.ty:s.y,z,d:c.d+1})):
+        (c.z===fromZ&&atA?[{x:s.tx,y:s.ty,z:toZ,d:c.d+1}]:(c.z===toZ&&atB?[{x:s.x,y:s.y,z:fromZ,d:c.d+1}]:[]));
+      for(const v of destinations){
+        if(v.d>maxDist+0.001||!surfaceAt(v.x,v.y,v.z)&&v.z>0||occupied(v.x,v.y,op,v.z))continue;
+        const k=v.x+','+v.y+','+v.z;if(seen[k]!==undefined)continue;
+        const cr=inEnemyCR(v.x,v.y,op.pi,v.z);if(cr&&!ignoreCR&&!endInCR)continue;
+        seen[k]=v.d;q.push(v);if(endInCR?true:!cr)out.push(v);
+      }
     }}
   }
   return out;
 }
 if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
-  const ext=STAIRS.find(s=>s.building&&s.fromZ===0),inner=STAIRS.find(s=>s.building&&s.fromZ===2),
-    extReach=reachable({x:ext.x,y:ext.y,z:ext.fromZ,pi:0},2.01),innerReach=reachable({x:inner.x,y:inner.y,z:inner.fromZ,pi:0},2.01),
+  const ext=STAIRS.find(s=>s.building&&!s.shaft&&s.fromZ===0),inner=STAIRS.find(s=>s.building&&s.shaft),
+    extReach=reachable({x:ext.x,y:ext.y,z:ext.fromZ,pi:0},1.01),innerReach=reachable({x:inner.x,y:inner.y,z:0,pi:0},1.01),
     doorway=reachable({x:7,y:2,z:0,pi:0},2.01),wall=reachable({x:6,y:2,z:0,pi:0},1.1),
     movement={externalStair:extReach.some(c=>c.x===ext.tx&&c.y===ext.ty&&c.z===ext.toZ),
-      internalStair:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===inner.toZ),
+      internalStair:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===2),directRoof:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===inner.toZ),
       doorEntry:doorway.some(c=>c.x===7&&c.y===4&&c.z===0),wallEntryBlocked:!wall.some(c=>c.x===6&&c.y===3&&c.z===0),
       cornerEntryBlocked:movementWallBlock({x:4,y:2,z:0},{x:5,y:3,z:0})};
+  const savedOps=G.ops,charger={x:1,y:1,z:0,pi:0,dead:false},chargeTarget={x:4,y:1,z:0,pi:1,dead:false};G.ops=[charger,chargeTarget];
+  movement.chargeReach=reachable(charger,5,{endInCR:true}).some(c=>inEnemyCR(c.x,c.y,0,c.z));G.ops=savedOps;
   movement.pass=Object.values(movement).every(Boolean);document.documentElement.dataset.auspexMovement=JSON.stringify(movement);
 }
 
@@ -911,12 +956,18 @@ const tagVal=(w,t)=>{const f=w.tags.find(x=>x.startsWith(t+' '));return f?parseI
 const moSeekLight=(op,tgt,w)=>hasTag(w,'Seek')||(op.teamId==='pth'&&(tgt.marks||0)>=4);
 const weaponsOf=(op,type)=>op.wpn.filter(w=>w.t===type);
 const bestWeapon=(op,type)=>[...weaponsOf(op,type)].sort((a,b)=>(b.a*((7-b.h)/6)*((b.d+b.c)/2))-(a.a*((7-a.h)/6)*((a.d+a.c)/2)))[0];
+function weaponDamageRange(op,tgt,w){
+  if(hasTag(w,'Markerlight'))return{min:0,max:0,note:'Esta ação aplica marcações; não remove PV diretamente.'};
+  const mo=mods(op,tgt,w,true),melta=hasTag(w,'Melta')?2:0;
+  const max=Math.max(0,w.a*((w.c||w.d)+melta+(mo.devast||0)));
+  return{min:0,max,note:'Faixa teórica antes da rolagem. Cobertura, saves e habilidades podem reduzir o dano.'};
+}
 function pickWeapon(op,type,title,callback){
   const ws=weaponsOf(op,type);if(!ws.length)return null;
   if(ws.length===1||isAI(op.pi))return callback(ws.length===1?ws[0]:bestWeapon(op,type));
   openOv(title,`<div class="tlist">${ws.map((w,i)=>`<button class="trow" onclick="chooseWeapon(${i})">
     <div class="ic">${type==='r'?'▹':'⚔'}</div><div><div class="tn">${w.n}</div>
-    <div class="td">A${w.a} · ${w.h}+ · ${w.d}/${w.c}${w.tags.length?` · ${w.tags.join(' · ')}`:''}</div></div></button>`).join('')}</div>`);
+    <div class="td">A${w.a} · ${w.h}+ · ${w.d}/${w.c} · potencial 0–${weaponDamageRange(op,null,w).max} PV${w.tags.length?` · ${w.tags.join(' · ')}`:''}</div></div></button>`).join('')}</div>`);
   G.pendingWeapon={op,type,ws,callback};return null;
 }
 function chooseWeapon(i){const p=G.pendingWeapon,w=p?.ws?.[i];if(!p||!w)return;G.pendingWeapon=null;closeOv();p.callback(w);}
@@ -1095,7 +1146,7 @@ function resolveFight(att,def,aw,dw){
 /* Aplica dano com as regras de resiliência */
 function applyDmg(op,dmg,src){
   if(dmg<=0)return 0;
-  let total=dmg;
+  const wasAlive=!op.dead&&op.hp>0;let total=dmg;
   // Nojentamente Resiliente (Plague Marines)
   if(RULES.engine(op,TEAMS).resilient&&dmg>=3){
     const auto=(G.ploys[op.pi]||[]).includes('pm_sick');
@@ -1105,6 +1156,7 @@ function applyDmg(op,dmg,src){
   op.hp-=total;
   if(op.hp<=0){op.hp=0;op.dead=true;
     log(`💀 ${op.n} (${P(op.pi).n}) foi incapacitado`);
+    if(wasAlive&&src&&src.pi!==op.pi){P(src.pi).kills=(P(src.pi).kills||0)+1;op.killCredited=src.pi;log(`${P(src.pi).n} chegou a ${P(src.pi).kills} eliminações`);}
   }
   return total;
 }
@@ -1130,7 +1182,7 @@ function showKillzonePicker(){
     <div class="kzgrid">${Object.entries(KILLZONES).map(([id,k])=>`
       <button class="kzcard" data-kz="${id}" onclick="pickKillzone('${id}')" style="--kz:${k.tone}">
         <div class="kzpreview"><i></i><i></i><i></i><span>${k.ico}</span></div>
-        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · ${k.stairs.length+k.terrain.filter(t=>t.building).length*4} acessos</em>
+        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · ${k.stairs.length+k.terrain.filter(t=>t.building).length*4+k.terrain.filter(t=>t.rooftop).length*2} acessos</em>
       </button>`).join('')}</div>`,true);
 }
 function pickKillzone(id){
@@ -1165,7 +1217,7 @@ function recommendedRoster(){const d=G.rosterDraft;if(!d)return;d.counts=RULES.d
 function setPlayerRoster(pi,k,counts){
   const t=TEAMS[k],built=RULES.buildRoster(t,counts);P(pi).team=k;
   P(pi).ops=built.map((o,i)=>({
-    ...o, unitId:o.id, templateId:o.sourceId||o.id, id:`p${pi}_${o.id}_${i}`, pi, teamId:k, n:o.n,
+    ...o, unitId:o.catalogId||o.id, templateId:o.sourceId||o.id, id:`p${pi}_${o.id}_${i}`, pi, teamId:k, n:o.n,
     hp:o.w,maxhp:o.w,x:-1,y:-1,z:0,order:'conceal',ap:o.apl,activated:false,dead:false,marks:0,moved:false,movedFar:false,
     chargedThis:false,shotThis:0,foughtThis:0,usedActs:[],orderLocked:false,counteracted:false,def5:o.abl.some(a=>a.def5),weaponUses:{},poisoned:0,terrorchem:0,aplPenalty:0,pain:0,blooded:0
   }));
@@ -1215,7 +1267,7 @@ function aiDeploy(){
 function startTP(){
   G.phase='strategy';G.gaRequired=null;
   G.ops.forEach(o=>{o.activated=false;o.ap=o.apl;o.moved=false;o.movedFar=false;
-    o.chargedThis=false;o.shotThis=0;o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;});
+    o.chargedThis=false;o.shotThis=0;o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;o.aiObjective=null;});
   [0,1].forEach(pi=>{if(RULES.engine(alive(pi)[0],TEAMS).blooded){const mark=alive(pi).find(o=>!o.blooded)||alive(pi)[0];if(mark)mark.blooded=1;}});
   [0,1].forEach(pi=>{if(TEAMS[P(pi).team]?.sourceId==='kt-vespid')P(pi).communion=(d6()%3+1)+(alive(pi).some(o=>/oversight drone/i.test(o.n))?1:0);});
   G.ploys={0:[],1:[]};
@@ -1293,16 +1345,34 @@ function nextActivation(){
   render();
   if(isAI(G.cur))setTimeout(aiTurn,420);
 }
+function aiPotentialTargets(op){
+  return enemiesOf(op.pi).filter(e=>weaponsOf(op,'r').some(w=>{
+    if(RULES.heavyBlocked(op,w)||RULES.limitedBlocked(op,w)||dist(op,e)>RULES.rangeOf(w))return false;
+    const l=checkLoS(op,e);return l.vis&&!l.obscured&&!(e.order==='conceal'&&l.cover&&dist(op,e)>2&&!l.vantageReveal&&!moSeekLight(op,e,w));
+  }));
+}
+function aiObjectiveFor(op,force=false){
+  if(!force&&Number.isInteger(op.aiObjective)&&OBJS[op.aiObjective])return op.aiObjective;
+  const ranked=OBJS.map((o,i)=>{const c=objectiveControl(o),near=alive(op.pi).filter(a=>a!==op&&dist(a,o)<=3.2).length,
+      assigned=alive(op.pi).filter(a=>a!==op&&!a.activated&&a.aiObjective===i).length,enemy=alive(1-op.pi).filter(a=>dist(a,o)<=3.2).length,
+      held=c[op.pi]>c[1-op.pi],contested=c[1-op.pi]>=c[op.pi]&&c[1-op.pi]>0;
+    return{i,score:dist(op,o)*.72+near*4.5+assigned*3.5+(held?5.5:0)+(enemy? -Math.min(4,enemy*1.8):0)+(contested?-4:0)};});
+  ranked.sort((a,b)=>a.score-b.score);op.aiObjective=ranked[0]?.i??0;return op.aiObjective;
+}
 function aiTurn(){
   if(G.phase!=='firefight'||!isAI(G.cur)||G.aiBusy)return;G.aiBusy=true;
   const pool=G.counterMode?alive(G.ai).filter(o=>o.activated&&!o.counteracted&&RULES.canCounter(o,TEAMS)):alive(G.ai).filter(o=>!o.activated&&(!G.gaRequired||o.templateId===G.gaRequired));
   if(!pool.length){G.aiBusy=false;nextActivation();return;}
-  const enemies=alive(0),score=o=>Math.min(...enemies.map(e=>dist(o,e)))-o.hp*.025;
-  pool.sort((a,b)=>score(a)-score(b));const op=pool[0];selectOp(op);
+  pool.forEach(o=>aiObjectiveFor(o,true));
+  const enemies=alive(0),score=o=>{const oi=aiObjectiveFor(o),obj=OBJS[oi],onObj=OBJS.some(x=>dist(o,x)<=1),shots=aiPotentialTargets(o).length;
+    return dist(o,obj)*.55+(onObj?-5:0)+(shots?-2.5:0)+Math.min(...enemies.map(e=>dist(o,e)))*.08-o.hp*.02;};
+  pool.sort((a,b)=>score(a)-score(b));const op=pool[0];
+  if(!op.orderLocked){const threat=aiPotentialTargets(op).length||enemies.some(e=>dist(op,e)<=op.mv+2);op.order=threat?'engage':'conceal';}
+  selectOp(op);render();
   msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativando ${op.n}…</b>`);setTimeout(()=>aiAct(op,0),520);
 }
 function aiAct(op,step){
-  if(G.phase!=='firefight'||op.dead||op.activated||G.cur!==G.ai){G.aiBusy=false;return;}
+  if(G.phase!=='firefight'||op.dead||(!op._countering&&op.activated)||G.cur!==G.ai){G.aiBusy=false;return;}
   if(step>=5||op.ap<=0){G.aiBusy=false;finishOp(op);return;}
   G.sel=op;
   const melee=enemiesOf(op.pi).filter(e=>dist(op,e)<=1).sort((a,b)=>a.hp-b.hp);
@@ -1310,19 +1380,28 @@ function aiAct(op,step){
     op.order='engage';actFight();if(G.targets.length){const tgt=melee[0],wpn=G.weapon||bestWeapon(op,'m');
       showAIAttackWarning('COMBATE',op,tgt,wpn,()=>doFight(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}));return;}
   }
-  if(op.ap>=1&&!actionUsed(op,'objective')&&OBJS.some(o=>dist(op,o)<=1)){
-    actPickUp();setTimeout(()=>aiAct(op,step+1),800);return;
+  const assignedObjective=OBJS[aiObjectiveFor(op)],assignedIndex=OBJS.indexOf(assignedObjective),assignedKey=G.tp+':'+assignedIndex;
+  if(op.ap>=1&&!actionUsed(op,'objective')&&assignedObjective&&dist(op,assignedObjective)<=1&&G.secured?.[assignedKey]!==op.pi){
+    actPickUp();setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},800);return;
   }
   if(op.ap>=1&&op.shotThis<RULES.maxAction(op,'shoot',TEAMS)&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&weaponsOf(op,'r').some(w=>!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w))){
     if(!op.orderLocked)op.order='engage';actShoot();
-    if(G.mode==='shoot'&&G.targets.length){const tgt=[...G.targets].sort((a,b)=>a.hp-b.hp||dist(op,a)-dist(op,b))[0],wpn=G.weapon||bestWeapon(op,'r');
+    if(G.mode==='shoot'&&G.targets.length){const tgt=[...G.targets].sort((a,b)=>{
+        const ao=OBJS.some(o=>dist(a,o)<=3)?-4:0,bo=OBJS.some(o=>dist(b,o)<=3)?-4:0;return (a.hp+ao)-(b.hp+bo)||dist(op,a)-dist(op,b);})[0],wpn=G.weapon||bestWeapon(op,'r');
       showAIAttackWarning('TIRO',op,tgt,wpn,()=>doShoot(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}));return;}
+  }
+  if(op.ap>=1&&!op._countering&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&!actionUsed(op,'charge')&&!actionUsed(op,'reposition')&&!actionUsed(op,'dash')&&!actionUsed(op,'fallback')&&weaponsOf(op,'m').length){
+    actMove('charge');if(G.moveCells.length){const cell=[...G.moveCells].sort((a,b)=>{
+      const ea=enemiesOf(op.pi).filter(e=>dist(a,e)<=1.001).sort((x,y)=>x.hp-y.hp)[0],eb=enemiesOf(op.pi).filter(e=>dist(b,e)<=1.001).sort((x,y)=>x.hp-y.hp)[0];
+      return (ea?.hp??999)-(eb?.hp??999)||a.d-b.d;})[0];doMove(cell.x,cell.y,cell.z||0);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},650);return;}
   }
   const kind=!actionUsed(op,'reposition')?'reposition':(!actionUsed(op,'dash')?'dash':null);
   if(kind&&op.ap>=1&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))){actMove(kind);
-    if(G.moveCells.length){const targets=OBJS,enemy=enemiesOf(op.pi);const cellScore=c=>{
-      const od=Math.min(...targets.map(o=>Math.hypot(c.x-o.x,c.y-o.y))),ed=Math.min(...enemy.map(e=>Math.hypot(c.x-e.x,c.y-e.y)));
-      const cover=TERRAIN.some(t=>Math.hypot(c.x-(t.x+t.w/2),c.y-(t.y+t.h/2))<2);return od+ed*.12-(cover?1.3:0)-c.z*.35;};
+    if(G.moveCells.length){const oi=aiObjectiveFor(op),target=OBJS[oi],enemy=enemiesOf(op.pi);const cellScore=c=>{
+      const od=Math.hypot(c.x-target.x,c.y-target.y),ed=Math.min(...enemy.map(e=>Math.hypot(c.x-e.x,c.y-e.y))),
+        crowd=alive(op.pi).filter(a=>a!==op&&Math.hypot(c.x-a.x,c.y-a.y)<3).length,
+        cover=TERRAIN.some(t=>Math.hypot(c.x-(t.x+t.w/2),c.y-(t.y+t.h/2))<2),onTarget=od<=1;
+      return od*1.3+crowd*4+ed*.08-(cover?1.1:0)-(onTarget?4:0)-((c.z||0)>0&&weaponsOf(op,'r').length?0.6:0);};
       const cell=[...G.moveCells].sort((a,b)=>cellScore(a)-cellScore(b))[0];doMove(cell.x,cell.y,cell.z||0);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},800);return;}
   }
   G.aiBusy=false;finishOp(op);
@@ -1347,7 +1426,8 @@ function scoreObjectives(){
       .reduce((n,op)=>n+RULES.objectiveAPL(op),0));
     if(c[0]>c[1])s[0]++;else if(c[1]>c[0])s[1]++;
   });
-  P(0).vp+=s[0];P(1).vp+=s[1];
+  P(0).objectiveVP=(P(0).objectiveVP||0)+s[0];P(1).objectiveVP=(P(1).objectiveVP||0)+s[1];
+  P(0).vp=(P(0).objectiveVP||0)+(P(0).tacVP||0);P(1).vp=(P(1).objectiveVP||0)+(P(1).tacVP||0);
   log(`Fim do TP${G.tp}: objetivos ${P(0).n} +${s[0]} VP · ${P(1).n} +${s[1]} VP`);
 }
 function endGame(reason='FIM DO QUARTO TURNING POINT',forcedWinner=null){
@@ -1361,31 +1441,47 @@ function endGame(reason='FIM DO QUARTO TURNING POINT',forcedWinner=null){
         ${w<0?'EMPATE':P(w).n+' VENCE'}</div>
       <div style="display:flex;gap:14px;justify-content:center;margin-top:16px">
         ${[0,1].map(i=>`<div><div class="rowlbl" style="color:${P(i).col}">${P(i).n}</div>
-          <div style="font-family:var(--fd);font-size:30px">${P(i).vp}</div>
-          <div style="font-size:11px;color:var(--txt2)">${alive(i).length} vivos</div></div>`).join('')}
+          <div style="font-family:var(--fd);font-size:30px">${P(i).vp} VP</div>
+          <div style="font-size:11px;color:var(--txt2)">Objetivos ${P(i).objectiveVP||0} · Tac Ops ${P(i).tacVP||0}<br>Eliminações ${P(i).kills||0} · ${alive(i).length} vivos</div></div>`).join('')}
       </div></div>
     <button class="btn pri" style="width:100%" onclick="location.reload()">JOGAR DE NOVO</button>`,true);
 }
 
 /* ═══════════════ AÇÕES ═══════════════ */
-function selectOp(op){
-  if(G.phase!=='firefight')return;
-  if(G.gaRequired&&op.templateId!==G.gaRequired){msg('<b class="hl">Group Activation:</b> ative agora outro operativo do mesmo tipo.');return;}
+const activationCommitted=op=>!!(op&&(op._countering||(!op.activated&&op.activationStarted)));
+function commitActivation(op){
+  if(!op||op.dead)return false;
   const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&RULES.canCounter(op,TEAMS);
-  if(op.pi!==G.cur||(!counterOK&&op.activated)||op.dead){showCard(op);return;}
-  if(G.sel&&G.sel!==op&&!G.sel.activated&&G.sel.activationStarted){
-    msg(`<b class="hl">${G.sel.n} ainda está ativado.</b> Termine os AP ou use “Encerrar ativação” antes de escolher outro operativo.`);
-    requestAnimationFrame(()=>focusBoard(G.sel.x,G.sel.y,true));return;
-  }
-  if(counterOK){op.ap=1;op.usedActs=[];op.orderLocked=true;op._countering=true;}
-  if(!op.activationStarted){op.activationStarted=true;
+  if(counterOK&&!op._countering){op.ap=1;op.usedActs=[];op.orderLocked=true;op._countering=true;}
+  if(!counterOK&&!op.activationStarted){
+    op.activationStarted=true;
     if(op.aplPenalty){op.ap=Math.max(1,op.ap-op.aplPenalty);op.aplPenalty=0;}
     const statusDmg=op.terrorchem?d6()%3+1:(op.poisoned?1:0);
-    if(statusDmg){const d=applyDmg(op,statusDmg);log(`${op.n} sofreu ${d} de dano de ${op.terrorchem?'Terrorchem':'Poison'} ao ser ativado`);if(op.dead){render();checkElimination();return;}}
+    if(statusDmg){const d=applyDmg(op,statusDmg);log(`${op.n} sofreu ${d} de dano de ${op.terrorchem?'Terrorchem':'Poison'} ao ser ativado`);
+      if(op.dead){render();checkElimination();return false;}}
   }
+  return true;
+}
+function beginActivation(){
+  const op=G.sel;if(!op||activationCommitted(op))return;
+  if(!commitActivation(op))return;
+  render();msg(`<b class="hl">${op.n} ativado.</b> Agora as ações pertencem somente a ele até você encerrar a ativação.`);
+}
+function clearInspection(){
+  if(activationCommitted(G.sel))return;G.sel=null;G.mode=null;G.moveCells=[];G.targets=[];render();
+  msg(`<b style="color:${P(G.cur).col}">${P(G.cur).n}</b> — inspecione seus operativos e confirme qual deseja ativar.`);
+}
+function selectOp(op){
+  if(G.phase!=='firefight')return;
+  const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&RULES.canCounter(op,TEAMS);
+  if(op.pi!==G.cur||(!counterOK&&op.activated)||op.dead){showCard(op);return;}
+  if(!counterOK&&G.gaRequired&&op.templateId!==G.gaRequired){showCard(op);msg('<b class="hl">Group Activation:</b> você pode consultar este card, mas deve ativar outro operativo do tipo exigido.');return;}
+  if(G.sel&&G.sel!==op&&activationCommitted(G.sel)){showCard(op);return;}
   G.sel=op;G.mode=null;G.moveCells=[];G.targets=[];
+  if(isAI(op.pi)){commitActivation(op);return;}
   render();
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
+  msg(`<b>Inspecionando ${op.n}.</b> Veja o card ou a visão em primeira pessoa. A ativação só começa quando você tocar em <b class="hl">ATIVAR ESTE OPERATIVO</b>.`);
 }
 function canAct(op,cost){return op.ap>=cost;}
 function actionUsed(op,name){return op.usedActs.includes(name);}
@@ -1401,7 +1497,7 @@ function finishOp(op){
   setTimeout(()=>{if(G.phase==='over')return;G.cur=1-G.cur;nextActivation();},delay);
 }
 function actMove(kind){
-  const op=G.sel;if(!op)return;
+  const op=G.sel;if(!op||!activationCommitted(op))return;
   const cost = kind==='dash'?1:(kind==='fallback'?2:1);
   if(!canAct(op,cost))return;
   if(actionUsed(op,kind)){msg('<b class="hl">Esta ação já foi realizada nesta ativação.</b>');return;}
@@ -1415,15 +1511,21 @@ function actMove(kind){
   let d = kind==='dash'?3:(kind==='charge'?baseMove+2:baseMove);
   if(op._countering)d=Math.min(d,2);
   const fly=op.abl.some(a=>a.fly);
-  if(kind==='charge'&&op.order==='conceal'&&!RULES.canChargeConcealed(op,TEAMS)){msg('<b class="hl">Charge exige ordem Engage.</b> Mude a ordem primeiro.');return;}
+  if(kind==='charge'&&op.order==='conceal'&&!RULES.canChargeConcealed(op,TEAMS)){
+    if(op.orderLocked){msg('<b class="hl">Charge exige Engage</b>, mas a ordem deste operativo já está travada.');return;}
+    op.order='engage';log(`${op.n} escolheu Engage ao declarar Charge`);
+  }
   const opts={fly,ignoreCR:kind==='fallback',endInCR:kind==='charge',allowClimb:kind!=='dash'};
   let cells=reachable(op,d,opts);
   if(kind==='charge')cells=cells.filter(c=>inEnemyCR(c.x,c.y,op.pi,c.z));
   if(!cells.length){msg('<b class="hl">Nenhum destino válido</b> para essa ação.');return;}
-  G.mode=kind;G.moveCells=cells;render();
+  G.mode=kind;G.moveCells=cells;
+  const levels=[...new Set(cells.map(c=>c.z||0))].sort((a,b)=>a-b);G.moveLevel=levels.includes(zOf(op))?zOf(op):levels[0];render();
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
-  msg(`<b>${kind==='charge'?'Investida':kind==='fallback'?'Recuar':kind==='dash'?'Arrancada':'Reposicionar'}</b> — escolha um destino. <span style="color:#65dcff">AZUL: interior</span> · <span style="color:#c88aff">ROXO: piso 2″</span> · <span style="color:#8fffaa">VERDE: cobertura 4″</span>. <span style="color:var(--mut)">${cost} AP</span>`);
+  msg(`<b>${kind==='charge'?'Investida':kind==='fallback'?'Recuar':kind==='dash'?'Arrancada':'Reposicionar'}</b> — primeiro escolha o nível nos botões abaixo; depois toque em uma célula. <b class="hl">Cada escada custa somente 1″</b>. <span style="color:var(--mut)">${cost} AP</span>`);
 }
+function setMoveLevel(z){if(!G.moveCells.some(c=>(c.z||0)===z))return;G.moveLevel=z;render();}
+function cancelMovement(){G.mode=null;G.moveCells=[];G.targets=[];render();msg(`<b>Movimento cancelado.</b> Nenhum AP foi gasto.`);}
 function doMove(x,y,z=0){
   const op=G.sel,kind=G.mode;
   const cell=G.moveCells.find(c=>c.x===x&&c.y===y&&c.z===z);if(!cell)return;
@@ -1440,7 +1542,7 @@ function doMove(x,y,z=0){
     msg(`<b>${op.n}</b> moveu${where}. Restam <b class="hl">${op.ap} AP</b>.`);}
 }
 function actShoot(chosen=null){
-  const op=G.sel;if(!op||!canAct(op,1))return;
+  const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;
   if(!chosen)return pickWeapon(op,'r','Escolha a arma de tiro',w=>actShoot(w));
   const w=chosen;
   if(op.order==='conceal'&&!hasTag(w,'Silent')){msg('<b class="hl">Atirar exige Engage, exceto com arma Silent.</b>');return;}
@@ -1463,10 +1565,22 @@ function actShoot(chosen=null){
   G.mode='shoot';G.targets=tg;G.weapon=w;render();
   msg(`<b>Atirar</b> com ${w.n} — toque num alvo destacado. <span style="color:var(--mut)">${tg.length} válido(s)</span>`);
 }
+function showShotPreview(tgt){
+  const op=G.sel,w=G.weapon||bestWeapon(op,'r'),range=weaponDamageRange(op,tgt,w),los=checkLoS(op,tgt),cover=los.cover?(los.coverType==='light'?'LEVE':'PESADA'):'SEM COBERTURA';
+  openOv('CONFIRMAR ATAQUE',`<div class="shot-preview"><div class="rowlbl">${op.n} → ${tgt.n}</div><div style="font:700 15px var(--fd);color:#eaf8ff;margin-top:4px">${w.n}</div>
+    <div class="shot-range"><span>DANO POSSÍVEL</span><strong>${range.min}–${range.max} PV</strong></div>
+    <div class="shot-meta"><div><b>${tgt.hp}/${tgt.maxhp}</b><small>PV DO ALVO</small></div><div><b>${tgt.sv}+</b><small>SAVE</small></div><div><b>${cover}</b><small>PROTEÇÃO</small></div></div>
+    <div style="font-size:9px;color:var(--txt2);line-height:1.45;margin-top:9px">${range.note}<br>O ataque ainda não gastou AP e nenhum dado foi rolado.</div></div>
+    <div class="roster-actions"><button class="btn" onclick="cancelShotPreview()">CANCELAR</button><button class="btn" onclick="changeShotWeapon()">TROCAR ARMA</button><button class="btn pri confirm" onclick="confirmShot('${tgt.id}')">CONFIRMAR TIRO</button></div>`,true);
+}
+function cancelShotPreview(){closeOv();G.mode=null;G.targets=[];G.weapon=null;render();msg('<b>Ataque cancelado.</b> Nenhum AP ou uso de arma foi gasto.');}
+function changeShotWeapon(){closeOv();G.mode=null;G.targets=[];G.weapon=null;render();actShoot();}
+function confirmShot(id){const tgt=opById(id);closeOv();if(tgt)doShoot(tgt,{confirmed:true});}
 function doShoot(tgt,opts={}){
   const op=G.sel,w=G.weapon||bestWeapon(op,'r');
   const losNow=checkLoS(op,tgt);
   if(!G.targets.includes(tgt)||!losNow.vis||(losNow.obscured&&!(op.teamId==='pth'&&(tgt.marks||0)>=3))){G.mode=null;G.targets=[];render();msg('<b class="hl">Tiro cancelado:</b> o alvo não está numa linha de visão válida.');return;}
+  if(!opts.ai&&!opts.confirmed){showShotPreview(tgt);return;}
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){const nearest=enemiesOf(op.pi).filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(nearest&&nearest!==tgt){if(P(op.pi).communion<1){G.mode=null;G.targets=[];render();msg('<b class="hl">Communion:</b> sem pontos para ignorar o inimigo mais próximo.');return;}P(op.pi).communion--;}}
   const wasAlive=new Set(G.ops.filter(o=>!o.dead).map(o=>o.id));
   const r=resolveShoot(op,tgt,w);
@@ -1478,15 +1592,15 @@ function doShoot(tgt,opts={}){
   const splash=tagVal(w,'Blast')||tagVal(w,'Torrent');
   if(splash&&!r.marker){
     enemiesOf(op.pi).filter(e=>e!==tgt&&dist(e,tgt)<=splash&&checkLoS(tgt,e).vis).forEach(e=>{
-      const r2=resolveShoot(op,e,w);const d2=applyDmg(e,r2.dmg);
+      const r2=resolveShoot(op,e,w);const d2=applyDmg(e,r2.dmg,op);
       if(d2)extra.push(`${e.n} −${d2}`);});
   }
-  const dealt=r.marker?0:applyDmg(tgt,r.dmg);
+  const dealt=r.marker?0:applyDmg(tgt,r.dmg,op);
   if(dealt>0&&(hasTag(w,'Poison')||hasTag(w,'Toxic')))tgt.poisoned=Math.max(1,tgt.poisoned||0);
   if(r.atk.some(d=>d.k==='crit')&&hasTag(w,'Stun'))tgt.aplPenalty=Math.max(1,tgt.aplPenalty||0);
   if(dealt>0&&r.atk.some(d=>d.k==='crit')&&hasTag(w,'Terrorchem'))tgt.terrorchem=1;
   if(dealt>0&&TEAMS[op.teamId].sourceId==='kt-hota')op.pain=(op.pain||0)+(tgt.dead&&tgt.maxhp>=12?2:1);
-  if(tgt.dead&&hasTag(w,'Stinger'))enemiesOf(op.pi).filter(e=>e!==tgt&&dist(e,tgt)<=2).forEach(e=>{const sd=d6()%3+1,got=applyDmg(e,sd);if(got)extra.push(`${e.n} −${got} por Stinger`);});
+  if(tgt.dead&&hasTag(w,'Stinger'))enemiesOf(op.pi).filter(e=>e!==tgt&&dist(e,tgt)<=2).forEach(e=>{const sd=d6()%3+1,got=applyDmg(e,sd,op);if(got)extra.push(`${e.n} −${got} por Stinger`);});
   const hot=hasTag(w,'Hot')&&r.atk.some(d=>d.v===1)?applyDmg(op,3):0;
   const casualties=G.ops.filter(o=>wasAlive.has(o.id)&&o.dead);
   log(`${op.n} atirou em ${tgt.n} com ${w.n}: ${dealt} de dano${hot?` · Hot causou ${hot} em ${op.n}`:''}${tgt.dead?' · INCAPACITADO':''}`);
@@ -1495,7 +1609,7 @@ function doShoot(tgt,opts={}){
   spend(op,1,!!opts.ai);render();if(!opts.ai)checkElimination();
 }
 function actFight(chosen=null){
-  const op=G.sel;if(!op||!canAct(op,1))return;
+  const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;
   if(!chosen)return pickWeapon(op,'m','Escolha a arma corpo a corpo',w=>actFight(w));
   const maxF=RULES.maxAction(op,'fight',TEAMS);
   if(op.foughtThis>=maxF||actionUsed(op,'fight')&&maxF===1){msg('<b class="hl">Já lutou</b> o máximo nesta ativação.');return;}
@@ -1511,7 +1625,7 @@ function doFight(tgt,opts={}){
   const r=resolveFight(op,tgt,aw,dw);
   op.foughtThis++;
   recordAction(op,'fight');
-  const dA=applyDmg(tgt,r.dmgA), dD=applyDmg(op,r.dmgD);
+  const dA=applyDmg(tgt,r.dmgA,op), dD=applyDmg(op,r.dmgD,tgt);
   if(r.stunDef)tgt.aplPenalty=Math.max(1,tgt.aplPenalty||0);if(r.stunAtt)op.aplPenalty=Math.max(1,op.aplPenalty||0);
   if(dA>0&&(hasTag(aw,'Poison')||hasTag(aw,'Toxic')))tgt.poisoned=1;
   if(dD>0&&(hasTag(dw,'Poison')||hasTag(dw,'Toxic')))op.poisoned=1;
@@ -1532,10 +1646,11 @@ function toggleOrder(){
   log(`${op.n} → ${op.order==='conceal'?'Conceal':'Engage'}`);
   render();msg(`<b>${op.n}</b> agora está em <b class="hl">${op.order==='conceal'?'Conceal (oculto)':'Engage (engajado)'}</b>.`);
 }
+function securableObjective(op){return OBJS.find((o,i)=>dist(op,o)<=1&&G.secured?.[G.tp+':'+i]!==op.pi);}
 function actPickUp(){
-  const op=G.sel;if(!op||!canAct(op,1))return;
+  const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;
   if(actionUsed(op,'objective')){msg('<b class="hl">Ação de missão já realizada nesta ativação.</b>');return;}
-  const o=OBJS.find(o=>dist(op,o)<=1);
+  const o=securableObjective(op);
   if(!o){msg('<b class="hl">Nenhum objetivo</b> no control range.');return;}
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){if(P(op.pi).communion<1){msg('<b class="hl">Communion:</b> é necessário 1 ponto para uma ação de missão.');return;}P(op.pi).communion--;}
   const oi=OBJS.indexOf(o);G.secured=G.secured||{};const key=G.tp+':'+oi;
@@ -1544,7 +1659,7 @@ function actPickUp(){
   spend(op,1);render();
   msg(`<b>${op.n}</b> assegurou o objetivo para a pontuação do Turning Point.`);
 }
-function endActivation(){const op=G.sel;if(op)finishOp(op);}
+function endActivation(){const op=G.sel;if(op&&activationCommitted(op))finishOp(op);}
 /* ═══════════════ RENDERIZAÇÃO ═══════════════ */
 const bd=document.getElementById('board');
 const bw=document.getElementById('boardwrap');
@@ -1564,7 +1679,8 @@ function zoomBoard(delta){
 }
 function render(){
   bd.style.width=W*CS+'px';bd.style.height=H*CS+'px';
-  bd.style.backgroundSize=CS+'px '+CS+'px';
+  bd.style.setProperty('--grid-size',CS+'px');bd.style.backgroundSize=ACTIVE_KZ==='ruins'?`${CS}px ${CS}px,${CS}px ${CS}px,cover,cover`:`${CS}px ${CS}px`;
+  bd.classList.toggle('choosing-move',['reposition','dash','charge','fallback'].includes(G.mode));
   const zv=document.getElementById('zoomval');if(zv)zv.textContent=Math.round(CS/BASE_CS*100)+'%';
   let h='';
   if(G.sel&&G.phase==='firefight'){
@@ -1574,7 +1690,7 @@ function render(){
   // terreno
   TERRAIN.forEach(t=>{const doors=t.building?(t.doors||[]).map(d=>{const axis=(d.side==='n'||d.side==='s')?'left':'top',pos=(d.offset+.5)*CS;
       return`<i class="door ${d.side}" title="Porta aberta · linha de visão física" style="${axis}:${pos}px;--cs:${CS}px">PORTA</i>`;}).join(''):'';
-    h+=`<div class="terr ${t.t==='h'?'heavy':''} ${t.z?'vantage':'light'} ${t.building?'building':''}" title="${t.building?'Edifício transitável · pisos 0″, 2″ e 4″':t.t==='l'?'Cobertura leve':'Terreno pesado'}" style="left:${t.x*CS}px;top:${t.y*CS}px;width:${t.w*CS}px;height:${t.h*CS}px;--cs:${CS}">${doors}</div>`;});
+    h+=`<div class="terr ${t.t==='h'?'heavy':''} ${t.z?'vantage':'light'} ${t.building?'building':''}" data-height="${t.z||0}″" title="${t.building?'Edifício transitável · pisos 0″, 2″ e 4″':t.t==='l'?'Cobertura leve':`Estrutura sólida · telhado a ${t.z||2}″`}" style="left:${t.x*CS}px;top:${t.y*CS}px;width:${t.w*CS}px;height:${t.h*CS}px;--cs:${CS}">${doors}</div>`;});
   STAIRS.forEach(s=>{const x1=(s.x+.5)*CS,y1=(s.y+.5)*CS,x2=((s.tx??s.x)+.5)*CS,y2=((s.ty??s.y)+.5)*CS,len=Math.hypot(x2-x1,y2-y1),ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
     h+=`<div class="stair ${s.fromZ?'level2':''}" title="Escada vertical: ${s.fromZ||0}&quot; → ${s.toZ||s.z||2}&quot;" style="left:${x1}px;top:${y1-3}px;width:${len}px;transform:rotate(${ang}deg)"></div>`;});
   // zonas de deploy
@@ -1590,8 +1706,8 @@ function render(){
     h+=`<div class="obj ${cls}" style="left:${(o.x-1)*CS}px;top:${(o.y-1)*CS}px;width:${CS*3}px;height:${CS*3}px"><span class="objid">OBJ ${i+1}</span><span class="objscore">${c[0]}·${c[1]}</span></div>`;
   });
   // células de movimento/alvo
-  G.moveCells.forEach(c=>{const lift=c.z?7:0,b=TERRAIN.find(t=>t.building&&insideFeature(t,c.x,c.y)),zone=b?(c.z===0?'interior':(c.z===2?'floor2':'roof4')):'',label=zone?(zone==='interior'?'INTERIOR 0″':zone==='floor2'?'PISO 2″':'COBERTURA 4″'):'';
-    h+=`<div class="cell ${G.mode==='charge'?'ch':'mv'} ${zone}" ${label?`data-dest="${label}"`:''} title="Destino: ${label||`altura ${c.z||0}&quot;`}" style="left:${c.x*CS+1-((c.z||0)?4:0)}px;top:${c.y*CS+1-lift}px;width:${CS-2}px;height:${CS-2}px" onclick="doMove(${c.x},${c.y},${c.z||0})"></div>`;});
+  G.moveCells.filter(c=>(c.z||0)===G.moveLevel).forEach(c=>{const level=c.z||0,shift=level/2*6,b=TERRAIN.find(t=>t.building&&insideFeature(t,c.x,c.y)),zone=b?(level===0?'interior':(level===2?'floor2':'roof4')):'',label=level===0?(b?'DENTRO · 0″':'CHÃO · 0″'):(level===2?'PISO · 2″':'TELHADO · 4″');
+    h+=`<div class="cell ${G.mode==='charge'?'ch':'mv'} ${zone}" title="Destino: ${label} · custo ${c.d.toFixed(1)}&quot;" style="left:${c.x*CS+1-shift}px;top:${c.y*CS+1-shift}px;width:${CS-2}px;height:${CS-2}px" onclick="doMove(${c.x},${c.y},${level})"></div>`;});
   G.targets.forEach(t=>{h+=`<div class="cell tg" title="ALVO: ${t.n} · altura ${zOf(t)}&quot;" style="left:${t.x*CS-2-(zOf(t)?4:0)}px;top:${t.y*CS-2-(zOf(t)?7:0)}px;width:${CS+4}px;height:${CS+4}px" onclick="${G.mode==='shoot'?'doShoot':'doFight'}(opById('${t.id}'))"></div>`;});
   // linha de tiro
   if(G.sel&&G.mode==='shoot')G.targets.forEach(t=>{
@@ -1617,14 +1733,21 @@ function render(){
       ${o.marks?`<span style="position:absolute;top:-6px;right:-4px;background:var(--warn);color:#000;border-radius:50%;width:12px;height:12px;font-size:8px;display:flex;align-items:center;justify-content:center">${o.marks}</span>`:''}</div>`;
   });
   bd.innerHTML=h;
-  updTop();renderActs();
+  updTop();updScoreboard();renderActs();
+}
+function objectiveControl(o){return[0,1].map(pi=>alive(pi).filter(op=>dist(op,o)<=3).reduce((n,op)=>n+RULES.objectiveAPL(op),0));}
+function updScoreboard(){
+  const controlled=[0,0];OBJS.forEach(o=>{const c=objectiveControl(o);if(c[0]>c[1])controlled[0]++;else if(c[1]>c[0])controlled[1]++;});
+  [0,1].forEach(i=>{const p=P(i),el=document.getElementById('score'+i);if(!el)return;el.innerHTML=
+    `<div class="score-item"><b>${p.vp||0}</b><small>VP TOTAL</small></div><div class="score-item"><b>${p.objectiveVP||0}</b><small>OBJ VP</small></div><div class="score-item"><b>${p.tacVP||0}</b><small>TAC OP</small></div><div class="score-item"><b>${p.kills||0}</b><small>ELIM</small></div>`;});
+  const live=document.getElementById('scorelive');if(live)live.textContent=`${controlled[0]} OBJ · ${controlled[1]} OBJ`;
 }
 function updTop(){
   document.getElementById('tpn').textContent=G.tp;
   [0,1].forEach(i=>{
     const p=P(i),t=p.team?TEAMS[p.team]:null;
     document.getElementById('pn'+i).textContent=t?`${t.ico}  ${p.n} · ${t.name}`:p.n;
-    document.getElementById('ps'+i).textContent=t?`${p.vp} VP · ${p.cp} CP · ${alive(i).length}/${p.ops.length} vivos`:'';
+    document.getElementById('ps'+i).textContent=t?`${p.vp} VP · ${p.kills||0} eliminações · ${p.cp} CP · ${alive(i).length}/${p.ops.length} vivos`:'';
     document.getElementById('pc'+i).classList.toggle('act',G.cur===i&&G.phase==='firefight');
   });
 }
@@ -1642,6 +1765,20 @@ function renderActs(){
       +`<button class="btn" onclick="showLog()">📜 Log</button>`;
     return;
   }
+  if(['reposition','dash','charge','fallback'].includes(G.mode)){
+    const labels={0:'CHÃO / INTERIOR',2:'PISO 2″',4:'TELHADO 4″'},levels=[...new Set(G.moveCells.map(c=>c.z||0))].sort((a,b)=>a-b);
+    el.innerHTML=`<div class="move-levels">${levels.map(z=>`<button class="btn ${G.moveLevel===z?'on':''}" onclick="setMoveLevel(${z})">${labels[z]||`ALTURA ${z}″`}<small>${G.moveCells.filter(c=>(c.z||0)===z).length} destinos</small></button>`).join('')}</div>
+      <button class="btn dgr" style="width:100%" onclick="cancelMovement()">CANCELAR MOVIMENTO · 0 AP GASTOS</button>`;return;
+  }
+  if(!activationCommitted(op)){
+    const counter=G.counterMode&&op.activated;
+    el.innerHTML=`<div class="inspect-banner"><span><b>MODO DE INSPEÇÃO</b><br>Nenhuma ativação foi consumida.</span><span>${op.hp}/${op.maxhp} PV · ${counter?'1 ação':op.apl+' APL'}</span></div>
+      <button class="btn" onclick="showCard(opById('${op.id}'))">▤ STATUS E ARMAS</button>
+      <button class="btn fpbtn" onclick="showFirstPerson(opById('${op.id}'))">◉ VISÃO 1ª PESSOA</button>
+      <button class="btn" onclick="toggleOrder()">${op.order==='conceal'?'👁 ORDEM: CONCEAL':'⚔ ORDEM: ENGAGE'}</button>
+      <button class="btn pri" onclick="beginActivation()">${counter?'CONFIRMAR COUNTERACT':'ATIVAR ESTE OPERATIVO'}</button>
+      <button class="btn dgr" onclick="clearInspection()">VOLTAR À EQUIPE</button>`;return;
+  }
   const ranged=weaponsOf(op,'r'), melee=weaponsOf(op,'m');
   const inCR=inEnemyCR(op.x,op.y,op.pi,zOf(op));
   const maxT=RULES.maxAction(op,'shoot',TEAMS),maxF=RULES.maxAction(op,'fight',TEAMS);
@@ -1652,12 +1789,12 @@ function renderActs(){
        ${op.ico} ${op.n} · ${op.hp}/${op.maxhp} PV · ${op.ap} AP</button>`
    + b('Reposicionar',"actMove('reposition')",1,op.ap<1||inCR||op.chargedThis||actionUsed(op,'reposition')||actionUsed(op,'charge')||actionUsed(op,'fallback'))
    + b('Arrancada',"actMove('dash')",1,op.ap<1||inCR||actionUsed(op,'dash')||actionUsed(op,'charge'))
-   + b('Investir',"actMove('charge')",1,op.ap<1||inCR||(op.order==='conceal'&&!RULES.canChargeConcealed(op,TEAMS))||actionUsed(op,'charge')||actionUsed(op,'reposition')||actionUsed(op,'dash')||actionUsed(op,'fallback'))
+   + b('Investir',"actMove('charge')",1,op.ap<1||inCR||actionUsed(op,'charge')||actionUsed(op,'reposition')||actionUsed(op,'dash')||actionUsed(op,'fallback'))
    + b('Recuar',"actMove('fallback')",2,op.ap<2||!inCR||actionUsed(op,'fallback')||actionUsed(op,'reposition')||actionUsed(op,'charge'))
    + b(`Atirar${ranged.length>1?' ▾':''}`,"actShoot()",1,op.ap<1||!canShootWeapon||inCR||op.shotThis>=maxT,'pri')
    + b(`Lutar${melee.length>1?' ▾':''}`,"actFight()",1,op.ap<1||!inCR||!melee.length||op.foughtThis>=maxF,'pri')
-    + b('Objetivo',"actPickUp()",1,op.ap<1||actionUsed(op,'objective')||!OBJS.some(o=>dist(op,o)<=1))
-    + `<button class="btn fpbtn" onclick="showFirstPerson()">◉ Visão 1ª pessoa</button>`
+    + b('Objetivo',"actPickUp()",1,op.ap<1||actionUsed(op,'objective')||!securableObjective(op))
+    + `<button class="btn fpbtn" onclick="showFirstPerson(opById('${op.id}'))">◉ Visão 1ª pessoa</button>`
     + `<button class="btn" ${op.orderLocked?'disabled':''} onclick="toggleOrder()">${op.order==='conceal'?'👁 → Engage':'⚔ → Conceal'}</button>`
    + `<button class="btn dgr" onclick="endActivation()">Encerrar ativação</button>`;
 }
@@ -1716,7 +1853,7 @@ function showCard(op){
       Altura: <b style="color:var(--warn)">${zOf(op)}" ${zOf(op)?'· Vantage':''}</b><br>
       ${op.activated?'Já ativado neste turno':`AP restantes: <b style="color:var(--warn)">${op.ap}</b>`}
       ${op.marks?`<br>Marcações: <b style="color:var(--warn)">${op.marks}</b>`:''}
-    </div>`);
+    </div>${op.pi===G.cur&&!op.dead?`<button class="btn fpbtn" style="width:100%;margin-top:10px" onclick="closeOv();showFirstPerson(opById('${op.id}'))">◉ VER A VISÃO DESTE OPERATIVO</button>`:''}`);
 }
 function animateDiceReveal(ms=780){
   const dice=[...document.querySelectorAll('#ov .d.rolling')];
@@ -1733,8 +1870,8 @@ function animateDiceReveal(ms=780){
   },Math.max(62,Math.round(ms/ticks)));
 }
 const normAng=a=>{while(a>180)a-=360;while(a<-180)a+=360;return a};
-function showFirstPerson(){
-  const op=G.sel;if(!op||op.dead)return;
+function showFirstPerson(viewOp=G.sel){
+  const op=viewOp;if(!op||op.dead)return;
   const contacts=enemiesOf(op.pi).filter(e=>{const l=checkLoS(op,e);return l.vis&&!l.obscured;}).sort((a,b)=>dist(op,a)-dist(op,b));
   const scenery=TERRAIN.map(t=>({x:t.x+t.w/2,y:t.y+t.h/2})).filter(t=>dist(op,t)>1).sort((a,b)=>dist(op,a)-dist(op,b));
   const focus=contacts[0]||scenery[0]||{x:W/2,y:H/2};
@@ -1784,7 +1921,8 @@ function renderFPVLegacy(){
   const themes={
     volkus:{sky:'#07131f',glow:'#1e526d',ground:'#09131a',grid:'#3f9fc2',wall:['#26495d','#193546','#102936','#45687a'],roof:'#52778a',light:'#a66b2e',accent:'#64d8fa'},
     forge:{sky:'#160d08',glow:'#65331c',ground:'#160f09',grid:'#bb6f35',wall:['#513421','#392416','#2a1b12','#765039'],roof:'#8d6245',light:'#cc7b27',accent:'#ffb454'},
-    wastes:{sky:'#1b120b',glow:'#70452a',ground:'#1c140d',grid:'#b68058',wall:['#644733','#4b3528','#38271d','#85664d'],roof:'#99785d',light:'#d49a50',accent:'#f2b777'}};
+    wastes:{sky:'#1b120b',glow:'#70452a',ground:'#1c140d',grid:'#b68058',wall:['#644733','#4b3528','#38271d','#85664d'],roof:'#99785d',light:'#d49a50',accent:'#f2b777'},
+    ruins:{sky:'#160e0a',glow:'#6d3427',ground:'#161718',grid:'#727f83',wall:['#655c55','#494742','#343637','#85756a'],roof:'#948378',light:'#b47842',accent:'#f0b677'}};
   const th=themes[ACTIVE_KZ]||themes.volkus;
   let sky=ctx.createLinearGradient(0,0,0,hh*.62);sky.addColorStop(0,'#02070b');sky.addColorStop(.65,th.sky);sky.addColorStop(1,th.glow);ctx.fillStyle=sky;ctx.fillRect(0,0,ww,hh*.64);
   let grd=ctx.createLinearGradient(0,hh*.36,0,hh);grd.addColorStop(0,th.ground);grd.addColorStop(1,'#010304');ctx.fillStyle=grd;ctx.fillRect(0,hh*.36,ww,hh*.64);
@@ -1870,10 +2008,11 @@ function renderFPVLegacy(){
   document.getElementById('fp-compass').textContent=`${dir} · ${Math.round(G.fpvHeading).toString().padStart(3,'0')}° · VISÃO DO OPERATIVO`;
 }
 function fpvWebGLData(op){
+  G.ops.filter(o=>!o.dead).forEach(ensureMiniature);
   const units=G.ops.filter(o=>!o.dead&&o!==op).map(o=>{const los=checkLoS(op,o);return{
     id:o.id,name:o.n,x:o.x,y:o.y,z:zOf(o),dead:o.dead,hostile:o.pi!==op.pi,distance:dist(op,o),image:miniSource(o),imageElement:miniImage(o)||null,
     cover:los.cover,coverType:los.coverType,visible:los.vis&&(!los.obscured||(op.teamId==='pth'&&(o.marks||0)>=3))};});
-  return{heading:G.fpvHeading,pitch:G.fpvPitch,fov:G.fpvFov,viewer:{id:op.id,x:op.x,y:op.y,z:zOf(op)},units,
+  return{killzone:ACTIVE_KZ,visual:KILLZONES[ACTIVE_KZ].visual||null,heading:G.fpvHeading,pitch:G.fpvPitch,fov:G.fpvFov,viewer:{id:op.id,x:op.x,y:op.y,z:zOf(op)},units,
     terrain:TERRAIN.map(t=>({...t})),stairs:STAIRS.map(s=>({...s})),objectives:OBJS.map(o=>({...o}))};
 }
 window.Volkus3DHandlers={onFocus(id,depth){
@@ -1882,9 +2021,9 @@ window.Volkus3DHandlers={onFocus(id,depth){
 }};
 function renderFPV(){
   const op=opById(G.fpvOp),legacy=document.getElementById('fp-canvas'),webgl=document.getElementById('fp-webgl'),badge=document.getElementById('fp-renderer-badge');if(!op)return;
-  if(ACTIVE_KZ==='volkus'&&window.Volkus3D?.available){
+  if(['volkus','ruins'].includes(ACTIVE_KZ)&&window.Volkus3D?.available){
     const data=fpvWebGLData(op),opened=window.Volkus3D.isOpen?.()?true:window.Volkus3D.open(data);
-    if(opened){window.Volkus3D.update?.(data);legacy.style.display='none';webgl.style.display='block';badge.textContent='VOLKUS · WEBGL PBR · ESCALA 1″';badge.style.color='#ffc778';
+    if(opened){window.Volkus3D.update?.(data);legacy.style.display='none';webgl.style.display='block';badge.textContent=`${ACTIVE_KZ==='ruins'?'CIDADE DEVASTADA · GLB NATIVO':'VOLKUS'} · WEBGL PBR · ESCALA 1″`;badge.style.color='#ffc778';
       const seen=data.units.filter(o=>o.visible).length,camZ=zOf(op)+1.55,stats=window.Volkus3D.stats?.()||{};
       document.getElementById('fp-name').innerHTML=`<b>${op.ico} ${op.n.toUpperCase()}</b> · ${TEAMS[op.teamId].name}`;
       document.getElementById('fp-readout').textContent=`${op.hp}/${op.maxhp} PV · OLHOS ${camZ.toFixed(1)}″ · ${seen} CONTATO${seen===1?'':'S'} · FOV ${G.fpvFov}° · ${stats.quality>1?'ALTA':'ADAPTATIVA'}`;

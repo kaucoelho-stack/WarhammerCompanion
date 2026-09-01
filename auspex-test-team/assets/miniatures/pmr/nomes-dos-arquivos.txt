@@ -1,0 +1,15 @@
+TIME: Plague Marines
+ID DA PASTA: pmr
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+pm-champion.png — Champion
+pm-plaguecaster.png — Malignant Plaguecaster
+pm-bombardier.png — Bombardier
+pm-fighter.png — Fighter
+pm-heavygunner.png — Heavy Gunner
+pm-iconbearer.png — Icon Bearer
+pm-warrior.png — Warrior
+
+Caminho usado pelo jogo:
+assets/miniatures/pmr/<id-do-operativo>.png

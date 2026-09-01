@@ -1,0 +1,14 @@
+TIME: Mandrakes
+ID DA PASTA: mnd
+
+Coloque nesta pasta imagens PNG com fundo transparente e use exatamente os nomes abaixo:
+
+mand-nightfiend.png — Nightfiend
+mand-abyssal.png — Abyssal
+mand-chooser.png — Chooser of the Flesh
+mand-dirgemaw.png — Dirgemaw
+mand-shadeweaver.png — Shadeweaver
+mand-warrior.png — Warrior
+
+Caminho usado pelo jogo:
+assets/miniatures/mnd/<id-do-operativo>.png
