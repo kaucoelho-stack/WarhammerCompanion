@@ -886,10 +886,11 @@ const MINI_SOURCES={
  'aod:cap':'assets/aod-cap.png','aod:sgt':'assets/aod-sgt.png','aod:gun':'assets/aod-gun.png',
  'aod:snp':'assets/aod-snp.png','aod:wa1':'assets/aod-wa1.png','aod:wa2':'assets/aod-wa2.png'
 },MINI_IMAGES={},MINI_PATHS={},MINI_PRIORITY={},MINI_ATTEMPTED={};
-const registerMiniature=(id,src,priority=0)=>{const im=new Image();im.decoding='async';im.onload=()=>{if(priority>=(MINI_PRIORITY[id]??-1)){MINI_PRIORITY[id]=priority;MINI_IMAGES[id]=im;MINI_PATHS[id]=src;if(document.getElementById('fpv').classList.contains('on'))renderFPV();}};im.src=src;};
+const registerMiniature=(id,src,priority=0)=>{const im=new Image();im.decoding='async';im.onload=()=>{if(priority>=(MINI_PRIORITY[id]??-1)){MINI_PRIORITY[id]=priority;MINI_IMAGES[id]=im;MINI_PATHS[id]=src;window.Volkus3D?.invalidateUnits?.();if(document.getElementById('fpv').classList.contains('on'))renderFPV();}};im.src=src;};
 function initMiniatures(){Object.entries(MINI_SOURCES).forEach(([id,src])=>registerMiniature(id,src,id.includes(':')?1:0));}
-const miniKey=o=>`${o.teamId}:${o.unitId||''}`;
-const ensureMiniature=o=>{const key=miniKey(o);if(MINI_ATTEMPTED[key])return;MINI_ATTEMPTED[key]=1;registerMiniature(key,`assets/miniatures/${o.teamId}/${o.unitId}.png`,2);};
+const miniatureId=o=>String(o?.unitId||o?.catalogId||o?.templateId||'').trim();
+const miniKey=o=>`${o.teamId}:${miniatureId(o)}`;
+const ensureMiniature=o=>{const id=miniatureId(o),team=String(o?.teamId||'').trim();if(!id||!team)return;const key=`${team}:${id}`;if(MINI_ATTEMPTED[key])return;MINI_ATTEMPTED[key]=1;registerMiniature(key,`assets/miniatures/${encodeURIComponent(team)}/${encodeURIComponent(id)}.png?v=17`,2);};
 const miniImage=o=>MINI_IMAGES[miniKey(o)]||MINI_IMAGES[o.teamId];
 const miniFallback=o=>`data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 420"><defs><linearGradient id="a" x2="0" y2="1"><stop stop-color="${o.pi===0?'#e3a83c':'#55c4df'}"/><stop offset="1" stop-color="#172635"/></linearGradient></defs><g fill="url(#a)" stroke="#d9f6ff" stroke-width="5"><path d="M78 82Q130 25 182 82l-15 70H93z"/><path d="M55 155l48-25h54l48 25 28 115-48 18-17-78-9 92 38 108h-54l-17-76-17 76H59l38-108-9-92-17 78-48-18z"/></g><text x="130" y="205" text-anchor="middle" fill="#071018" font-size="54" font-family="Arial" font-weight="900">${String(o.ico||o.n?.[0]||'?').slice(0,2)}</text></svg>`)}`;
 const miniSource=o=>MINI_PATHS[miniKey(o)]||MINI_PATHS[o.teamId]||MINI_SOURCES[miniKey(o)]||MINI_SOURCES[o.teamId]||miniFallback(o);
@@ -2008,10 +2009,10 @@ function renderFPVLegacy(){
   document.getElementById('fp-compass').textContent=`${dir} · ${Math.round(G.fpvHeading).toString().padStart(3,'0')}° · VISÃO DO OPERATIVO`;
 }
 function fpvWebGLData(op){
-  G.ops.filter(o=>!o.dead).forEach(ensureMiniature);
-  const units=G.ops.filter(o=>!o.dead&&o!==op).map(o=>{const los=checkLoS(op,o);return{
+  ensureMiniature(op);
+  const units=G.ops.filter(o=>!o.dead&&o!==op).map(o=>{const los=checkLoS(op,o),visible=los.vis&&(!los.obscured||(op.teamId==='pth'&&(o.marks||0)>=3));if(visible)ensureMiniature(o);return{
     id:o.id,name:o.n,x:o.x,y:o.y,z:zOf(o),dead:o.dead,hostile:o.pi!==op.pi,distance:dist(op,o),image:miniSource(o),imageElement:miniImage(o)||null,
-    cover:los.cover,coverType:los.coverType,visible:los.vis&&(!los.obscured||(op.teamId==='pth'&&(o.marks||0)>=3))};});
+    cover:los.cover,coverType:los.coverType,visible};});
   return{killzone:ACTIVE_KZ,visual:KILLZONES[ACTIVE_KZ].visual||null,heading:G.fpvHeading,pitch:G.fpvPitch,fov:G.fpvFov,viewer:{id:op.id,x:op.x,y:op.y,z:zOf(op)},units,
     terrain:TERRAIN.map(t=>({...t})),stairs:STAIRS.map(s=>({...s})),objectives:OBJS.map(o=>({...o}))};
 }
