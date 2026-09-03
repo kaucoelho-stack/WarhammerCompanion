@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v17-fpv-performance-miniatures';
+const CACHE = 'auspex-v19-invisible-city-access';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',

@@ -92,10 +92,10 @@
   }
   function makeRuleOccluders(data,M){
     const invisible=new T.MeshBasicMaterial({transparent:true,opacity:0,colorWrite:false,depthWrite:false});
-    data.terrain.filter(t=>t.t==='h').forEach(t=>{const z=t.z||2;box(S.world,t.w,z,t.h,t.x+t.w/2,z/2,t.y+t.h/2,invisible,{shadow:false});
-      box(S.world,Math.max(.3,t.w-.12),.055,Math.max(.3,t.h-.12),t.x+t.w/2,z+.028,t.y+t.h/2,M.roof,{solid:false});
-      const rim=.12,rh=.42;box(S.world,t.w+rim*2,rh,rim,t.x+t.w/2,z+rh/2,t.y-rim/2,M.edge,{solid:false});box(S.world,t.w+rim*2,rh,rim,t.x+t.w/2,z+rh/2,t.y+t.h+rim/2,M.edge,{solid:false});
-      box(S.world,rim,rh,t.h,t.x-rim/2,z+rh/2,t.y+t.h/2,M.edge,{solid:false});box(S.world,rim,rh,t.h,t.x+t.w+rim/2,z+rh/2,t.y+t.h/2,M.edge,{solid:false});});
+    // Estes volumes existem apenas para colisão/oclusão das regras. A cidade GLB
+    // é a única geometria desenhada, evitando plataformas e bordas sobrepostas.
+    data.terrain.filter(t=>t.t==='h').forEach(t=>{const z=t.z||2;
+      box(S.world,t.w,z,t.h,t.x+t.w/2,z/2,t.y+t.h/2,invisible,{shadow:false});});
   }
   function makeHeavy(t,i,M){
     if(t.building)return makeBuilding(t,i,M);
@@ -226,7 +226,7 @@
     S.data=data;S.ready=false;S.worldKey=data.killzone||'volkus';clearWorld();setStatus(data.visual?.kind==='ruined-city'?'PREPARANDO SETOR DA CIDADE':'MATERIALIZANDO DISTRITO VOLKUS',18);const M=await makeMaterials();if(S.closed)return;
     makeGround(M);
     if(data.visual?.kind==='ruined-city'){
-      makeRuleOccluders(data,M);data.stairs.forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeEmbers();updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',28);await Promise.all([tryHDRI(),addRuinedCity(data)]);
+      makeRuleOccluders(data,M);data.stairs.filter(s=>!s.invisible).forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeEmbers();updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',28);await Promise.all([tryHDRI(),addRuinedCity(data)]);
     }else{
       data.terrain.forEach((t,i)=>t.t==='l'?makeLight(t,i,M):makeHeavy(t,i,M));data.stairs.forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeCity(M);makeStreetProps(M);makeEmbers();
       updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',46);if(S.quality>0)await Promise.all([tryHDRI(),addHeroAssets(M)]);
