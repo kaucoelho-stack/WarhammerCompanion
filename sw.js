@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v23-conceal-climb-ai-lock';
+const CACHE = 'auspex-v24-tombworld-target-lock-traits';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',

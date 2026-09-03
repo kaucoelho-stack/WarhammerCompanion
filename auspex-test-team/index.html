@@ -80,6 +80,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:n
 .cell.mv{background:rgba(92,201,138,.26);border:1px solid rgba(92,201,138,.5)}
 .cell.ch{background:rgba(224,90,90,.26);border:1px solid rgba(224,90,90,.5)}
 .cell.tg{background:rgba(232,195,77,.3);border:1px solid var(--warn);z-index:12}
+.cell.tg.focused{background:radial-gradient(circle,#fff7beaa 0 24%,#ffb51f66 27% 54%,transparent 58%);border-color:#fff3ad;z-index:18}
 .los{position:absolute;height:1px;transform-origin:0 50%;pointer-events:none;z-index:4;opacity:.65}
 
 /* ===== PAINEL ===== */
@@ -158,6 +159,16 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:n
 #log div{padding:3px 0;border-bottom:1px solid var(--line)}
 .tag{display:inline-block;padding:1px 5px;border-radius:3px;background:var(--line);
   font-size:9px;font-family:var(--fd);letter-spacing:.5px;margin-left:4px}
+.trait-chip{display:inline-flex;align-items:center;gap:3px;margin:3px 4px 0 0;padding:3px 6px;border:1px solid #39708b;border-radius:4px;background:#091925;color:#8fe6ff;font:700 8px var(--fd);letter-spacing:.45px;cursor:pointer}
+.trait-chip::after{content:'?';display:grid;place-items:center;width:12px;height:12px;border:1px solid currentColor;border-radius:50%;font-size:7px}
+.trait-explain{display:grid;gap:7px;margin-top:10px}.trait-rule{padding:9px 10px;border-left:3px solid #5ddfff;background:#0a1824;color:#9cb5c4;font-size:10px;line-height:1.48}.trait-rule b{display:block;color:#bff4ff;font:800 11px var(--fd);letter-spacing:.5px;margin-bottom:2px}
+.weapon-inspect{padding:12px;border:1px solid #41637d;border-radius:8px;background:linear-gradient(145deg,#15283a,#08131e)}
+.weapon-inspect h4{font:800 18px var(--fd);color:#f0fbff}.weapon-inspect .weapon-profile{margin-top:5px;color:#ffcf70;font:700 11px var(--fd);letter-spacing:.6px}
+.ov.targeting{background:rgba(2,7,11,.18);backdrop-filter:none;pointer-events:none}
+.ov.targeting .sheet{pointer-events:auto;max-width:680px;max-height:min(47dvh,470px);background:linear-gradient(160deg,rgba(19,35,49,.98),rgba(5,13,20,.99));box-shadow:0 -18px 55px #000d,0 0 0 1px #6fdcff22}
+.target-guide{padding:7px 9px;margin-bottom:8px;border-left:3px solid #ffcb59;background:#211b0d;color:#c8b982;font-size:9px;line-height:1.45}
+.target-choice.on{border-color:#ffe27a;background:linear-gradient(145deg,#3a2c10,#14212d);box-shadow:0 0 0 2px #ffda6940,0 0 18px #ffc84c30}
+.target-choice.on .tn{color:#ffe699}.target-confirm{display:flex;gap:7px;margin-top:8px}.target-confirm .btn{flex:1}.target-confirm .confirm{flex:1.45}
 
 /* ===== DIREÇÃO DE ARTE: HOLO-TABLE ===== */
 :root{--void:#05080d;--steel:#132131;--glow:#69e6ff;--ember:#ffad42}
@@ -194,10 +205,22 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.3;
 .maplegend .lg-stair{background:repeating-linear-gradient(0deg,#c49a55 0 2px,#3c2d1b 2px 3px)}
 .maplegend .lg-building{background:#213746;border:1px solid #8ccce8;box-shadow:inset 0 0 0 2px #09151e}
 .maplegend .lg-door{background:#55efad;border:1px solid #d5ffea;box-shadow:0 0 5px #55efad}
+.maplegend .lg-wall{background:#0d2d23;border:1px solid #68ebb0;box-shadow:0 0 5px #39e99b}.maplegend .lg-hatch{background:#32df96;border:1px solid #c4ffe4;box-shadow:0 0 7px #43ffac}
 html[data-killzone="forge"] #board{filter:sepia(.13);box-shadow:0 0 0 5px #120d08,0 0 0 6px #684c31,0 28px 60px #000c,0 0 45px #b76a2122}
 html[data-killzone="forge"] #kzname{color:#ffb454}
 html[data-killzone="wastes"] #board{filter:sepia(.22) saturate(.8);background-color:#17130e}
 html[data-killzone="wastes"] #kzname{color:#e8a96a}
+html[data-killzone="tombworld"] #board{filter:none;background-color:#020b0a;background-image:radial-gradient(circle at 50% 50%,#0f3f2f44,transparent 58%),linear-gradient(#40d89a16 1px,transparent 1px),linear-gradient(90deg,#40d89a16 1px,transparent 1px);box-shadow:0 0 0 5px #010706,0 0 0 6px #265c4b,0 28px 60px #000,0 0 48px #24ff9b1c}
+html[data-killzone="tombworld"] #kzname{color:#79ffc1}
+html[data-killzone="tombworld"] .terr.tomb-wall{transform:none;z-index:7;border:1px solid #78d5a9;border-radius:1px;background:linear-gradient(90deg,#071813 0 8%,#173d31 9% 22%,#06120f 23% 36%,#245141 37% 48%,#081a14 49% 64%,#1a4033 65% 80%,#07130f 81%);box-shadow:inset 0 0 0 2px #020806,inset 0 0 18px #33ffad20,0 4px 9px #000}
+html[data-killzone="tombworld"] .terr.tomb-wall::before{content:'◈';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#78ffc088;font:800 9px var(--fd);text-shadow:0 0 8px #28ff9e}
+html[data-killzone="tombworld"] .terr.tomb-wall::after{content:'';position:absolute;inset:3px;border:1px solid #64ffb52b;background:radial-gradient(circle at 50% 50%,#64ffb522 0 8%,transparent 9%)}
+html[data-killzone="tombworld"] .terr.tomb-sarcophagus{border-color:#d6bd79;background:linear-gradient(135deg,#6b613c,#1d2e27 48%,#95804a);box-shadow:inset 0 0 12px #07100b,2px 3px 0 #06100c,0 0 12px #66ffb622}
+html[data-killzone="tombworld"] .terr.tomb-sarcophagus::before{content:'SARCÓFAGO';color:#ffe6a8;background:#07100de8;text-shadow:0 0 5px #9dffca}
+html[data-killzone="tombworld"] .terr.tomb-debris{border-color:#4c9c78;background:repeating-linear-gradient(135deg,#173b2f 0 5px,#071610 5px 10px)}
+html[data-killzone="tombworld"] .terr.tomb-debris::before{content:'DETRITOS';color:#8ce8b8}
+.tomb-hatch{position:absolute;z-index:8;pointer-events:none;border:1px solid #a8ffda;background:radial-gradient(circle,#4affae99 0 16%,#123a2caa 19% 58%,transparent 62%);box-shadow:inset 0 0 9px #37ffa4,0 0 12px #31ffa088;color:#baffdf}
+.tomb-hatch::after{content:'PORTAL ABERTO';position:absolute;left:50%;top:-8px;transform:translateX(-50%);white-space:nowrap;background:#020a07e8;color:#7dffc2;font:800 5px var(--fd);letter-spacing:.45px;padding:1px 3px}
 #board{border:1px solid #42617c;border-radius:3px;transform:rotateX(2deg);transform-origin:center;
   overflow:hidden;
   background-color:#08121c;background-image:
@@ -280,6 +303,8 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
 .op:hover{transform:translateY(-2px) scale(1.12);filter:brightness(1.2);z-index:14}
 .op:active{transform:translateY(1px) scale(.96)}
 .op.sel{animation:selectedPulse 1.25s ease-in-out infinite;filter:brightness(1.3);z-index:14}
+.op.aimed{z-index:20;opacity:1;animation:aimedTarget .48s ease-in-out infinite alternate;filter:brightness(1.65) saturate(1.35)}
+@keyframes aimedTarget{to{box-shadow:0 0 0 5px #fff2a4,0 0 0 9px #ff9e2d99,0 0 30px #ffbd3c,inset 0 0 12px #fff}}
 @keyframes selectedPulse{50%{box-shadow:0 3px 0 #020406,0 0 0 4px #fff9,0 0 21px currentColor,inset 0 0 10px currentColor}}
 .op.high{box-shadow:0 5px 0 #07101a,0 8px 0 #020507,0 14px 18px #000,0 0 16px currentColor}
 .op .mini{position:absolute;inset:1px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -338,6 +363,8 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
 .kzpreview i:nth-child(1){width:31%;height:18%;left:10%;top:18%}.kzpreview i:nth-child(2){width:22%;height:38%;right:12%;top:35%}
 .kzpreview i:nth-child(3){width:34%;height:17%;left:27%;bottom:11%}.kzpreview span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--kz);font-size:25px;text-shadow:0 0 12px var(--kz)}
 .kzcard[data-kz="forge"] .kzpreview i:nth-child(2){height:62%;top:16%}.kzcard[data-kz="wastes"] .kzpreview i{transform:rotate(-9deg);width:22%}
+.kzcard[data-kz="tombworld"] .kzpreview{background-color:#020b08;background-image:linear-gradient(#45d99c18 1px,transparent 1px),linear-gradient(90deg,#45d99c18 1px,transparent 1px)}
+.kzcard[data-kz="tombworld"] .kzpreview i{background:#102e25;border-color:#66dca8;box-shadow:0 0 8px #33ff9a55}.kzcard[data-kz="tombworld"] .kzpreview i:nth-child(1){width:60%;height:9%;left:6%;top:24%}.kzcard[data-kz="tombworld"] .kzpreview i:nth-child(2){width:9%;height:64%;right:24%;top:17%}.kzcard[data-kz="tombworld"] .kzpreview i:nth-child(3){width:48%;height:9%;left:24%;bottom:20%}
 .roster-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;margin-bottom:8px;border:1px solid #35526a;border-radius:8px;background:#091621}
 .roster-head strong{font:700 15px var(--fd);color:var(--team)}.roster-head small{display:block;color:var(--txt2);margin-top:2px}.roster-total{text-align:right;font:800 17px var(--fd);color:#dff8ff}.roster-total.bad{color:#ff8d84}.roster-total span{display:block;font:600 7px var(--fm);letter-spacing:1px;color:var(--mut)}
 .roster-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:min(57vh,560px);overflow:auto;padding:2px}
@@ -431,6 +458,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
   #acts .btn{min-height:44px;padding:8px 7px;white-space:normal;line-height:1.15}
   .sheet{max-height:92dvh}.x{width:44px;height:44px}.mode-btn{min-height:86px}
   .ov{padding-bottom:env(safe-area-inset-bottom)}
+  .ov.targeting .sheet{max-height:43dvh}.ov.targeting .shb{padding:8px}.ov.targeting .trow{padding:7px}.target-guide{font-size:8px}
   #top{gap:5px;padding:5px}.pchip{padding:5px 7px}.pchip.act::before{display:none}#tp{padding:4px 6px}
   .quit-match{width:36px;min-width:36px;height:34px;padding:5px;font-size:12px}.quit-match span{display:none}
   #scorebar{grid-template-columns:1fr 1fr;padding:4px;gap:4px}.score-live{grid-column:1/-1;grid-row:2;min-height:18px}.score-side{padding:3px;gap:2px}.score-item b{font-size:11px}.score-item small{font-size:5px}
@@ -456,7 +484,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
       <button class="mode-btn ai" onclick="chooseGameMode('ai')"><i>01</i><b>1 JOGADOR vs IA</b><small>Enfrente o controlador tático AUSPEX. A IA seleciona, posiciona, move, atira, luta e disputa objetivos.</small></button>
       <button class="mode-btn" onclick="chooseGameMode('pvp')"><i>02</i><b>2 JOGADORES · VS</b><small>Partida local no mesmo aparelho, com escolhas e ativações alternadas.</small></button>
     </div>
-    <div class="title-foot">OFFLINE · 3 KILLZONES · 15 KILL TEAMS · MOTOR DE REGRAS · 4 TURNING POINTS</div>
+    <div class="title-foot">OFFLINE · 4 KILLZONES · 15 KILL TEAMS · MOTOR DE REGRAS · 4 TURNING POINTS</div>
   </div>
 </div>
 <div id="top">
@@ -527,7 +555,9 @@ const rnd=n=>Math.floor(Math.random()*n)+1;
 const d6=()=>rnd(6);
 // Distâncias são medidas geometricamente entre os centros das bases. O grid continua
 // sendo uma ajuda visual de 1", mas diagonais já não valem artificialmente apenas 1".
-const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,zOf(a)-zOf(b));
+const directDist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,zOf(a)-zOf(b));
+const TOMB_DISTANCE_CACHE=new Map();
+const dist=(a,b)=>ACTIVE_KZ==='tombworld'?tombMeasureDistance(a,b):directDist(a,b);
 
 /* ---------- TIMES ----------
    Cada operativo: APL, M(ove), SV, W(ounds), armas e habilidades REAIS.
@@ -700,9 +730,22 @@ const KILLZONES={
  wastes:{name:'Ermos de Cinder',sub:'Campo aberto · Ruínas e tiros longos',ico:'◇',tone:'#e8a96a',
   terrain:[{x:7,y:5,w:3,h:3,t:'h',z:2},{x:20,y:14,w:3,h:3,t:'h',z:2},{x:13,y:9,w:4,h:4,t:'h',z:2},{x:4,y:14,w:4,h:1,t:'l'},{x:22,y:7,w:4,h:1,t:'l'},{x:10,y:3,w:1,h:4,t:'l'},{x:19,y:16,w:1,h:4,t:'l'},{x:4,y:8,w:2,h:1,t:'l'},{x:24,y:13,w:2,h:1,t:'l'}],
   stairs:[{x:6,y:6,tx:7,ty:6,z:2},{x:23,y:15,tx:22,ty:15,z:2},{x:12,y:10,tx:13,ty:10,z:2}],
-  objs:[{x:5,y:5},{x:25,y:17},{x:15,y:5},{x:15,y:17},{x:15,y:11}]}
+  objs:[{x:5,y:5},{x:25,y:17},{x:15,y:5},{x:15,y:17},{x:15,y:11}]},
+ tombworld:{name:'Killzone Tomb World',sub:'Corredores fechados · paredes absolutas · portais e sarcófagos',ico:'◈',tone:'#65efad',indoor:true,
+  terrain:[
+   {x:4,y:5,w:5,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:10,y:5,w:7,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:18,y:5,w:8,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
+   {x:4,y:16,w:7,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:12,y:16,w:9,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:22,y:16,w:4,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
+   {x:9,y:5,w:1,h:4,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:9,y:10,w:1,h:6,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
+   {x:21,y:5,w:1,h:6,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:21,y:12,w:1,h:5,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
+   {x:9,y:10,w:4,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:14,y:10,w:8,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
+   {x:9,y:12,w:6,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:16,y:12,w:6,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
+   {x:6,y:2,w:2,h:1,t:'l',kind:'tomb-sarcophagus'},{x:22,y:19,w:2,h:1,t:'l',kind:'tomb-sarcophagus'},
+   {x:13,y:7,w:2,h:1,t:'l',kind:'tomb-sarcophagus'},{x:16,y:14,w:2,h:1,t:'l',kind:'tomb-sarcophagus'},
+   {x:5,y:12,w:2,h:1,t:'l',kind:'tomb-debris'},{x:23,y:9,w:2,h:1,t:'l',kind:'tomb-debris'},{x:14,y:18,w:2,h:1,t:'l',kind:'tomb-debris'}],
+  stairs:[],hatches:[{x:9,y:5,axis:'h'},{x:17,y:5,axis:'h'},{x:11,y:16,axis:'h'},{x:21,y:16,axis:'h'},{x:9,y:9,axis:'v'},{x:21,y:11,axis:'v'},{x:13,y:10,axis:'h'},{x:15,y:12,axis:'h'}],
+  objs:[{x:7,y:8},{x:23,y:13},{x:15,y:3},{x:15,y:19},{x:15,y:11}]}
 };
-let ACTIVE_KZ='volkus',TERRAIN=[],STAIRS=[],OBJS=[];
+let ACTIVE_KZ='volkus',TERRAIN=[],STAIRS=[],HATCHES=[],OBJS=[];
 const TMAP=[];
 const insideFeature=(t,x,y)=>x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h;
 function doorAt(t,x,y){if(!t.building)return false;
@@ -728,7 +771,7 @@ function climbableWall(t,side,offset){
 /* Escalada normal usa a altura vertical real. Os objetos abaixo são rotas de
    regra invisíveis; caixotes marcam alguns pontos sem conceder o bônus de escada. */
 function generatedTerrainClimbs(t){
-  if(t.t!=='h'||!t.z||['ruin-wall','heavy-rubble'].includes(t.kind))return[];
+  if(t.t!=='h'||!t.z||t.noClimb||['ruin-wall','heavy-rubble'].includes(t.kind))return[];
   const bid=t.id||`${t.x}-${t.y}`,step=t.building?(t.floorStep||t.z):t.z,levels=[];
   for(let z=step;z<=t.z+.001;z+=step)levels.push(Math.min(z,t.z));
   if(!levels.includes(t.z))levels.push(t.z);
@@ -746,24 +789,41 @@ function generatedTerrainClimbs(t){
   return routes;
 }
 function applyKillzone(id){
-  ACTIVE_KZ=id;const k=KILLZONES[id];
+  ACTIVE_KZ=id;TOMB_DISTANCE_CACHE.clear();const k=KILLZONES[id];
   TERRAIN=k.terrain.map((x,i)=>({...x,id:x.id||`${id}-t${i}`}));
-  STAIRS=TERRAIN.flatMap(generatedTerrainClimbs);OBJS=k.objs.map(x=>({...x}));
+  STAIRS=TERRAIN.flatMap(generatedTerrainClimbs);HATCHES=(k.hatches||[]).map(x=>({...x}));OBJS=k.objs.map(x=>({...x}));
   for(let y=0;y<H;y++){TMAP[y]=[];for(let x=0;x<W;x++)TMAP[y][x]=null;}
   TERRAIN.forEach(t=>{for(let y=t.y;y<t.y+t.h;y++)for(let x=t.x;x<t.x+t.w;x++)if(y>=0&&y<H&&x>=0&&x<W){
     if(t.building)TMAP[y][x]=perimeterAt(t,x,y)&&!doorAt(t,x,y)?'h':null;else TMAP[y][x]=t.t;}});
   document.documentElement.dataset.killzone=id;
   const label=document.getElementById('kzname');if(label)label.textContent=`${k.ico} ${k.name}`;
+  const legend=document.querySelector('.maplegend');if(legend)legend.innerHTML=k.indoor?
+    '<span><i class="lg-wall"></i> PAREDE WALL</span><span><i class="lg-hatch"></i> VÃO / PORTAL</span><span><i class="lg-light"></i> COBERTURA LIGHT</span><span><i class="lg-obj"></i> OBJETIVO</span>':
+    '<span><i class="lg-light"></i> COBERTURA LEVE</span><span><i class="lg-vantage"></i> PISO ELEVADO</span><span><i class="lg-stair"></i> APOIO DE ESCALADA</span><span><i class="lg-building"></i> ESTRUTURA</span><span><i class="lg-door"></i> PORTA ABERTA</span><span><i class="lg-obj"></i> OBJETIVO</span>';
 }
 applyKillzone(ACTIVE_KZ);
 /* ---------- MAPA DE TERRENO (lookup rápido) ---------- */
 const terrAt=(x,y)=>(x<0||y<0||x>=W||y>=H)?null:TMAP[y][x];
-const roofAt=(x,y)=>TERRAIN.find(t=>t.t==='h'&&t.z&&x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h);
+const roofAt=(x,y)=>TERRAIN.find(t=>t.t==='h'&&t.z&&!t.noClimb&&x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h);
 const onBuildingLevel=(t,z)=>{const step=t.floorStep||2,q=z/step;return z>0&&z<=t.z+.001&&Math.abs(q-Math.round(q))<.001;};
-const surfaceAt=(x,y,z)=>TERRAIN.some(t=>t.t==='h'&&insideFeature(t,x,y)&&(t.building?onBuildingLevel(t,z):z===t.z));
+const surfaceAt=(x,y,z)=>TERRAIN.some(t=>t.t==='h'&&!t.noClimb&&insideFeature(t,x,y)&&(t.building?onBuildingLevel(t,z):z===t.z));
 const zOf=o=>o.z||0;
 const surfaceFeature=o=>TERRAIN.find(t=>t.t==='h'&&insideFeature(t,o.x,o.y)&&
   (t.building?onBuildingLevel(t,zOf(o)):zOf(o)===t.z));
+/* Em Close Quarters a distância contorna Wall terrain. Se a linha direta não
+   cruza parede, preservamos a medida euclidiana; caso cruze, buscamos a rota
+   mais curta pelos portais e pontos de brecha do grid de 1 polegada. */
+function tombMeasureDistance(a,b){
+  if(!TERRAIN?.length)return directDist(a,b);
+  const planar=Math.hypot(a.x-b.x,a.y-b.y),vertical=Math.abs(zOf(a)-zOf(b));
+  if(!physicalShotBlock(a,b))return Math.hypot(planar,vertical);
+  const sx=Math.max(0,Math.min(W-1,Math.round(a.x))),sy=Math.max(0,Math.min(H-1,Math.round(a.y))),tx=Math.max(0,Math.min(W-1,Math.round(b.x))),ty=Math.max(0,Math.min(H-1,Math.round(b.y))),key=(x,y)=>y*W+x,
+    blocked=(x,y)=>TERRAIN.some(t=>t.noClimb&&insideFeature(t,x,y)),best=new Float32Array(W*H);best.fill(Infinity);best[key(sx,sy)]=0;const q=[{x:sx,y:sy,d:0}];
+  const ck=`${sx},${sy},${zOf(a)}>${tx},${ty},${zOf(b)}`,cached=TOMB_DISTANCE_CACHE.get(ck);if(cached!==undefined)return cached;
+  while(q.length){q.sort((m,n)=>m.d-n.d);const c=q.shift();if(c.d!==best[key(c.x,c.y)])continue;if(c.x===tx&&c.y===ty){const result=Math.hypot(c.d,vertical);TOMB_DISTANCE_CACHE.set(ck,result);return result;}
+    for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){const x=c.x+dx,y=c.y+dy;if(x<0||y<0||x>=W||y>=H||blocked(x,y))continue;const nd=c.d+Math.hypot(dx,dy),k=key(x,y);if(nd+1e-4<best[k]){best[k]=nd;q.push({x,y,d:nd});}}
+  }TOMB_DISTANCE_CACHE.set(ck,Infinity);return Infinity;
+}
 
 /* ---------- LINHA DE VISÃO (Bresenham) ----------
    Retorna {vis, cover, obscured}. Heavy bloqueia; Light dá cobertura.
@@ -811,7 +871,7 @@ function physicalShotBlock(from,to){
     if(!t.building){
       const hit=segmentRectInterval(ax,ay,bx,by,t);if(!hit)continue;
       const lo=Math.max(endQ,hit[0]+eps),hi=Math.min(1-endQ,hit[1]-eps);if(lo>hi)continue;
-      const hitQ=[lo,(lo+hi)/2,hi].find(q=>rayZ(q)<=(t.z||2)+.02);
+      const hitQ=[lo,(lo+hi)/2,hi].find(q=>t.noClimb||rayZ(q)<=(t.z||2)+.02);
       if(hitQ!==undefined)return{blocked:true,feature:t,kind:'solid',q:hitQ};
       continue;
     }
@@ -939,7 +999,7 @@ let G={
   ops:[],              // todos os operativos em jogo
   sel:null,            // operativo selecionado
   mode:null,           // null | move | charge | shoot | fight
-  moveCells:[], targets:[],
+  moveCells:[], targets:[], aimTarget:null,
   ploys:{0:[],1:[]},   // ploys ativos no turno
   log:[], selIdx:0, killzone:'volkus', gameMode:null, ai:1, aiBusy:false,rosterDraft:null,moveLevel:0,pendingWeapon:null,
   fpvHeading:0, fpvPitch:0, fpvFov:76, fpvOp:null, fpvFocus:null
@@ -983,7 +1043,9 @@ function reachable(op,maxDist,opts={}){
     for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]]){
       const nx=c.x+dx,ny=c.y+dy,nz=c.z,k=nx+','+ny+','+nz;
       if(nx<0||ny<0||nx>=W||ny>=H||seen[k]!==undefined)continue;
-      if(!fly&&nz===0&&terrAt(nx,ny)==='h')continue;
+      const sealed=TERRAIN.some(t=>t.noClimb&&insideFeature(t,nx,ny));
+      if(nz===0&&terrAt(nx,ny)==='h'&&(!fly||sealed))continue;
+      if(sealed)continue;
       if(!fly&&nz===0&&movementWallBlock(c,{x:nx,y:ny,z:nz}))continue;
       if(!fly&&nz>0&&!surfaceAt(nx,ny,nz))continue;
       if(occupied(nx,ny,op,nz))continue;
@@ -1026,6 +1088,41 @@ if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
 /* ═══════════════ COMBATE ═══════════════ */
 const hasTag=(w,t)=>w.tags.some(x=>x===t||x.startsWith(t+' '));
 const tagVal=(w,t)=>{const f=w.tags.find(x=>x.startsWith(t+' '));return f?parseInt(f.split(' ')[1]):0;};
+/* Mesmas definições do glossário do modo simples, disponíveis também dentro do
+   simulador offline. A correspondência aceita valores como "Lethal 5+". */
+const WEAPON_TRAIT_GLOSSARY={
+ 'Piercing Crits':{name:'Piercing Crits X',desc:'Reduz em X os dados de defesa somente se o atacante tiver retido pelo menos um sucesso crítico.'},
+ 'Seek Light':{name:'Seek Light',desc:'Impede que uma ordem Conceal use cobertura de terreno Light para continuar sendo um alvo inválido. Não atravessa paredes e não ignora cobertura Heavy.'},
+ Accurate:{name:'Accurate X',desc:'Retém até X dados de ataque como sucessos normais automáticos, sem rolar.'},
+ Balanced:{name:'Balanced',desc:'Permite repetir a rolagem de um dado de ataque.'},
+ Blast:{name:'Blast X',desc:'Depois do alvo principal, também resolve ataques contra operativos válidos dentro de X dele.'},
+ Brutal:{name:'Brutal',desc:'No combate, sucessos normais do oponente não podem bloquear seus golpes; ele precisa de críticos.'},
+ Ceaseless:{name:'Ceaseless',desc:'Permite repetir todos os dados de ataque com um mesmo resultado escolhido.'},
+ Devastating:{name:'Devastating X',desc:'Cada crítico retido causa X de dano imediato antes dos bloqueios.'},
+ Heavy:{name:'Heavy',desc:'Restringe movimento e disparo na mesma ativação. A variante entre parênteses informa qual movimento ainda é permitido.'},
+ Hot:{name:'Hot',desc:'Após usar, role 1D6. Se o resultado for menor que o Hit da arma, o próprio operativo sofre dano igual ao resultado ×2.'},
+ Lethal:{name:'Lethal X+',desc:'Resultados iguais ou maiores que X contam como sucessos críticos.'},
+ Limited:{name:'Limited X',desc:'Depois de usar a arma X vezes na batalha, ela não pode ser usada novamente.'},
+ Markerlight:{name:'Markerlight',desc:'Aplica uma marcação ao alvo em vez de causar dano. Marcações liberam bônus cumulativos dos Pathfinders.'},
+ Melta:{name:'Melta X',desc:'A curta distância, cada sucesso resolvido causa X de dano adicional.'},
+ Piercing:{name:'Piercing X',desc:'O defensor rola X dados de defesa a menos.'},
+ Punishing:{name:'Punishing',desc:'Se algum crítico for retido, uma falha pode ser convertida em sucesso normal.'},
+ Range:{name:'Range X',desc:'Somente operativos dentro da distância indicada podem ser escolhidos como alvo.'},
+ Relentless:{name:'Relentless',desc:'Permite repetir qualquer quantidade de dados de ataque.'},
+ Rending:{name:'Rending',desc:'Se algum crítico for retido, um sucesso normal também pode ser convertido em crítico.'},
+ Saturate:{name:'Saturate',desc:'O defensor não pode reter automaticamente um sucesso por estar em cobertura.'},
+ Seek:{name:'Seek',desc:'Impede que uma ordem Conceal use cobertura para tornar o alvo inválido. Seek nunca atravessa paredes nem cria visibilidade.'},
+ Severe:{name:'Severe',desc:'Se nenhum crítico for retido, transforma um sucesso normal em crítico.'},
+ Silent:{name:'Silent',desc:'Permite Atirar com esta arma mesmo enquanto o operativo está com ordem Conceal.'},
+ Stun:{name:'Stun',desc:'Ao reter crítico, reduz o APL do alvo em 1 até o fim da próxima ativação dele.'},
+ Torrent:{name:'Torrent X',desc:'Permite atacar alvos secundários dentro de X do alvo principal, resolvendo cada sequência separadamente.'}
+};
+function weaponTraitInfo(tag){
+  const key=Object.keys(WEAPON_TRAIT_GLOSSARY).sort((a,b)=>b.length-a.length).find(k=>String(tag).toLowerCase().startsWith(k.toLowerCase()));
+  return key?{...WEAPON_TRAIT_GLOSSARY[key],tag}:null;
+}
+function weaponTraitsHTML(w){return(w.tags||[]).map(tag=>{const r=weaponTraitInfo(tag);return r?`<div class="trait-rule"><b>${tag}</b>${r.desc}</div>`:`<div class="trait-rule"><b>${tag}</b>Regra especial deste perfil. Consulte o card do kill team para os efeitos específicos.</div>`;}).join('')||'<div class="trait-rule"><b>SEM ATRIBUTOS ESPECIAIS</b>Este perfil usa apenas seus valores de Ataques, Hit e Dano.</div>';}
+function weaponChipsHTML(w){return(w.tags||[]).map(tag=>`<span class="trait-chip">${tag}</span>`).join('');}
 const seekIgnoresCover=(op,tgt,w,los)=>{
   const tags=w?.tags||[],seek=tags.includes('Seek'),seekLight=tags.includes('Seek Light');
   return seek||(seekLight&&los.coverType==='light')||(op.teamId==='pth'&&(tgt.marks||0)>=4);
@@ -1066,12 +1163,21 @@ function weaponDamageRange(op,tgt,w){
 function pickWeapon(op,type,title,callback){
   const ws=weaponsOf(op,type);if(!ws.length)return null;
   if(ws.length===1||isAI(op.pi))return callback(ws.length===1?ws[0]:bestWeapon(op,type));
-  openOv(title,`<div class="tlist">${ws.map((w,i)=>`<button class="trow" onclick="chooseWeapon(${i})">
-    <div class="ic">${type==='r'?'▹':'⚔'}</div><div><div class="tn">${w.n}</div>
-    <div class="td">A${w.a} · ${w.h}+ · ${w.d}/${w.c} · potencial 0–${weaponDamageRange(op,null,w).max} PV${w.tags.length?` · ${w.tags.join(' · ')}`:''}</div></div></button>`).join('')}</div>`);
-  G.pendingWeapon={op,type,ws,callback};return null;
+  G.pendingWeapon={op,type,ws,callback,title};showWeaponPicker();return null;
+}
+function showWeaponPicker(){const p=G.pendingWeapon;if(!p)return;
+  openOv(p.title,`<div style="font-size:9px;color:var(--txt2);margin-bottom:8px">Toque numa arma para revisar o perfil e entender todos os atributos antes de usá-la.</div><div class="tlist">${p.ws.map((w,i)=>`<button class="trow" onclick="inspectPendingWeapon(${i})">
+    <div class="ic">${p.type==='r'?'▹':'⚔'}</div><div><div class="tn">${w.n}</div>
+    <div class="td">A${w.a} · ${w.h}+ · ${w.d}/${w.c} · potencial 0–${weaponDamageRange(p.op,null,w).max} PV</div><div>${weaponChipsHTML(w)}</div></div></button>`).join('')}</div>`);
+}
+function inspectPendingWeapon(i){const p=G.pendingWeapon,w=p?.ws?.[i];if(!p||!w)return;
+  openOv('PERFIL E ATRIBUTOS',`<div class="weapon-inspect"><h4>${w.n}</h4><div class="weapon-profile">ATAQUES ${w.a} · HIT ${w.h}+ · DANO ${w.d}/${w.c} · POTENCIAL 0–${weaponDamageRange(p.op,null,w).max} PV</div><div class="trait-explain">${weaponTraitsHTML(w)}</div></div>
+    <div class="roster-actions"><button class="btn" onclick="showWeaponPicker()">← OUTRAS ARMAS</button><button class="btn pri confirm" onclick="chooseWeapon(${i})">USAR ESTA ARMA</button></div>`,true);
 }
 function chooseWeapon(i){const p=G.pendingWeapon,w=p?.ws?.[i];if(!p||!w)return;G.pendingWeapon=null;closeOv();p.callback(w);}
+function showCardWeaponInfo(opId,i){const op=opById(opId),w=op?.wpn?.[i];if(!op||!w)return;
+  openOv('ATRIBUTOS DA ARMA',`<div class="weapon-inspect"><h4>${w.n}</h4><div class="weapon-profile">ATAQUES ${w.a} · HIT ${w.h}+ · DANO ${w.d}/${w.c}</div><div class="trait-explain">${weaponTraitsHTML(w)}</div></div><button class="btn" style="width:100%;margin-top:9px" onclick="showCard(opById('${op.id}'))">← VOLTAR AO OPERATIVO</button>`);
+}
 
 // Coleta modificadores de ploys/habilidades ativos
 function mods(op,tgt,wpn,isShoot){
@@ -1283,7 +1389,7 @@ function showKillzonePicker(){
     <div class="kzgrid">${Object.entries(KILLZONES).map(([id,k])=>`
       <button class="kzcard" data-kz="${id}" onclick="pickKillzone('${id}')" style="--kz:${k.tone}">
         <div class="kzpreview"><i></i><i></i><i></i><span>${k.ico}</span></div>
-        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · paredes escaláveis pela altura real</em>
+        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · ${k.indoor?'paredes Wall absolutas, sem escalada':'paredes escaláveis pela altura real'}</em>
       </button>`).join('')}</div>`,true);
 }
 function pickKillzone(id){
@@ -1594,6 +1700,7 @@ function clearInspection(){
 function selectOp(op,automated=false){
   if(G.phase!=='firefight')return;
   if(humanInputLocked()&&!automated){msg('<b class="hl">Turno da IA:</b> aguarde o fim da ativação para voltar a inspecionar os operativos.');return;}
+  if(G.mode==='shoot'&&!automated){if(G.targets.includes(op))focusShotTarget(op.id);else msg('<b class="hl">Seleção de alvo ativa:</b> confirme um alvo marcado ou cancele o tiro.');return;}
   const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&RULES.canCounter(op,TEAMS);
   if(op.pi!==G.cur||(!counterOK&&op.activated)||op.dead){showCard(op);return;}
   if(!counterOK&&G.gaRequired&&op.templateId!==G.gaRequired){showCard(op);msg('<b class="hl">Group Activation:</b> você pode consultar este card, mas deve ativar outro operativo do tipo exigido.');return;}
@@ -1664,7 +1771,7 @@ function doMove(x,y,z=0,automated=false){
     msg(`<b>${op.n}</b> moveu${where}. Restam <b class="hl">${op.ap} AP</b>.`);}
 }
 function actShoot(chosen=null){
-  const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;
+  const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;G.aimTarget=null;
   if(!chosen)return pickWeapon(op,'r','Escolha a arma de tiro',w=>actShoot(w));
   const w=chosen;
   if(op.order==='conceal'&&!hasTag(w,'Silent')){msg('<b class="hl">Atirar exige Engage, exceto com arma Silent.</b>');return;}
@@ -1685,13 +1792,15 @@ function actShoot(chosen=null){
 }
 function showShotTargets(targets,w){
   const op=G.sel;if(!op||G.mode!=='shoot')return;
-  openOv('ESCOLHA O ALVO',`<div style="font-size:10px;color:var(--txt2);line-height:1.45;margin-bottom:9px"><b style="color:var(--warn)">${w.n}</b> selecionada. Escolha abaixo quem receberá o ataque; nenhum AP será gasto antes da confirmação.</div>
-    <div class="tlist">${targets.map(t=>{const los=checkLoS(op,t),cover=los.cover?(los.coverType==='light'?'COBERTURA LEVE':'COBERTURA PESADA'):'SEM COBERTURA',range=weaponDamageRange(op,t,w);return`<button class="trow" onclick="selectShotTarget('${t.id}')">
+  const aimed=G.aimTarget&&targets.includes(G.aimTarget)?G.aimTarget:null;
+  openOv('ESCOLHA E CONFIRA O ALVO',`<div class="target-guide"><b>${w.n}</b> · toque num nome ou marcador no mapa. A unidade escolhida ficará destacada; o tabuleiro continua nítido para você conferir a linha de tiro.</div>
+    <div class="tlist">${targets.map(t=>{const los=checkLoS(op,t),cover=los.cover?(los.coverType==='light'?'COBERTURA LEVE':'COBERTURA PESADA'):'SEM COBERTURA',range=weaponDamageRange(op,t,w);return`<button class="trow target-choice ${aimed===t?'on':''}" onclick="focusShotTarget('${t.id}')">
       <div class="ic">${t.ico}</div><div><div class="tn">${t.n}</div><div class="td">${dist(op,t).toFixed(1)}″ · ${t.hp}/${t.maxhp} PV · ${t.order==='conceal'?'CONCEAL':'ENGAGE'} · ${cover} · dano 0–${range.max}</div></div></button>`;}).join('')}</div>
-    <div class="roster-actions"><button class="btn" onclick="cancelShotPreview()">CANCELAR TIRO</button><button class="btn" onclick="changeShotWeapon()">TROCAR ARMA</button></div>`,true);
+    <div class="target-confirm"><button class="btn" onclick="cancelShotPreview()">CANCELAR</button><button class="btn" onclick="changeShotWeapon()">TROCAR ARMA</button><button class="btn pri confirm" ${aimed?'':'disabled'} onclick="confirmShotTargetChoice()">${aimed?'REVISAR ATAQUE EM '+aimed.n.toUpperCase():'SELECIONE UM ALVO'}</button></div>`,true,'targeting');
 }
-function selectShotTarget(id){const tgt=opById(id);if(!tgt||G.mode!=='shoot'||!G.targets.includes(tgt)){cancelShotPreview();return;}doShoot(tgt);
-}
+function focusShotTarget(id){const tgt=opById(id);if(!tgt||G.mode!=='shoot'||!G.targets.includes(tgt))return;G.aimTarget=tgt;render();focusBoard(tgt.x,tgt.y,false);showShotTargets(G.targets,G.weapon);msg(`<b style="color:var(--warn)">ALVO TRAVADO:</b> ${tgt.n}. Confira o marcador pulsando no mapa antes de confirmar.`);}
+function selectShotTarget(id){focusShotTarget(id);}
+function confirmShotTargetChoice(){const tgt=G.aimTarget;if(!tgt||!G.targets.includes(tgt))return;showShotPreview(tgt);}
 function showShotPreview(tgt){
   const op=G.sel,w=G.weapon||bestWeapon(op,'r'),range=weaponDamageRange(op,tgt,w),los=checkLoS(op,tgt),cover=los.cover?(los.coverType==='light'?'LEVE':'PESADA'):'SEM COBERTURA';
   openOv('CONFIRMAR ATAQUE',`<div class="shot-preview"><div class="rowlbl">${op.n} → ${tgt.n}</div><div style="font:700 15px var(--fd);color:#eaf8ff;margin-top:4px">${w.n}</div>
@@ -1700,13 +1809,13 @@ function showShotPreview(tgt){
     <div style="font-size:9px;color:var(--txt2);line-height:1.45;margin-top:9px">${range.note}<br>O ataque ainda não gastou AP e nenhum dado foi rolado.</div></div>
     <div class="roster-actions"><button class="btn" onclick="cancelShotPreview()">CANCELAR</button><button class="btn" onclick="changeShotWeapon()">TROCAR ARMA</button><button class="btn pri confirm" onclick="confirmShot('${tgt.id}')">CONFIRMAR TIRO</button></div>`,true);
 }
-function cancelShotPreview(){closeOv();G.mode=null;G.targets=[];G.weapon=null;render();msg('<b>Ataque cancelado.</b> Nenhum AP ou uso de arma foi gasto.');}
-function changeShotWeapon(){closeOv();G.mode=null;G.targets=[];G.weapon=null;render();actShoot();}
+function cancelShotPreview(){closeOv();G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();msg('<b>Ataque cancelado.</b> Nenhum AP ou uso de arma foi gasto.');}
+function changeShotWeapon(){closeOv();G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();actShoot();}
 function confirmShot(id){const tgt=opById(id);closeOv();if(tgt)doShoot(tgt,{confirmed:true});}
 function doShoot(tgt,opts={}){
   const op=G.sel,w=G.weapon||bestWeapon(op,'r');
   const targetNow=shotTargetState(op,tgt,w);
-  if(!G.targets.includes(tgt)||!targetNow.valid){G.mode=null;G.targets=[];G.weapon=null;render();msg(`<b class="hl">Tiro cancelado:</b> ${targetNow.reason||'o alvo deixou de ser válido'}.`);return;}
+  if(!G.targets.includes(tgt)||!targetNow.valid){G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();msg(`<b class="hl">Tiro cancelado:</b> ${targetNow.reason||'o alvo deixou de ser válido'}.`);return;}
   if(!opts.ai&&!opts.confirmed){showShotPreview(tgt);return;}
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){const nearest=enemiesOf(op.pi).filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(nearest&&nearest!==tgt){if(P(op.pi).communion<1){G.mode=null;G.targets=[];render();msg('<b class="hl">Communion:</b> sem pontos para ignorar o inimigo mais próximo.');return;}P(op.pi).communion--;}}
   const wasAlive=new Set(G.ops.filter(o=>!o.dead).map(o=>o.id));
@@ -1731,7 +1840,7 @@ function doShoot(tgt,opts={}){
   const hot=hasTag(w,'Hot')&&r.atk.some(d=>d.v===1)?applyDmg(op,3):0;
   const casualties=G.ops.filter(o=>wasAlive.has(o.id)&&o.dead);
   log(`${op.n} atirou em ${tgt.n} com ${w.n}: ${dealt} de dano${hot?` · Hot causou ${hot} em ${op.n}`:''}${tgt.dead?' · INCAPACITADO':''}`);
-  if(hot)extra.push(`${op.n} sofreu −${hot} por Hot`);G.mode=null;G.targets=[];G.weapon=null;
+  if(hot)extra.push(`${op.n} sofreu −${hot} por Hot`);G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;
   showCombat('TIRO',op,tgt,w,r,dealt,extra,opts.onContinue?()=>opts.onContinue({casualties,dealt,target:tgt}):null,!!opts.ai);
   spend(op,1,!!opts.ai);render();if(!opts.ai)checkElimination();
 }
@@ -1817,12 +1926,13 @@ function render(){
   // terreno
   TERRAIN.forEach(t=>{const doors=t.building?(t.doors||[]).map(d=>{const axis=(d.side==='n'||d.side==='s')?'left':'top',pos=(d.offset+.5)*CS;
       return`<i class="door ${d.side}" title="Porta aberta · linha de visão física" style="${axis}:${pos}px;--cs:${CS}px">PORTA</i>`;}).join(''):'';
-    const openings=t.building?(t.openSides||[]).map(side=>`<i class="opening ${side}" title="Lado aberto · passagem e linha de visão">ABERTO</i>`).join(''):'',kind=t.kind||'',vantage=t.t==='h'&&t.z&&!['ruin-wall','heavy-rubble'].includes(kind),
-      title=kind==='stronghold'?`Fortaleza Volkus · pisos 0″, 3″ e 6″`:kind==='large-ruin'?`Ruína grande aberta · Vantage ${t.z}″`:kind==='ruin-wall'?'Parede quebrada · terreno Heavy':kind==='heavy-rubble'?'Escombros pesados':t.t==='l'?'Escombros leves / cobertura':`Estrutura sólida · telhado a ${t.z||2}″`;
+    const openings=t.building?(t.openSides||[]).map(side=>`<i class="opening ${side}" title="Lado aberto · passagem e linha de visão">ABERTO</i>`).join(''):'',kind=t.kind||'',vantage=t.t==='h'&&t.z&&!t.noClimb&&!['ruin-wall','heavy-rubble'].includes(kind),
+      title=kind==='stronghold'?`Fortaleza Volkus · pisos 0″, 3″ e 6″`:kind==='large-ruin'?`Ruína grande aberta · Vantage ${t.z}″`:kind==='ruin-wall'?'Parede quebrada · terreno Heavy':kind==='heavy-rubble'?'Escombros pesados':kind==='tomb-wall'?'Parede Tomb World · não atravessa, não escala e bloqueia visão':kind==='tomb-sarcophagus'?'Sarcófago · cobertura Light':t.t==='l'?'Detritos / cobertura Light':`Estrutura sólida · telhado a ${t.z||2}″`;
     h+=`<div class="terr ${t.t==='h'?'heavy':'light'} ${vantage?'vantage':''} ${t.building?'building':''} ${kind}" data-height="${t.z||0}″" title="${title}" style="left:${t.x*CS}px;top:${t.y*CS}px;width:${t.w*CS}px;height:${t.h*CS}px;--cs:${CS}">${doors}${openings}</div>`;});
   STAIRS.filter(s=>!s.invisible).forEach(s=>{const x1=(s.x+.5)*CS,y1=(s.y+.5)*CS,x2=((s.tx??s.x)+.5)*CS,y2=((s.ty??s.y)+.5)*CS,len=Math.hypot(x2-x1,y2-y1),ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
     if(s.visual==='crates')h+=`<div class="climb-aid" title="Caixotes de apoio · esta parede pode ser escalada pagando a altura" style="left:${x1}px;top:${y1}px"></div>`;
     else h+=`<div class="stair ${s.fromZ?'level2':''}" title="Escada vertical: ${s.fromZ||0}&quot; → ${s.toZ||s.z||2}&quot;" style="left:${x1}px;top:${y1-3}px;width:${len}px;transform:rotate(${ang}deg)"></div>`;});
+  HATCHES.forEach(p=>{const horizontal=p.axis==='h',w=horizontal?CS*.72:6,hh=horizontal?6:CS*.72,left=(p.x+.5)*CS-w/2,top=(p.y+.5)*CS-hh/2;h+=`<div class="tomb-hatch" title="Portal aberto · passagem e linha de visão liberadas" style="left:${left}px;top:${top}px;width:${w}px;height:${hh}px"></div>`;});
   // zonas de deploy
   if(G.phase==='deploy'){
     h+=`<div class="terr" style="left:0;top:0;width:${4*CS}px;height:${H*CS}px;background:rgba(232,163,61,.07);border-right:1px dashed var(--p1)"></div>`;
@@ -1838,9 +1948,9 @@ function render(){
   // células de movimento/alvo
   G.moveCells.filter(c=>(c.z||0)===G.moveLevel).forEach(c=>{const level=c.z||0,shift=Math.min(18,level*2.4),b=TERRAIN.find(t=>t.building&&insideFeature(t,c.x,c.y)),zone=b?(level===0?'interior':'floor2'):'',label=level===0?(b?'DENTRO · 0″':'CHÃO · 0″'):`VANTAGE · ${level}″`;
     h+=`<div class="cell ${G.mode==='charge'?'ch':'mv'} ${zone}" title="Destino: ${label} · custo ${c.d.toFixed(1)}&quot;" style="left:${c.x*CS+1-shift}px;top:${c.y*CS+1-shift}px;width:${CS-2}px;height:${CS-2}px" onclick="doMove(${c.x},${c.y},${level})"></div>`;});
-  G.targets.forEach(t=>{h+=`<div class="cell tg" title="ALVO: ${t.n} · altura ${zOf(t)}&quot;" style="left:${t.x*CS-2-(zOf(t)?4:0)}px;top:${t.y*CS-2-(zOf(t)?7:0)}px;width:${CS+4}px;height:${CS+4}px" onclick="${G.mode==='shoot'?'doShoot':'doFight'}(opById('${t.id}'))"></div>`;});
+  G.targets.forEach(t=>{const click=G.mode==='shoot'?`focusShotTarget('${t.id}')`:`doFight(opById('${t.id}'))`;h+=`<div class="cell tg ${G.aimTarget===t?'focused':''}" title="ALVO: ${t.n} · altura ${zOf(t)}&quot;" style="left:${t.x*CS-2-(zOf(t)?4:0)}px;top:${t.y*CS-2-(zOf(t)?7:0)}px;width:${CS+4}px;height:${CS+4}px" onclick="${click}"></div>`;});
   // linha de tiro
-  if(G.sel&&G.mode==='shoot')G.targets.forEach(t=>{
+  if(G.sel&&G.mode==='shoot')(G.aimTarget?[G.aimTarget]:G.targets).forEach(t=>{
     const x1=G.sel.x*CS+CS/2,y1=G.sel.y*CS+CS/2,x2=t.x*CS+CS/2,y2=t.y*CS+CS/2;
     const len=Math.hypot(x2-x1,y2-y1),ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
     h+=`<div class="los" style="left:${x1}px;top:${y1}px;width:${len}px;transform:rotate(${ang}deg);background:var(--warn)"></div>`;});
@@ -1854,7 +1964,7 @@ function render(){
   // operativos
   G.ops.filter(o=>o.x>=0).forEach(o=>{
     const t=TEAMS[o.teamId], col=o.pi===0?'var(--p1)':'var(--p2)';
-    const cls=[o.dead?'':'op',o.activated?'done':'',G.sel===o?'sel':'',o.order==='conceal'?'conceal':'',zOf(o)>0?'high':''].join(' ');
+    const cls=[o.dead?'':'op',o.activated?'done':'',G.sel===o?'sel':'',G.aimTarget===o?'aimed':'',o.order==='conceal'?'conceal':'',zOf(o)>0?'high':''].join(' ');
     if(o.dead)return;
     const sz=CS-3;
     h+=`<div class="${cls}" data-team="${o.teamId}" title="${o.n} · altura ${zOf(o)}&quot;" style="left:${o.x*CS+1.5-(zOf(o)?4:0)}px;top:${o.y*CS+1.5-(zOf(o)?7:0)}px;width:${sz}px;height:${sz}px;
@@ -1934,13 +2044,13 @@ function renderActs(){
 }
 
 /* ═══════════════ MODAIS ═══════════════ */
-function openOv(t,b,noClose){
+function openOv(t,b,noClose,variant=''){
   document.getElementById('ovt').textContent=t;
   document.getElementById('ovb').innerHTML=b;
-  document.getElementById('ov').classList.add('on');
+  const ov=document.getElementById('ov');ov.classList.remove('targeting');if(variant)ov.classList.add(variant);ov.classList.add('on');
   document.querySelector('#ov .x').style.display=noClose?'none':'flex';
 }
-function closeOv(){document.getElementById('ov').classList.remove('on');}
+function closeOv(){document.getElementById('ov').classList.remove('on','targeting');}
 let overlayContinue=null;
 function continueOverlay(){
   const fn=overlayContinue;overlayContinue=null;closeOv();
@@ -1974,9 +2084,9 @@ function showCard(op){
       <div class="stat"><div class="l">PV</div><div class="v" style="color:${op.hp<op.maxhp/2?'var(--bad)':'var(--ok)'}">${op.hp}/${op.maxhp}</div></div>
     </div>
     <div class="rowlbl">ARMAS</div>
-    ${op.wpn.map(w=>`<div class="wpn"><div class="wn"><span>${w.t==='r'?'🎯':'⚔'} ${w.n}</span>
+    ${op.wpn.map((w,i)=>`<div class="wpn" role="button" tabindex="0" title="Abrir explicação dos atributos" style="cursor:pointer" onclick="showCardWeaponInfo('${op.id}',${i})"><div class="wn"><span>${w.t==='r'?'🎯':'⚔'} ${w.n}</span>
       <span class="ws">A${w.a} · ${w.h}+ · ${w.d}/${w.c}</span></div>
-      ${w.tags.length?`<div class="wt">${w.tags.join(' · ')}</div>`:''}</div>`).join('')}
+      ${w.tags.length?`<div class="wt">${weaponChipsHTML(w)}</div>`:'<div class="wt" style="color:var(--mut)">Sem atributos especiais · toque para revisar</div>'}</div>`).join('')}
     ${op.abl.length?`<div class="rowlbl">HABILIDADES</div>${op.abl.map(a=>
       `<div class="abl"><div class="an">${a.n}</div><div class="ad">${a.d}</div></div>`).join('')}`:''}
     <div class="rowlbl">REGRA DE FACÇÃO</div>
@@ -2146,7 +2256,7 @@ function fpvWebGLData(op){
     id:o.id,name:o.n,x:o.x,y:o.y,z:zOf(o),dead:o.dead,hostile:o.pi!==op.pi,distance:dist(op,o),image:miniSource(o),imageElement:miniImage(o)||null,
     cover:los.cover,coverType:los.coverType,visible};});
   return{killzone:ACTIVE_KZ,visual:KILLZONES[ACTIVE_KZ].visual||null,heading:G.fpvHeading,pitch:G.fpvPitch,fov:G.fpvFov,viewer:{id:op.id,x:op.x,y:op.y,z:zOf(op)},units,
-    terrain:TERRAIN.map(t=>({...t})),stairs:STAIRS.map(s=>({...s})),objectives:OBJS.map(o=>({...o}))};
+    terrain:TERRAIN.map(t=>({...t})),stairs:STAIRS.map(s=>({...s})),hatches:HATCHES.map(p=>({...p})),objectives:OBJS.map(o=>({...o}))};
 }
 window.Volkus3DHandlers={onFocus(id,depth){
   const viewer=opById(G.fpvOp),o=id&&opById(id);if(!viewer||!o)return updateFPVCard(viewer,null);
@@ -2154,9 +2264,9 @@ window.Volkus3DHandlers={onFocus(id,depth){
 }};
 function renderFPV(){
   const op=opById(G.fpvOp),legacy=document.getElementById('fp-canvas'),webgl=document.getElementById('fp-webgl'),badge=document.getElementById('fp-renderer-badge');if(!op)return;
-  if(ACTIVE_KZ==='volkus'&&window.Volkus3D?.available){
+  if(['volkus','tombworld'].includes(ACTIVE_KZ)&&window.Volkus3D?.available){
     const data=fpvWebGLData(op),opened=window.Volkus3D.isOpen?.()?true:window.Volkus3D.open(data);
-    if(opened){window.Volkus3D.update?.(data);legacy.style.display='none';webgl.style.display='block';badge.textContent=`VOLKUS · WEBGL PBR · ESCALA 1″`;badge.style.color='#ffc778';
+    if(opened){window.Volkus3D.update?.(data);legacy.style.display='none';webgl.style.display='block';badge.textContent=`${ACTIVE_KZ==='tombworld'?'TOMB WORLD · CLOSE QUARTERS':'VOLKUS'} · WEBGL · ESCALA 1″`;badge.style.color=ACTIVE_KZ==='tombworld'?'#72ffc0':'#ffc778';
       const seen=data.units.filter(o=>o.visible).length,camZ=zOf(op)+1.55,stats=window.Volkus3D.stats?.()||{};
       document.getElementById('fp-name').innerHTML=`<b>${op.ico} ${op.n.toUpperCase()}</b> · ${TEAMS[op.teamId].name}`;
       document.getElementById('fp-readout').textContent=`${op.hp}/${op.maxhp} PV · OLHOS ${camZ.toFixed(1)}″ · ${seen} CONTATO${seen===1?'':'S'} · FOV ${G.fpvFov}° · ${stats.quality>1?'ALTA':'ADAPTATIVA'}`;

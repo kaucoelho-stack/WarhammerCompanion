@@ -10,6 +10,7 @@
   const BASE='volkus-3d/';
   const texLoader=new T.TextureLoader(),gltfLoader=T.GLTFLoader?new T.GLTFLoader():null;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const isTomb=()=>S.worldKey==='tombworld';
   const setStatus=(msg,progress)=>{
     const el=document.getElementById('fp-3d-loading');if(!el)return;
     el.querySelector('b').textContent=msg;
@@ -73,6 +74,11 @@
     const auspex=new T.PointLight('#42cfff',1.3,15,2);auspex.position.set(7,1.6,6);S.scene.add(auspex);
   }
   async function makeMaterials(){
+    if(isTomb()){
+      const glow=new T.MeshStandardMaterial({color:'#123e2f',emissive:'#18f09a',emissiveIntensity:1.05,metalness:.78,roughness:.28});
+      return{tombFloor:mat('#07110e',.82,.34),tombCeiling:mat('#020806',.94,.18),tombWall:mat('#132d26',.55,.7),tombWall2:mat('#071713',.72,.54),tombGold:mat('#84682f',.42,.76),tombGlow:glow,
+        asphalt:mat('#07110e',.85,.3),gravel:mat('#17271f',.95,.08),wall:mat('#18352c',.62,.55),wall2:mat('#091b16',.76,.42),roof:mat('#07110e',.82,.3),edge:mat('#8a7138',.5,.7),barrier:mat('#2c4b3e',.78,.42),stair:mat('#56685d',.6,.6),dark:mat('#020806',.82,.42),glass:glow};
+    }
     const [ad,an,aa,gd,gn,ga]=await Promise.all([
       loadTex(BASE+'materials/asphalt_02/asphalt_02_diff_1k.jpg',true,[7.5,5.5]),loadTex(BASE+'materials/asphalt_02/asphalt_02_nor_gl_1k.jpg',false,[7.5,5.5]),loadTex(BASE+'materials/asphalt_02/asphalt_02_arm_1k.jpg',false,[7.5,5.5]),
       loadTex(BASE+'materials/gravel_stones/gravel_stones_diff_1k.jpg',true,[3,3]),loadTex(BASE+'materials/gravel_stones/gravel_stones_nor_gl_1k.jpg',false,[3,3]),loadTex(BASE+'materials/gravel_stones/gravel_stones_arm_1k.jpg',false,[3,3])]);
@@ -81,6 +87,14 @@
     return{asphalt,gravel,wall:mat('#45545b',.75,.14),wall2:mat('#26343b',.84,.08),roof:mat('#303e43',.9,.05),edge:mat('#7f532d',.67,.32),barrier:mat('#9b7a51',.92,.03),stair:mat('#7f512b',.58,.55),dark:mat('#111a1e',.76,.28),glass:new T.MeshStandardMaterial({color:'#153e4c',emissive:'#0f5269',emissiveIntensity:.35,metalness:.35,roughness:.24})};
   }
   function makeGround(M){
+    if(isTomb()){
+      const under=new T.Mesh(new T.PlaneGeometry(170,170),M.tombCeiling);under.rotation.x=-Math.PI/2;under.position.set(15,-.09,11);under.receiveShadow=true;S.world.add(under);
+      const floor=new T.Mesh(new T.PlaneGeometry(30,22,30,22),M.tombFloor);floor.rotation.x=-Math.PI/2;floor.position.set(15,-.025,11);floor.receiveShadow=true;S.world.add(floor);
+      const grid=new T.GridHelper(30,30,'#39db96','#173f32');grid.position.set(15,.012,11);grid.material.transparent=true;grid.material.opacity=.28;S.world.add(grid);
+      for(let x=1;x<30;x+=2)box(S.world,.035,.018,22,x,.006,11,M.tombGlow,{solid:false,shadow:false});
+      for(let z=1;z<22;z+=2)box(S.world,30,.018,.035,15,.006,z,M.tombGlow,{solid:false,shadow:false});
+      return;
+    }
     const cityFloor=new T.Mesh(new T.PlaneGeometry(170,170),new T.MeshStandardMaterial({color:'#171a1c',roughness:1,metalness:0}));cityFloor.rotation.x=-Math.PI/2;cityFloor.position.set(15,-.085,11);cityFloor.receiveShadow=true;S.world.add(cityFloor);
     const g=new T.Mesh(addUV2(new T.PlaneGeometry(30,22,30,22)),M.asphalt);g.rotation.x=-Math.PI/2;g.position.set(15,-.035,11);g.receiveShadow=true;S.world.add(g);
     const grid=new T.GridHelper(30,30,'#275b6c','#153039');grid.position.set(15,.018,11);grid.material.transparent=true;grid.material.opacity=.22;S.world.add(grid);
@@ -91,6 +105,7 @@
     box(S.world,30.5,.16,.18,15,.07,22.14,M.dark,{solid:false});box(S.world,.18,.16,22.5,-.14,.07,11,M.dark,{solid:false});box(S.world,.18,.16,22.5,30.14,.07,11,M.dark,{solid:false});
   }
   function makeHeavy(t,i,M){
+    if(t.kind==='tomb-wall')return makeTombWall(t,i,M);
     if(t.kind==='large-ruin')return makeLargeRuin(t,i,M);
     if(t.kind==='ruin-wall')return makeBrokenWall(t,i,M);
     if(t.kind==='heavy-rubble')return makeRubble(t,i,M,true);
@@ -106,6 +121,17 @@
       if((n+i)%2===0)box(grp,.18,.18,.25,x,h-.36,t.h+.12,M.dark,{solid:false});
     }
     if(t.w>=4){const tank=new T.Mesh(new T.CylinderGeometry(.34,.34,.85,14),M.dark);tank.rotation.z=Math.PI/2;tank.position.set(t.w*.72,h+.4,t.h*.54);tank.castShadow=true;grp.add(tank);}
+  }
+  function makeTombWall(t,i,M){
+    const h=t.z||4.6,grp=new T.Group(),long=t.w>=t.h,wall=i%2?M.tombWall:M.tombWall2;grp.position.set(t.x,0,t.y);S.world.add(grp);
+    box(grp,t.w,h,t.h,t.w/2,h/2,t.h/2,wall);
+    const total=long?t.w:t.h;
+    for(let p=.45;p<total;p+=1.25){
+      if(long){box(grp,.12,h+.12,t.h+.08,p,h/2,t.h/2,M.tombGold,{solid:false});box(grp,.035,h*.55,t.h+.12,p,h*.52,t.h/2,M.tombGlow,{solid:false,shadow:false});}
+      else{box(grp,t.w+.08,h+.12,.12,t.w/2,h/2,p,M.tombGold,{solid:false});box(grp,t.w+.12,h*.55,.035,t.w/2,h*.52,p,M.tombGlow,{solid:false,shadow:false});}
+    }
+    const cap=box(grp,t.w+.08,.16,t.h+.08,t.w/2,h+.08,t.h/2,M.tombGold,{solid:false});cap.castShadow=false;
+    if(total>=4){const rune=textSprite('WALL // PHASE-LOCKED','#58ffb0',.095);rune.position.set(t.w/2,2.55,long?-0.53:t.h/2);if(!long){rune.position.x=-.53;rune.rotation.y=Math.PI/2;}grp.add(rune);}
   }
   function makeBuilding(t,i,M){
     const h=t.z||4,step=t.floorStep||2,grp=new T.Group(),wall=i%2?M.wall:M.wall2,th=.16,openH=2.15;grp.position.set(t.x,0,t.y);S.world.add(grp);
@@ -175,6 +201,14 @@
     if(heavy){const pipe=new T.Mesh(new T.CylinderGeometry(.18,.18,Math.min(1.8,t.w*.72),12),M.dark);pipe.position.set(t.w*.52,.36,t.h*.5);pipe.rotation.z=Math.PI/2;pipe.rotation.y=.28;pipe.castShadow=true;grp.add(pipe);}
   }
   function makeLight(t,i,M){
+    if(t.kind==='tomb-sarcophagus'){
+      const g=new T.Group();g.position.set(t.x,0,t.y);S.world.add(g);const long=t.w>=t.h;
+      box(g,t.w,.62,t.h,t.w/2,.31,t.h/2,M.tombWall,{solid:false});box(g,t.w-.16,.16,t.h-.12,t.w/2,.7,t.h/2,M.tombGold,{solid:false});
+      const core=new T.Mesh(new T.RingGeometry(.16,.29,6),M.tombGlow);core.position.set(t.w/2,.79,long?.49:t.h/2);core.rotation.x=-Math.PI/2;g.add(core);return;
+    }
+    if(t.kind==='tomb-debris'){
+      const g=new T.Group();g.position.set(t.x,0,t.y);S.world.add(g);for(let n=0;n<8;n++){const w=.22+(n%3)*.13,h=.15+(n%4)*.08,d=.2+((n+1)%3)*.11,b=box(g,w,h,d,.18+(n*.41)%(Math.max(.3,t.w-.3)),h/2,.16+(n*.29)%(Math.max(.3,t.h-.25)),n%3?M.tombWall:M.tombGold,{solid:false});b.rotation.y=n*.52;}return;
+    }
     if(t.kind==='light-rubble')return makeRubble(t,i,M,false);
     const h=.72,grp=new T.Group();grp.position.set(t.x,0,t.y);S.world.add(grp);
     box(grp,t.w,h,t.h,t.w/2,h/2,t.h/2,M.barrier);
@@ -230,7 +264,19 @@
   }
   function makeEmbers(){
     const n=S.quality>1?300:(S.quality>0?180:70),pos=new Float32Array(n*3);for(let i=0;i<n;i++){pos[i*3]=-5+Math.random()*40;pos[i*3+1]=.3+Math.random()*15;pos[i*3+2]=-4+Math.random()*30;}
-    const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));const m=new T.PointsMaterial({color:'#ff9a52',map:particleTexture(),size:.09,sizeAttenuation:true,transparent:true,opacity:.72,alphaTest:.025,depthWrite:false,blending:T.AdditiveBlending});S.particles=new T.Points(g,m);S.scene.add(S.particles);
+    const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));const m=new T.PointsMaterial({color:isTomb()?'#52ffb1':'#ff9a52',map:particleTexture(),size:isTomb() ? .055 : .09,sizeAttenuation:true,transparent:true,opacity:isTomb() ? .42 : .72,alphaTest:.025,depthWrite:false,blending:T.AdditiveBlending});S.particles=new T.Points(g,m);S.scene.add(S.particles);
+  }
+  function makeTombShell(M){
+    box(S.world,30.5,.18,22.5,15,4.92,11,M.tombCeiling,{solid:false});
+    box(S.world,.2,5,22.5,-.1,2.5,11,M.tombWall,{solid:false});box(S.world,.2,5,22.5,30.1,2.5,11,M.tombWall,{solid:false});
+    box(S.world,30.5,5,.2,15,2.5,-.1,M.tombWall,{solid:false});box(S.world,30.5,5,.2,15,2.5,22.1,M.tombWall,{solid:false});
+    [[5,3],[15,3],[25,3],[5,11],[15,11],[25,11],[5,19],[15,19],[25,19]].forEach(([x,z],i)=>{const l=new T.PointLight(i%2?'#35ffab':'#8bffd0',1.05,8,2);l.position.set(x,4.35,z);S.world.add(l);box(S.world,1.2,.04,.22,x,4.55,z,M.tombGlow,{solid:false,shadow:false});});
+  }
+  function makeTombHatch(p,M){
+    const g=new T.Group(),horizontal=p.axis==='h';g.position.set(p.x+.5,0,p.y+.5);S.world.add(g);
+    if(horizontal){box(g,.1,2.55,.2,-.43,1.275,0,M.tombGold,{solid:false});box(g,.1,2.55,.2,.43,1.275,0,M.tombGold,{solid:false});box(g,.96,.12,.2,0,2.49,0,M.tombGlow,{solid:false,shadow:false});}
+    else{box(g,.2,2.55,.1,0,1.275,-.43,M.tombGold,{solid:false});box(g,.2,2.55,.1,0,1.275,.43,M.tombGold,{solid:false});box(g,.2,.12,.96,0,2.49,0,M.tombGlow,{solid:false,shadow:false});}
+    const light=new T.PointLight('#3dffab',.48,3.4,2);light.position.set(0,1.55,0);g.add(light);
   }
   async function addHeroAssets(M){
     setStatus('CARREGANDO ARQUITETURA INDUSTRIAL',62);
@@ -255,12 +301,13 @@
   function disposeGroup(g){if(!g)return;g.traverse(o=>{if(o.geometry&&!o.userData.keepCachedAssets)o.geometry.dispose?.();if(o.material&&!o.userData.keepCachedAssets){const a=Array.isArray(o.material)?o.material:[o.material];a.forEach(m=>{if(m.map?.isCanvasTexture&&!m.map.userData?.unitArt)m.map.dispose();m.dispose?.();});}});g.parent?.remove(g);}
   function clearWorld(){disposeGroup(S.world);disposeGroup(S.units);disposeGroup(S.markers);disposeGroup(S.particles);S.particles=null;S.particleMap=null;S.occluders=[];S.unitMeshes=[];S.unitsKey=null;S.world=new T.Group();S.units=new T.Group();S.markers=new T.Group();S.scene.add(S.world,S.units,S.markers);}
   async function build(data){
-    S.data=data;S.ready=false;S.worldKey=data.killzone||'volkus';clearWorld();setStatus('MATERIALIZANDO KILLZONE VOLKUS',18);const M=await makeMaterials();if(S.closed)return;
+    S.data=data;S.ready=false;S.worldKey=data.killzone||'volkus';clearWorld();setStatus(isTomb()?'DESPERTANDO A TOMB WORLD':'MATERIALIZANDO KILLZONE VOLKUS',18);const M=await makeMaterials();if(S.closed)return;
+    S.scene.background.set(isTomb()?'#010605':'#05090d');S.scene.fog.color.set(isTomb()?'#06110d':'#10161a');S.scene.fog.density=isTomb() ? .035 : .022;
     makeGround(M);
     data.terrain.forEach((t,i)=>t.t==='l'?makeLight(t,i,M):makeHeavy(t,i,M));
     data.stairs.filter(s=>!s.invisible).forEach(s=>s.visual==='crates'?makeClimbAid(s,M):makeStair(s,M));
-    data.objectives.forEach(makeObjective);makeCity(M);makeStreetProps(M);makeEmbers();
-    updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',46);if(S.quality>0)await Promise.all([tryHDRI(),addHeroAssets(M)]);
+    data.objectives.forEach(makeObjective);if(isTomb()){makeTombShell(M);(data.hatches||[]).forEach(p=>makeTombHatch(p,M));}else{makeCity(M);makeStreetProps(M);}makeEmbers();
+    updateUnits(data);setStatus(isTomb()?'CALIBRANDO LUZES NECRODERMIS':'ACENDENDO O CÉU DE GUERRA',46);if(S.quality>0&&!isTomb())await Promise.all([tryHDRI(),addHeroAssets(M)]);
     if(!S.closed){S.ready=true;setStatus('VISÃO DO OPERATIVO ONLINE',100);}
   }
   function textureFromImage(key,image){
