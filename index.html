@@ -621,10 +621,11 @@ body::before{content:'';position:fixed;inset:0;
 .mode-40k::before{background:rgba(183,50,40,.1)}
 .mode-kt{background:linear-gradient(135deg,rgba(6,182,212,.2),rgba(6,182,212,.05));border-color:rgba(6,182,212,.4)}
 .mode-kt::before{background:rgba(6,182,212,.1)}
-.mode-auspex-test{background:linear-gradient(135deg,rgba(232,184,75,.18),rgba(6,182,212,.08));border-color:rgba(232,184,75,.48);text-align:left;padding:16px 62px 16px 16px}
-.mode-auspex-test::before{background:linear-gradient(90deg,rgba(232,184,75,.1),rgba(6,182,212,.08))}
-.mode-auspex-test .mode-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);margin:0;font-size:34px;color:var(--gold)}
-.mode-auspex-test .mode-name{color:var(--gold);font-size:18px}
+.mode-auspex-test{background:var(--card);border-color:var(--border);text-align:left;padding:16px 62px 16px 16px}
+.mode-auspex-test::before{background:linear-gradient(90deg,rgba(6,182,212,.11),rgba(232,184,75,.06))}
+.mode-auspex-test:hover{border-color:rgba(6,182,212,.62);background:linear-gradient(135deg,rgba(6,182,212,.09),rgba(232,184,75,.04))}
+.mode-auspex-test .mode-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);margin:0;font-size:31px;color:#67e8f9;opacity:.78}
+.mode-auspex-test .mode-name{color:var(--text);font-size:18px}
 .mode-auspex-test .mode-sub{font-size:11px;line-height:1.45}
 .mode-auspex-kicker{font-family:var(--fu);font-size:9px;letter-spacing:2px;color:#67e8f9;margin-bottom:5px;text-transform:uppercase}
 .auspex-test-screen{overflow:hidden!important;background:#03080d}
@@ -6494,7 +6495,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
 
     <div class="kt-mode-card mode-auspex-test" id="kt-mode-auspex-test" onclick="openAuspexTestTeam()">
       <div class="mode-auspex-kicker">Simulador tático completo</div>
-      <div class="mode-icon">◉</div>
+      <div class="mode-icon">▦</div>
       <div class="mode-name">AUSPEX TEST TEAM</div>
       <div class="mode-sub">Jogue no mapa contra a IA ou em VS local, com movimento validado, terreno, objetivos, dados, combate e visão WebGL em primeira pessoa.</div>
     </div>
@@ -15864,18 +15865,26 @@ function openAuspexTestTeam() {
   }));
 }
 
-function closeAuspexTestTeam() {
+function closeAuspexTestTeam(resetMatch = false) {
   const frame = document.getElementById('auspex-test-frame');
   try { frame?.contentWindow?.postMessage({type:'auspex-suspend'}, '*'); } catch (e) {}
   document.getElementById('screen-auspex-test')?.classList.remove('fpv-active');
   SFX.click();
   NAV.back(initKTModeSelect);
+  if (resetMatch && frame) setTimeout(() => {
+    frame.src = 'about:blank';
+    frame.removeAttribute('src');
+  }, 320);
 }
 
 window.addEventListener('message', e => {
   const frame = document.getElementById('auspex-test-frame');
-  if (!frame || e.source !== frame.contentWindow || e.data?.type !== 'auspex-fpv') return;
-  document.getElementById('screen-auspex-test')?.classList.toggle('fpv-active', !!e.data.active);
+  if (!frame || e.source !== frame.contentWindow) return;
+  if (e.data?.type === 'auspex-fpv') {
+    document.getElementById('screen-auspex-test')?.classList.toggle('fpv-active', !!e.data.active);
+  } else if (e.data?.type === 'auspex-exit') {
+    closeAuspexTestTeam(true);
+  }
 });
 
 let KT_SIMPLE_MODE = false;

@@ -90,14 +90,10 @@
     const border=box(S.world,30.5,.16,.18,15,.07,-.14,M.dark,{solid:false});border.castShadow=false;
     box(S.world,30.5,.16,.18,15,.07,22.14,M.dark,{solid:false});box(S.world,.18,.16,22.5,-.14,.07,11,M.dark,{solid:false});box(S.world,.18,.16,22.5,30.14,.07,11,M.dark,{solid:false});
   }
-  function makeRuleOccluders(data,M){
-    const invisible=new T.MeshBasicMaterial({transparent:true,opacity:0,colorWrite:false,depthWrite:false});
-    // Estes volumes existem apenas para colisão/oclusão das regras. A cidade GLB
-    // é a única geometria desenhada, evitando plataformas e bordas sobrepostas.
-    data.terrain.filter(t=>t.t==='h').forEach(t=>{const z=t.z||2;
-      box(S.world,t.w,z,t.h,t.x+t.w/2,z/2,t.y+t.h/2,invisible,{shadow:false});});
-  }
   function makeHeavy(t,i,M){
+    if(t.kind==='large-ruin')return makeLargeRuin(t,i,M);
+    if(t.kind==='ruin-wall')return makeBrokenWall(t,i,M);
+    if(t.kind==='heavy-rubble')return makeRubble(t,i,M,true);
     if(t.building)return makeBuilding(t,i,M);
     const h=t.z||2,grp=new T.Group();grp.position.set(t.x,0,t.y);S.world.add(grp);
     box(grp,t.w,h,t.h,t.w/2,h/2,t.h/2,i%2?M.wall:M.wall2);
@@ -112,9 +108,10 @@
     if(t.w>=4){const tank=new T.Mesh(new T.CylinderGeometry(.34,.34,.85,14),M.dark);tank.rotation.z=Math.PI/2;tank.position.set(t.w*.72,h+.4,t.h*.54);tank.castShadow=true;grp.add(tank);}
   }
   function makeBuilding(t,i,M){
-    const h=t.z||4,grp=new T.Group(),wall=i%2?M.wall:M.wall2,th=.14,openH=1.9;grp.position.set(t.x,0,t.y);S.world.add(grp);
+    const h=t.z||4,step=t.floorStep||2,grp=new T.Group(),wall=i%2?M.wall:M.wall2,th=.16,openH=2.15;grp.position.set(t.x,0,t.y);S.world.add(grp);
     const door=(side)=>(t.doors||[]).find(d=>d.side===side);
     const run=(side,total,center,depth)=>{
+      if((t.openSides||[]).includes(side))return;
       const d=door(side),ns=side==='n'||side==='s';
       const add=(len,at,y,hh)=>{if(len<=.015)return;ns?box(grp,len,hh,th,at,y,depth,wall):box(grp,th,hh,len,depth,y,at,wall);};
       if(!d){add(total,total/2,h/2,h);return;}
@@ -128,7 +125,7 @@
     run('n',t.w,t.w/2,0);run('s',t.w,t.w/2,t.h);run('w',t.h,t.h/2,0);run('e',t.h,t.h/2,t.w);
     const stairs=(S.data?.stairs||[]).filter(s=>s.building===t.id);
     box(grp,t.w-.28,.035,t.h-.28,t.w/2,.005,t.h/2,M.roof,{solid:false,shadow:false});
-    for(let level=2;level<=h;level+=2){
+    for(let level=step;level<=h+.001;level+=step){
       for(let y=0;y<t.h;y++)for(let x=0;x<t.w;x++){
         const wx=t.x+x,wy=t.y+y,opening=stairs.some(s=>s.internal&&(s.levels||[s.fromZ||0,s.toZ||s.z||2]).includes(level)&&
           ((s.x===wx&&s.y===wy)||(s.tx===wx&&s.ty===wy)));
@@ -136,14 +133,49 @@
       }
     }
     // Iluminação e acabamento internos deixam portas, pisos e vazios de escada legíveis.
-    [1.72,3.72].filter(y=>y<h).forEach((y,n)=>{for(let x=.8;x<t.w-.4;x+=1.6)box(grp,.72,.035,.08,x,y,t.h/2,M.glass,{solid:false,shadow:false});
+    Array.from({length:Math.max(1,Math.floor(h/step))},(_,n)=>(n+1)*step-.28).filter(y=>y<h).forEach((y,n)=>{for(let x=.8;x<t.w-.4;x+=1.6)box(grp,.72,.035,.08,x,y,t.h/2,M.glass,{solid:false,shadow:false});
       const light=new T.PointLight('#63dfff',.22,Math.max(t.w,t.h)*1.25,2);light.position.set(t.w/2,y-.3,t.h/2);grp.add(light);});
     // Parapeito no segundo piso: cobertura leve em todas as bordas do high ground.
     const rim=.16,rh=.48;box(grp,t.w+rim*2,rh,rim,t.w/2,h+rh/2,-rim/2,M.edge);box(grp,t.w+rim*2,rh,rim,t.w/2,h+rh/2,t.h+rim/2,M.edge);
     box(grp,rim,rh,t.h,-rim/2,h+rh/2,t.h/2,M.edge);box(grp,rim,rh,t.h,t.w+rim/2,h+rh/2,t.h/2,M.edge);
-    const sign=textSprite('ENTRADA  //  NÍVEIS 0 · 2 · 4', '#74e7ff',.105);sign.position.set(t.w/2,1.56,-.12);grp.add(sign);
+    if(t.kind==='stronghold'){
+      const band=new T.MeshBasicMaterial({color:'#c47a2c'});for(let x=.7;x<t.w;x+=1.55)box(grp,.13,h+.25,.22,x,h/2,t.h+.12,band,{solid:false});
+      [[0,0],[t.w,0],[0,t.h],[t.w,t.h]].forEach(([x,z])=>box(grp,.34,h+.65,.34,x,h/2,z,M.dark,{solid:false}));
+      const sign=textSprite(`FORTALEZA VOLKUS  //  NÍVEIS 0 · ${step} · ${h}`, '#ffbd62',.105);sign.position.set(t.w/2,1.72,-.13);grp.add(sign);
+    }
+  }
+  function makeLargeRuin(t,i,M){
+    const h=t.z||3.4,grp=new T.Group(),wall=i%2?M.wall:M.wall2,th=.18,open=t.openSides||[];grp.position.set(t.x,0,t.y);S.world.add(grp);
+    const addWall=(side,total)=>{if(open.includes(side))return;const ns=side==='n'||side==='s',door=(t.doors||[]).find(d=>d.side===side);
+      for(let n=0;n<total;n++){if(door&&n===door.offset)continue;const jag=(n%3===0?.85:(n%3===1?.35:.62)),hh=h+1.15*jag,
+          cx=n+.5,depth=side==='n'?0:(side==='s'?t.h:(side==='w'?0:t.w));
+        ns?box(grp,.96,hh,th,cx,hh/2,depth,wall):box(grp,th,hh,.96,depth,hh/2,cx,wall);
+        if(n%2===0){const trim=new T.MeshBasicMaterial({color:'#b16f2b'});ns?box(grp,.94,.12,th+.025,cx,Math.min(h-.22,hh-.25),depth,trim,{solid:false}):box(grp,th+.025,.12,.94,depth,Math.min(h-.22,hh-.25),cx,trim,{solid:false});}
+      }};
+    addWall('n',t.w);addWall('s',t.w);addWall('w',t.h);addWall('e',t.h);
+    box(grp,t.w-.2,.12,t.h-.2,t.w/2,h-.06,t.h/2,M.roof);
+    // Parapeitos partidos deixam a silhueta de ruína clara e dão referência de cobertura.
+    if(!open.includes('n'))for(let x=.5;x<t.w;x+=1.8)box(grp,1.05,.52,.16,x,h+.26,0,M.edge);
+    if(!open.includes('s'))for(let x=.9;x<t.w;x+=1.9)box(grp,1.0,.48,.16,x,h+.24,t.h,M.edge);
+    if(!open.includes('w'))for(let z=.5;z<t.h;z+=1.8)box(grp,.16,.5,1.0,0,h+.25,z,M.edge);
+    if(!open.includes('e'))for(let z=.8;z<t.h;z+=1.9)box(grp,.16,.46,1.0,t.w,h+.23,z,M.edge);
+    const sign=textSprite(`RUÍNA GRANDE  //  VANTAGE ${h}″`,'#79e7ff',.1);sign.position.set(t.w/2,1.5,open.includes('s')?t.h+.12:-.12);grp.add(sign);
+  }
+  function makeBrokenWall(t,i,M){
+    const grp=new T.Group(),long=t.w>=t.h,total=long?t.w:t.h,wall=i%2?M.wall2:M.wall;grp.position.set(t.x,0,t.y);S.world.add(grp);
+    for(let n=0;n<total;n++){const hh=Math.max(.85,(t.z||2.4)-(.28*((n+i)%3))),len=.96;
+      long?box(grp,len,hh,.38,n+.5,hh/2,t.h/2,wall):box(grp,.38,hh,len,t.w/2,hh/2,n+.5,wall);
+      if(n%2===0){const cap=long?box(grp,.92,.1,.42,n+.5,hh+.02,t.h/2,M.edge,{solid:false}):box(grp,.42,.1,.92,t.w/2,hh+.02,n+.5,M.edge,{solid:false});cap.rotation.y=(n%3-.5)*.06;}
+    }
+  }
+  function makeRubble(t,i,M,heavy=false){
+    const grp=new T.Group();grp.position.set(t.x,0,t.y);S.world.add(grp);const count=heavy?13:9;
+    for(let n=0;n<count;n++){const x=.18+((n*1.37+i*.41)%(Math.max(.3,t.w-.36))),z=.15+((n*.83+i*.27)%(Math.max(.25,t.h-.3))),
+        w=.28+(n%3)*.16,d=.25+((n+1)%3)*.13,h=(heavy?.35:.18)+(n%4)*.14,b=box(grp,w,h,d,x,h/2,z,n%3?M.dark:M.edge,{solid:heavy});b.rotation.y=(n*.71)%Math.PI;b.rotation.z=(n%2?.12:-.08);}
+    if(heavy){const pipe=new T.Mesh(new T.CylinderGeometry(.18,.18,Math.min(1.8,t.w*.72),12),M.dark);pipe.position.set(t.w*.52,.36,t.h*.5);pipe.rotation.z=Math.PI/2;pipe.rotation.y=.28;pipe.castShadow=true;grp.add(pipe);}
   }
   function makeLight(t,i,M){
+    if(t.kind==='light-rubble')return makeRubble(t,i,M,false);
     const h=.72,grp=new T.Group();grp.position.set(t.x,0,t.y);S.world.add(grp);
     box(grp,t.w,h,t.h,t.w/2,h/2,t.h/2,M.barrier);
     const cap=box(grp,t.w+.08,.09,t.h+.08,t.w/2,h+.045,t.h/2,M.edge);cap.userData.solid=false;
@@ -200,19 +232,11 @@
       loadModel(BASE+'models/ladder_sectioned_01/ladder_sectioned_01_1k.gltf'),
       loadModel(BASE+'models/old_tyre/old_tyre_1k.gltf')]);
     if(S.closed)return;
-    const heavy=S.data.terrain.filter(t=>t.t==='h'&&!t.building);heavy.slice(0,5).forEach((t,i)=>fitClone(facade,{x:Math.max(1,t.w*.92),y:Math.max(1.3,(t.z||2)*.92),z:.32},{x:t.x+t.w/2,y:.03,z:t.y-.05},i%2?Math.PI:0));
-    S.data.terrain.filter(t=>t.t==='l').slice(0,5).forEach((t,i)=>fitClone(barrier,{x:Math.max(.7,t.w*.62),y:.62,z:Math.max(.32,t.h*.66)},{x:t.x+t.w/2,y:.02,z:t.y+t.h/2},i%2?Math.PI/2:0));
+    const heavy=S.data.terrain.filter(t=>t.t==='h'&&!t.building&&!t.kind);heavy.slice(0,5).forEach((t,i)=>fitClone(facade,{x:Math.max(1,t.w*.92),y:Math.max(1.3,(t.z||2)*.92),z:.32},{x:t.x+t.w/2,y:.03,z:t.y-.05},i%2?Math.PI:0));
+    S.data.terrain.filter(t=>t.t==='l'&&!t.kind).slice(0,5).forEach((t,i)=>fitClone(barrier,{x:Math.max(.7,t.w*.62),y:.62,z:Math.max(.32,t.h*.66)},{x:t.x+t.w/2,y:.02,z:t.y+t.h/2},i%2?Math.PI/2:0));
     S.data.stairs.filter(s=>!s.building).forEach((s,i)=>fitClone(ladder,{x:.78,y:Math.abs((s.toZ||s.z||2)-(s.fromZ||0)),z:.25},{x:(s.x+(s.tx??s.x))/2+.25,y:s.fromZ||.02,z:(s.y+(s.ty??s.y))/2+.25},Math.atan2((s.ty??s.y)-s.y,(s.tx??s.x)-s.x)+Math.PI/2));
     [[2,2,0],[27,3,.7],[11,6,1.5],[18,15,.1],[3,19,1.2],[26,19,.4],[7,1.2,.9],[22,20.7,1.6],[29,10,.25],[1,13,1.1]].forEach(([x,z,r])=>fitClone(tyre,{x:.7,y:.7,z:.35},{x,y:.02,z},r));
     setStatus('SINCRONIZANDO AUSPEX',91);
-  }
-  async function addRuinedCity(data){
-    const visual=data.visual||{};setStatus('CARREGANDO CIDADE DEVASTADA · 46 MB',36);
-    const source=await loadModel(visual.model||'ruined-city/ruined_city_free_5.glb');if(S.closed||!source)return;
-    const city=source.clone(true),scale=Number(visual.scale)||1,pos=visual.position||[16.05,.405,25];city.scale.setScalar(scale);city.position.set(pos[0],pos[1],pos[2]);
-    city.name='Cidade Devastada · malha visual';city.traverse(o=>{if(!o.isMesh)return;o.castShadow=S.quality>0;o.receiveShadow=true;o.userData.solid=false;o.userData.keepCachedAssets=true;
-      const mats=Array.isArray(o.material)?o.material:[o.material];mats.filter(Boolean).forEach(m=>{if(m.map)m.map.anisotropy=Math.min(6,S.renderer?.capabilities.getMaxAnisotropy?.()||1);});});
-    S.world.add(city);setStatus('ALINHANDO TELHADOS E ESCADAS',88);
   }
   async function tryHDRI(){
     if(!T.RGBELoader||S.quality===0)return;await new Promise(resolve=>new T.RGBELoader().setDataType(T.UnsignedByteType).load(BASE+'sky/abandoned_hopper_terminal_03_2k.hdr',hdr=>{
@@ -223,14 +247,10 @@
   function disposeGroup(g){if(!g)return;g.traverse(o=>{if(o.geometry&&!o.userData.keepCachedAssets)o.geometry.dispose?.();if(o.material&&!o.userData.keepCachedAssets){const a=Array.isArray(o.material)?o.material:[o.material];a.forEach(m=>{if(m.map?.isCanvasTexture&&!m.map.userData?.unitArt)m.map.dispose();m.dispose?.();});}});g.parent?.remove(g);}
   function clearWorld(){disposeGroup(S.world);disposeGroup(S.units);disposeGroup(S.markers);disposeGroup(S.particles);S.particles=null;S.particleMap=null;S.occluders=[];S.unitMeshes=[];S.unitsKey=null;S.world=new T.Group();S.units=new T.Group();S.markers=new T.Group();S.scene.add(S.world,S.units,S.markers);}
   async function build(data){
-    S.data=data;S.ready=false;S.worldKey=data.killzone||'volkus';clearWorld();setStatus(data.visual?.kind==='ruined-city'?'PREPARANDO SETOR DA CIDADE':'MATERIALIZANDO DISTRITO VOLKUS',18);const M=await makeMaterials();if(S.closed)return;
+    S.data=data;S.ready=false;S.worldKey=data.killzone||'volkus';clearWorld();setStatus('MATERIALIZANDO KILLZONE VOLKUS',18);const M=await makeMaterials();if(S.closed)return;
     makeGround(M);
-    if(data.visual?.kind==='ruined-city'){
-      makeRuleOccluders(data,M);data.stairs.filter(s=>!s.invisible).forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeEmbers();updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',28);await Promise.all([tryHDRI(),addRuinedCity(data)]);
-    }else{
-      data.terrain.forEach((t,i)=>t.t==='l'?makeLight(t,i,M):makeHeavy(t,i,M));data.stairs.forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeCity(M);makeStreetProps(M);makeEmbers();
-      updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',46);if(S.quality>0)await Promise.all([tryHDRI(),addHeroAssets(M)]);
-    }
+    data.terrain.forEach((t,i)=>t.t==='l'?makeLight(t,i,M):makeHeavy(t,i,M));data.stairs.forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeCity(M);makeStreetProps(M);makeEmbers();
+    updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',46);if(S.quality>0)await Promise.all([tryHDRI(),addHeroAssets(M)]);
     if(!S.closed){S.ready=true;setStatus('VISÃO DO OPERATIVO ONLINE',100);}
   }
   function textureFromImage(key,image){

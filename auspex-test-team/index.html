@@ -22,6 +22,8 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:n
   display:flex;align-items:center;gap:10px;flex-shrink:0}
 #tp{font-family:var(--fd);font-size:13px;letter-spacing:1px;color:var(--txt2)}
 #tp b{color:var(--txt);font-size:16px}
+.quit-match{flex:0 0 auto;padding:6px 9px;border:1px solid #663944;border-radius:6px;background:#241219;color:#ff9a96;font:700 9px var(--fd);letter-spacing:.7px;white-space:nowrap}
+.quit-match:hover{background:#3a1821;border-color:var(--bad)}
 .pchip{flex:1;padding:5px 8px;border-radius:5px;background:var(--panel2);
   border:1px solid var(--line);min-width:0}
 .pchip.act{border-color:currentColor}
@@ -166,7 +168,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.3;
   background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),
   linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:4px 4px;z-index:200}
 #top{min-height:48px;padding:7px 12px;background:linear-gradient(180deg,rgba(20,34,49,.98),rgba(8,15,24,.96));
-  border-bottom:1px solid #35506a;box-shadow:0 8px 30px #0009;position:relative;z-index:30}
+  border-bottom:1px solid #35506a;box-shadow:0 8px 30px #0009;position:relative;z-index:130}
 #tp{background:#07101a;border:1px solid #314b63;border-radius:8px;padding:6px 10px;text-align:center;
   box-shadow:inset 0 0 16px #000,0 0 14px rgba(105,230,255,.08)}
 #tp b{display:inline-block;color:#fff;text-shadow:0 0 9px var(--glow)}
@@ -192,20 +194,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.3;
 .maplegend .lg-stair{background:repeating-linear-gradient(0deg,#c49a55 0 2px,#3c2d1b 2px 3px)}
 .maplegend .lg-building{background:#213746;border:1px solid #8ccce8;box-shadow:inset 0 0 0 2px #09151e}
 .maplegend .lg-door{background:#55efad;border:1px solid #d5ffea;box-shadow:0 0 5px #55efad}
-.maplegend .ruins-only{display:none}
-html[data-killzone="ruins"] .maplegend span:nth-child(-n+5){display:none}
-html[data-killzone="ruins"] .maplegend .ruins-only{display:flex}
 html[data-killzone="forge"] #board{filter:sepia(.13);box-shadow:0 0 0 5px #120d08,0 0 0 6px #684c31,0 28px 60px #000c,0 0 45px #b76a2122}
 html[data-killzone="forge"] #kzname{color:#ffb454}
 html[data-killzone="wastes"] #board{filter:sepia(.22) saturate(.8);background-color:#17130e}
 html[data-killzone="wastes"] #kzname{color:#e8a96a}
-html[data-killzone="ruins"] #board{background-color:#0a1115;background-image:
-  linear-gradient(rgba(69,174,198,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(69,174,198,.13) 1px,transparent 1px),
-  linear-gradient(rgba(3,8,11,.42),rgba(3,8,11,.42)),url('ruined-city/ruined-city-tactical.jpg');
-  background-position:0 0,0 0,0 0,center;background-repeat:repeat,repeat,no-repeat,no-repeat;background-size:var(--grid-size,24px) var(--grid-size,24px),var(--grid-size,24px) var(--grid-size,24px),cover,cover;
-  box-shadow:0 0 0 5px #080d0f,0 0 0 6px #526168,0 28px 60px #000c,0 0 45px #d0834526}
-html[data-killzone="ruins"] #kzname{color:#f0b677}
-html[data-killzone="ruins"] .terr.heavy{background:linear-gradient(135deg,rgba(239,196,146,.26),rgba(25,36,42,.58));border-color:#b5a38d}
 #board{border:1px solid #42617c;border-radius:3px;transform:rotateX(2deg);transform-origin:center;
   overflow:hidden;
   background-color:#08121c;background-image:
@@ -251,6 +243,17 @@ html[data-killzone="ruins"] .terr.heavy{background:linear-gradient(135deg,rgba(2
 .terr.building{background:repeating-linear-gradient(0deg,rgba(20,39,52,.76) 0 1px,rgba(8,20,29,.68) 1px 16px),repeating-linear-gradient(90deg,transparent 0 16px,rgba(102,180,207,.1) 16px 17px);border:3px solid #7699ae;box-shadow:0 0 0 1px #071018 inset,5px 9px 0 #111923,8px 13px 18px #000b}
 .terr.building::before{content:'PRÉDIO';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;font:700 7px var(--fm);letter-spacing:1px;color:#a6ddeb;background:#061018cc;padding:2px 5px;border:1px solid #477287}
 .terr.building::after{content:'0 · 2 · 4″';position:absolute;right:3px;top:3px;font:700 6px var(--fm);color:#d8f6ff;background:#07131dcc;padding:2px 3px}
+.terr.stronghold{border-color:#d49b4b;background:repeating-linear-gradient(0deg,rgba(56,47,37,.9) 0 2px,rgba(20,29,35,.82) 2px 15px),repeating-linear-gradient(90deg,transparent 0 16px,rgba(255,188,89,.13) 16px 17px)}
+.terr.stronghold::before{content:'FORTALEZA'} .terr.stronghold::after{content:'0 · 3 · 6″';color:#ffd088}
+.terr.large-ruin{border-style:dashed;border-color:#88cbe0;background:linear-gradient(135deg,rgba(39,71,86,.82),rgba(6,17,24,.36) 58%,transparent 59%)}
+.terr.large-ruin::before{content:'RUÍNA GRANDE'} .terr.large-ruin::after{content:'VANTAGE 3.4″'}
+.terr.ruin-wall{border-color:#86a7ba;background:repeating-linear-gradient(90deg,#364d5c 0 7px,#1a2933 7px 9px);box-shadow:3px 5px 8px #000a}
+.terr.ruin-wall::after{content:'PAREDE QUEBRADA';position:absolute;left:3px;top:2px;font:700 5px var(--fm);color:#c8e5ee;background:#08121acc;padding:1px 2px}
+.terr.heavy-rubble{border-radius:34% 18% 42% 23%;background:radial-gradient(circle at 22% 35%,#71818a 0 12%,transparent 13%),radial-gradient(circle at 67% 56%,#4b5e69 0 20%,transparent 21%),#263743;border-color:#7c929e;box-shadow:2px 4px 8px #000a}
+.terr.light-rubble{border-style:dashed;border-color:#ba955e;background:repeating-linear-gradient(135deg,rgba(183,132,68,.54) 0 4px,rgba(70,55,39,.45) 4px 8px)}
+.opening{position:absolute;z-index:5;color:#8cecff;background:#08202bdd;border:1px dashed #6cdff5;box-shadow:0 0 8px #4ddcf166;font:800 5px var(--fm);text-align:center;line-height:7px}
+.opening.n,.opening.s{width:45%;height:5px;left:50%;transform:translateX(-50%)}.opening.n{top:-4px}.opening.s{bottom:-4px}
+.opening.e,.opening.w{height:45%;width:5px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl}.opening.e{right:-4px}.opening.w{left:-4px}
 .door{position:absolute;z-index:4;background:#5effb5;border:1px solid #d4ffe9;box-shadow:0 0 9px #41ffa6;color:#baffd9;font:800 6px var(--fm);text-align:center;line-height:7px}
 .door.n,.door.s{width:var(--cs);height:5px;transform:translateX(-50%)}
 .door.n{top:-4px}.door.s{bottom:-4px}.door.e,.door.w{height:var(--cs);width:5px;transform:translateY(-50%)}
@@ -331,8 +334,6 @@ html[data-killzone="ruins"] .terr.heavy{background:linear-gradient(135deg,rgba(2
 .kzpreview i:nth-child(1){width:31%;height:18%;left:10%;top:18%}.kzpreview i:nth-child(2){width:22%;height:38%;right:12%;top:35%}
 .kzpreview i:nth-child(3){width:34%;height:17%;left:27%;bottom:11%}.kzpreview span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--kz);font-size:25px;text-shadow:0 0 12px var(--kz)}
 .kzcard[data-kz="forge"] .kzpreview i:nth-child(2){height:62%;top:16%}.kzcard[data-kz="wastes"] .kzpreview i{transform:rotate(-9deg);width:22%}
-.kzcard[data-kz="ruins"] .kzpreview{background-image:linear-gradient(#07101866,#071018aa),url('ruined-city/ruined-city-tactical.jpg');background-size:cover;background-position:center}
-.kzcard[data-kz="ruins"] .kzpreview i{opacity:.3}.kzcard[data-kz="ruins"] .kzpreview span{font-size:31px}
 .roster-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;margin-bottom:8px;border:1px solid #35526a;border-radius:8px;background:#091621}
 .roster-head strong{font:700 15px var(--fd);color:var(--team)}.roster-head small{display:block;color:var(--txt2);margin-top:2px}.roster-total{text-align:right;font:800 17px var(--fd);color:#dff8ff}.roster-total.bad{color:#ff8d84}.roster-total span{display:block;font:600 7px var(--fm);letter-spacing:1px;color:var(--mut)}
 .roster-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:min(57vh,560px);overflow:auto;padding:2px}
@@ -427,6 +428,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
   .sheet{max-height:92dvh}.x{width:44px;height:44px}.mode-btn{min-height:86px}
   .ov{padding-bottom:env(safe-area-inset-bottom)}
   #top{gap:5px;padding:5px}.pchip{padding:5px 7px}.pchip.act::before{display:none}#tp{padding:4px 6px}
+  .quit-match{width:36px;min-width:36px;height:34px;padding:5px;font-size:12px}.quit-match span{display:none}
   #scorebar{grid-template-columns:1fr 1fr;padding:4px;gap:4px}.score-live{grid-column:1/-1;grid-row:2;min-height:18px}.score-side{padding:3px;gap:2px}.score-item b{font-size:11px}.score-item small{font-size:5px}
   .btn{padding:8px 9px}.terr.vantage{transform:translate(-4px,-7px)}
   .maplegend{top:2px;right:4px;gap:2px;max-width:92%}.maplegend span{padding:2px 3px;font-size:5px}.maplegend i{width:6px;height:6px}
@@ -450,13 +452,14 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
       <button class="mode-btn ai" onclick="chooseGameMode('ai')"><i>01</i><b>1 JOGADOR vs IA</b><small>Enfrente o controlador tático AUSPEX. A IA seleciona, posiciona, move, atira, luta e disputa objetivos.</small></button>
       <button class="mode-btn" onclick="chooseGameMode('pvp')"><i>02</i><b>2 JOGADORES · VS</b><small>Partida local no mesmo aparelho, com escolhas e ativações alternadas.</small></button>
     </div>
-    <div class="title-foot">OFFLINE · 4 KILLZONES · 15 KILL TEAMS · MOTOR DE REGRAS · 4 TURNING POINTS</div>
+    <div class="title-foot">OFFLINE · 3 KILLZONES · 15 KILL TEAMS · MOTOR DE REGRAS · 4 TURNING POINTS</div>
   </div>
 </div>
 <div id="top">
   <div id="tp">TP <b id="tpn">1</b>/4</div>
   <div class="pchip" id="pc0" style="color:var(--p1)"><div class="nm" id="pn0">—</div><div class="st" id="ps0"></div></div>
   <div class="pchip" id="pc1" style="color:var(--p2)"><div class="nm" id="pn1">—</div><div class="st" id="ps1"></div></div>
+  <button class="quit-match" type="button" onclick="requestEndMatch()" aria-label="Encerrar ou reiniciar partida">✕ <span>ENCERRAR</span></button>
 </div>
 <div id="scorebar" aria-label="Placar em tempo real">
   <div class="score-side p1" id="score0"></div>
@@ -474,11 +477,10 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
   <div id="kzname">▦ Distrito Volkus</div>
   <div class="maplegend" aria-label="Legenda do mapa">
     <span><i class="lg-light"></i> COBERTURA LEVE</span>
-    <span><i class="lg-vantage"></i> VANTAGE 2&quot;</span>
+    <span><i class="lg-vantage"></i> PISO ELEVADO</span>
     <span><i class="lg-stair"></i> ESCADA FINA</span>
-    <span><i class="lg-building"></i> EDIFÍCIO 2 PISOS</span>
+    <span><i class="lg-building"></i> FORTALEZA 3 NÍVEIS</span>
     <span><i class="lg-door"></i> PORTA ABERTA</span>
-    <span class="ruins-only">▥ PRÉDIOS 3D · ACESSO PERIMETRAL</span>
     <span><i class="lg-obj"></i> OBJETIVO</span>
   </div>
   <div id="board"></div>
@@ -675,17 +677,18 @@ RULES.importTeams(TEAMS,KT_TEAMS);
 
 /* ---------- KILLZONES, TERRENO E OBJETIVOS ---------- */
 const KILLZONES={
- volkus:{name:'Distrito Volkus',sub:'Edifícios transitáveis · 2 pisos · portas e acessos duplos',ico:'▦',tone:'#69d9ff',
+ volkus:{name:'Killzone Volkus',sub:'2 fortalezas · 2 ruínas grandes · paredes quebradas e escombros',ico:'▦',tone:'#69d9ff',
   terrain:[
-   {x:5,y:3,w:5,h:4,t:'h',z:4,building:true,floors:2,doors:[{side:'n',offset:2},{side:'s',offset:2}]},
-   {x:20,y:3,w:5,h:4,t:'h',z:4,building:true,floors:2,doors:[{side:'n',offset:2},{side:'s',offset:2}]},
-   {x:5,y:15,w:5,h:4,t:'h',z:4,building:true,floors:2,doors:[{side:'n',offset:2},{side:'s',offset:2}]},
-   {x:20,y:15,w:5,h:4,t:'h',z:4,building:true,floors:2,doors:[{side:'n',offset:2},{side:'s',offset:2}]},
-   {x:12,y:8,w:6,h:6,t:'h',z:4,building:true,floors:2,doors:[{side:'w',offset:2},{side:'e',offset:3}]},
-   {x:10,y:4,w:2,h:1,t:'l'},{x:18,y:4,w:2,h:1,t:'l'},{x:10,y:17,w:2,h:1,t:'l'},{x:18,y:17,w:2,h:1,t:'l'},
-   {x:3,y:10,w:3,h:1,t:'l'},{x:24,y:11,w:3,h:1,t:'l'}],
+   {x:3,y:2,w:7,h:6,t:'h',z:6,building:true,kind:'stronghold',floorStep:3,doors:[{side:'s',offset:3},{side:'e',offset:2}],access:[{side:'w',offset:2},{side:'s',offset:5}]},
+   {x:20,y:14,w:7,h:6,t:'h',z:6,building:true,kind:'stronghold',floorStep:3,doors:[{side:'n',offset:3},{side:'w',offset:2}],access:[{side:'e',offset:2},{side:'n',offset:5}]},
+   {x:20,y:2,w:6,h:5,t:'h',z:3.4,building:true,kind:'large-ruin',floorStep:3.4,openSides:['s','w'],doors:[{side:'n',offset:2}],access:[{side:'e',offset:2},{side:'s',offset:3}]},
+   {x:4,y:15,w:6,h:5,t:'h',z:3.4,building:true,kind:'large-ruin',floorStep:3.4,openSides:['n','e'],doors:[{side:'s',offset:2}],access:[{side:'w',offset:2},{side:'n',offset:3}]},
+   {x:12,y:5,w:4,h:1,t:'h',z:2.4,kind:'ruin-wall',piece:'small-a'},{x:12,y:5,w:1,h:3,t:'h',z:2.4,kind:'ruin-wall',piece:'small-a'},
+   {x:15,y:14,w:4,h:1,t:'h',z:2.4,kind:'ruin-wall',piece:'small-b'},{x:18,y:12,w:1,h:3,t:'h',z:2.4,kind:'ruin-wall',piece:'small-b'},
+   {x:11,y:10,w:3,h:2,t:'h',z:1.35,kind:'heavy-rubble'},{x:17,y:9,w:3,h:2,t:'h',z:1.35,kind:'heavy-rubble'},
+   {x:2,y:11,w:3,h:1,t:'l',kind:'light-rubble'},{x:14,y:2,w:3,h:1,t:'l',kind:'light-rubble'},{x:25,y:10,w:3,h:1,t:'l',kind:'light-rubble'}],
   stairs:[],
-  objs:[{x:15,y:5},{x:15,y:16},{x:6,y:11},{x:24,y:11},{x:15,y:11}]},
+  objs:[{x:15,y:4},{x:15,y:18},{x:7,y:11},{x:23,y:11},{x:15,y:11}]},
  forge:{name:'Forja Ferrum-9',sub:'Corredores industriais · Torre central',ico:'⚙',tone:'#ffb454',
   terrain:[{x:5,y:3,w:5,h:2,t:'h',z:2},{x:20,y:3,w:5,h:2,t:'h',z:2},{x:5,y:17,w:5,h:2,t:'h',z:2},{x:20,y:17,w:5,h:2,t:'h',z:2},{x:13,y:8,w:4,h:6,t:'h',z:2},{x:10,y:6,w:2,h:5,t:'l'},{x:18,y:11,w:2,h:5,t:'l'},{x:11,y:3,w:3,h:2,t:'l'},{x:16,y:17,w:3,h:2,t:'l'}],
   stairs:[{x:4,y:3,tx:5,ty:3,z:2},{x:25,y:3,tx:24,ty:3,z:2},{x:4,y:18,tx:5,ty:18,z:2},{x:25,y:18,tx:24,ty:18,z:2},{x:12,y:10,tx:13,ty:10,z:2}],
@@ -693,64 +696,38 @@ const KILLZONES={
  wastes:{name:'Ermos de Cinder',sub:'Campo aberto · Ruínas e tiros longos',ico:'◇',tone:'#e8a96a',
   terrain:[{x:7,y:5,w:3,h:3,t:'h',z:2},{x:20,y:14,w:3,h:3,t:'h',z:2},{x:13,y:9,w:4,h:4,t:'h',z:2},{x:4,y:14,w:4,h:1,t:'l'},{x:22,y:7,w:4,h:1,t:'l'},{x:10,y:3,w:1,h:4,t:'l'},{x:19,y:16,w:1,h:4,t:'l'},{x:4,y:8,w:2,h:1,t:'l'},{x:24,y:13,w:2,h:1,t:'l'}],
   stairs:[{x:6,y:6,tx:7,ty:6,z:2},{x:23,y:15,tx:22,ty:15,z:2},{x:12,y:10,tx:13,ty:10,z:2}],
-  objs:[{x:5,y:5},{x:25,y:17},{x:15,y:5},{x:15,y:17},{x:15,y:11}]},
- ruins:{name:'Cidade Devastada',sub:'Cidade 3D · somente prédios visíveis · subida em todo o perímetro',ico:'▥',tone:'#f0b677',
-  hideRuleGeometry:true,perimeterClimb:true,
-  visual:{kind:'ruined-city',model:'ruined-city/ruined_city_free_5.glb',scale:1,position:[16.05,.405,25]},
-  terrain:[
-   {x:8,y:0,w:7,h:5,t:'h',z:10,rooftop:true},{x:18,y:2,w:4,h:3,t:'h',z:6,rooftop:true},
-   {x:5,y:6,w:4,h:3,t:'h',z:6,rooftop:true},{x:11,y:6,w:4,h:3,t:'h',z:1.5,rooftop:true},{x:21,y:6,w:4,h:3,t:'h',z:6,rooftop:true},
-   {x:7,y:12,w:5,h:4,t:'h',z:5,rooftop:true},{x:12,y:11,w:5,h:4,t:'h',z:6,rooftop:true},{x:18,y:12,w:4,h:5,t:'h',z:6,rooftop:true},
-   {x:8,y:17,w:3,h:5,t:'h',z:5.5,rooftop:true},{x:18,y:17,w:7,h:5,t:'h',z:7.5,rooftop:true},
-   {x:14,y:4,w:2,h:1,t:'l'},{x:16,y:9,w:2,h:1,t:'l'},{x:5,y:10,w:3,h:1,t:'l'},{x:23,y:10,w:2,h:1,t:'l'}],
-  stairs:[],objs:[{x:4,y:4},{x:16,y:3},{x:10,y:10},{x:20,y:10},{x:15,y:18},{x:26,y:18}]}
+  objs:[{x:5,y:5},{x:25,y:17},{x:15,y:5},{x:15,y:17},{x:15,y:11}]}
 };
 let ACTIVE_KZ='volkus',TERRAIN=[],STAIRS=[],OBJS=[];
 const TMAP=[];
 const insideFeature=(t,x,y)=>x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h;
-function doorAt(t,x,y){return !!(t.building&&(t.doors||[]).some(d=>
+function doorAt(t,x,y){if(!t.building)return false;
+  const open=(t.openSides||[]).some(side=>
+    side==='n'?y===t.y:
+    side==='s'?y===t.y+t.h-1:
+    side==='w'?x===t.x:
+    x===t.x+t.w-1);
+  return open||(t.doors||[]).some(d=>
   d.side==='n'?y===t.y&&x===t.x+d.offset:
   d.side==='s'?y===t.y+t.h-1&&x===t.x+d.offset:
   d.side==='w'?x===t.x&&y===t.y+d.offset:
-  x===t.x+t.w-1&&y===t.y+d.offset));}
+  x===t.x+t.w-1&&y===t.y+d.offset);}
 function perimeterAt(t,x,y){return insideFeature(t,x,y)&&(x===t.x||x===t.x+t.w-1||y===t.y||y===t.y+t.h-1);}
-function generatedBuildingStairs(t){if(!t.building)return[];const z1=2,z2=Math.max(2,t.z||2),bid=t.id||`${t.x}-${t.y}`;
+function generatedBuildingStairs(t){if(!t.building)return[];const z1=t.floorStep||2,z2=Math.max(z1,t.z||z1),bid=t.id||`${t.x}-${t.y}`;
   const outside=(d)=>d.side==='n'?{x:t.x+d.offset,y:t.y-1,tx:t.x+d.offset,ty:t.y}:
     d.side==='s'?{x:t.x+d.offset,y:t.y+t.h,tx:t.x+d.offset,ty:t.y+t.h-1}:
     d.side==='w'?{x:t.x-1,y:t.y+d.offset,tx:t.x,ty:t.y+d.offset}:
     {x:t.x+t.w,y:t.y+d.offset,tx:t.x+t.w-1,ty:t.y+d.offset};
-  const external=(t.doors||[]).slice(0,2).map(d=>{const limit=(d.side==='n'||d.side==='s')?t.w:t.h,
-      stairDoor={...d,offset:Math.max(1,Math.min(limit-2,d.offset+((d.side==='s'||d.side==='e')?1:-1)))};
-    return{...outside(stairDoor),fromZ:0,toZ:z1,z:z1,building:bid,side:d.side};});
+  const external=(t.access||t.doors||[]).slice(0,2).map(d=>
+    ({...outside(d),fromZ:0,toZ:z1,z:z1,building:bid,side:d.side}));
   const levels=[0,z1,...(z2>z1?[z2]:[])];
   const shafts=z2>z1?[{x:t.x+1,y:t.y+1,tx:t.x+2,ty:t.y+1,fromZ:0,toZ:z2,z:z2,levels,building:bid,internal:true,shaft:true},
     {x:t.x+t.w-2,y:t.y+t.h-2,tx:t.x+t.w-3,ty:t.y+t.h-2,fromZ:0,toZ:z2,z:z2,levels,building:bid,internal:true,shaft:true}]:[];
   return[...external,...shafts];}
-function generatedRooftopStairs(t){if(!t.rooftop)return[];const z=t.z||2,bid=t.id||`${t.x}-${t.y}`;
-  let candidates=[];
-  if(KILLZONES[ACTIVE_KZ]?.perimeterClimb){
-    // A malha visual da cidade continua limpa. Cada célula livre ao redor de um
-    // prédio funciona como um ponto técnico de subida/descida por 1″.
-    for(let x=t.x;x<t.x+t.w;x++)candidates.push(
-      {x,y:t.y-1,tx:x,ty:t.y,side:'n'},
-      {x,y:t.y+t.h,tx:x,ty:t.y+t.h-1,side:'s'});
-    for(let y=t.y;y<t.y+t.h;y++)candidates.push(
-      {x:t.x-1,y,tx:t.x,ty:y,side:'w'},
-      {x:t.x+t.w,y,tx:t.x+t.w-1,ty:y,side:'e'});
-  }else{
-    const aY=t.y+Math.min(t.h-1,1),bY=t.y+Math.max(0,t.h-2),aX=t.x+Math.min(t.w-1,1),bX=t.x+Math.max(0,t.w-2);
-    candidates=[{x:t.x-1,y:aY,tx:t.x,ty:aY,side:'w'},{x:t.x+t.w,y:bY,tx:t.x+t.w-1,ty:bY,side:'e'},
-      {x:aX,y:t.y-1,tx:aX,ty:t.y,side:'n'},{x:bX,y:t.y+t.h,tx:bX,ty:t.y+t.h-1,side:'s'}];
-  }
-  const valid=candidates.filter(s=>s.x>=0&&s.y>=0&&s.x<W&&s.y<H&&
-    !TERRAIN.some(o=>o!==t&&o.t==='h'&&insideFeature(o,s.x,s.y)));
-  return (KILLZONES[ACTIVE_KZ]?.perimeterClimb?valid:valid.slice(0,2))
-    .map(s=>({...s,fromZ:0,toZ:z,z,building:bid,roofLadder:true,
-      invisible:!!KILLZONES[ACTIVE_KZ]?.hideRuleGeometry,perimeterAccess:!!KILLZONES[ACTIVE_KZ]?.perimeterClimb}));}
 function applyKillzone(id){
   ACTIVE_KZ=id;const k=KILLZONES[id];
   TERRAIN=k.terrain.map((x,i)=>({...x,id:x.id||`${id}-t${i}`}));
-  STAIRS=[...k.stairs.map(x=>({...x,fromZ:x.fromZ||0,toZ:x.toZ||x.z||2})),...TERRAIN.flatMap(generatedBuildingStairs),...TERRAIN.flatMap(generatedRooftopStairs)];OBJS=k.objs.map(x=>({...x}));
+  STAIRS=[...k.stairs.map(x=>({...x,fromZ:x.fromZ||0,toZ:x.toZ||x.z||2})),...TERRAIN.flatMap(generatedBuildingStairs)];OBJS=k.objs.map(x=>({...x}));
   for(let y=0;y<H;y++){TMAP[y]=[];for(let x=0;x<W;x++)TMAP[y][x]=null;}
   TERRAIN.forEach(t=>{for(let y=t.y;y<t.y+t.h;y++)for(let x=t.x;x<t.x+t.w;x++)if(y>=0&&y<H&&x>=0&&x<W){
     if(t.building)TMAP[y][x]=perimeterAt(t,x,y)&&!doorAt(t,x,y)?'h':null;else TMAP[y][x]=t.t;}});
@@ -761,10 +738,11 @@ applyKillzone(ACTIVE_KZ);
 /* ---------- MAPA DE TERRENO (lookup rápido) ---------- */
 const terrAt=(x,y)=>(x<0||y<0||x>=W||y>=H)?null:TMAP[y][x];
 const roofAt=(x,y)=>TERRAIN.find(t=>t.t==='h'&&t.z&&x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h);
-const surfaceAt=(x,y,z)=>TERRAIN.some(t=>t.t==='h'&&insideFeature(t,x,y)&&(t.building?(z>0&&z<=t.z&&z%2===0):z===t.z));
+const onBuildingLevel=(t,z)=>{const step=t.floorStep||2,q=z/step;return z>0&&z<=t.z+.001&&Math.abs(q-Math.round(q))<.001;};
+const surfaceAt=(x,y,z)=>TERRAIN.some(t=>t.t==='h'&&insideFeature(t,x,y)&&(t.building?onBuildingLevel(t,z):z===t.z));
 const zOf=o=>o.z||0;
 const surfaceFeature=o=>TERRAIN.find(t=>t.t==='h'&&insideFeature(t,o.x,o.y)&&
-  (t.building?(zOf(o)>0&&zOf(o)<=t.z&&zOf(o)%2===0):zOf(o)===t.z));
+  (t.building?onBuildingLevel(t,zOf(o)):zOf(o)===t.z));
 
 /* ---------- LINHA DE VISÃO (Bresenham) ----------
    Retorna {vis, cover, obscured}. Heavy bloqueia; Light dá cobertura.
@@ -792,6 +770,7 @@ function segmentRectInterval(ax,ay,bx,by,r){
   return[lo,hi];
 }
 function doorOpeningAt(t,side,coord,rayZ){
+  if((t.openSides||[]).includes(side))return true;
   if(rayZ<-.02||rayZ>1.9)return false;
   return(t.doors||[]).some(d=>d.side===side&&coord>=((side==='n'||side==='s'?t.x:t.y)+d.offset)-.02&&
     coord<=((side==='n'||side==='s'?t.x:t.y)+d.offset+1)+.02);
@@ -822,7 +801,8 @@ function physicalShotBlock(from,to){
     }
     for(const c of crossings){const z=rayZ(c.q);if(z<=t.z+.02&&!doorOpeningAt(t,c.side,c.coord,z))return{blocked:true,feature:t,kind:'wall',side:c.side};}
     // Lajes impedem mirar verticalmente entre pisos, exceto no vão da escada.
-    for(let level=2;level<=t.z;level+=2){
+    const step=t.floorStep||2;
+    for(let level=step;level<=t.z+.001;level+=step){
       if((az-level)*(bz-level)>=0||Math.abs(bz-az)<1e-8)continue;
       const q=(level-az)/(bz-az),x=ax+dx*q,y=ay+dy*q;
       if(q>.025&&q<.975&&x>t.x&&x<t.x+t.w&&y>t.y&&y<t.y+t.h&&!inStairOpening(t,x,y,level))return{blocked:true,feature:t,kind:'floor'};
@@ -1204,7 +1184,7 @@ function showKillzonePicker(){
     <div class="kzgrid">${Object.entries(KILLZONES).map(([id,k])=>`
       <button class="kzcard" data-kz="${id}" onclick="pickKillzone('${id}')" style="--kz:${k.tone}">
         <div class="kzpreview"><i></i><i></i><i></i><span>${k.ico}</span></div>
-        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · ${k.perimeterClimb?'acesso perimetral':k.stairs.length+k.terrain.filter(t=>t.building).length*4+k.terrain.filter(t=>t.rooftop).length*2+' acessos'}</em>
+        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · ${k.stairs.length+k.terrain.filter(t=>t.building).reduce((n,t)=>n+Math.min(2,(t.access||t.doors||[]).length)+((t.z||0)>(t.floorStep||2)?2:0),0)} acessos</em>
       </button>`).join('')}</div>`,true);
 }
 function pickKillzone(id){
@@ -1468,6 +1448,21 @@ function endGame(reason='FIM DO QUARTO TURNING POINT',forcedWinner=null){
       </div></div>
     <button class="btn pri" style="width:100%" onclick="location.reload()">JOGAR DE NOVO</button>`,true);
 }
+function requestEndMatch(){
+  if(document.getElementById('fpv').classList.contains('on'))closeFPV();
+  openOv('Encerrar partida',`<div style="font-size:12px;color:var(--txt2);line-height:1.55;margin-bottom:13px">A partida atual será abandonada. Você pode começar outra com novos times e outro modo, ou voltar ao menu de Kill Team.</div>
+    <div class="roster-actions" style="flex-wrap:wrap">
+      <button class="btn" onclick="closeOv()">CONTINUAR PARTIDA</button>
+      <button class="btn pri" onclick="restartAuspex()">NOVA PARTIDA / TROCAR MODO</button>
+      <button class="btn dgr" onclick="exitAuspex()">SAIR PARA O APP</button>
+    </div>`,true);
+}
+function restartAuspex(){location.reload();}
+function exitAuspex(){
+  closeOv();
+  if(window.parent!==window)window.parent.postMessage({type:'auspex-exit'},'*');
+  else location.reload();
+}
 
 /* ═══════════════ AÇÕES ═══════════════ */
 const activationCommitted=op=>!!(op&&(op._countering||(!op.activated&&op.activationStarted)));
@@ -1544,8 +1539,7 @@ function actMove(kind){
   G.mode=kind;G.moveCells=cells;
   const levels=[...new Set(cells.map(c=>c.z||0))].sort((a,b)=>a-b);G.moveLevel=levels.includes(zOf(op))?zOf(op):levels[0];render();
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
-  const climbHint=KILLZONES[ACTIVE_KZ].perimeterClimb?'Aproxime-se de qualquer borda do prédio: a subida invisível custa somente 1″':'Cada escada custa somente 1″';
-  msg(`<b>${kind==='charge'?'Investida':kind==='fallback'?'Recuar':kind==='dash'?'Arrancada':'Reposicionar'}</b> — primeiro escolha o nível nos botões abaixo; depois toque em uma célula. <b class="hl">${climbHint}</b>. <span style="color:var(--mut)">${cost} AP</span>`);
+  msg(`<b>${kind==='charge'?'Investida':kind==='fallback'?'Recuar':kind==='dash'?'Arrancada':'Reposicionar'}</b> — primeiro escolha o nível nos botões abaixo; depois toque em uma célula. <b class="hl">Cada escada custa somente 1″</b>. <span style="color:var(--mut)">${cost} AP</span>`);
 }
 function setMoveLevel(z){if(!G.moveCells.some(c=>(c.z||0)===z))return;G.moveLevel=z;render();}
 function cancelMovement(){G.mode=null;G.moveCells=[];G.targets=[];render();msg(`<b>Movimento cancelado.</b> Nenhum AP foi gasto.`);}
@@ -1712,7 +1706,7 @@ function zoomBoard(delta){
 }
 function render(){
   bd.style.width=W*CS+'px';bd.style.height=H*CS+'px';
-  bd.style.setProperty('--grid-size',CS+'px');bd.style.backgroundSize=ACTIVE_KZ==='ruins'?`${CS}px ${CS}px,${CS}px ${CS}px,cover,cover`:`${CS}px ${CS}px`;
+  bd.style.setProperty('--grid-size',CS+'px');bd.style.backgroundSize=`${CS}px ${CS}px`;
   bd.classList.toggle('choosing-move',['reposition','dash','charge','fallback'].includes(G.mode));
   const zv=document.getElementById('zoomval');if(zv)zv.textContent=Math.round(CS/BASE_CS*100)+'%';
   let h='';
@@ -1721,9 +1715,11 @@ function render(){
     h+=`<div class="visionring" style="left:${G.sel.x*CS+CS/2-rr-(zOf(G.sel)?4:0)}px;top:${G.sel.y*CS+CS/2-rr-(zOf(G.sel)?7:0)}px;width:${rr*2}px;height:${rr*2}px"></div>`;
   }
   // terreno
-  if(!KILLZONES[ACTIVE_KZ].hideRuleGeometry)TERRAIN.forEach(t=>{const doors=t.building?(t.doors||[]).map(d=>{const axis=(d.side==='n'||d.side==='s')?'left':'top',pos=(d.offset+.5)*CS;
+  TERRAIN.forEach(t=>{const doors=t.building?(t.doors||[]).map(d=>{const axis=(d.side==='n'||d.side==='s')?'left':'top',pos=(d.offset+.5)*CS;
       return`<i class="door ${d.side}" title="Porta aberta · linha de visão física" style="${axis}:${pos}px;--cs:${CS}px">PORTA</i>`;}).join(''):'';
-    h+=`<div class="terr ${t.t==='h'?'heavy':''} ${t.z?'vantage':'light'} ${t.building?'building':''}" data-height="${t.z||0}″" title="${t.building?'Edifício transitável · pisos 0″, 2″ e 4″':t.t==='l'?'Cobertura leve':`Estrutura sólida · telhado a ${t.z||2}″`}" style="left:${t.x*CS}px;top:${t.y*CS}px;width:${t.w*CS}px;height:${t.h*CS}px;--cs:${CS}">${doors}</div>`;});
+    const openings=t.building?(t.openSides||[]).map(side=>`<i class="opening ${side}" title="Lado aberto · passagem e linha de visão">ABERTO</i>`).join(''):'',kind=t.kind||'',vantage=t.t==='h'&&t.z&&!['ruin-wall','heavy-rubble'].includes(kind),
+      title=kind==='stronghold'?`Fortaleza Volkus · pisos 0″, 3″ e 6″`:kind==='large-ruin'?`Ruína grande aberta · Vantage ${t.z}″`:kind==='ruin-wall'?'Parede quebrada · terreno Heavy':kind==='heavy-rubble'?'Escombros pesados':t.t==='l'?'Escombros leves / cobertura':`Estrutura sólida · telhado a ${t.z||2}″`;
+    h+=`<div class="terr ${t.t==='h'?'heavy':'light'} ${vantage?'vantage':''} ${t.building?'building':''} ${kind}" data-height="${t.z||0}″" title="${title}" style="left:${t.x*CS}px;top:${t.y*CS}px;width:${t.w*CS}px;height:${t.h*CS}px;--cs:${CS}">${doors}${openings}</div>`;});
   STAIRS.filter(s=>!s.invisible).forEach(s=>{const x1=(s.x+.5)*CS,y1=(s.y+.5)*CS,x2=((s.tx??s.x)+.5)*CS,y2=((s.ty??s.y)+.5)*CS,len=Math.hypot(x2-x1,y2-y1),ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
     h+=`<div class="stair ${s.fromZ?'level2':''}" title="Escada vertical: ${s.fromZ||0}&quot; → ${s.toZ||s.z||2}&quot;" style="left:${x1}px;top:${y1-3}px;width:${len}px;transform:rotate(${ang}deg)"></div>`;});
   // zonas de deploy
@@ -1739,7 +1735,7 @@ function render(){
     h+=`<div class="obj ${cls}" style="left:${(o.x-1)*CS}px;top:${(o.y-1)*CS}px;width:${CS*3}px;height:${CS*3}px"><span class="objid">OBJ ${i+1}</span><span class="objscore">${c[0]}·${c[1]}</span></div>`;
   });
   // células de movimento/alvo
-  G.moveCells.filter(c=>(c.z||0)===G.moveLevel).forEach(c=>{const level=c.z||0,shift=level/2*6,b=TERRAIN.find(t=>t.building&&insideFeature(t,c.x,c.y)),zone=b?(level===0?'interior':(level===2?'floor2':'roof4')):'',label=level===0?(b?'DENTRO · 0″':'CHÃO · 0″'):(level===2?'PISO · 2″':'TELHADO · 4″');
+  G.moveCells.filter(c=>(c.z||0)===G.moveLevel).forEach(c=>{const level=c.z||0,shift=Math.min(18,level*2.4),b=TERRAIN.find(t=>t.building&&insideFeature(t,c.x,c.y)),zone=b?(level===0?'interior':'floor2'):'',label=level===0?(b?'DENTRO · 0″':'CHÃO · 0″'):`VANTAGE · ${level}″`;
     h+=`<div class="cell ${G.mode==='charge'?'ch':'mv'} ${zone}" title="Destino: ${label} · custo ${c.d.toFixed(1)}&quot;" style="left:${c.x*CS+1-shift}px;top:${c.y*CS+1-shift}px;width:${CS-2}px;height:${CS-2}px" onclick="doMove(${c.x},${c.y},${level})"></div>`;});
   G.targets.forEach(t=>{h+=`<div class="cell tg" title="ALVO: ${t.n} · altura ${zOf(t)}&quot;" style="left:${t.x*CS-2-(zOf(t)?4:0)}px;top:${t.y*CS-2-(zOf(t)?7:0)}px;width:${CS+4}px;height:${CS+4}px" onclick="${G.mode==='shoot'?'doShoot':'doFight'}(opById('${t.id}'))"></div>`;});
   // linha de tiro
@@ -1954,8 +1950,7 @@ function renderFPVLegacy(){
   const themes={
     volkus:{sky:'#07131f',glow:'#1e526d',ground:'#09131a',grid:'#3f9fc2',wall:['#26495d','#193546','#102936','#45687a'],roof:'#52778a',light:'#a66b2e',accent:'#64d8fa'},
     forge:{sky:'#160d08',glow:'#65331c',ground:'#160f09',grid:'#bb6f35',wall:['#513421','#392416','#2a1b12','#765039'],roof:'#8d6245',light:'#cc7b27',accent:'#ffb454'},
-    wastes:{sky:'#1b120b',glow:'#70452a',ground:'#1c140d',grid:'#b68058',wall:['#644733','#4b3528','#38271d','#85664d'],roof:'#99785d',light:'#d49a50',accent:'#f2b777'},
-    ruins:{sky:'#160e0a',glow:'#6d3427',ground:'#161718',grid:'#727f83',wall:['#655c55','#494742','#343637','#85756a'],roof:'#948378',light:'#b47842',accent:'#f0b677'}};
+    wastes:{sky:'#1b120b',glow:'#70452a',ground:'#1c140d',grid:'#b68058',wall:['#644733','#4b3528','#38271d','#85664d'],roof:'#99785d',light:'#d49a50',accent:'#f2b777'}};
   const th=themes[ACTIVE_KZ]||themes.volkus;
   let sky=ctx.createLinearGradient(0,0,0,hh*.62);sky.addColorStop(0,'#02070b');sky.addColorStop(.65,th.sky);sky.addColorStop(1,th.glow);ctx.fillStyle=sky;ctx.fillRect(0,0,ww,hh*.64);
   let grd=ctx.createLinearGradient(0,hh*.36,0,hh);grd.addColorStop(0,th.ground);grd.addColorStop(1,'#010304');ctx.fillStyle=grd;ctx.fillRect(0,hh*.36,ww,hh*.64);
@@ -1981,7 +1976,7 @@ function renderFPVLegacy(){
     ctx.fillStyle='#071018dd';ctx.fillRect(q.x-16,q.y-8,32,13);ctx.strokeStyle=th.accent+'88';ctx.strokeRect(q.x-16,q.y-8,32,13);ctx.fillStyle=th.accent;ctx.font='700 8px Rajdhani,Arial';ctx.textAlign='center';ctx.fillText(`${d}″`,q.x,q.y+2);}
   const poly=pts=>{ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);ctx.closePath()};
   const faces=[],labels=[];
-  if(!KILLZONES[ACTIVE_KZ].hideRuleGeometry)TERRAIN.forEach((t,ti)=>{
+  TERRAIN.forEach((t,ti)=>{
     const z=t.t==='l'?.72:(t.z||2.35),c=[[t.x,t.y],[t.x+t.w,t.y],[t.x+t.w,t.y+t.h],[t.x,t.y+t.h]];
     const raw=[c.map(p=>[p[0],p[1],z]),[c[0],c[1],[c[1][0],c[1][1],z],[c[0][0],c[0][1],z]],
       [c[1],c[2],[c[2][0],c[2][1],z],[c[1][0],c[1][1],z]],[c[2],c[3],[c[3][0],c[3][1],z],[c[2][0],c[2][1],z]],
@@ -2054,9 +2049,9 @@ window.Volkus3DHandlers={onFocus(id,depth){
 }};
 function renderFPV(){
   const op=opById(G.fpvOp),legacy=document.getElementById('fp-canvas'),webgl=document.getElementById('fp-webgl'),badge=document.getElementById('fp-renderer-badge');if(!op)return;
-  if(['volkus','ruins'].includes(ACTIVE_KZ)&&window.Volkus3D?.available){
+  if(ACTIVE_KZ==='volkus'&&window.Volkus3D?.available){
     const data=fpvWebGLData(op),opened=window.Volkus3D.isOpen?.()?true:window.Volkus3D.open(data);
-    if(opened){window.Volkus3D.update?.(data);legacy.style.display='none';webgl.style.display='block';badge.textContent=`${ACTIVE_KZ==='ruins'?'CIDADE DEVASTADA · GLB NATIVO':'VOLKUS'} · WEBGL PBR · ESCALA 1″`;badge.style.color='#ffc778';
+    if(opened){window.Volkus3D.update?.(data);legacy.style.display='none';webgl.style.display='block';badge.textContent=`VOLKUS · WEBGL PBR · ESCALA 1″`;badge.style.color='#ffc778';
       const seen=data.units.filter(o=>o.visible).length,camZ=zOf(op)+1.55,stats=window.Volkus3D.stats?.()||{};
       document.getElementById('fp-name').innerHTML=`<b>${op.ico} ${op.n.toUpperCase()}</b> · ${TEAMS[op.teamId].name}`;
       document.getElementById('fp-readout').textContent=`${op.hp}/${op.maxhp} PV · OLHOS ${camZ.toFixed(1)}″ · ${seen} CONTATO${seen===1?'':'S'} · FOV ${G.fpvFov}° · ${stats.quality>1?'ALTA':'ADAPTATIVA'}`;
