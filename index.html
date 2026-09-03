@@ -858,6 +858,24 @@ body::before{content:'';position:fixed;inset:0;
 .kt-mode-desc{font-size:12px;color:var(--muted);line-height:1.5}
 .kt-mode-check{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;background:#06b6d4;color:#000;font-size:13px;display:none;align-items:center;justify-content:center;font-weight:900}
 .kt-mode-card.selected .kt-mode-check{display:flex}
+.kt-mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kt-mode-grid .kt-mode-card{width:100%;min-height:174px;margin:0;padding:16px;text-align:left;color:inherit;font:inherit;display:flex;flex-direction:column;align-items:flex-start}
+.kt-mode-grid .kt-mode-icon{font-size:27px;margin-bottom:12px}.kt-mode-grid .kt-mode-name{font-size:17px}
+.kt-mode-grid .kt-mode-desc{margin-top:auto;padding-top:7px}
+.kt-mode-grid .mode-auspex-kicker{padding-right:28px}
+.kt-mode-config{margin-top:16px;padding:14px;border:1px solid var(--border);border-radius:var(--r);background:rgba(255,255,255,.018)}
+.kt-mode-config-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.kt-mode-config .sec-label{margin-top:0!important}
+.kt-mode-start-panel{position:sticky;bottom:8px;z-index:5;margin-top:16px;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:rgba(12,12,17,.94);box-shadow:0 10px 30px rgba(0,0,0,.5);backdrop-filter:blur(10px)}
+.kt-mode-start-hint{font-family:var(--fu);font-size:10px;letter-spacing:.5px;color:var(--muted);text-align:center;margin-bottom:8px}
+.kt-mode-start-panel .btn{width:100%;min-height:48px;font-family:var(--ff);font-size:18px;letter-spacing:1px}
+.kt-mode-start-panel .btn:disabled{opacity:.36;filter:grayscale(1);cursor:not-allowed;box-shadow:none}
+@media(max-width:900px){
+  .kt-mode-grid{grid-template-columns:1fr;gap:8px}
+  .kt-mode-grid .kt-mode-card{min-height:0;padding:13px 48px 13px 13px;display:grid;grid-template-columns:38px minmax(0,1fr);column-gap:10px;align-items:center}
+  .kt-mode-grid .kt-mode-icon{grid-row:1/4;margin:0;font-size:25px}.kt-mode-grid .kt-mode-name{margin:0;font-size:16px}.kt-mode-grid .kt-mode-desc{margin:4px 0 0;padding:0;font-size:10px;line-height:1.35}
+  .kt-mode-grid .mode-auspex-test .kt-mode-icon{grid-column:1;grid-row:1/4}.kt-mode-grid .mode-auspex-kicker{grid-column:2;padding:0;margin:3px 0 0;font-size:7px}
+  .kt-mode-check{top:50%;right:13px;transform:translateY(-50%)}.kt-mode-config-grid{grid-template-columns:1fr;gap:15px}
+}
 
 /* ═══ OPERATIVE ORDER (Conceal/Engage) ═══ */
 .kt-order-badge{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:14px;font-family:var(--fu);font-size:10px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .15s;border:1px solid transparent;flex-shrink:0}
@@ -6479,42 +6497,57 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch
   <div class="screen-body">
     <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Como vocês querem jogar?</div>
 
-    <div class="kt-mode-card" id="kt-mode-full" onclick="ktPickMode(false)">
-      <div class="kt-mode-icon">🎮</div>
-      <div class="kt-mode-name">MODO COMPLETO</div>
-      <div class="kt-mode-desc">O app rola os dados, resolve o combate (Tiro e CaC) e cuida de tudo — Ativação, Combate e Status.</div>
-      <div class="kt-mode-check">✓</div>
+    <div class="kt-mode-grid" role="group" aria-label="Modos de Kill Team">
+      <button type="button" class="kt-mode-card" id="kt-mode-full" onclick="ktSelectMode('full')" aria-pressed="false">
+        <div class="kt-mode-icon">🎮</div>
+        <div class="kt-mode-name">MODO COMPLETO</div>
+        <div class="kt-mode-desc">O app rola os dados, resolve Tiro e CaC e controla ativações, combate e status.</div>
+        <div class="kt-mode-check">✓</div>
+      </button>
+
+      <button type="button" class="kt-mode-card" id="kt-mode-simple" onclick="ktSelectMode('simple')" aria-pressed="false">
+        <div class="kt-mode-icon">📋</div>
+        <div class="kt-mode-name">MODO SIMPLES</div>
+        <div class="kt-mode-desc">Vocês rolam os dados físicos; o app acompanha ativações, ordens e PV dos operativos.</div>
+        <div class="kt-mode-check">✓</div>
+      </button>
+
+      <button type="button" class="kt-mode-card mode-auspex-test" id="kt-mode-auspex-test" onclick="ktSelectMode('auspex')" aria-pressed="false">
+        <div class="kt-mode-icon">▦</div>
+        <div class="kt-mode-name">AUSPEX TEST TEAM</div>
+        <div class="mode-auspex-kicker">Simulador tático completo</div>
+        <div class="kt-mode-desc">Jogue contra a IA ou em VS local num killzone com terreno, objetivos e visão WebGL.</div>
+        <div class="kt-mode-check">✓</div>
+      </button>
     </div>
 
-    <div class="kt-mode-card" id="kt-mode-simple" onclick="ktPickMode(true)">
-      <div class="kt-mode-icon">📋</div>
-      <div class="kt-mode-name">MODO SIMPLES</div>
-      <div class="kt-mode-desc">Vocês rolam os dados físicos na mesa. O app só ajuda a lembrar de quem ativou, ordens (Conceal/Engage) e os PVs de cada operativo.</div>
-      <div class="kt-mode-check">✓</div>
+    <div class="kt-mode-config" id="kt-mode-config" hidden>
+      <div class="kt-mode-config-grid">
+        <div>
+          <div class="sec-label">Quantos turnos a partida terá?</div>
+          <div class="kt-turns-stepper">
+            <button class="kt-turns-btn" onclick="ktChangeTurnCount(-1)">−</button>
+            <div class="kt-turns-val" id="kt-turns-val">4</div>
+            <button class="kt-turns-btn" onclick="ktChangeTurnCount(1)">+</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Padrão oficial: 4 turnos.</div>
+        </div>
+        <div>
+          <div class="sec-label">Quantos jogadores?</div>
+          <div class="kt-turns-stepper">
+            <button class="kt-turns-btn" onclick="ktChangePlayerCount(-1)">−</button>
+            <div class="kt-turns-val" id="kt-players-val">2</div>
+            <button class="kt-turns-btn" onclick="ktChangePlayerCount(1)">+</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">De 2 a 6 jogadores.</div>
+        </div>
+      </div>
     </div>
 
-    <div class="kt-mode-card mode-auspex-test" id="kt-mode-auspex-test" onclick="openAuspexTestTeam()">
-      <div class="mode-auspex-kicker">Simulador tático completo</div>
-      <div class="mode-icon">▦</div>
-      <div class="mode-name">AUSPEX TEST TEAM</div>
-      <div class="mode-sub">Jogue no mapa contra a IA ou em VS local, com movimento validado, terreno, objetivos, dados, combate e visão WebGL em primeira pessoa.</div>
+    <div class="kt-mode-start-panel">
+      <div class="kt-mode-start-hint" id="kt-mode-start-hint">Selecione um modo para continuar.</div>
+      <button class="btn btn-primary" id="kt-mode-start" onclick="ktStartSelectedMode()" disabled>INICIAR JOGO</button>
     </div>
-
-    <div class="sec-label" style="margin-top:18px">Quantos turnos a partida terá?</div>
-    <div class="kt-turns-stepper">
-      <button class="kt-turns-btn" onclick="ktChangeTurnCount(-1)">−</button>
-      <div class="kt-turns-val" id="kt-turns-val">4</div>
-      <button class="kt-turns-btn" onclick="ktChangeTurnCount(1)">+</button>
-    </div>
-    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Padrão oficial: 4 turnos. O app avisa quando começar o último.</div>
-
-    <div class="sec-label" style="margin-top:18px">Quantos jogadores?</div>
-    <div class="kt-turns-stepper">
-      <button class="kt-turns-btn" onclick="ktChangePlayerCount(-1)">−</button>
-      <div class="kt-turns-val" id="kt-players-val">2</div>
-      <button class="kt-turns-btn" onclick="ktChangePlayerCount(1)">+</button>
-    </div>
-    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Padrão oficial: 2. Suportamos até 6 pra mesas com mais gente (regras adaptadas por vocês).</div>
 
     <div style="height:8px"></div>
   </div>
@@ -15854,6 +15887,7 @@ let ktRosterIdx = 0;
 
 function onStartKillTeam() {
   SFX.buttonPress();
+  KT_SELECTED_MODE = null;
   VFX.warpTransition(() => NAV.go('screen-kt-mode-select', initKTModeSelect));
 }
 
@@ -15890,6 +15924,7 @@ window.addEventListener('message', e => {
 let KT_SIMPLE_MODE = false;
 let KT_TOTAL_TURNS = 4;
 let KT_PLAYER_COUNT = 2;
+let KT_SELECTED_MODE = null;
 
 function ktChangeTurnCount(delta) {
   KT_TOTAL_TURNS = Math.max(1, Math.min(10, KT_TOTAL_TURNS + delta));
@@ -15904,22 +15939,41 @@ function ktChangePlayerCount(delta) {
 }
 
 function initKTModeSelect() {
-  const fullCard = document.getElementById('kt-mode-full');
-  const simpleCard = document.getElementById('kt-mode-simple');
-  if (fullCard) fullCard.classList.toggle('selected', !KT_SIMPLE_MODE);
-  if (simpleCard) simpleCard.classList.toggle('selected', KT_SIMPLE_MODE);
   const turnsVal = document.getElementById('kt-turns-val');
   if (turnsVal) turnsVal.textContent = KT_TOTAL_TURNS;
   const playersVal = document.getElementById('kt-players-val');
   if (playersVal) playersVal.textContent = KT_PLAYER_COUNT;
+  renderKTModeSelection();
 }
 
-function ktPickMode(simple) {
+function ktSelectMode(mode) {
   SFX.click();
-  KT_SIMPLE_MODE = simple;
-  document.getElementById('kt-mode-full')?.classList.toggle('selected', !simple);
-  document.getElementById('kt-mode-simple')?.classList.toggle('selected', simple);
-  setTimeout(() => NAV.go('screen-kt-team-select', initKTTeamSelect), 200);
+  KT_SELECTED_MODE = mode;
+  renderKTModeSelection();
+}
+
+function renderKTModeSelection() {
+  ['full','simple','auspex'].forEach(mode => {
+    const card = document.getElementById(`kt-mode-${mode}`), selected = KT_SELECTED_MODE === mode;
+    card?.classList.toggle('selected', selected);
+    card?.setAttribute('aria-pressed', String(selected));
+  });
+  const config = document.getElementById('kt-mode-config');
+  if (config) config.hidden = !['full','simple'].includes(KT_SELECTED_MODE);
+  const start = document.getElementById('kt-mode-start'), hint = document.getElementById('kt-mode-start-hint');
+  if (start) {
+    start.disabled = !KT_SELECTED_MODE;
+    start.textContent = KT_SELECTED_MODE === 'full' ? 'INICIAR MODO COMPLETO' : KT_SELECTED_MODE === 'simple' ? 'INICIAR MODO SIMPLES' : KT_SELECTED_MODE === 'auspex' ? 'INICIAR AUSPEX TEST TEAM' : 'INICIAR JOGO';
+  }
+  if (hint) hint.textContent = KT_SELECTED_MODE === 'auspex' ? 'O modo de jogadores e a killzone serão escolhidos dentro do simulador.' : KT_SELECTED_MODE ? 'Ajuste a partida abaixo ou inicie com as configurações atuais.' : 'Selecione um modo para continuar.';
+}
+
+function ktStartSelectedMode() {
+  if (!KT_SELECTED_MODE) return;
+  if (KT_SELECTED_MODE === 'auspex') { openAuspexTestTeam(); return; }
+  KT_SIMPLE_MODE = KT_SELECTED_MODE === 'simple';
+  SFX.buttonPress();
+  VFX.warpTransition(() => NAV.go('screen-kt-team-select', initKTTeamSelect));
 }
 
 // ── TEAM SELECT ──────────────────────────────────────

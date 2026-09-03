@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v21-solid-wall-los';
+const CACHE = 'auspex-v22-mode-confirmation';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',
