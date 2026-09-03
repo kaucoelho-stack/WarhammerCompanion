@@ -191,6 +191,14 @@
     for(let i=0;i<rungs;i++){const p=(i+.5)/rungs;box(g,.055,.055,w,-len/2+p*len,p*h,0,i%2?M.stair:M.edge,{solid:false});}
     const glow=new T.PointLight(s.fromZ?'#68dfff':'#ffbd65',.14,2.6,2);glow.position.set(0,h/2,0);g.add(glow);
   }
+  function makeClimbAid(s,M){
+    const g=new T.Group();g.position.set(s.x+.5,0,s.y+.5);S.world.add(g);
+    [[0,0,.58,.42,.55],[-.2,.38,.46,.34,.42],[.2,.32,.4,.3,.38]].forEach(([x,y,w,h,d],i)=>{
+      const c=box(g,w,h,d,x,y+h/2,(i-1)*.09,i%2?M.edge:M.stair,{solid:false});c.rotation.y=(i-1)*.16;
+      box(g,w*.82,.035,d*1.02,x,y+h+.018,(i-1)*.09,M.dark,{solid:false,shadow:false});
+    });
+    const mark=textSprite('ESCALADA · CUSTO = ALTURA','#ffd184',.085);mark.position.set(0,1.12,0);g.add(mark);
+  }
   function makeObjective(o,i){
     const g=new T.Group();g.position.set(o.x,.02,o.y);S.markers.add(g);
     const ring=new T.Mesh(new T.TorusGeometry(.57,.035,10,48),new T.MeshBasicMaterial({color:'#45ffab',transparent:true,opacity:.92}));ring.rotation.x=Math.PI/2;g.add(ring);
@@ -249,7 +257,9 @@
   async function build(data){
     S.data=data;S.ready=false;S.worldKey=data.killzone||'volkus';clearWorld();setStatus('MATERIALIZANDO KILLZONE VOLKUS',18);const M=await makeMaterials();if(S.closed)return;
     makeGround(M);
-    data.terrain.forEach((t,i)=>t.t==='l'?makeLight(t,i,M):makeHeavy(t,i,M));data.stairs.forEach(s=>makeStair(s,M));data.objectives.forEach(makeObjective);makeCity(M);makeStreetProps(M);makeEmbers();
+    data.terrain.forEach((t,i)=>t.t==='l'?makeLight(t,i,M):makeHeavy(t,i,M));
+    data.stairs.filter(s=>!s.invisible).forEach(s=>s.visual==='crates'?makeClimbAid(s,M):makeStair(s,M));
+    data.objectives.forEach(makeObjective);makeCity(M);makeStreetProps(M);makeEmbers();
     updateUnits(data);setStatus('ACENDENDO O CÉU DE GUERRA',46);if(S.quality>0)await Promise.all([tryHDRI(),addHeroAssets(M)]);
     if(!S.closed){S.ready=true;setStatus('VISÃO DO OPERATIVO ONLINE',100);}
   }

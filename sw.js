@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v22-mode-confirmation';
+const CACHE = 'auspex-v23-conceal-climb-ai-lock';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',

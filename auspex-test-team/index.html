@@ -261,9 +261,13 @@ html[data-killzone="wastes"] #kzname{color:#e8a96a}
 .stair{height:6px!important;transform:none;border:0;border-radius:2px;background:linear-gradient(#d8b77b 0 1px,transparent 1px 5px,#d8b77b 5px 6px),repeating-linear-gradient(90deg,transparent 0 6px,#e2c58d 6px 7px);box-shadow:0 1px 3px #000;transform-origin:0 50%}
 .stair::after{content:'⇧';position:absolute;left:50%;top:-7px;transform:translateX(-50%);font:800 7px var(--fd);color:#ffd998;text-shadow:0 1px 2px #000}
 .stair.level2{filter:hue-rotate(155deg) brightness(1.25);border-color:#8de4ff}
+.climb-aid{position:absolute;z-index:3;pointer-events:none;width:16px;height:14px;border:1px solid #c79552;border-radius:2px;
+  background:linear-gradient(135deg,#a76d2f,#5f381c);box-shadow:4px -3px 0 -1px #805127,0 3px 5px #000b;transform:translate(-3px,-5px) rotate(-8deg)}
+.climb-aid::after{content:'ESCALAR';position:absolute;left:50%;top:-10px;transform:translateX(-50%);font:800 6px var(--fm);letter-spacing:.5px;color:#ffd493;text-shadow:0 1px 2px #000;white-space:nowrap}
 .cell.mv.interior{background:radial-gradient(circle,#5bd7ff66 0 34%,transparent 38%);border-color:#65dcff}.cell.mv.floor2{background:radial-gradient(circle,#be78ff66 0 34%,transparent 38%);border-color:#c88aff}.cell.mv.roof4{background:radial-gradient(circle,#7dff9d77 0 34%,transparent 38%);border-color:#8fffaa}
 .move-levels{display:flex;gap:6px;flex-wrap:wrap;width:100%;padding:3px 0}.move-levels .btn{flex:1;min-width:92px}.move-levels .btn.on{border-color:#dff8ff;background:#26445c;box-shadow:0 0 12px #5bd7ff44}.move-levels small{display:block;font:700 7px var(--fm);color:#8da7b9;margin-top:2px}
 .inspect-banner{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;border:1px solid #3d6078;border-radius:7px;background:#0a1824;color:#a8c7d8;font-size:9px}.inspect-banner b{color:#eaf9ff;font-family:var(--fd)}
+.ai-turn-lock{width:100%;padding:9px 11px;border:1px solid #2c7c98;border-radius:7px;background:linear-gradient(90deg,#081b27,#0a121b);color:#8bdff6;font:700 10px var(--fm);letter-spacing:.7px;text-align:center}
 .shot-preview{padding:11px;border:1px solid #40617a;border-radius:8px;background:linear-gradient(145deg,#142536,#09141e)}.shot-range{display:flex;align-items:center;justify-content:center;gap:10px;margin:12px 0}.shot-range strong{font:800 30px var(--fd);color:#ffcf65}.shot-range span{font:700 10px var(--fd);color:#8da7ba;letter-spacing:1px}.shot-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.shot-meta div{text-align:center;padding:6px;border:1px solid #2d465a;border-radius:5px;background:#09151f}.shot-meta b{display:block;font:700 12px var(--fd)}.shot-meta small{color:#738da1;font:700 6px var(--fd);letter-spacing:.6px}
 @keyframes beacon{50%{filter:brightness(1.28);box-shadow:0 0 0 3px transparent,0 0 24px currentColor,inset 0 0 20px currentColor}}
 .visionring{position:absolute;border:1px solid #7ce7ff28;border-radius:50%;pointer-events:none;z-index:2;
@@ -478,7 +482,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
   <div class="maplegend" aria-label="Legenda do mapa">
     <span><i class="lg-light"></i> COBERTURA LEVE</span>
     <span><i class="lg-vantage"></i> PISO ELEVADO</span>
-    <span><i class="lg-stair"></i> ESCADA FINA</span>
+    <span><i class="lg-stair"></i> APOIO DE ESCALADA</span>
     <span><i class="lg-building"></i> FORTALEZA 3 NÍVEIS</span>
     <span><i class="lg-door"></i> PORTA ABERTA</span>
     <span><i class="lg-obj"></i> OBJETIVO</span>
@@ -713,21 +717,38 @@ function doorAt(t,x,y){if(!t.building)return false;
   d.side==='w'?x===t.x&&y===t.y+d.offset:
   x===t.x+t.w-1&&y===t.y+d.offset);}
 function perimeterAt(t,x,y){return insideFeature(t,x,y)&&(x===t.x||x===t.x+t.w-1||y===t.y||y===t.y+t.h-1);}
-function generatedBuildingStairs(t){if(!t.building)return[];const z1=t.floorStep||2,z2=Math.max(z1,t.z||z1),bid=t.id||`${t.x}-${t.y}`;
-  const outside=(d)=>d.side==='n'?{x:t.x+d.offset,y:t.y-1,tx:t.x+d.offset,ty:t.y}:
-    d.side==='s'?{x:t.x+d.offset,y:t.y+t.h,tx:t.x+d.offset,ty:t.y+t.h-1}:
-    d.side==='w'?{x:t.x-1,y:t.y+d.offset,tx:t.x,ty:t.y+d.offset}:
-    {x:t.x+t.w,y:t.y+d.offset,tx:t.x+t.w-1,ty:t.y+d.offset};
-  const external=(t.access||t.doors||[]).slice(0,2).map(d=>
-    ({...outside(d),fromZ:0,toZ:z1,z:z1,building:bid,side:d.side}));
-  const levels=[0,z1,...(z2>z1?[z2]:[])];
-  const shafts=z2>z1?[{x:t.x+1,y:t.y+1,tx:t.x+2,ty:t.y+1,fromZ:0,toZ:z2,z:z2,levels,building:bid,internal:true,shaft:true},
-    {x:t.x+t.w-2,y:t.y+t.h-2,tx:t.x+t.w-3,ty:t.y+t.h-2,fromZ:0,toZ:z2,z:z2,levels,building:bid,internal:true,shaft:true}]:[];
-  return[...external,...shafts];}
+function climbEdge(t,side,offset){return side==='n'?{x:t.x+offset,y:t.y-1,tx:t.x+offset,ty:t.y}:
+  side==='s'?{x:t.x+offset,y:t.y+t.h,tx:t.x+offset,ty:t.y+t.h-1}:
+  side==='w'?{x:t.x-1,y:t.y+offset,tx:t.x,ty:t.y+offset}:
+  {x:t.x+t.w,y:t.y+offset,tx:t.x+t.w-1,ty:t.y+offset};}
+function climbableWall(t,side,offset){
+  if(t.building&&((t.openSides||[]).includes(side)||(t.doors||[]).some(d=>d.side===side&&d.offset===offset)))return false;
+  const e=climbEdge(t,side,offset);return e.x>=0&&e.y>=0&&e.x<W&&e.y<H;
+}
+/* Escalada normal usa a altura vertical real. Os objetos abaixo são rotas de
+   regra invisíveis; caixotes marcam alguns pontos sem conceder o bônus de escada. */
+function generatedTerrainClimbs(t){
+  if(t.t!=='h'||!t.z||['ruin-wall','heavy-rubble'].includes(t.kind))return[];
+  const bid=t.id||`${t.x}-${t.y}`,step=t.building?(t.floorStep||t.z):t.z,levels=[];
+  for(let z=step;z<=t.z+.001;z+=step)levels.push(Math.min(z,t.z));
+  if(!levels.includes(t.z))levels.push(t.z);
+  const sides=[['n',t.w],['s',t.w],['w',t.h],['e',t.h]],routes=[];
+  sides.forEach(([side,len])=>{for(let offset=0;offset<len;offset++){
+    if(!climbableWall(t,side,offset))continue;const edge=climbEdge(t,side,offset);
+    let fromZ=0,from={x:edge.x,y:edge.y};levels.forEach(toZ=>{
+      routes.push({...from,tx:edge.tx,ty:edge.ty,fromZ,toZ,z:toZ,building:bid,side,kind:'climb',invisible:true,climbCost:Math.ceil(toZ-fromZ)});
+      fromZ=toZ;from={x:edge.tx,y:edge.ty};
+    });
+  }});
+  const aidDefs=(t.access?.length?t.access:[{side:'n',offset:Math.floor(t.w/2)},{side:'s',offset:Math.floor(t.w/2)}])
+    .filter(d=>climbableWall(t,d.side,d.offset)).slice(0,2);
+  aidDefs.forEach(d=>routes.push({...climbEdge(t,d.side,d.offset),fromZ:0,toZ:levels[0],z:levels[0],building:bid,side:d.side,kind:'climb-aid',visual:'crates',decorative:true}));
+  return routes;
+}
 function applyKillzone(id){
   ACTIVE_KZ=id;const k=KILLZONES[id];
   TERRAIN=k.terrain.map((x,i)=>({...x,id:x.id||`${id}-t${i}`}));
-  STAIRS=[...k.stairs.map(x=>({...x,fromZ:x.fromZ||0,toZ:x.toZ||x.z||2})),...TERRAIN.flatMap(generatedBuildingStairs)];OBJS=k.objs.map(x=>({...x}));
+  STAIRS=TERRAIN.flatMap(generatedTerrainClimbs);OBJS=k.objs.map(x=>({...x}));
   for(let y=0;y<H;y++){TMAP[y]=[];for(let x=0;x<W;x++)TMAP[y][x]=null;}
   TERRAIN.forEach(t=>{for(let y=t.y;y<t.y+t.h;y++)for(let x=t.x;x<t.x+t.w;x++)if(y>=0&&y<H&&x>=0&&x<W){
     if(t.building)TMAP[y][x]=perimeterAt(t,x,y)&&!doorAt(t,x,y)?'h':null;else TMAP[y][x]=t.t;}});
@@ -776,7 +797,7 @@ function doorOpeningAt(t,side,coord,rayZ){
     coord<=((side==='n'||side==='s'?t.x:t.y)+d.offset+1)+.02);
 }
 function inStairOpening(t,x,y,level){
-  return STAIRS.some(s=>s.building===t.id&&((s.levels||[s.fromZ||0,s.toZ||s.z||2]).includes(level))&&
+  return STAIRS.some(s=>s.internal&&s.building===t.id&&((s.levels||[s.fromZ||0,s.toZ||s.z||2]).includes(level))&&
     (Math.hypot(x-(s.x+.5),y-(s.y+.5))<.78||Math.hypot(x-(s.tx+.5),y-(s.ty+.5))<.78));
 }
 /* Parede é matéria sólida: Seek, Vantage e qualquer ploy nunca passam por ela.
@@ -790,7 +811,8 @@ function physicalShotBlock(from,to){
     if(!t.building){
       const hit=segmentRectInterval(ax,ay,bx,by,t);if(!hit)continue;
       const lo=Math.max(endQ,hit[0]+eps),hi=Math.min(1-endQ,hit[1]-eps);if(lo>hi)continue;
-      if([lo,(lo+hi)/2,hi].some(q=>rayZ(q)<=(t.z||2)+.02))return{blocked:true,feature:t,kind:'solid'};
+      const hitQ=[lo,(lo+hi)/2,hi].find(q=>rayZ(q)<=(t.z||2)+.02);
+      if(hitQ!==undefined)return{blocked:true,feature:t,kind:'solid',q:hitQ};
       continue;
     }
     // Cada parede usa um volume fino, não apenas uma interseção matemática sem
@@ -805,15 +827,15 @@ function physicalShotBlock(from,to){
       if((t.openSides||[]).includes(wall.side))continue;
       const hit=segmentRectInterval(ax,ay,bx,by,wall.r);if(!hit)continue;
       const lo=Math.max(endQ,hit[0]+eps),hi=Math.min(1-endQ,hit[1]-eps);if(lo>hi)continue;
-      if([lo,(lo+hi)/2,hi].some(q=>rayZ(q)<=t.z+.02&&!doorOpeningAt(t,wall.side,wall.coord(q),rayZ(q))))
-        return{blocked:true,feature:t,kind:'wall',side:wall.side};
+      const hitQ=[lo,(lo+hi)/2,hi].find(q=>rayZ(q)<=t.z+.02&&!doorOpeningAt(t,wall.side,wall.coord(q),rayZ(q)));
+      if(hitQ!==undefined)return{blocked:true,feature:t,kind:'wall',side:wall.side,q:hitQ};
     }
     // Lajes impedem mirar verticalmente entre pisos, exceto no vão da escada.
     const step=t.floorStep||2;
     for(let level=step;level<=t.z+.001;level+=step){
       if((az-level)*(bz-level)>=0||Math.abs(bz-az)<1e-8)continue;
       const q=(level-az)/(bz-az),x=ax+dx*q,y=ay+dy*q;
-      if(q>endQ&&q<1-endQ&&x>t.x&&x<t.x+t.w&&y>t.y&&y<t.y+t.h&&!inStairOpening(t,x,y,level))return{blocked:true,feature:t,kind:'floor'};
+      if(q>endQ&&q<1-endQ&&x>t.x&&x<t.x+t.w&&y>t.y&&y<t.y+t.h&&!inStairOpening(t,x,y,level))return{blocked:true,feature:t,kind:'floor',q};
     }
   }
   return null;
@@ -829,7 +851,7 @@ function movementWallBlock(from,to){
 function stairOccludes(from,to){
   const ax=from.x+.5,ay=from.y+.5,bx=to.x+.5,by=to.y+.5,dx=bx-ax,dy=by-ay;
   const eyeA=zOf(from)+1.55,eyeB=zOf(to)+1.55,len=1.18,halfW=.48;
-  return STAIRS.some(s=>{
+  return STAIRS.some(s=>{if(s.invisible||s.decorative)return false;
     let ux=(s.tx??s.x)-s.x,uy=(s.ty??s.y)-s.y,n=Math.hypot(ux,uy)||1;ux/=n;uy/=n;
     const px=-uy,py=ux,cx=s.x+.5,cy=s.y+.5;
     const au=(ax-cx)*ux+(ay-cy)*uy,av=(ax-cx)*px+(ay-cy)*py;
@@ -843,21 +865,28 @@ function stairOccludes(from,to){
       fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,rise=fromZ+p*(toZ-fromZ),ray=eyeA+(eyeB-eyeA)*q;return rise+.08>=ray;});
   });
 }
+function shotSilhouette(from,to){
+  const dx=to.x-from.x,dy=to.y-from.y,len=Math.max(.001,Math.hypot(dx,dy)),px=-dy/len,py=dx/len;
+  const rays=[-.36,-.18,0,.18,.36].map(offset=>physicalShotBlock(from,{...to,x:to.x+px*offset,y:to.y+py*offset}));
+  const blocks=rays.filter(Boolean),visible=blocks.length<rays.length;
+  const nearCover=blocks.some(hit=>Number.isFinite(hit.q)&&(1-hit.q)*len<=1.05);
+  return{visible,partial:visible&&blocks.length>0,nearCover,distantHeavy:visible&&blocks.some(hit=>!Number.isFinite(hit.q)||(1-hit.q)*len>1.05),block:blocks[0]||null};
+}
 function checkLoS(from,to){
   const cells=traceLine(from,to);
-  const fz=zOf(from),tz=zOf(to),physical=physicalShotBlock(from,to);
+  const fz=zOf(from),tz=zOf(to),silhouette=shotSilhouette(from,to);
   const d=dist(from,to);
-  if(physical)return {vis:false,cover:false,coverType:null,obscured:true,vantage:false,blocked:true,blockKind:physical.kind};
+  if(!silhouette.visible)return {vis:false,cover:false,coverType:null,obscured:true,vantage:false,blocked:true,blockKind:silhouette.block?.kind||'solid'};
   // terreno adjacente ao alvo dá cobertura
   const targetRoof=surfaceFeature(to),fromRoof=surfaceFeature(from);
   const near=cells.filter(c=>c.t&&Math.hypot(c.x-to.x,c.y-to.y)<=1.001&&
     !(targetRoof&&surfaceFeature({x:c.x,y:c.y,z:tz})===targetRoof));
   const roofParapet=!!(targetRoof&&fromRoof!==targetRoof);
-  const cover=d>2&&(near.length>0||roofParapet);
+  const cover=d>2&&(near.length>0||roofParapet||silhouette.nearCover);
   const coverType=cover?(roofParapet||near.some(c=>c.t==='l')?'light':'heavy'):null;
   const vantage=fz-tz>=2;
   const midnight=RULES.engine(to,TEAMS).midnight&&d>8&&TERRAIN.some(t=>t.t==='h'&&Math.hypot(to.x-(t.x+t.w/2),to.y-(t.y+t.h/2))<=Math.max(t.w,t.h)/2+1);
-  return {vis:true,cover,coverType,obscured:midnight,vantage,blocked:false,
+  return {vis:true,cover,coverType,obscured:midnight||silhouette.distantHeavy,vantage,blocked:false,partial:silhouette.partial,
     vantageReveal:vantage&&coverType==='light'};
 }
 function geometrySelfTest(){
@@ -884,6 +913,13 @@ function geometrySelfTest(){
   });
   TERRAIN.filter(t=>t.t==='h'&&!t.building).forEach((t,i)=>add(`solid-${i}`,(t.z||2)>=1.55,
     [point(t.x-.45,t.y+t.h/2),point(t.x+t.w+.45,t.y+t.h/2)]));
+  const partialCorner=TERRAIN.filter(t=>t.building).some(t=>{
+    for(let tx=Math.max(0,t.x-1);tx<=Math.min(W-1,t.x+t.w);tx++)for(let ty=Math.max(0,t.y-1);ty<=Math.min(H-1,t.y+t.h);ty++){
+      if(insideFeature(t,tx,ty))continue;const target={x:tx,y:ty,z:0};
+      for(let ax=0;ax<W;ax+=3)for(let ay=0;ay<H;ay+=3){const s=shotSilhouette({x:ax,y:ay,z:0},target);if(s.visible&&s.partial&&s.nearCover)return true;}
+    }return false;
+  });
+  tests.push({name:'partial-corner-grants-cover',pass:partialCorner,blocked:false,kind:'cover'});
   // Regressão do tiro longo reportado: atirador adjacente à parede leste da
   // ruína superior não pode "pular" essa parede por causa do alcance total.
   add('adjacent-wall-long-shot',true,[point(26.5,3.5),point(2.5,.5)]);
@@ -913,6 +949,7 @@ const opById=id=>G.ops.find(o=>o.id===id);
 const alive=pi=>G.ops.filter(o=>o.pi===pi&&!o.dead);
 const enemiesOf=pi=>G.ops.filter(o=>o.pi!==pi&&!o.dead);
 const isAI=pi=>G.gameMode==='ai'&&pi===G.ai;
+const humanInputLocked=()=>G.gameMode==='ai'&&isAI(G.cur)&&(G.phase==='deploy'||G.phase==='firefight');
 const MINI_SOURCES={
  aod:'assets/mini-aod.png',pmr:'assets/mini-pmr.png',kom:'assets/mini-kom.png',pth:'assets/mini-pth.png',
  'aod:cap':'assets/aod-cap.png','aod:sgt':'assets/aod-sgt.png','aod:gun':'assets/aod-gun.png',
@@ -956,10 +993,11 @@ function reachable(op,maxDist,opts={}){
       if(endInCR?true:!cr)out.push({x:nx,y:ny,z:nz,d:nd});
     }
     if(allowClimb){for(const s of STAIRS){
-      const fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,levels=s.levels||[fromZ,toZ],atA=c.x===s.x&&c.y===s.y,atB=c.x===s.tx&&c.y===s.ty;
+      if(s.decorative)continue;const fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,
+        atA=c.x===s.x&&c.y===s.y&&Math.abs(c.z-fromZ)<.001,atB=c.x===s.tx&&c.y===s.ty&&Math.abs(c.z-toZ)<.001;
       if(!atA&&!atB)continue;
-      const destinations=s.shaft?levels.filter(z=>z!==c.z).map(z=>({x:atA?s.tx:s.x,y:atA?s.ty:s.y,z,d:c.d+1})):
-        (c.z===fromZ&&atA?[{x:s.tx,y:s.ty,z:toZ,d:c.d+1}]:(c.z===toZ&&atB?[{x:s.x,y:s.y,z:fromZ,d:c.d+1}]:[]));
+      const climbCost=s.ladder?1:(s.climbCost||Math.ceil(Math.abs(toZ-fromZ))),destinations=[atA?
+        {x:s.tx,y:s.ty,z:toZ,d:c.d+climbCost}:{x:s.x,y:s.y,z:fromZ,d:c.d+climbCost}];
       for(const v of destinations){
         if(v.d>maxDist+0.001||!surfaceAt(v.x,v.y,v.z)&&v.z>0||occupied(v.x,v.y,op,v.z))continue;
         const k=v.x+','+v.y+','+v.z;if(seen[k]!==undefined)continue;
@@ -971,14 +1009,13 @@ function reachable(op,maxDist,opts={}){
   return out;
 }
 if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
-  const ext=STAIRS.find(s=>s.building&&!s.shaft&&s.fromZ===0),inner=STAIRS.find(s=>s.building&&s.shaft),b=TERRAIN.find(t=>t.building),d=b?.doors?.[0],
+  const ext=STAIRS.find(s=>s.kind==='climb'&&s.fromZ===0),b=TERRAIN.find(t=>t.building),d=b?.doors?.[0],
     edge=(side,offset)=>side==='n'?[{x:b.x+offset,y:b.y-1},{x:b.x+offset,y:b.y}]:side==='s'?[{x:b.x+offset,y:b.y+b.h},{x:b.x+offset,y:b.y+b.h-1}]:
       side==='w'?[{x:b.x-1,y:b.y+offset},{x:b.x,y:b.y+offset}]:[{x:b.x+b.w,y:b.y+offset},{x:b.x+b.w-1,y:b.y+offset}],
     doorPair=edge(d.side,d.offset),closedOffset=Array.from({length:(d.side==='n'||d.side==='s')?b.w:b.h},(_,n)=>n).find(n=>!(b.doors||[]).some(x=>x.side===d.side&&x.offset===n)),
-    wallPair=edge(d.side,closedOffset),extReach=reachable({x:ext.x,y:ext.y,z:ext.fromZ,pi:0},1.01),innerReach=reachable({x:inner.x,y:inner.y,z:0,pi:0},1.01),
-    doorway=reachable({...doorPair[0],z:0,pi:0},1.01),wall=reachable({...wallPair[0],z:0,pi:0},1.01),firstLevel=Math.min(...inner.levels.filter(z=>z>0)),
-    movement={externalStair:extReach.some(c=>c.x===ext.tx&&c.y===ext.ty&&c.z===ext.toZ),
-      internalStair:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===firstLevel),directRoof:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===inner.toZ),
+    wallPair=edge(d.side,closedOffset),climbCost=ext.climbCost,extReach=reachable({x:ext.x,y:ext.y,z:ext.fromZ,pi:0},climbCost+.01),shortReach=reachable({x:ext.x,y:ext.y,z:ext.fromZ,pi:0},climbCost-.01),
+    doorway=reachable({...doorPair[0],z:0,pi:0},1.01),wall=reachable({...wallPair[0],z:0,pi:0},1.01),
+    movement={climbUsesHeight:extReach.some(c=>c.x===ext.tx&&c.y===ext.ty&&c.z===ext.toZ),climbTooShortBlocked:!shortReach.some(c=>c.x===ext.tx&&c.y===ext.ty&&c.z===ext.toZ),
       doorEntry:doorway.some(c=>c.x===doorPair[1].x&&c.y===doorPair[1].y&&c.z===0),wallEntryBlocked:!wall.some(c=>c.x===wallPair[1].x&&c.y===wallPair[1].y&&c.z===0),
       cornerEntryBlocked:movementWallBlock({x:b.x-1,y:b.y-1,z:0},{x:b.x,y:b.y,z:0})};
   const savedOps=G.ops,charger={x:1,y:1,z:0,pi:0,dead:false},chargeTarget={x:4,y:1,z:0,pi:1,dead:false};G.ops=[charger,chargeTarget];
@@ -989,9 +1026,37 @@ if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
 /* ═══════════════ COMBATE ═══════════════ */
 const hasTag=(w,t)=>w.tags.some(x=>x===t||x.startsWith(t+' '));
 const tagVal=(w,t)=>{const f=w.tags.find(x=>x.startsWith(t+' '));return f?parseInt(f.split(' ')[1]):0;};
-const moSeekLight=(op,tgt,w)=>hasTag(w,'Seek')||(op.teamId==='pth'&&(tgt.marks||0)>=4);
+const seekIgnoresCover=(op,tgt,w,los)=>{
+  const tags=w?.tags||[],seek=tags.includes('Seek'),seekLight=tags.includes('Seek Light');
+  return seek||(seekLight&&los.coverType==='light')||(op.teamId==='pth'&&(tgt.marks||0)>=4);
+};
 const weaponsOf=(op,type)=>op.wpn.filter(w=>w.t===type);
 const bestWeapon=(op,type)=>[...weaponsOf(op,type)].sort((a,b)=>(b.a*((7-b.h)/6)*((b.d+b.c)/2))-(a.a*((7-a.h)/6)*((a.d+a.c)/2)))[0];
+function shotTargetState(op,tgt,w){
+  const los=checkLoS(op,tgt);
+  if(dist(op,tgt)>RULES.rangeOf(w))return{valid:false,reason:'fora do alcance',los};
+  if(!los.vis)return{valid:false,reason:'parede sólida bloqueia completamente a miniatura',los};
+  if(los.obscured&&!(op.teamId==='pth'&&(tgt.marks||0)>=3))return{valid:false,reason:'terreno pesado obscurece o alvo',los};
+  if(tgt.order==='conceal'&&los.cover&&dist(op,tgt)>2&&!los.vantageReveal&&!seekIgnoresCover(op,tgt,w,los))
+    return{valid:false,reason:'alvo em Conceal protegido pela cobertura',los};
+  if(inEnemyCR(tgt.x,tgt.y,tgt.pi,zOf(tgt)))return{valid:false,reason:'alvo dentro do control range de um aliado do atacante',los};
+  return{valid:true,reason:'',los};
+}
+if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
+  let sample=null;
+  for(const t of TERRAIN.filter(x=>x.building)){if(sample)break;
+    for(let tx=Math.max(0,t.x-1);tx<=Math.min(W-1,t.x+t.w)&&!sample;tx++)for(let ty=Math.max(0,t.y-1);ty<=Math.min(H-1,t.y+t.h)&&!sample;ty++){
+      if(insideFeature(t,tx,ty))continue;const tgt={x:tx,y:ty,z:0,teamId:'aod',abl:[],order:'conceal',pi:0,marks:0};
+      for(let ax=0;ax<W&&!sample;ax+=3)for(let ay=0;ay<H&&!sample;ay+=3){const op={x:ax,y:ay,z:0,teamId:'kom',abl:[],pi:1},los=checkLoS(op,tgt);if(los.vis&&los.partial&&los.cover&&!los.obscured&&los.coverType==='heavy')sample={op,tgt,los};}
+    }
+  }
+  const plain={n:'Test',tags:[]},seekLight={n:'Test',tags:['Seek Light']},seek={n:'Test',tags:['Seek']},targeting={sample:!!sample};
+  if(sample){targeting.concealCornerBlocked=!shotTargetState(sample.op,sample.tgt,plain).valid;
+    targeting.engageCornerAllowed=shotTargetState(sample.op,{...sample.tgt,order:'engage'},plain).valid;
+    targeting.seekLightDoesNotIgnoreHeavy=!shotTargetState(sample.op,sample.tgt,seekLight).valid;
+    targeting.seekCanIgnoreCover=shotTargetState(sample.op,sample.tgt,seek).valid;}
+  targeting.pass=Object.values(targeting).every(Boolean);document.documentElement.dataset.auspexTargeting=JSON.stringify(targeting);
+}
 function weaponDamageRange(op,tgt,w){
   if(hasTag(w,'Markerlight'))return{min:0,max:0,note:'Esta ação aplica marcações; não remove PV diretamente.'};
   const mo=mods(op,tgt,w,true),melta=hasTag(w,'Melta')?2:0;
@@ -1218,7 +1283,7 @@ function showKillzonePicker(){
     <div class="kzgrid">${Object.entries(KILLZONES).map(([id,k])=>`
       <button class="kzcard" data-kz="${id}" onclick="pickKillzone('${id}')" style="--kz:${k.tone}">
         <div class="kzpreview"><i></i><i></i><i></i><span>${k.ico}</span></div>
-        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · ${k.stairs.length+k.terrain.filter(t=>t.building).reduce((n,t)=>n+Math.min(2,(t.access||t.doors||[]).length)+((t.z||0)>(t.floorStep||2)?2:0),0)} acessos</em>
+        <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · paredes escaláveis pela altura real</em>
       </button>`).join('')}</div>`,true);
 }
 function pickKillzone(id){
@@ -1274,7 +1339,8 @@ function startDeploy(){
   requestAnimationFrame(()=>focusBoard(1,H/2,false));
 }
 const nextToDeploy=pi=>P(pi).ops.find(o=>o.x<0);
-function deployAt(x,y){
+function deployAt(x,y,automated=false){
+  if(humanInputLocked()&&!automated){msg('<b class="hl">Aguarde a IA concluir o posicionamento.</b>');return;}
   const pi=G.cur, op=nextToDeploy(pi);
   if(!op)return;
   const zone = pi===0 ? x<4 : x>=W-4;
@@ -1298,7 +1364,7 @@ function aiDeploy(){
     const nearCover=TERRAIN.some(t=>t.t&&Math.hypot(x-(t.x+t.w/2),y-(t.y+t.h/2))<2.5);
     const objDist=Math.min(...OBJS.map(o=>Math.hypot(x-o.x,y-o.y)));
     cells.push({x,y,score:Math.abs(y-targetY)*1.7+objDist*.08+(x-(W-4))*.25-(nearCover?1.4:0)+Math.random()*.5});}
-  if(!cells.length)return;cells.sort((a,b)=>a.score-b.score);msg(`<b class="ai-pulse" style="color:var(--p2)">IA posicionando ${op.n}…</b>`);deployAt(cells[0].x,cells[0].y);
+  if(!cells.length)return;cells.sort((a,b)=>a.score-b.score);msg(`<b class="ai-pulse" style="color:var(--p2)">IA posicionando ${op.n}…</b>`);deployAt(cells[0].x,cells[0].y,true);
 }
 function startTP(){
   G.phase='strategy';G.gaRequired=null;
@@ -1383,9 +1449,8 @@ function nextActivation(){
 }
 function aiPotentialTargets(op){
   return enemiesOf(op.pi).filter(e=>weaponsOf(op,'r').some(w=>{
-    if(RULES.heavyBlocked(op,w)||RULES.limitedBlocked(op,w)||dist(op,e)>RULES.rangeOf(w))return false;
-    if(physicalShotBlock(op,e))return false;
-    const l=checkLoS(op,e);return l.vis&&!l.obscured&&!(e.order==='conceal'&&l.cover&&dist(op,e)>2&&!l.vantageReveal&&!moSeekLight(op,e,w));
+    if(RULES.heavyBlocked(op,w)||RULES.limitedBlocked(op,w))return false;
+    return shotTargetState(op,e,w).valid;
   }));
 }
 function aiObjectiveFor(op,force=false){
@@ -1405,7 +1470,7 @@ function aiTurn(){
     return dist(o,obj)*.55+(onObj?-5:0)+(shots?-2.5:0)+Math.min(...enemies.map(e=>dist(o,e)))*.08-o.hp*.02;};
   pool.sort((a,b)=>score(a)-score(b));const op=pool[0];
   if(!op.orderLocked){const threat=aiPotentialTargets(op).length||enemies.some(e=>dist(op,e)<=op.mv+2);op.order=threat?'engage':'conceal';}
-  selectOp(op);render();
+  selectOp(op,true);render();
   msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativando ${op.n}…</b>`);setTimeout(()=>aiAct(op,0),520);
 }
 function aiAct(op,step){
@@ -1423,7 +1488,7 @@ function aiAct(op,step){
   }
   if(op.ap>=1&&op.shotThis<RULES.maxAction(op,'shoot',TEAMS)&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&weaponsOf(op,'r').some(w=>!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w))){
     if(!op.orderLocked)op.order='engage';actShoot();
-    const clearTargets=G.mode==='shoot'?G.targets.filter(t=>!physicalShotBlock(op,t)):[];
+    const clearTargets=G.mode==='shoot'?G.targets.filter(t=>shotTargetState(op,t,G.weapon||bestWeapon(op,'r')).valid):[];
     if(G.mode==='shoot'&&clearTargets.length){const tgt=[...clearTargets].sort((a,b)=>{
         const ao=OBJS.some(o=>dist(a,o)<=3)?-4:0,bo=OBJS.some(o=>dist(b,o)<=3)?-4:0;return (a.hp+ao)-(b.hp+bo)||dist(op,a)-dist(op,b);})[0],wpn=G.weapon||bestWeapon(op,'r');
       showAIAttackWarning('TIRO',op,tgt,wpn,()=>doShoot(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}));return;}
@@ -1433,7 +1498,7 @@ function aiAct(op,step){
   if(op.ap>=1&&!op._countering&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&!actionUsed(op,'charge')&&!actionUsed(op,'reposition')&&!actionUsed(op,'dash')&&!actionUsed(op,'fallback')&&weaponsOf(op,'m').length){
     actMove('charge');if(G.moveCells.length){const cell=[...G.moveCells].sort((a,b)=>{
       const ea=enemiesOf(op.pi).filter(e=>dist(a,e)<=1.001).sort((x,y)=>x.hp-y.hp)[0],eb=enemiesOf(op.pi).filter(e=>dist(b,e)<=1.001).sort((x,y)=>x.hp-y.hp)[0];
-      return (ea?.hp??999)-(eb?.hp??999)||a.d-b.d;})[0];doMove(cell.x,cell.y,cell.z||0);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},650);return;}
+      return (ea?.hp??999)-(eb?.hp??999)||a.d-b.d;})[0];doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},650);return;}
   }
   const kind=!actionUsed(op,'reposition')?'reposition':(!actionUsed(op,'dash')?'dash':null);
   if(kind&&op.ap>=1&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))){actMove(kind);
@@ -1442,7 +1507,7 @@ function aiAct(op,step){
         crowd=alive(op.pi).filter(a=>a!==op&&Math.hypot(c.x-a.x,c.y-a.y)<3).length,
         cover=TERRAIN.some(t=>Math.hypot(c.x-(t.x+t.w/2),c.y-(t.y+t.h/2))<2),onTarget=od<=1;
       return od*1.3+crowd*4+ed*.08-(cover?1.1:0)-(onTarget?4:0)-((c.z||0)>0&&weaponsOf(op,'r').length?0.6:0);};
-      const cell=[...G.moveCells].sort((a,b)=>cellScore(a)-cellScore(b))[0];doMove(cell.x,cell.y,cell.z||0);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},800);return;}
+      const cell=[...G.moveCells].sort((a,b)=>cellScore(a)-cellScore(b))[0];doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},800);return;}
   }
   G.aiBusy=false;finishOp(op);
 }
@@ -1526,8 +1591,9 @@ function clearInspection(){
   if(activationCommitted(G.sel))return;G.sel=null;G.mode=null;G.moveCells=[];G.targets=[];render();
   msg(`<b style="color:${P(G.cur).col}">${P(G.cur).n}</b> — inspecione seus operativos e confirme qual deseja ativar.`);
 }
-function selectOp(op){
+function selectOp(op,automated=false){
   if(G.phase!=='firefight')return;
+  if(humanInputLocked()&&!automated){msg('<b class="hl">Turno da IA:</b> aguarde o fim da ativação para voltar a inspecionar os operativos.');return;}
   const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&RULES.canCounter(op,TEAMS);
   if(op.pi!==G.cur||(!counterOK&&op.activated)||op.dead){showCard(op);return;}
   if(!counterOK&&G.gaRequired&&op.templateId!==G.gaRequired){showCard(op);msg('<b class="hl">Group Activation:</b> você pode consultar este card, mas deve ativar outro operativo do tipo exigido.');return;}
@@ -1577,11 +1643,12 @@ function actMove(kind){
   G.mode=kind;G.moveCells=cells;
   const levels=[...new Set(cells.map(c=>c.z||0))].sort((a,b)=>a-b);G.moveLevel=levels.includes(zOf(op))?zOf(op):levels[0];render();
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
-  msg(`<b>${kind==='charge'?'Investida':kind==='fallback'?'Recuar':kind==='dash'?'Arrancada':'Reposicionar'}</b> — primeiro escolha o nível nos botões abaixo; depois toque em uma célula. <b class="hl">Cada escada custa somente 1″</b>. <span style="color:var(--mut)">${cost} AP</span>`);
+  msg(`<b>${kind==='charge'?'Investida':kind==='fallback'?'Recuar':kind==='dash'?'Arrancada':'Reposicionar'}</b> — escolha o nível e depois uma célula. <b class="hl">Escalar consome a altura vertical</b> (ex.: 3″ para subir 3″); caixotes apenas sinalizam paredes acessíveis. <span style="color:var(--mut)">${cost} AP</span>`);
 }
 function setMoveLevel(z){if(!G.moveCells.some(c=>(c.z||0)===z))return;G.moveLevel=z;render();}
 function cancelMovement(){G.mode=null;G.moveCells=[];G.targets=[];render();msg(`<b>Movimento cancelado.</b> Nenhum AP foi gasto.`);}
-function doMove(x,y,z=0){
+function doMove(x,y,z=0,automated=false){
+  if(humanInputLocked()&&!automated){msg('<b class="hl">Aguarde a IA concluir a ativação.</b>');return;}
   const op=G.sel,kind=G.mode;
   const cell=G.moveCells.find(c=>c.x===x&&c.y===y&&c.z===z);if(!cell)return;
   const cost = kind==='dash'?1:(kind==='fallback'?2:1);
@@ -1593,7 +1660,7 @@ function doMove(x,y,z=0){
   G.mode=null;G.moveCells=[];
   spend(op,cost);render();
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
-  if(!op.activated){const b=TERRAIN.find(t=>t.building&&insideFeature(t,op.x,op.y)),where=b?(z===0?' · dentro da estrutura':z===2?' · no piso 2″':' · na cobertura 4″'):'';
+  if(!op.activated){const b=TERRAIN.find(t=>t.building&&insideFeature(t,op.x,op.y)),where=b?(z===0?' · dentro da estrutura':` · no nível ${z}″`):'';
     msg(`<b>${op.n}</b> moveu${where}. Restam <b class="hl">${op.ap} AP</b>.`);}
 }
 function actShoot(chosen=null){
@@ -1609,13 +1676,7 @@ function actShoot(chosen=null){
   const rng=RULES.rangeOf(w);
   let tg=enemiesOf(op.pi).filter(e=>{
     if(dist(op,e)>rng)return false;
-    if(physicalShotBlock(op,e))return false;
-    const l=checkLoS(op,e);
-    if(!l.vis||(l.obscured&&!(op.teamId==='pth'&&(e.marks||0)>=3)))return false;
-    // Conceal + cobertura = não pode ser alvo (a mais de 2")
-    if(e.order==='conceal'&&l.cover&&dist(op,e)>2&&!l.vantageReveal&&!moSeekLight(op,e,w))return false;
-    if(inEnemyCR(e.x,e.y,e.pi,zOf(e)))return false;   // aliado do alvo em CR
-    return true;});
+    return shotTargetState(op,e,w).valid;});
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)&&P(op.pi).communion<=0){const near=[...tg].filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(near)tg=[near];}
   if(!tg.length){msg('<b class="hl">Nenhum alvo válido.</b> Verifique linha de visão, alcance e ordens.');return;}
   G.mode='shoot';G.targets=tg;G.weapon=w;render();
@@ -1644,9 +1705,8 @@ function changeShotWeapon(){closeOv();G.mode=null;G.targets=[];G.weapon=null;ren
 function confirmShot(id){const tgt=opById(id);closeOv();if(tgt)doShoot(tgt,{confirmed:true});}
 function doShoot(tgt,opts={}){
   const op=G.sel,w=G.weapon||bestWeapon(op,'r');
-  const wallNow=physicalShotBlock(op,tgt);
-  const losNow=checkLoS(op,tgt);
-  if(!G.targets.includes(tgt)||wallNow||!losNow.vis||(losNow.obscured&&!(op.teamId==='pth'&&(tgt.marks||0)>=3))){G.mode=null;G.targets=[];G.weapon=null;render();msg(`<b class="hl">Tiro cancelado:</b> ${wallNow?'uma parede sólida intercepta a trajetória':'o alvo não está numa linha de visão válida'}.`);return;}
+  const targetNow=shotTargetState(op,tgt,w);
+  if(!G.targets.includes(tgt)||!targetNow.valid){G.mode=null;G.targets=[];G.weapon=null;render();msg(`<b class="hl">Tiro cancelado:</b> ${targetNow.reason||'o alvo deixou de ser válido'}.`);return;}
   if(!opts.ai&&!opts.confirmed){showShotPreview(tgt);return;}
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){const nearest=enemiesOf(op.pi).filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(nearest&&nearest!==tgt){if(P(op.pi).communion<1){G.mode=null;G.targets=[];render();msg('<b class="hl">Communion:</b> sem pontos para ignorar o inimigo mais próximo.');return;}P(op.pi).communion--;}}
   const wasAlive=new Set(G.ops.filter(o=>!o.dead).map(o=>o.id));
@@ -1761,7 +1821,8 @@ function render(){
       title=kind==='stronghold'?`Fortaleza Volkus · pisos 0″, 3″ e 6″`:kind==='large-ruin'?`Ruína grande aberta · Vantage ${t.z}″`:kind==='ruin-wall'?'Parede quebrada · terreno Heavy':kind==='heavy-rubble'?'Escombros pesados':t.t==='l'?'Escombros leves / cobertura':`Estrutura sólida · telhado a ${t.z||2}″`;
     h+=`<div class="terr ${t.t==='h'?'heavy':'light'} ${vantage?'vantage':''} ${t.building?'building':''} ${kind}" data-height="${t.z||0}″" title="${title}" style="left:${t.x*CS}px;top:${t.y*CS}px;width:${t.w*CS}px;height:${t.h*CS}px;--cs:${CS}">${doors}${openings}</div>`;});
   STAIRS.filter(s=>!s.invisible).forEach(s=>{const x1=(s.x+.5)*CS,y1=(s.y+.5)*CS,x2=((s.tx??s.x)+.5)*CS,y2=((s.ty??s.y)+.5)*CS,len=Math.hypot(x2-x1,y2-y1),ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
-    h+=`<div class="stair ${s.fromZ?'level2':''}" title="Escada vertical: ${s.fromZ||0}&quot; → ${s.toZ||s.z||2}&quot;" style="left:${x1}px;top:${y1-3}px;width:${len}px;transform:rotate(${ang}deg)"></div>`;});
+    if(s.visual==='crates')h+=`<div class="climb-aid" title="Caixotes de apoio · esta parede pode ser escalada pagando a altura" style="left:${x1}px;top:${y1}px"></div>`;
+    else h+=`<div class="stair ${s.fromZ?'level2':''}" title="Escada vertical: ${s.fromZ||0}&quot; → ${s.toZ||s.z||2}&quot;" style="left:${x1}px;top:${y1-3}px;width:${len}px;transform:rotate(${ang}deg)"></div>`;});
   // zonas de deploy
   if(G.phase==='deploy'){
     h+=`<div class="terr" style="left:0;top:0;width:${4*CS}px;height:${H*CS}px;background:rgba(232,163,61,.07);border-right:1px dashed var(--p1)"></div>`;
@@ -1824,6 +1885,10 @@ function msg(s){document.getElementById('msg').innerHTML=s;}
 function renderActs(){
   const el=document.getElementById('acts');
   if(G.phase!=='firefight'){el.innerHTML='';return;}
+  if(humanInputLocked()){
+    el.innerHTML=`<div class="ai-turn-lock"><span class="ai-pulse">IA AUSPEX EM OPERAÇÃO</span> · controles bloqueados até o fim da ativação</div><button class="btn" onclick="showLog()">📜 ACOMPANHAR LOG</button>`;
+    return;
+  }
   const op=G.sel;
   if(!op){
     const rdy=G.counterMode
@@ -1835,7 +1900,7 @@ function renderActs(){
     return;
   }
   if(['reposition','dash','charge','fallback'].includes(G.mode)){
-    const labels={0:'CHÃO / INTERIOR',2:'PISO 2″',4:'TELHADO 4″'},levels=[...new Set(G.moveCells.map(c=>c.z||0))].sort((a,b)=>a-b);
+    const labels={0:'CHÃO / INTERIOR'},levels=[...new Set(G.moveCells.map(c=>c.z||0))].sort((a,b)=>a-b);
     el.innerHTML=`<div class="move-levels">${levels.map(z=>`<button class="btn ${G.moveLevel===z?'on':''}" onclick="setMoveLevel(${z})">${labels[z]||`ALTURA ${z}″`}<small>${G.moveCells.filter(c=>(c.z||0)===z).length} destinos</small></button>`).join('')}</div>
       <button class="btn dgr" style="width:100%" onclick="cancelMovement()">CANCELAR MOVIMENTO · 0 AP GASTOS</button>`;return;
   }
@@ -2027,7 +2092,7 @@ function renderFPVLegacy(){
       if(p.x>-160&&p.x<ww+160)labels.push({x:p.x,y:p.y,baseY:base.y,depth:center.d,color:t.t==='l'?'#ffc879':th.accent,text:`${t.t==='l'?'BARREIRA':t.z?'EDIFÍCIO / VANTAGE':'BLOCO PESADO'} · ${center.d.toFixed(1)}″ · ALT ${z.toFixed(t.t==='l'||!t.z?1:0)}″ · ${t.w}×${t.h}″`});}
   });
   // Escadas físicas: seis degraus sólidos sobem do chão ao Vantage.
-  STAIRS.filter(s=>!s.invisible).forEach(s=>{let ux=(s.tx??s.x)-s.x,uy=(s.ty??s.y)-s.y,len=Math.hypot(ux,uy)||1;ux/=len;uy/=len;const px=-uy,py=ux,cx=s.x+.5,cy=s.y+.5,steps=6;
+  STAIRS.filter(s=>!s.invisible&&s.visual!=='crates').forEach(s=>{let ux=(s.tx??s.x)-s.x,uy=(s.ty??s.y)-s.y,len=Math.hypot(ux,uy)||1;ux/=len;uy/=len;const px=-uy,py=ux,cx=s.x+.5,cy=s.y+.5,steps=6;
     for(let i=0;i<steps;i++){const a=-.48+i*(.96/steps),b=-.48+(i+1)*(.96/steps)+.025,z=(i+1)/steps*(s.z||2),c=[[cx+ux*a+px*.42,cy+uy*a+py*.42],[cx+ux*b+px*.42,cy+uy*b+py*.42],[cx+ux*b-px*.42,cy+uy*b-py*.42],[cx+ux*a-px*.42,cy+uy*a-py*.42]];
       const raw=[c.map(p=>[p[0],p[1],z]),[c[1],c[2],[c[2][0],c[2][1],z],[c[1][0],c[1][1],z]],[c[2],c[3],[c[3][0],c[3][1],z],[c[2][0],c[2][1],z]],[c[0],c[1],[c[1][0],c[1][1],z],[c[0][0],c[0][1],z]]];
       raw.forEach(f=>{const cp=f.map(p=>camera(p[0],p[1],p[2]||0));if(cp.some(p=>p.d<=near))return;faces.push({pts:cp.map(proj),depth:cp.reduce((n,p)=>n+p.d,0)/cp.length,t:{t:'stair'},fi:0,fill:i%2?'#9b652c':'#c88b3e'});});}
