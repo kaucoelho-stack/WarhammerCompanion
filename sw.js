@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v20-official-volkus';
+const CACHE = 'auspex-v21-solid-wall-los';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',

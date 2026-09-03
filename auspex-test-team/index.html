@@ -783,29 +783,37 @@ function inStairOpening(t,x,y,level){
    Portas são aberturas reais e só liberam a linha que atravessa o vão. */
 function physicalShotBlock(from,to){
   const ax=from.x+.5,ay=from.y+.5,bx=to.x+.5,by=to.y+.5,dx=bx-ax,dy=by-ay;
-  const az=zOf(from)+1.55,bz=zOf(to)+1.55,rayZ=q=>az+(bz-az)*q,eps=.002;
+  const az=zOf(from)+1.55,bz=zOf(to)+1.55,rayZ=q=>az+(bz-az)*q,eps=.002,
+    rayLen=Math.max(.001,Math.hypot(dx,dy)),endQ=Math.min(.002,.01/rayLen);
   for(const t of TERRAIN){
     if(t.t!=='h')continue;
     if(!t.building){
       const hit=segmentRectInterval(ax,ay,bx,by,t);if(!hit)continue;
-      const lo=Math.max(.025,hit[0]+eps),hi=Math.min(.975,hit[1]-eps);if(lo>hi)continue;
+      const lo=Math.max(endQ,hit[0]+eps),hi=Math.min(1-endQ,hit[1]-eps);if(lo>hi)continue;
       if([lo,(lo+hi)/2,hi].some(q=>rayZ(q)<=(t.z||2)+.02))return{blocked:true,feature:t,kind:'solid'};
       continue;
     }
-    const crossings=[];
-    if(Math.abs(dx)>1e-8){
-      for(const[wallX,side]of[[t.x,'w'],[t.x+t.w,'e']]){const q=(wallX-ax)/dx,y=ay+dy*q;if(q>.025&&q<.975&&y>t.y+eps&&y<t.y+t.h-eps)crossings.push({q,side,coord:y});}
+    // Cada parede usa um volume fino, não apenas uma interseção matemática sem
+    // espessura. Isso também fecha tiros diagonais pelo canto e tiros que correm
+    // exatamente sobre a borda — os dois casos que mais escapavam para a IA.
+    const wt=.14,walls=[
+      {side:'w',r:{x:t.x-wt,y:t.y,w:wt*2,h:t.h},coord:q=>ay+dy*q},
+      {side:'e',r:{x:t.x+t.w-wt,y:t.y,w:wt*2,h:t.h},coord:q=>ay+dy*q},
+      {side:'n',r:{x:t.x,y:t.y-wt,w:t.w,h:wt*2},coord:q=>ax+dx*q},
+      {side:'s',r:{x:t.x,y:t.y+t.h-wt,w:t.w,h:wt*2},coord:q=>ax+dx*q}];
+    for(const wall of walls){
+      if((t.openSides||[]).includes(wall.side))continue;
+      const hit=segmentRectInterval(ax,ay,bx,by,wall.r);if(!hit)continue;
+      const lo=Math.max(endQ,hit[0]+eps),hi=Math.min(1-endQ,hit[1]-eps);if(lo>hi)continue;
+      if([lo,(lo+hi)/2,hi].some(q=>rayZ(q)<=t.z+.02&&!doorOpeningAt(t,wall.side,wall.coord(q),rayZ(q))))
+        return{blocked:true,feature:t,kind:'wall',side:wall.side};
     }
-    if(Math.abs(dy)>1e-8){
-      for(const[wallY,side]of[[t.y,'n'],[t.y+t.h,'s']]){const q=(wallY-ay)/dy,x=ax+dx*q;if(q>.025&&q<.975&&x>t.x+eps&&x<t.x+t.w-eps)crossings.push({q,side,coord:x});}
-    }
-    for(const c of crossings){const z=rayZ(c.q);if(z<=t.z+.02&&!doorOpeningAt(t,c.side,c.coord,z))return{blocked:true,feature:t,kind:'wall',side:c.side};}
     // Lajes impedem mirar verticalmente entre pisos, exceto no vão da escada.
     const step=t.floorStep||2;
     for(let level=step;level<=t.z+.001;level+=step){
       if((az-level)*(bz-level)>=0||Math.abs(bz-az)<1e-8)continue;
       const q=(level-az)/(bz-az),x=ax+dx*q,y=ay+dy*q;
-      if(q>.025&&q<.975&&x>t.x&&x<t.x+t.w&&y>t.y&&y<t.y+t.h&&!inStairOpening(t,x,y,level))return{blocked:true,feature:t,kind:'floor'};
+      if(q>endQ&&q<1-endQ&&x>t.x&&x<t.x+t.w&&y>t.y&&y<t.y+t.h&&!inStairOpening(t,x,y,level))return{blocked:true,feature:t,kind:'floor'};
     }
   }
   return null;
@@ -853,10 +861,33 @@ function checkLoS(from,to){
     vantageReveal:vantage&&coverType==='light'};
 }
 function geometrySelfTest(){
-  const solidWall=checkLoS({x:3,y:4,z:0},{x:11,y:4,z:0}),alignedDoors=checkLoS({x:7,y:1,z:0},{x:7,y:8,z:0}),
-    offDoor=checkLoS({x:6,y:1,z:0},{x:6,y:8,z:0}),insideDoor=checkLoS({x:7,y:4,z:0},{x:7,y:1,z:0}),insideWall=checkLoS({x:6,y:4,z:0},{x:3,y:4,z:0});
-  return{pass:!solidWall.vis&&alignedDoors.vis&&!offDoor.vis&&insideDoor.vis&&!insideWall.vis,
-    solidWall,alignedDoors,offDoor,insideDoor,insideWall,
+  const tests=[],point=(x,y,z=0)=>({x:x-.5,y:y-.5,z}),cross=(t,side,offset)=>{
+    const p=(side==='n'||side==='s')?t.x+offset+.5:t.y+offset+.5;
+    return side==='n'?[point(p,t.y-.55),point(p,t.y+.55)]:
+      side==='s'?[point(p,t.y+t.h+.55),point(p,t.y+t.h-.55)]:
+      side==='w'?[point(t.x-.55,p),point(t.x+.55,p)]:[point(t.x+t.w+.55,p),point(t.x+t.w-.55,p)];};
+  const add=(name,expectedBlocked,pair)=>{const hit=physicalShotBlock(pair[0],pair[1]);tests.push({name,pass:!!hit===expectedBlocked,blocked:!!hit,kind:hit?.kind||null});};
+  TERRAIN.filter(t=>t.building).forEach((t,i)=>{
+    ['n','s','w','e'].forEach(side=>{
+      const len=(side==='n'||side==='s')?t.w:t.h,open=(t.openSides||[]).includes(side),doors=(t.doors||[]).filter(d=>d.side===side);
+      if(open)add(`building-${i}-${side}-open`,false,cross(t,side,Math.floor(len/2)));
+      else{
+        const closed=Array.from({length:len},(_,n)=>n).find(n=>!doors.some(d=>d.offset===n));
+        if(closed!==undefined)add(`building-${i}-${side}-wall`,true,cross(t,side,closed));
+        doors.forEach((d,n)=>add(`building-${i}-${side}-door-${n}`,false,cross(t,side,d.offset)));
+      }
+    });
+    if(!(t.openSides||[]).includes('n')&&!(t.openSides||[]).includes('w'))
+      add(`building-${i}-corner`,true,[point(t.x-.7,t.y-.7),point(t.x+.7,t.y+.7)]);
+    add(`building-${i}-long-horizontal`,true,[point(t.x-2,t.y+.5),point(t.x+t.w+2,t.y+.5)]);
+    add(`building-${i}-long-vertical`,true,[point(t.x+.5,t.y-2),point(t.x+.5,t.y+t.h+2)]);
+  });
+  TERRAIN.filter(t=>t.t==='h'&&!t.building).forEach((t,i)=>add(`solid-${i}`,(t.z||2)>=1.55,
+    [point(t.x-.45,t.y+t.h/2),point(t.x+t.w+.45,t.y+t.h/2)]));
+  // Regressão do tiro longo reportado: atirador adjacente à parede leste da
+  // ruína superior não pode "pular" essa parede por causa do alcance total.
+  add('adjacent-wall-long-shot',true,[point(26.5,3.5),point(2.5,.5)]);
+  return{pass:tests.every(t=>t.pass),failures:tests.filter(t=>!t.pass),tests:tests.length,
     counts:{buildings:TERRAIN.filter(t=>t.building).length,doors:TERRAIN.reduce((n,t)=>n+(t.doors?.length||0),0),stairs:STAIRS.length}};
 }
 if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
@@ -940,13 +971,16 @@ function reachable(op,maxDist,opts={}){
   return out;
 }
 if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
-  const ext=STAIRS.find(s=>s.building&&!s.shaft&&s.fromZ===0),inner=STAIRS.find(s=>s.building&&s.shaft),
-    extReach=reachable({x:ext.x,y:ext.y,z:ext.fromZ,pi:0},1.01),innerReach=reachable({x:inner.x,y:inner.y,z:0,pi:0},1.01),
-    doorway=reachable({x:7,y:2,z:0,pi:0},2.01),wall=reachable({x:6,y:2,z:0,pi:0},1.1),
+  const ext=STAIRS.find(s=>s.building&&!s.shaft&&s.fromZ===0),inner=STAIRS.find(s=>s.building&&s.shaft),b=TERRAIN.find(t=>t.building),d=b?.doors?.[0],
+    edge=(side,offset)=>side==='n'?[{x:b.x+offset,y:b.y-1},{x:b.x+offset,y:b.y}]:side==='s'?[{x:b.x+offset,y:b.y+b.h},{x:b.x+offset,y:b.y+b.h-1}]:
+      side==='w'?[{x:b.x-1,y:b.y+offset},{x:b.x,y:b.y+offset}]:[{x:b.x+b.w,y:b.y+offset},{x:b.x+b.w-1,y:b.y+offset}],
+    doorPair=edge(d.side,d.offset),closedOffset=Array.from({length:(d.side==='n'||d.side==='s')?b.w:b.h},(_,n)=>n).find(n=>!(b.doors||[]).some(x=>x.side===d.side&&x.offset===n)),
+    wallPair=edge(d.side,closedOffset),extReach=reachable({x:ext.x,y:ext.y,z:ext.fromZ,pi:0},1.01),innerReach=reachable({x:inner.x,y:inner.y,z:0,pi:0},1.01),
+    doorway=reachable({...doorPair[0],z:0,pi:0},1.01),wall=reachable({...wallPair[0],z:0,pi:0},1.01),firstLevel=Math.min(...inner.levels.filter(z=>z>0)),
     movement={externalStair:extReach.some(c=>c.x===ext.tx&&c.y===ext.ty&&c.z===ext.toZ),
-      internalStair:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===2),directRoof:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===inner.toZ),
-      doorEntry:doorway.some(c=>c.x===7&&c.y===4&&c.z===0),wallEntryBlocked:!wall.some(c=>c.x===6&&c.y===3&&c.z===0),
-      cornerEntryBlocked:movementWallBlock({x:4,y:2,z:0},{x:5,y:3,z:0})};
+      internalStair:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===firstLevel),directRoof:innerReach.some(c=>c.x===inner.tx&&c.y===inner.ty&&c.z===inner.toZ),
+      doorEntry:doorway.some(c=>c.x===doorPair[1].x&&c.y===doorPair[1].y&&c.z===0),wallEntryBlocked:!wall.some(c=>c.x===wallPair[1].x&&c.y===wallPair[1].y&&c.z===0),
+      cornerEntryBlocked:movementWallBlock({x:b.x-1,y:b.y-1,z:0},{x:b.x,y:b.y,z:0})};
   const savedOps=G.ops,charger={x:1,y:1,z:0,pi:0,dead:false},chargeTarget={x:4,y:1,z:0,pi:1,dead:false};G.ops=[charger,chargeTarget];
   movement.chargeReach=reachable(charger,5,{endInCR:true}).some(c=>inEnemyCR(c.x,c.y,0,c.z));G.ops=savedOps;
   movement.pass=Object.values(movement).every(Boolean);document.documentElement.dataset.auspexMovement=JSON.stringify(movement);
@@ -1350,6 +1384,7 @@ function nextActivation(){
 function aiPotentialTargets(op){
   return enemiesOf(op.pi).filter(e=>weaponsOf(op,'r').some(w=>{
     if(RULES.heavyBlocked(op,w)||RULES.limitedBlocked(op,w)||dist(op,e)>RULES.rangeOf(w))return false;
+    if(physicalShotBlock(op,e))return false;
     const l=checkLoS(op,e);return l.vis&&!l.obscured&&!(e.order==='conceal'&&l.cover&&dist(op,e)>2&&!l.vantageReveal&&!moSeekLight(op,e,w));
   }));
 }
@@ -1388,9 +1423,12 @@ function aiAct(op,step){
   }
   if(op.ap>=1&&op.shotThis<RULES.maxAction(op,'shoot',TEAMS)&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&weaponsOf(op,'r').some(w=>!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w))){
     if(!op.orderLocked)op.order='engage';actShoot();
-    if(G.mode==='shoot'&&G.targets.length){const tgt=[...G.targets].sort((a,b)=>{
+    const clearTargets=G.mode==='shoot'?G.targets.filter(t=>!physicalShotBlock(op,t)):[];
+    if(G.mode==='shoot'&&clearTargets.length){const tgt=[...clearTargets].sort((a,b)=>{
         const ao=OBJS.some(o=>dist(a,o)<=3)?-4:0,bo=OBJS.some(o=>dist(b,o)<=3)?-4:0;return (a.hp+ao)-(b.hp+bo)||dist(op,a)-dist(op,b);})[0],wpn=G.weapon||bestWeapon(op,'r');
       showAIAttackWarning('TIRO',op,tgt,wpn,()=>doShoot(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}));return;}
+    if(G.mode==='shoot'&&G.targets.length&&!clearTargets.length){
+      log(`${op.n}: tiro da IA bloqueado por parede física`);G.mode=null;G.targets=[];G.weapon=null;render();setTimeout(()=>aiAct(op,step+1),180);return;}
   }
   if(op.ap>=1&&!op._countering&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&!actionUsed(op,'charge')&&!actionUsed(op,'reposition')&&!actionUsed(op,'dash')&&!actionUsed(op,'fallback')&&weaponsOf(op,'m').length){
     actMove('charge');if(G.moveCells.length){const cell=[...G.moveCells].sort((a,b)=>{
@@ -1571,6 +1609,7 @@ function actShoot(chosen=null){
   const rng=RULES.rangeOf(w);
   let tg=enemiesOf(op.pi).filter(e=>{
     if(dist(op,e)>rng)return false;
+    if(physicalShotBlock(op,e))return false;
     const l=checkLoS(op,e);
     if(!l.vis||(l.obscured&&!(op.teamId==='pth'&&(e.marks||0)>=3)))return false;
     // Conceal + cobertura = não pode ser alvo (a mais de 2")
@@ -1605,8 +1644,9 @@ function changeShotWeapon(){closeOv();G.mode=null;G.targets=[];G.weapon=null;ren
 function confirmShot(id){const tgt=opById(id);closeOv();if(tgt)doShoot(tgt,{confirmed:true});}
 function doShoot(tgt,opts={}){
   const op=G.sel,w=G.weapon||bestWeapon(op,'r');
+  const wallNow=physicalShotBlock(op,tgt);
   const losNow=checkLoS(op,tgt);
-  if(!G.targets.includes(tgt)||!losNow.vis||(losNow.obscured&&!(op.teamId==='pth'&&(tgt.marks||0)>=3))){G.mode=null;G.targets=[];render();msg('<b class="hl">Tiro cancelado:</b> o alvo não está numa linha de visão válida.');return;}
+  if(!G.targets.includes(tgt)||wallNow||!losNow.vis||(losNow.obscured&&!(op.teamId==='pth'&&(tgt.marks||0)>=3))){G.mode=null;G.targets=[];G.weapon=null;render();msg(`<b class="hl">Tiro cancelado:</b> ${wallNow?'uma parede sólida intercepta a trajetória':'o alvo não está numa linha de visão válida'}.`);return;}
   if(!opts.ai&&!opts.confirmed){showShotPreview(tgt);return;}
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){const nearest=enemiesOf(op.pi).filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(nearest&&nearest!==tgt){if(P(op.pi).communion<1){G.mode=null;G.targets=[];render();msg('<b class="hl">Communion:</b> sem pontos para ignorar o inimigo mais próximo.');return;}P(op.pi).communion--;}}
   const wasAlive=new Set(G.ops.filter(o=>!o.dead).map(o=>o.id));
