@@ -1,9 +1,15 @@
-const CACHE = 'auspex-v24-tombworld-target-lock-traits';
+const CACHE = 'auspex-v32-angels-sprites';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',
   './auspex-test-team/','./auspex-test-team/index.html','./auspex-test-team/auspex-rules.js',
   './auspex-test-team/volkus-3d/volkus-webgl.js',
+  './auspex-test-team/pixel-tactics.js',
+  './auspex-test-team/assets/pixel/eliminator-sheet.js',
+  './auspex-test-team/assets/pixel/captain-sheet.js',
+  './auspex-test-team/assets/pixel/aod-sheets.js',
+  './auspex-test-team/assets/pixel/metropole-data.js',
+  './auspex-test-team/metropole-skin.js',
   './auspex-test-team/vendor/three-r128/three.min.js',
   './auspex-test-team/vendor/three-r128/GLTFLoader.js',
   './auspex-test-team/vendor/three-r128/RGBELoader.js'

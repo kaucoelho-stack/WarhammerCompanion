@@ -1051,8 +1051,9 @@ function reachable(op,maxDist,opts={}){
       if(occupied(nx,ny,op,nz))continue;
       const cr=inEnemyCR(nx,ny,op.pi,nz);if(cr&&!ignoreCR&&!endInCR)continue;
       const nd=c.d+Math.hypot(dx,dy);if(nd>maxDist+0.001)continue;
-      seen[k]=nd;if(!(cr&&!endInCR&&!ignoreCR))q.push({x:nx,y:ny,z:nz,d:nd});
-      if(endInCR?true:!cr)out.push({x:nx,y:ny,z:nz,d:nd});
+      const next={x:nx,y:ny,z:nz,d:nd,parent:c};
+      seen[k]=nd;if(!(cr&&!endInCR&&!ignoreCR))q.push(next);
+      if(endInCR?true:!cr)out.push(next);
     }
     if(allowClimb){for(const s of STAIRS){
       if(s.decorative)continue;const fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,
@@ -1064,7 +1065,7 @@ function reachable(op,maxDist,opts={}){
         if(v.d>maxDist+0.001||!surfaceAt(v.x,v.y,v.z)&&v.z>0||occupied(v.x,v.y,op,v.z))continue;
         const k=v.x+','+v.y+','+v.z;if(seen[k]!==undefined)continue;
         const cr=inEnemyCR(v.x,v.y,op.pi,v.z);if(cr&&!ignoreCR&&!endInCR)continue;
-        seen[k]=v.d;q.push(v);if(endInCR?true:!cr)out.push(v);
+        v.parent=c;seen[k]=v.d;q.push(v);if(endInCR?true:!cr)out.push(v);
       }
     }}
   }
@@ -1604,7 +1605,7 @@ function aiAct(op,step){
   if(op.ap>=1&&!op._countering&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&!actionUsed(op,'charge')&&!actionUsed(op,'reposition')&&!actionUsed(op,'dash')&&!actionUsed(op,'fallback')&&weaponsOf(op,'m').length){
     actMove('charge');if(G.moveCells.length){const cell=[...G.moveCells].sort((a,b)=>{
       const ea=enemiesOf(op.pi).filter(e=>dist(a,e)<=1.001).sort((x,y)=>x.hp-y.hp)[0],eb=enemiesOf(op.pi).filter(e=>dist(b,e)<=1.001).sort((x,y)=>x.hp-y.hp)[0];
-      return (ea?.hp??999)-(eb?.hp??999)||a.d-b.d;})[0];doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},650);return;}
+      return (ea?.hp??999)-(eb?.hp??999)||a.d-b.d;})[0];doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(650,(window.IsoTactics?.walkRemaining?.()||0)+150));return;}
   }
   const kind=!actionUsed(op,'reposition')?'reposition':(!actionUsed(op,'dash')?'dash':null);
   if(kind&&op.ap>=1&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))){actMove(kind);
@@ -1613,7 +1614,7 @@ function aiAct(op,step){
         crowd=alive(op.pi).filter(a=>a!==op&&Math.hypot(c.x-a.x,c.y-a.y)<3).length,
         cover=TERRAIN.some(t=>Math.hypot(c.x-(t.x+t.w/2),c.y-(t.y+t.h/2))<2),onTarget=od<=1;
       return od*1.3+crowd*4+ed*.08-(cover?1.1:0)-(onTarget?4:0)-((c.z||0)>0&&weaponsOf(op,'r').length?0.6:0);};
-      const cell=[...G.moveCells].sort((a,b)=>cellScore(a)-cellScore(b))[0];doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},800);return;}
+      const cell=[...G.moveCells].sort((a,b)=>cellScore(a)-cellScore(b))[0];doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(800,(window.IsoTactics?.walkRemaining?.()||0)+150));return;}
   }
   G.aiBusy=false;finishOp(op);
 }
@@ -1698,6 +1699,7 @@ function clearInspection(){
   msg(`<b style="color:${P(G.cur).col}">${P(G.cur).n}</b> — inspecione seus operativos e confirme qual deseja ativar.`);
 }
 function selectOp(op,automated=false){
+  if(G.pendingReposition&&!automated){msg('Confirme ou desfaça o reposicionamento antes de selecionar outro operativo.');return;}
   if(G.phase!=='firefight')return;
   if(humanInputLocked()&&!automated){msg('<b class="hl">Turno da IA:</b> aguarde o fim da ativação para voltar a inspecionar os operativos.');return;}
   if(G.mode==='shoot'&&!automated){if(G.targets.includes(op))focusShotTarget(op.id);else msg('<b class="hl">Seleção de alvo ativa:</b> confirme um alvo marcado ou cancele o tiro.');return;}
@@ -1711,13 +1713,13 @@ function selectOp(op,automated=false){
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
   msg(`<b>Inspecionando ${op.n}.</b> Veja o card ou a visão em primeira pessoa. A ativação só começa quando você tocar em <b class="hl">ATIVAR ESTE OPERATIVO</b>.`);
 }
-function canAct(op,cost){return op.ap>=cost;}
+function canAct(op,cost){return !G.pendingReposition&&op.ap>=cost;}
 function actionUsed(op,name){return op.usedActs.includes(name);}
 function recordAction(op,name){op.orderLocked=true;op.usedActs.push(name);}
 function spend(op,n,deferFinish=false){op.ap-=n;if(op.ap<=0&&!deferFinish)finishOp(op);}
 function finishOp(op){
   op.activated=true;G.sel=null;G.mode=null;G.moveCells=[];G.targets=[];
-  const delay=isAI(op.pi)?1050:260;if(isAI(op.pi))G.aiBusy=false;
+  const delay=Math.max(isAI(op.pi)?1050:260,(window.IsoTactics?.walkRemaining?.()||0)+180);if(isAI(op.pi))G.aiBusy=false;
   if(op._countering){op.counteracted=true;op._countering=false;G.counterMode=false;setTimeout(()=>{if(G.phase==='over')return;G.cur=1-G.cur;nextActivation();},delay);return;}
   const mate=op.ga>1&&!G.gaRequired?alive(op.pi).find(o=>!o.activated&&o.templateId===op.templateId):null;
   if(mate){G.gaRequired=op.templateId;G.cur=op.pi;setTimeout(()=>{if(G.phase==='over')return;msg(`<b class="hl">Group Activation ${op.ga}:</b> ${P(op.pi).n} ativa outro ${mate.n}.`);nextActivation();},delay);return;}
@@ -1754,10 +1756,18 @@ function actMove(kind){
 }
 function setMoveLevel(z){if(!G.moveCells.some(c=>(c.z||0)===z))return;G.moveLevel=z;render();}
 function cancelMovement(){G.mode=null;G.moveCells=[];G.targets=[];render();msg(`<b>Movimento cancelado.</b> Nenhum AP foi gasto.`);}
-function doMove(x,y,z=0,automated=false){
+function movementPath(cell){const path=[];for(let p=cell;p;p=p.parent)path.unshift({x:p.x,y:p.y,z:p.z||0});return path;}
+function confirmReposition(){const p=G.pendingReposition;if(!p)return;G.pendingReposition=null;G.sel=p.op;G.mode='reposition';G.moveCells=[p.cell];window.IsoTactics?.stopWalk?.();doMove(p.cell.x,p.cell.y,p.cell.z||0,false,true);}
+function undoReposition(){const p=G.pendingReposition;if(!p)return;G.pendingReposition=null;window.IsoTactics?.stopWalk?.();G.sel=p.op;G.mode='reposition';G.moveCells=p.cells;G.moveLevel=p.level;render();msg('<b>Reposicionamento desfeito.</b> Nenhum AP foi gasto. Escolha outro destino.');}
+function doMove(x,y,z=0,automated=false,confirmed=false){
   if(humanInputLocked()&&!automated){msg('<b class="hl">Aguarde a IA concluir a ativação.</b>');return;}
   const op=G.sel,kind=G.mode;
   const cell=G.moveCells.find(c=>c.x===x&&c.y===y&&c.z===z);if(!cell)return;
+  if(!automated&&kind==='reposition'&&!confirmed){
+    G.pendingReposition={op,cell,cells:G.moveCells,level:G.moveLevel};G.mode=null;G.moveCells=[];
+    window.IsoTactics?.walk?.(op,movementPath(cell));render();msg('<b>Confira o destino.</b> Confirme a andada ou use Desfazer para escolher novamente.');return;
+  }
+  if(!confirmed)window.IsoTactics?.walk?.(op,movementPath(cell));
   const cost = kind==='dash'?1:(kind==='fallback'?2:1);
   const oldZ=zOf(op);op.x=x;op.y=y;op.z=z;op.moved=true;
   if(cell.d>3)op.movedFar=true;
@@ -1895,11 +1905,12 @@ function actPickUp(){
   spend(op,1);render();
   msg(`<b>${op.n}</b> assegurou o objetivo para a pontuação do Turning Point.`);
 }
-function endActivation(){const op=G.sel;if(op&&activationCommitted(op))finishOp(op);}
+function endActivation(){if(G.pendingReposition)return;const op=G.sel;if(op&&activationCommitted(op))finishOp(op);}
 /* ═══════════════ RENDERIZAÇÃO ═══════════════ */
 const bd=document.getElementById('board');
 const bw=document.getElementById('boardwrap');
 function focusBoard(x,y,smooth=false){
+  if(window.IsoTactics?.active){window.IsoTactics.center(x,y);return;}
   if(!bw||!bd)return;const left=bd.offsetLeft+(x+.5)*CS-bw.clientWidth/2,top=bd.offsetTop+(y+.5)*CS-bw.clientHeight/2;
   bw.scrollTo({left:Math.max(0,Math.min(left,bw.scrollWidth-bw.clientWidth)),top:Math.max(0,Math.min(top,bw.scrollHeight-bw.clientHeight)),behavior:smooth?'smooth':'auto'});
 }
@@ -1909,11 +1920,13 @@ function centerBoard(){
   focusBoard(W/2,H/2,true);
 }
 function zoomBoard(delta){
+  if(window.IsoTactics?.active){window.IsoTactics.zoom(delta>0?1.2:1/1.2);return;}
   const old=CS,bx=(bw.scrollLeft+bw.clientWidth/2-bd.offsetLeft)/old,by=(bw.scrollTop+bw.clientHeight/2-bd.offsetTop)/old;
   CS=Math.max(BASE_CS,Math.min(42,CS+delta));render();
   requestAnimationFrame(()=>focusBoard(Math.max(0,Math.min(W-1,bx)),Math.max(0,Math.min(H-1,by)),false));
 }
 function render(){
+  if(window.IsoTactics?.active){window.IsoTactics.render();updTop();updScoreboard();renderActs();return;}
   bd.style.width=W*CS+'px';bd.style.height=H*CS+'px';
   bd.style.setProperty('--grid-size',CS+'px');bd.style.backgroundSize=`${CS}px ${CS}px`;
   bd.classList.toggle('choosing-move',['reposition','dash','charge','fallback'].includes(G.mode));
@@ -1994,6 +2007,7 @@ function updTop(){
 function msg(s){document.getElementById('msg').innerHTML=s;}
 function renderActs(){
   const el=document.getElementById('acts');
+  if(G.pendingReposition){const p=G.pendingReposition;el.innerHTML=`<div class="inspect-banner">DESTINO: ${p.cell.z||0}″ · ${p.cell.d.toFixed(1)}″ de movimento · aguardando confirmação</div><button class="btn pri" onclick="confirmReposition()">CONFIRMAR REPOSICIONAMENTO · 1 AP</button><button class="btn" onclick="undoReposition()">↶ DESFAZER MOVIMENTO</button>`;return;}
   if(G.phase!=='firefight'){el.innerHTML='';return;}
   if(humanInputLocked()){
     el.innerHTML=`<div class="ai-turn-lock"><span class="ai-pulse">IA AUSPEX EM OPERAÇÃO</span> · controles bloqueados até o fim da ativação</div><button class="btn" onclick="showLog()">📜 ACOMPANHAR LOG</button>`;
@@ -2102,16 +2116,16 @@ function showCard(op){
 function animateDiceReveal(ms=780){
   const dice=[...document.querySelectorAll('#ov .d.rolling')];
   if(!dice.length)return;
-  const ticks=8;let tick=0;
+  const started=performance.now(),duration=Math.min(ms,1100);
   const timer=setInterval(()=>{
     dice.forEach(d=>d.textContent=1+Math.floor(Math.random()*6));
-    if(++tick>=ticks){
+    if(performance.now()-started>=duration){
       clearInterval(timer);
       dice.forEach(d=>{d.textContent=d.dataset.final;d.classList.remove('rolling');d.classList.add(d.dataset.kind||'fail');});
       document.querySelectorAll('#ov .combat-result').forEach(x=>x.classList.add('revealed'));
       const btn=document.querySelector('#ov .combat-continue');if(btn)btn.disabled=false;
     }
-  },Math.max(62,Math.round(ms/ticks)));
+  },60);
 }
 const normAng=a=>{while(a>180)a-=360;while(a<-180)a+=360;return a};
 function showFirstPerson(viewOp=G.sel){
@@ -2298,7 +2312,7 @@ function showCombat(tipo,att,def,wpn,r,dealt,extra,onContinue=null,aiControlled=
       ${extra&&extra.length?`<div style="font-size:11px;color:var(--warn);margin-top:6px">${extra.join(' · ')}</div>`:''}
     </div>
     <button class="btn pri combat-continue" style="width:100%" onclick="${onContinue?'continueOverlay()':'closeOv()'}" disabled>ROLANDO OS DADOS…</button>`,true);
-  const rollTime=aiControlled?1650:820;animateDiceReveal(rollTime);
+  const rollTime=aiControlled?950:650;animateDiceReveal(rollTime);
   setTimeout(()=>{const b=document.querySelector('#ov .combat-continue');if(b)b.textContent=aiControlled?'CONFIRMAR RESULTADO':'CONTINUAR';},rollTime+30);
 }
 function showLog(){
@@ -2307,4 +2321,4 @@ function showLog(){
 /* início */
 window.addEventListener('message',e=>{if(e.data?.type==='auspex-suspend'&&document.getElementById('fpv').classList.contains('on'))closeFPV();});
 initMiniatures();showTitle();
-</script></body></html>
+</script><script src="assets/pixel/eliminator-sheet.js"></script><script src="assets/pixel/captain-sheet.js"></script><script src="assets/pixel/aod-sheets.js"></script><script src="assets/pixel/metropole-data.js"></script><script src="metropole-skin.js"></script><script src="pixel-tactics.js"></script></body></html>
