@@ -862,7 +862,36 @@ function inStairOpening(t,x,y,level){
 }
 /* Parede é matéria sólida: Seek, Vantage e qualquer ploy nunca passam por ela.
    Portas são aberturas reais e só liberam a linha que atravessa o vão. */
+// Roof ruins share geometry between visibility and the pixel renderer.
+function roofRuins(t){
+  if(!t.building||t.noClimb)return [];
+  const out=[];
+  for(const side of ['n','e','s','w']){
+    const horizontal=side==='n'||side==='s',length=horizontal?t.w:t.h;
+    for(let i=0;i<Math.floor(length);i++){
+      if(i%4===3)continue; // broken gap, also leaves climbing access
+      const x=t.x+(horizontal?i:side==='e'?t.w-.16:0),y=t.y+(!horizontal?i:side==='s'?t.h-.16:0),w=horizontal?1:.16,h=horizontal?.16:1;
+      out.push({x,y,w,h,z:t.z,height:.65,t:'l'});
+      if(i%4===1){ // broken heavy window: two solid jambs, open centre
+        out.push({x,y,w:horizontal?.18:w,h:horizontal?h:.18,z:t.z+.65,height:1.05,t:'h'});
+        out.push({x:x+(horizontal?.8:0),y:y+(horizontal?0:.8),w:horizontal?.2:w,h:horizontal?h:.2,z:t.z+.65,height:.8,t:'h'});
+      }
+    }
+  }
+  return out;
+}
+function roofRayHit(from,to,base=false){
+  const az=zOf(from)+1.55,bz=zOf(to)+(base?.15:1.55),len=Math.hypot(to.x-from.x,to.y-from.y);
+  for(const t of TERRAIN)for(const r of roofRuins(t)){
+    const hit=segmentRectInterval(from.x+.5,from.y+.5,to.x+.5,to.y+.5,r);if(!hit)continue;
+    const lo=Math.max(.001,hit[0]),hi=Math.min(.999,hit[1]);if(lo>hi)continue;
+    const za=az+(bz-az)*lo,zb=az+(bz-az)*hi;
+    if(Math.max(za,zb)>=r.z&&Math.min(za,zb)<=r.z+r.height&&(!base||(1-hi)*len<=1.05))return {blocked:true,feature:r,kind:'roof-ruin',q:hi};
+  }
+  return null;
+}
 function physicalShotBlock(from,to){
+  const roofHit=roofRayHit(from,to);if(roofHit)return roofHit;
   const ax=from.x+.5,ay=from.y+.5,bx=to.x+.5,by=to.y+.5,dx=bx-ax,dy=by-ay;
   const az=zOf(from)+1.55,bz=zOf(to)+1.55,rayZ=q=>az+(bz-az)*q,eps=.002,
     rayLen=Math.max(.001,Math.hypot(dx,dy)),endQ=Math.min(.002,.01/rayLen);
@@ -941,9 +970,10 @@ function checkLoS(from,to){
   const targetRoof=surfaceFeature(to),fromRoof=surfaceFeature(from);
   const near=cells.filter(c=>c.t&&Math.hypot(c.x-to.x,c.y-to.y)<=1.001&&
     !(targetRoof&&surfaceFeature({x:c.x,y:c.y,z:tz})===targetRoof));
-  const roofParapet=!!(targetRoof&&fromRoof!==targetRoof);
+  const roofCover=roofRayHit(from,to,true);
+  const roofParapet=!!roofCover;
   const cover=d>2&&(near.length>0||roofParapet||silhouette.nearCover);
-  const coverType=cover?(roofParapet||near.some(c=>c.t==='l')?'light':'heavy'):null;
+  const coverType=cover?(roofCover?.feature.t==='h'?'heavy':roofParapet||near.some(c=>c.t==='l')?'light':'heavy'):null;
   const vantage=fz-tz>=2;
   const midnight=RULES.engine(to,TEAMS).midnight&&d>8&&TERRAIN.some(t=>t.t==='h'&&Math.hypot(to.x-(t.x+t.w/2),to.y-(t.y+t.h/2))<=Math.max(t.w,t.h)/2+1);
   return {vis:true,cover,coverType,obscured:midnight||silhouette.distantHeavy,vantage,blocked:false,partial:silhouette.partial,
@@ -1318,42 +1348,56 @@ function resolveShoot(att,tgt,wpn){
   return {atk,def,dmg,cover,los,devastHits,nCrit,nNorm};
 }
 
-/* Resolve uma sequência de COMBATE (melee) */
-function resolveFight(att,def,aw,dw){
-  const ma=mods(att,def,aw,false), md=mods(def,att,dw,false);
-  const A=rollAtk(aw,ma,aw.a), D=rollAtk(dw,md,dw.a);
-  let aSuc=A.filter(r=>r.k!=='fail'), dSuc=D.filter(r=>r.k!=='fail');
-  let dmgA=0,dmgD=0;                       // dano no defensor / no atacante
-  const brutalA=hasTag(aw,'Brutal'), brutalD=hasTag(dw,'Brutal');
-  const shockA=hasTag(aw,'Shock')&&aSuc.some(s=>s.k==='crit'),shockD=hasTag(dw,'Shock')&&dSuc.some(s=>s.k==='crit');
-  if(shockA){const i=dSuc.findIndex(s=>s.k==='suc');if(i>=0)dSuc.splice(i,1);}
-  if(shockD){const i=aSuc.findIndex(s=>s.k==='suc');if(i>=0)aSuc.splice(i,1);}
-  const shieldD=hasTag(dw,'Shield')||hasTag(dw,'Tangle')||RULES.hasAbility(def,/cada bloqueio.*2 sucessos/i);
-  let turn=0;                               // 0=atacante, 1=defensor
-  while(aSuc.length||dSuc.length){
-    if(turn===0&&aSuc.length){
-      const s=aSuc.shift();                 // atacante sempre golpeia (mais agressivo)
-      dmgA += s.k==='crit'?aw.c:aw.d;
-    } else if(turn===1&&dSuc.length){
-      const s=dSuc[0];
-      // defensor bloqueia se estiver em perigo, senão golpeia
-      const inDanger = (def.hp - dmgA) <= (aSuc.length? (aSuc[0].k==='crit'?aw.c:aw.d):0);
-      if(inDanger&&aSuc.length&&!(brutalA&&s.k!=='crit')){
-        dSuc.shift();                       // usa para bloquear
-        aSuc.shift();if(shieldD&&aSuc.length)aSuc.shift();
-      } else { dSuc.shift(); dmgD += s.k==='crit'?dw.c:dw.d; }
+/* Resolve retained dice one at a time, applying resilience before checking death. */
+async function resolveFight(att,def,aw,dw){
+  const A=rollAtk(aw,mods(att,def,aw,false),aw.a),D=rollAtk(dw,mods(def,att,dw,false),dw.a);
+  const pools=[A.filter(r=>r.k!=='fail'),D.filter(r=>r.k!=='fail')],ops=[att,def],weapons=[aw,dw];
+  const damage=[0,0],stunned=[false,false],shocked=[false,false];let turn=0;
+  G.fightResolving=true;
+  try{
+    while(ops.every(o=>!o.dead&&o.hp>0)&&pools.some(p=>p.length)){
+      if(!pools[turn].length){turn=1-turn;continue;}
+      const other=1-turn,own=pools[turn],enemy=pools[other],weapon=weapons[turn];
+      const choices=[];
+      own.forEach((die,i)=>{
+        choices.push({type:'strike',i,label:`${die.k==='crit'?'Crítico':'Normal'}: golpear (${die.k==='crit'?weapon.c:weapon.d} dano)`});
+        enemy.forEach((target,j)=>{if((die.k==='crit'||target.k!=='crit')&&(!hasTag(weapons[other],'Brutal')||die.k==='crit'))choices.push({type:'block',i,j,label:`${die.k==='crit'?'Crítico':'Normal'}: bloquear ${target.k==='crit'?'crítico':'normal'} inimigo`});});
+      });
+      let choice;
+      if(isAI(ops[turn].pi)){
+        choice=choices.find(c=>c.type==='strike'&&(own[c.i].k==='crit'?weapon.c:weapon.d)>=ops[other].hp)
+          ||(ops[turn].hp<=Math.max(weapons[other].c,weapons[other].d)?choices.find(c=>c.type==='block'):null)
+          ||choices[0];
+      }else{
+        choice=await new Promise(resolve=>{
+          G.fightChoice=index=>{if(!choices[index])return;G.fightChoice=null;resolve(choices[index]);};
+          openOv('COMBATE — RESOLVER UM DADO',`<p>${att.n}: ${att.hp} PV · ${def.n}: ${def.hp} PV</p><p><b>Vez de ${ops[turn].n}</b></p><p>Seus dados: ${own.map(d=>d.k==='crit'?'CRÍTICO':'NORMAL').join(' · ')}<br>Dados inimigos: ${enemy.map(d=>d.k==='crit'?'CRÍTICO':'NORMAL').join(' · ')||'nenhum'}</p>${choices.map((c,i)=>`<button class="btn" onclick="G.fightChoice&&G.fightChoice(${i})">${c.label}</button>`).join('')}`,true);
+        });
+      }
+      if(ops.some(o=>o.dead||o.hp<=0))break;
+      const die=own.splice(choice.i,1)[0];
+      if(choice.type==='block'){
+        enemy.splice(choice.j,1);
+        if(hasTag(weapon,'Shield')||hasTag(weapon,'Tangle')||RULES.hasAbility(ops[turn],/cada bloqueio.*2 sucessos/i)){
+          const extra=enemy.findIndex(d=>d.k==='suc');if(extra>=0)enemy.splice(extra,1);
+        }
+        log(`${ops[turn].n} bloqueou um dado de ${ops[other].n}`);
+      }else{
+        damage[other]+=applyDmg(ops[other],die.k==='crit'?weapon.c:weapon.d,ops[turn]);
+        if(die.k==='crit'){
+          stunned[other] ||= hasTag(weapon,'Stun');
+          if(hasTag(weapon,'Shock')&&!shocked[turn]){const i=enemy.findIndex(d=>d.k==='suc');if(i>=0)enemy.splice(i,1);shocked[turn]=true;}
+        }
+      }
+      render();turn=other;
     }
-    turn=1-turn;
-    if(!aSuc.length&&!dSuc.length)break;
-    if(turn===0&&!aSuc.length)turn=1;
-    if(turn===1&&!dSuc.length)turn=0;
-  }
-  return {A,D,dmgA,dmgD,stunDef:hasTag(aw,'Stun')&&A.some(s=>s.k==='crit'),stunAtt:hasTag(dw,'Stun')&&D.some(s=>s.k==='crit')};
+  }finally{G.fightChoice=null;G.fightResolving=false;}
+  return{A,D,dmgA:damage[1],dmgD:damage[0],stunDef:stunned[1],stunAtt:stunned[0]};
 }
 
 /* Aplica dano com as regras de resiliência */
 function applyDmg(op,dmg,src){
-  if(dmg<=0)return 0;
+  if(dmg<=0||!op||op.dead||op.hp<=0)return 0;
   const wasAlive=!op.dead&&op.hp>0;let total=dmg;
   // Nojentamente Resiliente (Plague Marines)
   if(RULES.engine(op,TEAMS).resilient&&dmg>=3){
@@ -1362,7 +1406,7 @@ function applyDmg(op,dmg,src){
   }
   if(dmg>=3&&RULES.hasAbility(op,/\btough\b|resistente/i))total=Math.max(1,total-1);
   op.hp-=total;
-  if(op.hp<=0){op.hp=0;op.dead=true;
+  if(op.hp<=0){op.hp=0;op.dead=true;op.ap=0;
     log(`💀 ${op.n} (${P(op.pi).n}) foi incapacitado`);
     if(wasAlive&&src&&src.pi!==op.pi){P(src.pi).kills=(P(src.pi).kills||0)+1;op.killCredited=src.pi;log(`${P(src.pi).n} chegou a ${P(src.pi).kills} eliminações`);}
   }
@@ -1475,7 +1519,7 @@ function aiDeploy(){
 }
 function startTP(){
   G.phase='strategy';G.gaRequired=null;
-  G.ops.forEach(o=>{o.activated=false;o.ap=o.apl;o.moved=false;o.movedFar=false;
+  G.ops.forEach(o=>{o._finishing=false;o.activated=false;o.ap=o.dead?0:o.apl;o.moved=false;o.movedFar=false;
     o.chargedThis=false;o.shotThis=0;o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;o.aiObjective=null;});
   [0,1].forEach(pi=>{if(RULES.engine(alive(pi)[0],TEAMS).blooded){const mark=alive(pi).find(o=>!o.blooded)||alive(pi)[0];if(mark)mark.blooded=1;}});
   [0,1].forEach(pi=>{if(TEAMS[P(pi).team]?.sourceId==='kt-vespid')P(pi).communion=(d6()%3+1)+(alive(pi).some(o=>/oversight drone/i.test(o.n))?1:0);});
@@ -1569,6 +1613,14 @@ function aiObjectiveFor(op,force=false){
   ranked.sort((a,b)=>a.score-b.score);op.aiObjective=ranked[0]?.i??0;return op.aiObjective;
 }
 function aiTurn(){
+  try{return aiTurnImpl();}catch(error){recoverAI(error);}
+}
+function recoverAI(error){
+  console.error('AUSPEX AI failure',error);G.aiBusy=false;
+  log('IA interrompida por erro: '+String(error.message||error));
+  openOv('IA INTERROMPIDA',`<p>A IA encontrou um erro. A partida foi preservada.</p><button class="btn pri" onclick="closeOv();if(G.sel&&!G.sel.dead)aiAct(G.sel,0);else aiTurn();">TENTAR NOVAMENTE</button><button class="btn" onclick="closeOv();if(G.sel)finishOp(G.sel);else nextActivation();">ENCERRAR ATIVAÇÃO DA IA</button>`,true);
+}
+function aiTurnImpl(){
   if(G.phase!=='firefight'||!isAI(G.cur)||G.aiBusy)return;G.aiBusy=true;
   const pool=G.counterMode?alive(G.ai).filter(o=>o.activated&&!o.counteracted&&RULES.canCounter(o,TEAMS)):alive(G.ai).filter(o=>!o.activated&&(!G.gaRequired||o.templateId===G.gaRequired));
   if(!pool.length){G.aiBusy=false;nextActivation();return;}
@@ -1581,13 +1633,18 @@ function aiTurn(){
   msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativando ${op.n}…</b>`);setTimeout(()=>aiAct(op,0),520);
 }
 function aiAct(op,step){
-  if(G.phase!=='firefight'||op.dead||(!op._countering&&op.activated)||G.cur!==G.ai){G.aiBusy=false;return;}
+  try{return aiActImpl(op,step);}catch(error){recoverAI(error);}
+}
+function aiActImpl(op,step){
+  if(G.phase!=='firefight'||G.cur!==G.ai){G.aiBusy=false;return;}
+  if(op.dead||op.hp<=0){G.aiBusy=false;if(!checkElimination())finishOp(op);return;}
+  if(!op._countering&&op.activated){G.aiBusy=false;return;}
   if(step>=5||op.ap<=0){G.aiBusy=false;finishOp(op);return;}
   G.sel=op;
   const melee=enemiesOf(op.pi).filter(e=>dist(op,e)<=1).sort((a,b)=>a.hp-b.hp);
   if(melee.length&&op.ap>=1&&op.foughtThis<RULES.maxAction(op,'fight',TEAMS)){
     op.order='engage';actFight();if(G.targets.length){const tgt=melee[0],wpn=G.weapon||bestWeapon(op,'m');
-      showAIAttackWarning('COMBATE',op,tgt,wpn,()=>doFight(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}));return;}
+      showAIAttackWarning('COMBATE',op,tgt,wpn,()=>doFight(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}).catch(recoverAI));return;}
   }
   const assignedObjective=OBJS[aiObjectiveFor(op)],assignedIndex=OBJS.indexOf(assignedObjective),assignedKey=G.tp+':'+assignedIndex;
   if(op.ap>=1&&!actionUsed(op,'objective')&&assignedObjective&&dist(op,assignedObjective)<=1&&G.secured?.[assignedKey]!==op.pi){
@@ -1675,17 +1732,17 @@ function exitAuspex(){
 }
 
 /* ═══════════════ AÇÕES ═══════════════ */
-const activationCommitted=op=>!!(op&&(op._countering||(!op.activated&&op.activationStarted)));
+const activationCommitted=op=>!!(op&&!op.dead&&op.hp>0&&(op._countering||(!op.activated&&op.activationStarted)));
 function commitActivation(op){
   if(!op||op.dead)return false;
   const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&RULES.canCounter(op,TEAMS);
-  if(counterOK&&!op._countering){op.ap=1;op.usedActs=[];op.orderLocked=true;op._countering=true;}
+  if(counterOK&&!op._countering){op._finishing=false;op.ap=1;op.usedActs=[];op.orderLocked=true;op._countering=true;}
   if(!counterOK&&!op.activationStarted){
     op.activationStarted=true;
     if(op.aplPenalty){op.ap=Math.max(1,op.ap-op.aplPenalty);op.aplPenalty=0;}
     const statusDmg=op.terrorchem?d6()%3+1:(op.poisoned?1:0);
     if(statusDmg){const d=applyDmg(op,statusDmg);log(`${op.n} sofreu ${d} de dano de ${op.terrorchem?'Terrorchem':'Poison'} ao ser ativado`);
-      if(op.dead){render();checkElimination();return false;}}
+      if(op.dead){render();if(!checkElimination())finishOp(op);return false;}}
   }
   return true;
 }
@@ -1699,6 +1756,7 @@ function clearInspection(){
   msg(`<b style="color:${P(G.cur).col}">${P(G.cur).n}</b> — inspecione seus operativos e confirme qual deseja ativar.`);
 }
 function selectOp(op,automated=false){
+  if(G.fightResolving)return;
   if(G.pendingReposition&&!automated){msg('Confirme ou desfaça o reposicionamento antes de selecionar outro operativo.');return;}
   if(G.phase!=='firefight')return;
   if(humanInputLocked()&&!automated){msg('<b class="hl">Turno da IA:</b> aguarde o fim da ativação para voltar a inspecionar os operativos.');return;}
@@ -1713,11 +1771,12 @@ function selectOp(op,automated=false){
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
   msg(`<b>Inspecionando ${op.n}.</b> Veja o card ou a visão em primeira pessoa. A ativação só começa quando você tocar em <b class="hl">ATIVAR ESTE OPERATIVO</b>.`);
 }
-function canAct(op,cost){return !G.pendingReposition&&op.ap>=cost;}
+function canAct(op,cost){return !!op&&!op.dead&&op.hp>0&&!G.fightResolving&&!G.pendingReposition&&op.ap>=cost;}
 function actionUsed(op,name){return op.usedActs.includes(name);}
 function recordAction(op,name){op.orderLocked=true;op.usedActs.push(name);}
-function spend(op,n,deferFinish=false){op.ap-=n;if(op.ap<=0&&!deferFinish)finishOp(op);}
+function spend(op,n,deferFinish=false){op.ap=Math.max(0,op.ap-n);if((op.dead||op.ap<=0)&&!deferFinish)finishOp(op);}
 function finishOp(op){
+  if(G.fightResolving||op._finishing)return;op._finishing=true;
   op.activated=true;G.sel=null;G.mode=null;G.moveCells=[];G.targets=[];
   const delay=Math.max(isAI(op.pi)?1050:260,(window.IsoTactics?.walkRemaining?.()||0)+180);if(isAI(op.pi))G.aiBusy=false;
   if(op._countering){op.counteracted=true;op._countering=false;G.counterMode=false;setTimeout(()=>{if(G.phase==='over')return;G.cur=1-G.cur;nextActivation();},delay);return;}
@@ -1823,6 +1882,7 @@ function cancelShotPreview(){closeOv();G.mode=null;G.targets=[];G.weapon=null;G.
 function changeShotWeapon(){closeOv();G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();actShoot();}
 function confirmShot(id){const tgt=opById(id);closeOv();if(tgt)doShoot(tgt,{confirmed:true});}
 function doShoot(tgt,opts={}){
+  if(!canAct(G.sel,1)||!tgt||tgt.dead||tgt.hp<=0)return;
   const op=G.sel,w=G.weapon||bestWeapon(op,'r');
   const targetNow=shotTargetState(op,tgt,w);
   if(!G.targets.includes(tgt)||!targetNow.valid){G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();msg(`<b class="hl">Tiro cancelado:</b> ${targetNow.reason||'o alvo deixou de ser válido'}.`);return;}
@@ -1864,14 +1924,15 @@ function actFight(chosen=null){
   G.mode='fight';G.targets=tg;G.weapon=chosen;render();
   msg('<b>Lutar</b> — toque no inimigo adjacente.');
 }
-function doFight(tgt,opts={}){
+async function doFight(tgt,opts={}){
   const op=G.sel;
+  if(!canAct(op,1)||!tgt||tgt.dead||tgt.hp<=0||dist(op,tgt)>1)return;
   const wasAlive=new Set(G.ops.filter(o=>!o.dead).map(o=>o.id));
   const aw=G.weapon||bestWeapon(op,'m'), dw=bestWeapon(tgt,'m');
-  const r=resolveFight(op,tgt,aw,dw);
+  const r=await resolveFight(op,tgt,aw,dw);
   op.foughtThis++;
   recordAction(op,'fight');
-  const dA=applyDmg(tgt,r.dmgA,op), dD=applyDmg(op,r.dmgD,tgt);
+  const dA=r.dmgA, dD=r.dmgD;
   if(r.stunDef)tgt.aplPenalty=Math.max(1,tgt.aplPenalty||0);if(r.stunAtt)op.aplPenalty=Math.max(1,op.aplPenalty||0);
   if(dA>0&&(hasTag(aw,'Poison')||hasTag(aw,'Toxic')))tgt.poisoned=1;
   if(dD>0&&(hasTag(dw,'Poison')||hasTag(dw,'Toxic')))op.poisoned=1;
@@ -2068,7 +2129,7 @@ function closeOv(){document.getElementById('ov').classList.remove('on','targetin
 let overlayContinue=null;
 function continueOverlay(){
   const fn=overlayContinue;overlayContinue=null;closeOv();
-  if(fn)setTimeout(fn,140);
+  if(fn)setTimeout(()=>{try{const result=fn();if(result&&typeof result.catch==='function')result.catch(recoverAI);}catch(error){if(isAI(G.cur))recoverAI(error);else throw error;}},140);
 }
 function showAIAttackWarning(tipo,att,def,wpn,onReady){
   overlayContinue=onReady;
@@ -2321,4 +2382,4 @@ function showLog(){
 /* início */
 window.addEventListener('message',e=>{if(e.data?.type==='auspex-suspend'&&document.getElementById('fpv').classList.contains('on'))closeFPV();});
 initMiniatures();showTitle();
-</script><script src="assets/pixel/eliminator-sheet.js"></script><script src="assets/pixel/captain-sheet.js"></script><script src="assets/pixel/aod-sheets.js"></script><script src="assets/pixel/metropole-data.js"></script><script src="metropole-skin.js"></script><script src="pixel-tactics.js"></script></body></html>
+</script><script src="assets/pixel/eliminator-sheet.js"></script><script src="assets/pixel/captain-sheet.js"></script><script src="assets/pixel/aod-sheets.js"></script><script src="assets/pixel/metropole-data.js"></script><script src="metropole-skin.js"></script><script src="assets/pixel/terminal-sheet.js"></script><script src="pixel-tactics.js"></script></body></html>

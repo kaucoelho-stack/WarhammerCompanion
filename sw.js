@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v32-angels-sprites';
+const CACHE = 'auspex-v38-rollback-terminals';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',
@@ -8,6 +8,7 @@ const ASSETS = [
   './auspex-test-team/assets/pixel/eliminator-sheet.js',
   './auspex-test-team/assets/pixel/captain-sheet.js',
   './auspex-test-team/assets/pixel/aod-sheets.js',
+  './auspex-test-team/assets/pixel/terminal-sheet.js',
   './auspex-test-team/assets/pixel/metropole-data.js',
   './auspex-test-team/metropole-skin.js',
   './auspex-test-team/vendor/three-r128/three.min.js',

@@ -24,7 +24,7 @@
   const useMetropole=()=>metropole&&TERRAIN.some(t=>t.kind==='stronghold')&&!!window.MetropoleSkin;
   skinButton.onclick=()=>{metropole=!metropole;skinButton.textContent='METROPOLE: '+(metropole?'ON':'OFF');skinButton.setAttribute('aria-pressed',String(metropole));schedule();};
   const facings=new Map();let eliminatorFrames=null,captainFrames=null;
-  const aodFrames=Object.create(null);
+  const aodFrames=Object.create(null);let terminalFrames=null;
   const operativeAtlas=o=>aodFrames[o.templateId]||aodFrames[o.unitId]||null;
   const isCaptain=o=>o.templateId==='kt-aod-captain'||o.unitId==='kt-aod-captain'||(o.teamId==='aod'&&([o.templateId,o.unitId].includes('cap')||/^space marine captain$/i.test(o.n||'')));
   const isEliminator=o=>o.templateId==='kt-aod-eliminator'||/eliminator/i.test(o.n||'')||(o.teamId==='aod'&&[o.templateId,o.unitId].includes('snp'));
@@ -32,10 +32,10 @@
   function spriteRow(o){let [dx,dy]=facings.get(o.id)||[o.pi===0?1:-1,0];if(G.sel?.id===o.id&&G.aimTarget){dx=G.aimTarget.x-o.x;dy=G.aimTarget.y-o.y;}
     const origin=rotate(0,0),end=rotate(dx,dy),a=end[0]-origin[0],b=end[1]-origin[1];return a+b>=0?(a-b>=0?0:1):(a-b<0?2:3);
   }
-  function loadEliminator(src=window.AuspexEliminatorSheet,columns=5,onLoaded=atlas=>{eliminatorFrames=atlas;}){if(!src)return;const img=new Image();
+  function loadEliminator(src=window.AuspexEliminatorSheet,columns=5,onLoaded=atlas=>{eliminatorFrames=atlas;},rows=4){if(!src)return;const img=new Image();
     img.onload=()=>{try{const frames=[];let maxHeight=1;
-      for(let row=0;row<4;row++)for(let col=0;col<columns;col++){
-        const x=Math.round(col*img.width/columns),y=Math.round(row*img.height/4),w=Math.round((col+1)*img.width/columns)-x,h=Math.round((row+1)*img.height/4)-y;
+      for(let row=0;row<rows;row++)for(let col=0;col<columns;col++){
+        const x=Math.round(col*img.width/columns),y=Math.round(row*img.height/rows),w=Math.round((col+1)*img.width/columns)-x,h=Math.round((row+1)*img.height/rows)-y;
         const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d');cx.drawImage(img,x,y,w,h,0,0,w,h);
         const pixels=cx.getImageData(0,0,w,h),d=pixels.data,seen=new Uint8Array(w*h),queue=new Int32Array(w*h);let head=0,tail=0;
         const visit=i=>{if(i<0||i>=w*h||seen[i])return;seen[i]=1;const p=i*4,mn=Math.min(d[p],d[p+1],d[p+2]),mx=Math.max(d[p],d[p+1],d[p+2]);if(d[p+3]===0||(mn>=185&&mx-mn<=24)){d[p+3]=0;queue[tail++]=i;}};
@@ -111,6 +111,7 @@
     const choosingDestination=!!G.pendingReposition||(['reposition','dash','charge','fallback'].includes(G.mode)&&G.moveCells.length>0);
     const chosenHeight=G.pendingReposition?(G.pendingReposition.cell.z||0):(G.moveLevel||0);
     for(let y=0;y<H;y++)for(let x=0;x<W;x++){const n=(x*17+y*31)%9,deploy=G.phase==='deploy'&&(G.cur===0?x<4:x>=W-4),road=x>=10&&x<=19,pts=tile(x,y,0,deploy?'#586f4c':road?(n<4?'#424b59':'#4b5663'):n<2?'#535a64':n<5?'#616875':'#687080','#444c5b');
+      if(useMetropole()&&!deploy)window.MetropoleSkin.ground?.(ctx,pts,x,y);
       if(road&&x===15&&y%3!==0){const a=project(x+.45,y+.1),b=project(x+.55,y+.8);ctx.strokeStyle='#ab9f74';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
       if((x*19+y*11)%13===0){const a=project(x+.25,y+.3),b=project(x+.6,y+.5),c=project(x+.45,y+.8);ctx.strokeStyle='#242e3c';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.stroke();ctx.fillStyle='#aaa598';ctx.fillRect(Math.round(a.x)+2,Math.round(a.y),2,1);}
       if(deploy&&terrAt(x,y)!=='h'&&!occupied(x,y))hits.push({type:'deploy',x,y,points:pts});}
@@ -118,6 +119,10 @@
       if(useMetropole()&&['heavy-rubble','light-rubble'].includes(t.kind)){jobs.push({depth:project(t.x+t.w/2,t.y+t.h/2).y,draw:()=>{ctx.save();ctx.globalAlpha=choosingDestination?.3:1;if(!window.MetropoleSkin.rubble(ctx,t,project))box(t.x,t.y,t.w,t.h,0,t.z||.7,pal);ctx.restore();}});return;}
       const add=(x,y,w,h,z,height,opacity=1)=>jobs.push({depth:project(x+w/2,y+h/2).y,draw:()=>{ctx.save();ctx.globalAlpha=opacity;box(x,y,w,h,z,height,pal);ctx.restore();}});
       if(t.building){const step=t.floorStep||t.z;
+        if(typeof roofRuins==='function'&&!cut)for(const r of roofRuins(t)){
+          const depth=Math.max(...[[t.x,t.y],[t.x+t.w,t.y],[t.x,t.y+t.h],[t.x+t.w,t.y+t.h]].map(p=>project(...p).y))+.2;
+          jobs.push({depth,draw:()=>{ctx.save();ctx.globalAlpha=choosingDestination?.12:1;box(r.x,r.y,r.w,r.h,r.z,r.height,r.t==='l'?['#b9b0a0','#777568','#949080']:pal);ctx.restore();}});
+        }
         const hasDestination=choosingDestination&&destinationCells.some(c=>(c.z||0)===chosenHeight&&c.x>=t.x&&c.x<t.x+t.w&&c.y>=t.y&&c.y<t.y+t.h);
         if(!cut||choosingDestination){for(let z=step;z<=t.z+.001;z+=step){
           const selected=hasDestination&&Math.abs(z-chosenHeight)<.001;
@@ -138,7 +143,16 @@
     G.ops.filter(o=>o.x>=0&&!o.dead).map(visualOperative).forEach(o=>{const support=TERRAIN.find(t=>zOf(o)>0&&o.x>=t.x&&o.x<t.x+t.w&&o.y>=t.y&&o.y<t.y+t.h);let depth=project(o.x+.5,o.y+.5).y+.5;
       if(support)depth=Math.max(depth,...[[support.x,support.y],[support.x+support.w,support.y],[support.x,support.y+support.h],[support.x+support.w,support.y+support.h]].map(p=>project(...p).y+1));
       jobs.push({depth,draw:()=>sprite(o)});});jobs.sort((a,b)=>a.depth-b.depth).forEach(j=>j.draw());
-    OBJS.forEach((o,i)=>{const p=project(o.x+.5,o.y+.5);ctx.strokeStyle='#d5c476';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,unit,unit*.5,0,0,Math.PI*2);ctx.stroke();label('OBJ '+(i+1),{x:p.x,y:p.y+18},'#ffe39a');});
+    OBJS.forEach((o,i)=>{
+      const p=project(o.x+.5,o.y+.5),scores=typeof objectiveControl==='function'?objectiveControl(o):[0,0],disputed=scores[0]>0&&scores[0]===scores[1],color=disputed?'#ff776d':scores[0]>scores[1]?'#ffd17a':scores[1]>scores[0]?'#83dfff':'#d6ba68';
+      ctx.save();ctx.translate(Math.round(p.x),Math.round(p.y));const s=Math.max(.65,unit/15);ctx.scale(s,s);
+      const rect=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+      if(terminalFrames){const f=terminalFrames.frames[angle],k=27/terminalFrames.maxHeight;ctx.drawImage(f.canvas,f.left,f.top,f.width,f.height,(f.left-f.pivot)*k,(f.top-f.bottom)*k,f.width*k,f.height*k);rect(-7,1,14,2,color);}
+      else{rect(-10,-3,20,6,'#101927');rect(-8,-5,16,5,'#77808c');rect(-6,-14,12,10,'#344658');rect(-6,-16,12,3,'#9ba8ad');rect(-4,-13,8,5,color);rect(-3,-12,5,1,'#ecffe1');rect(-3,-5,6,2,'#c6aa68');rect(7,-24,2,20,'#919aa7');rect(6,-25,4,3,color);}
+      if(disputed){rect(-1,-23,2,4,color);rect(-1,-18,2,1,color);}ctx.restore();
+      if(G.sel){ctx.strokeStyle=color+'70';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.beginPath();ctx.ellipse(p.x,p.y,unit*3,unit*1.5,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
+      label('OBJ '+(i+1)+' · '+scores.join(':'),{x:p.x,y:p.y+20},color);
+    });
     G.moveCells.filter(c=>(c.z||0)===G.moveLevel).forEach(c=>{const pts=tile(c.x,c.y,c.z||0,'#77dca85a','#b8ffd7');hits.push({type:'move',cell:c,points:pts});});
     if(G.sel&&G.mode==='shoot'){(G.aimTarget?[G.aimTarget]:G.targets).forEach(o=>{const a=project(G.sel.x+.5,G.sel.y+.5,zOf(G.sel)+1),b=project(o.x+.5,o.y+.5,zOf(o)+1);ctx.strokeStyle='#ffd37c';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);});}
     info.textContent=choosingDestination?`DESTINO: ${chosenHeight===0?'CHÃO / INTERIOR':chosenHeight+'″'} · Selecione a altura e toque numa célula verde · Transparência apenas visual`:`PIXEL TACTICS | ${cut?'Recorte apenas visual':'Estruturas completas'} | Arraste / pinça · C: Conceal · E: Engage`;
@@ -163,4 +177,5 @@
   api.stopWalk=()=>{walking=null;schedule();};
   bw.classList.toggle('iso-active',true);fit();loadEliminator();if(window.AuspexCaptainSheet)loadEliminator(window.AuspexCaptainSheet,6,atlas=>{captainFrames=atlas;});
   for(const [id,src]of Object.entries(window.AuspexAodSheets||{}))loadEliminator(src,6,atlas=>{aodFrames['kt-aod-'+id]=atlas;});
+  if(window.AuspexTerminalSheet)loadEliminator(window.AuspexTerminalSheet,4,atlas=>{terminalFrames=atlas;},1);
 })();
