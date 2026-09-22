@@ -1,0 +1,190 @@
+{
+  "name": "Pátio de ferro",
+  "version": "3",
+  "map": "modular",
+  "objectives": 3,
+  "createdAt": "2026-09-22T13:20:44.654Z",
+  "validation": "Automated locally; visual playtest approved by user before the three-objective update",
+  "files": [
+    {
+      "path": ".nojekyll",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "ART-DIRECTION.md",
+      "bytes": 2400,
+      "sha256": "53142331f0fe5609f4fe9135343accdee92bd833c04d2fcb93f101cc6a0248bc"
+    },
+    {
+      "path": "assets/aod-cap.png",
+      "bytes": 2479911,
+      "sha256": "f97b750485263d6580d87eb2c446f23e3fe4c63215b8ed609a669821468b3bb2"
+    },
+    {
+      "path": "assets/aod-gun.png",
+      "bytes": 3010232,
+      "sha256": "764ad187e640e5f5b16129d3c393b54c5548581756c9f4bd7a8a669a2c67c22a"
+    },
+    {
+      "path": "assets/aod-sgt.png",
+      "bytes": 2831822,
+      "sha256": "64a2f1dd8a7a655d4a8ee6592e89e15c42112f33386d149126746d186b912d8c"
+    },
+    {
+      "path": "assets/aod-snp.png",
+      "bytes": 2849953,
+      "sha256": "7993630487ea22e284f157c25338e21720200c18132ee6530030a0a01edbc2b0"
+    },
+    {
+      "path": "assets/aod-wa1.png",
+      "bytes": 2686501,
+      "sha256": "455763726985df7854642676706179438ae7e8df3e81e9e1924742867d2bcf1c"
+    },
+    {
+      "path": "assets/aod-wa2.png",
+      "bytes": 2678434,
+      "sha256": "6847824903acd2fb6a614dff9245c56e97fc79ff87eb0bf48e00a9b240202130"
+    },
+    {
+      "path": "assets/mini-aod.png",
+      "bytes": 2787466,
+      "sha256": "29de0305088b30c6fbf62414924b4dfc3bd7254a3f1191692b09100099297989"
+    },
+    {
+      "path": "assets/mini-kom.png",
+      "bytes": 2758017,
+      "sha256": "42cb171555eb897996458c477af58eff9bdca1deee44fae81e7bafba88edc71f"
+    },
+    {
+      "path": "assets/mini-pmr.png",
+      "bytes": 2922301,
+      "sha256": "337ea085a31fa2ea3d67808d259fdecb59013bbd4c0e62fba94781202035322d"
+    },
+    {
+      "path": "assets/mini-pth.png",
+      "bytes": 2064813,
+      "sha256": "85485045529d51170c40f4f9bd59678242b9e8685fb37db0a1dfd0c08072082d"
+    },
+    {
+      "path": "assets/miniatures/aod/aod-asgt.png",
+      "bytes": 649070,
+      "sha256": "f78f7acf5eea2130cbe21265134adebfc087be5ff773fa2fe7fcb0897a159f84"
+    },
+    {
+      "path": "assets/miniatures/aod/aod-awarrior.png",
+      "bytes": 685675,
+      "sha256": "8fdbbbe87563d380d5f04b9a42a3837b1ef35c803c784dae7b24f983124afae0"
+    },
+    {
+      "path": "assets/miniatures/aod/aod-captain.png",
+      "bytes": 776025,
+      "sha256": "5a89ad1f138ab964954154dc20c3f0582e8b572cf8b17fd2112e10e2d374ee4f"
+    },
+    {
+      "path": "assets/miniatures/aod/aod-eliminator.png",
+      "bytes": 336199,
+      "sha256": "999ec0e2b887dc2c8b1f283cb930d53d7df42804716c167d7f06b9114a986f24"
+    },
+    {
+      "path": "assets/miniatures/aod/aod-grenadier.png",
+      "bytes": 297772,
+      "sha256": "00732aabbd0a39cd3fbcf2ca4581bdf8df3c90702b5b599db018ffb09a5b57f4"
+    },
+    {
+      "path": "assets/miniatures/aod/aod-gunner.png",
+      "bytes": 328861,
+      "sha256": "b4353eca5703f1df0940331504d7cb7fe7c9c1002aa581b2e8474b9a5f0eee94"
+    },
+    {
+      "path": "assets/miniatures/aod/aod-heavygunner.png",
+      "bytes": 715021,
+      "sha256": "9e03e058c9603c0ac4aa14953825b91b0e6958615929876c22d8644a804e3cb8"
+    },
+    {
+      "path": "assets/miniatures/aod/aod-isgt.png",
+      "bytes": 1555592,
+      "sha256": "65808362326b27cab2800b22ec57daa57a711eca81ca1ae4238fb5523858f20e"
+    },
+    {
+      "path": "assets/miniatures/aod/aod-iwarrior.png",
+      "bytes": 364985,
+      "sha256": "8aa797a8ba53a41431b11311318ef618a3ec75cf189463f764bce80830bff0db"
+    },
+    {
+      "path": "assets/pixel/aod-sheets.js",
+      "bytes": 29382483,
+      "sha256": "1cbad90b9bf22666784948ab21f0884f4dbf3ea1df766ba21086fb47c5c3d7bf"
+    },
+    {
+      "path": "assets/pixel/captain-sheet.js",
+      "bytes": 4568004,
+      "sha256": "b0e7002bb0cbba89c685eee731b3deb3efa905ee673a54b854e80fae006f5f94"
+    },
+    {
+      "path": "assets/pixel/eliminator-sheet.js",
+      "bytes": 3956161,
+      "sha256": "73a5b8154366b6d8c8b5ca421d9ff582536e7e05538e80fea642b66125bf0520"
+    },
+    {
+      "path": "assets/pixel/industrial-materials-v1.png",
+      "bytes": 2968466,
+      "sha256": "d165c8768e22c0aefd6160f12b8880df248383338f5cc62bdc84b0bd4b73392a"
+    },
+    {
+      "path": "assets/pixel/terminal-sheet.js",
+      "bytes": 3560737,
+      "sha256": "7d57285e6465d3bda615b09eaebf635c0b2b1ce3b6d1d836c39b59ca4d3acb81"
+    },
+    {
+      "path": "auspex-rules.js",
+      "bytes": 8836,
+      "sha256": "b655e1f9bce83d056ad87fc41a98a2e7aae3c9db8772a98b7960a9363e2517e0"
+    },
+    {
+      "path": "battlefield.js",
+      "bytes": 1976,
+      "sha256": "e266fee2685cbf499c72074ecc390f6ad7fe714ea43e72e19045ce9356ebc338"
+    },
+    {
+      "path": "index.html",
+      "bytes": 200315,
+      "sha256": "7da01951f66f506caf4afaeb319d49637eb59e03ba57c99c37c617d708557bb1"
+    },
+    {
+      "path": "killteam_data.js",
+      "bytes": 133896,
+      "sha256": "5763ba2b5c9d668eb120843b7b79c1429bf29bb5f44219bdedafaa94f441a168"
+    },
+    {
+      "path": "modular-floor.png",
+      "bytes": 3180375,
+      "sha256": "7741113017996358a4f12edf4b1e686af5881ac5484cc679a56293eef3858aac"
+    },
+    {
+      "path": "movement-visual.js",
+      "bytes": 2002,
+      "sha256": "ebdb238b574dcc302d7bca5ae1ae0e40e9abcc7c70f69c8cc5aadebff6bae180"
+    },
+    {
+      "path": "pixel-tactics.js",
+      "bytes": 27159,
+      "sha256": "8de6624157051afc5d7bfe0ed42f999c7b222b1b2da6bebeebc455b2d96870af"
+    },
+    {
+      "path": "PUBLICAR.md",
+      "bytes": 2782,
+      "sha256": "7ea14a8a7bb288a0e12692f2b3e231e41b1010f08f25329751cc7815e5685b10"
+    },
+    {
+      "path": "RULES-COVERAGE.md",
+      "bytes": 1633,
+      "sha256": "7cf55edddd76235ca12a04850a4dc8d8d128b7f73d25b3bcc01921bbb37cca5b"
+    },
+    {
+      "path": "terrain-painter.js",
+      "bytes": 4336,
+      "sha256": "e988a2d02baa36f8e4eae932247b22866fcde4b4e9f9856183fc52e4c8bfe769"
+    }
+  ]
+}

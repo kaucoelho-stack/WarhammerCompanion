@@ -1,19 +1,19 @@
-const CACHE = 'auspex-v38-rollback-terminals';
+const CACHE = 'auspex-v39-patio-ferro-3-objetivos';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',
   './auspex-test-team/','./auspex-test-team/index.html','./auspex-test-team/auspex-rules.js',
-  './auspex-test-team/volkus-3d/volkus-webgl.js',
+  './auspex-test-team/killteam_data.js',
+  './auspex-test-team/battlefield.js',
+  './auspex-test-team/terrain-painter.js',
+  './auspex-test-team/movement-visual.js',
+  './auspex-test-team/modular-floor.png',
   './auspex-test-team/pixel-tactics.js',
   './auspex-test-team/assets/pixel/eliminator-sheet.js',
   './auspex-test-team/assets/pixel/captain-sheet.js',
   './auspex-test-team/assets/pixel/aod-sheets.js',
   './auspex-test-team/assets/pixel/terminal-sheet.js',
-  './auspex-test-team/assets/pixel/metropole-data.js',
-  './auspex-test-team/metropole-skin.js',
-  './auspex-test-team/vendor/three-r128/three.min.js',
-  './auspex-test-team/vendor/three-r128/GLTFLoader.js',
-  './auspex-test-team/vendor/three-r128/RGBELoader.js'
+  './auspex-test-team/assets/pixel/industrial-materials-v1.png'
 ];
 
 self.addEventListener('install', e => {

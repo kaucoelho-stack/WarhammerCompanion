@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>KILL TEAM — Tabletop Digital</title>
+<title>AUSPEX · Pátio de ferro</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -484,7 +484,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
       <button class="mode-btn ai" onclick="chooseGameMode('ai')"><i>01</i><b>1 JOGADOR vs IA</b><small>Enfrente o controlador tático AUSPEX. A IA seleciona, posiciona, move, atira, luta e disputa objetivos.</small></button>
       <button class="mode-btn" onclick="chooseGameMode('pvp')"><i>02</i><b>2 JOGADORES · VS</b><small>Partida local no mesmo aparelho, com escolhas e ativações alternadas.</small></button>
     </div>
-    <div class="title-foot">OFFLINE · 4 KILLZONES · 15 KILL TEAMS · MOTOR DE REGRAS · 4 TURNING POINTS</div>
+    <div class="title-foot">PÁTIO DE FERRO · 3 OBJETIVOS · REGRAS PARCIALMENTE AUTOMATIZADAS · 4 TURNING POINTS</div>
   </div>
 </div>
 <div id="top">
@@ -538,12 +538,13 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
   <div class="shd"><h3 id="ovt">—</h3><button class="x" onclick="closeOv()">✕</button></div>
   <div class="shb" id="ovb"></div>
 </div></div>
-<script src="vendor/three-r128/three.min.js"></script>
-<script src="vendor/three-r128/GLTFLoader.js"></script>
-<script src="vendor/three-r128/RGBELoader.js"></script>
-<script src="../killteam_data.js"></script>
+
+
+
+<script src="battlefield.js"></script>
+<script src="killteam_data.js"></script>
 <script src="auspex-rules.js"></script>
-<script src="volkus-3d/volkus-webgl.js"></script>
+
 <script>
 /* ═══════════════════════════════════════════════════════════
    KILL TEAM DIGITAL — motor de regras
@@ -710,42 +711,8 @@ const RULES=window.AuspexRules;
 RULES.importTeams(TEAMS,KT_TEAMS);
 
 /* ---------- KILLZONES, TERRENO E OBJETIVOS ---------- */
-const KILLZONES={
- volkus:{name:'Killzone Volkus',sub:'2 fortalezas · 2 ruínas grandes · paredes quebradas e escombros',ico:'▦',tone:'#69d9ff',
-  terrain:[
-   {x:3,y:2,w:7,h:6,t:'h',z:6,building:true,kind:'stronghold',floorStep:3,doors:[{side:'s',offset:3},{side:'e',offset:2}],access:[{side:'w',offset:2},{side:'s',offset:5}]},
-   {x:20,y:14,w:7,h:6,t:'h',z:6,building:true,kind:'stronghold',floorStep:3,doors:[{side:'n',offset:3},{side:'w',offset:2}],access:[{side:'e',offset:2},{side:'n',offset:5}]},
-   {x:20,y:2,w:6,h:5,t:'h',z:3.4,building:true,kind:'large-ruin',floorStep:3.4,openSides:['s','w'],doors:[{side:'n',offset:2}],access:[{side:'e',offset:2},{side:'s',offset:3}]},
-   {x:4,y:15,w:6,h:5,t:'h',z:3.4,building:true,kind:'large-ruin',floorStep:3.4,openSides:['n','e'],doors:[{side:'s',offset:2}],access:[{side:'w',offset:2},{side:'n',offset:3}]},
-   {x:12,y:5,w:4,h:1,t:'h',z:2.4,kind:'ruin-wall',piece:'small-a'},{x:12,y:5,w:1,h:3,t:'h',z:2.4,kind:'ruin-wall',piece:'small-a'},
-   {x:15,y:14,w:4,h:1,t:'h',z:2.4,kind:'ruin-wall',piece:'small-b'},{x:18,y:12,w:1,h:3,t:'h',z:2.4,kind:'ruin-wall',piece:'small-b'},
-   {x:11,y:10,w:3,h:2,t:'h',z:1.35,kind:'heavy-rubble'},{x:17,y:9,w:3,h:2,t:'h',z:1.35,kind:'heavy-rubble'},
-   {x:2,y:11,w:3,h:1,t:'l',kind:'light-rubble'},{x:14,y:2,w:3,h:1,t:'l',kind:'light-rubble'},{x:25,y:10,w:3,h:1,t:'l',kind:'light-rubble'}],
-  stairs:[],
-  objs:[{x:15,y:4},{x:15,y:18},{x:7,y:11},{x:23,y:11},{x:15,y:11}]},
- forge:{name:'Forja Ferrum-9',sub:'Corredores industriais · Torre central',ico:'⚙',tone:'#ffb454',
-  terrain:[{x:5,y:3,w:5,h:2,t:'h',z:2},{x:20,y:3,w:5,h:2,t:'h',z:2},{x:5,y:17,w:5,h:2,t:'h',z:2},{x:20,y:17,w:5,h:2,t:'h',z:2},{x:13,y:8,w:4,h:6,t:'h',z:2},{x:10,y:6,w:2,h:5,t:'l'},{x:18,y:11,w:2,h:5,t:'l'},{x:11,y:3,w:3,h:2,t:'l'},{x:16,y:17,w:3,h:2,t:'l'}],
-  stairs:[{x:4,y:3,tx:5,ty:3,z:2},{x:25,y:3,tx:24,ty:3,z:2},{x:4,y:18,tx:5,ty:18,z:2},{x:25,y:18,tx:24,ty:18,z:2},{x:12,y:10,tx:13,ty:10,z:2}],
-  objs:[{x:8,y:8},{x:22,y:8},{x:8,y:14},{x:22,y:14},{x:15,y:6},{x:15,y:16}]},
- wastes:{name:'Ermos de Cinder',sub:'Campo aberto · Ruínas e tiros longos',ico:'◇',tone:'#e8a96a',
-  terrain:[{x:7,y:5,w:3,h:3,t:'h',z:2},{x:20,y:14,w:3,h:3,t:'h',z:2},{x:13,y:9,w:4,h:4,t:'h',z:2},{x:4,y:14,w:4,h:1,t:'l'},{x:22,y:7,w:4,h:1,t:'l'},{x:10,y:3,w:1,h:4,t:'l'},{x:19,y:16,w:1,h:4,t:'l'},{x:4,y:8,w:2,h:1,t:'l'},{x:24,y:13,w:2,h:1,t:'l'}],
-  stairs:[{x:6,y:6,tx:7,ty:6,z:2},{x:23,y:15,tx:22,ty:15,z:2},{x:12,y:10,tx:13,ty:10,z:2}],
-  objs:[{x:5,y:5},{x:25,y:17},{x:15,y:5},{x:15,y:17},{x:15,y:11}]},
- tombworld:{name:'Killzone Tomb World',sub:'Corredores fechados · paredes absolutas · portais e sarcófagos',ico:'◈',tone:'#65efad',indoor:true,
-  terrain:[
-   {x:4,y:5,w:5,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:10,y:5,w:7,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:18,y:5,w:8,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
-   {x:4,y:16,w:7,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:12,y:16,w:9,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:22,y:16,w:4,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
-   {x:9,y:5,w:1,h:4,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:9,y:10,w:1,h:6,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
-   {x:21,y:5,w:1,h:6,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:21,y:12,w:1,h:5,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
-   {x:9,y:10,w:4,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:14,y:10,w:8,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
-   {x:9,y:12,w:6,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},{x:16,y:12,w:6,h:1,t:'h',z:4.6,kind:'tomb-wall',noClimb:true},
-   {x:6,y:2,w:2,h:1,t:'l',kind:'tomb-sarcophagus'},{x:22,y:19,w:2,h:1,t:'l',kind:'tomb-sarcophagus'},
-   {x:13,y:7,w:2,h:1,t:'l',kind:'tomb-sarcophagus'},{x:16,y:14,w:2,h:1,t:'l',kind:'tomb-sarcophagus'},
-   {x:5,y:12,w:2,h:1,t:'l',kind:'tomb-debris'},{x:23,y:9,w:2,h:1,t:'l',kind:'tomb-debris'},{x:14,y:18,w:2,h:1,t:'l',kind:'tomb-debris'}],
-  stairs:[],hatches:[{x:9,y:5,axis:'h'},{x:17,y:5,axis:'h'},{x:11,y:16,axis:'h'},{x:21,y:16,axis:'h'},{x:9,y:9,axis:'v'},{x:21,y:11,axis:'v'},{x:13,y:10,axis:'h'},{x:15,y:12,axis:'h'}],
-  objs:[{x:7,y:8},{x:23,y:13},{x:15,y:3},{x:15,y:19},{x:15,y:11}]}
-};
-let ACTIVE_KZ='volkus',TERRAIN=[],STAIRS=[],HATCHES=[],OBJS=[];
+const KILLZONES={modular:{name:AuspexBattlefield.name,sub:'30 × 22 · construções pixel art · 4 plataformas com cobertura · 3 objetivos',ico:'◇',tone:'#80d5c1',terrain:AuspexBattlefield.terrain,stairs:[],objs:AuspexBattlefield.objectives}};
+let ACTIVE_KZ='modular',TERRAIN=[],STAIRS=[],HATCHES=[],OBJS=[];
 const TMAP=[];
 const insideFeature=(t,x,y)=>x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h;
 function doorAt(t,x,y){if(!t.building)return false;
@@ -765,6 +732,7 @@ function climbEdge(t,side,offset){return side==='n'?{x:t.x+offset,y:t.y-1,tx:t.x
   side==='w'?{x:t.x-1,y:t.y+offset,tx:t.x,ty:t.y+offset}:
   {x:t.x+t.w,y:t.y+offset,tx:t.x+t.w-1,ty:t.y+offset};}
 function climbableWall(t,side,offset){
+  if(t.roofCover?.some(r=>r.side===side&&r.offset===offset))return false;
   if(t.building&&((t.openSides||[]).includes(side)||(t.doors||[]).some(d=>d.side===side&&d.offset===offset)))return false;
   const e=climbEdge(t,side,offset);return e.x>=0&&e.y>=0&&e.x<W&&e.y<H;
 }
@@ -864,6 +832,7 @@ function inStairOpening(t,x,y,level){
    Portas são aberturas reais e só liberam a linha que atravessa o vão. */
 // Roof ruins share geometry between visibility and the pixel renderer.
 function roofRuins(t){
+  if(t.roofCover)return t.roofCover;
   if(!t.building||t.noClimb)return [];
   const out=[];
   for(const side of ['n','e','s','w']){
@@ -1031,7 +1000,7 @@ let G={
   mode:null,           // null | move | charge | shoot | fight
   moveCells:[], targets:[], aimTarget:null,
   ploys:{0:[],1:[]},   // ploys ativos no turno
-  log:[], selIdx:0, killzone:'volkus', gameMode:null, ai:1, aiBusy:false,rosterDraft:null,moveLevel:0,pendingWeapon:null,
+  log:[], selIdx:0, killzone:'modular', gameMode:null, ai:1, aiBusy:false,rosterDraft:null,moveLevel:0,pendingWeapon:null,
   fpvHeading:0, fpvPitch:0, fpvFov:76, fpvOp:null, fpvFocus:null
 };
 const P=i=>G.players[i];
@@ -1069,18 +1038,21 @@ function reachable(op,maxDist,opts={}){
   const seen={},out=[],q=[{x:op.x,y:op.y,z:zOf(op),d:0}];
   seen[op.x+','+op.y+','+zOf(op)]=0;
   while(q.length){
-    const c=q.shift();if(c.d>=maxDist)continue;
+    q.sort((a,b)=>a.d-b.d);
+    const c=q.shift();if(c.d>seen[c.x+','+c.y+','+c.z]+.00001||c.d>=maxDist)continue;
     for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]]){
       const nx=c.x+dx,ny=c.y+dy,nz=c.z,k=nx+','+ny+','+nz;
-      if(nx<0||ny<0||nx>=W||ny>=H||seen[k]!==undefined)continue;
+      if(nx<0||ny<0||nx>=W||ny>=H)continue;
       const sealed=TERRAIN.some(t=>t.noClimb&&insideFeature(t,nx,ny));
       if(nz===0&&terrAt(nx,ny)==='h'&&(!fly||sealed))continue;
       if(sealed)continue;
       if(!fly&&nz===0&&movementWallBlock(c,{x:nx,y:ny,z:nz}))continue;
+      // A diagonal cannot squeeze a base through the corner of a solid cell.
+      if(!fly&&dx&&dy&&[[nx,c.y],[c.x,ny]].some(([x,y])=>nz===0?terrAt(x,y)==='h':!surfaceAt(x,y,nz)))continue;
       if(!fly&&nz>0&&!surfaceAt(nx,ny,nz))continue;
       if(occupied(nx,ny,op,nz))continue;
       const cr=inEnemyCR(nx,ny,op.pi,nz);if(cr&&!ignoreCR&&!endInCR)continue;
-      const nd=c.d+Math.hypot(dx,dy);if(nd>maxDist+0.001)continue;
+      const nd=c.d+Math.hypot(dx,dy);if(nd>maxDist+0.001||nd>=(seen[k]??Infinity)-.00001)continue;
       const next={x:nx,y:ny,z:nz,d:nd,parent:c};
       seen[k]=nd;if(!(cr&&!endInCR&&!ignoreCR))q.push(next);
       if(endInCR?true:!cr)out.push(next);
@@ -1090,18 +1062,21 @@ function reachable(op,maxDist,opts={}){
         atA=c.x===s.x&&c.y===s.y&&Math.abs(c.z-fromZ)<.001,atB=c.x===s.tx&&c.y===s.ty&&Math.abs(c.z-toZ)<.001;
       if(!atA&&!atB)continue;
       const climbCost=s.ladder?1:(s.climbCost||Math.ceil(Math.abs(toZ-fromZ))),destinations=[atA?
-        {x:s.tx,y:s.ty,z:toZ,d:c.d+climbCost}:{x:s.x,y:s.y,z:fromZ,d:c.d+climbCost}];
+        {x:s.tx,y:s.ty,z:toZ,d:c.d+climbCost+Math.hypot(s.tx-s.x,s.ty-s.y)}:{x:s.x,y:s.y,z:fromZ,d:c.d+climbCost+Math.hypot(s.tx-s.x,s.ty-s.y)}];
       for(const v of destinations){
         if(v.d>maxDist+0.001||!surfaceAt(v.x,v.y,v.z)&&v.z>0||occupied(v.x,v.y,op,v.z))continue;
-        const k=v.x+','+v.y+','+v.z;if(seen[k]!==undefined)continue;
+        if(v.z===0&&terrAt(v.x,v.y)==='h')continue;
+        const k=v.x+','+v.y+','+v.z;if(v.d>=(seen[k]??Infinity)-.00001)continue;
         const cr=inEnemyCR(v.x,v.y,op.pi,v.z);if(cr&&!ignoreCR&&!endInCR)continue;
         v.parent=c;seen[k]=v.d;q.push(v);if(endInCR?true:!cr)out.push(v);
       }
     }}
   }
-  return out;
+  // A barrier may occur in an intermediate vault route, never as the resting
+  // destination of a base. Flying also cannot finish inside a solid volume.
+  return out.filter(c=>Math.abs(c.d-seen[c.x+','+c.y+','+c.z])<.00001&&!(c.z===0&&terrAt(c.x,c.y)));
 }
-if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
+if((location.hostname==='127.0.0.1'||location.hostname==='localhost')&&TERRAIN.some(t=>t.building&&t.doors?.length)){
   const ext=STAIRS.find(s=>s.kind==='climb'&&s.fromZ===0),b=TERRAIN.find(t=>t.building),d=b?.doors?.[0],
     edge=(side,offset)=>side==='n'?[{x:b.x+offset,y:b.y-1},{x:b.x+offset,y:b.y}]:side==='s'?[{x:b.x+offset,y:b.y+b.h},{x:b.x+offset,y:b.y+b.h-1}]:
       side==='w'?[{x:b.x-1,y:b.y+offset},{x:b.x,y:b.y+offset}]:[{x:b.x+b.w,y:b.y+offset},{x:b.x+b.w-1,y:b.y+offset}],
@@ -1443,7 +1418,7 @@ function pickKillzone(id){
 }
 function showTeamPicker(pi){
   openOv(`${P(pi).n} — escolha o kill team`,
-    `<div class="tlist">${Object.entries(TEAMS).map(([k,t])=>`
+    `<p style="padding:0 0 12px;color:var(--txt2)">Para jogar com os sprites já criados, escolha <b>Angels of Death</b>. Pode usar a mesma equipe nos dois lados. Outros times usam substitutos onde ainda não há arte.</p><div class="tlist">${Object.entries(TEAMS).map(([k,t])=>`
       <button class="trow" onclick="pickTeam(${pi},'${k}')">
         <div class="ic" style="border-color:${t.col};color:${t.col}">${t.ico}</div>
         <div><div class="tn">${t.name}</div>
@@ -1478,9 +1453,8 @@ function confirmRoster(){
   const d=G.rosterDraft;if(!d)return;const t=TEAMS[d.k],check=RULES.validateRoster(t,d.counts);if(!check.valid)return showRosterBuilder(d.pi,d.k,false);
   const pi=d.pi,k=d.k;setPlayerRoster(pi,k,d.counts);G.rosterDraft=null;closeOv();
   if(pi===0&&G.gameMode==='ai'){
-    const choices=Object.keys(TEAMS).filter(id=>id!==k),pick=choices[Math.floor(Math.random()*choices.length)];
-    msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX montando uma formação válida…</b>`);
-    setTimeout(()=>{setPlayerRoster(1,pick,RULES.defaultSelection(TEAMS[pick]));startDeploy();},520);
+    msg(`<b>Escolha também a equipe da IA.</b> Angels of Death permite testar nossas artes nos dois lados.`);
+    setTimeout(()=>showTeamPicker(1),200);
   }else if(pi===0)setTimeout(()=>showTeamPicker(1),200);else startDeploy();
 }
 function startDeploy(){
@@ -1808,12 +1782,13 @@ function actMove(kind){
   let cells=reachable(op,d,opts);
   if(kind==='charge')cells=cells.filter(c=>inEnemyCR(c.x,c.y,op.pi,c.z));
   if(!cells.length){msg('<b class="hl">Nenhum destino válido</b> para essa ação.');return;}
-  G.mode=kind;G.moveCells=cells;
+  G.mode=kind;G.moveCells=cells;G.showAllMoveLevels=true;
   const levels=[...new Set(cells.map(c=>c.z||0))].sort((a,b)=>a-b);G.moveLevel=levels.includes(zOf(op))?zOf(op):levels[0];render();
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
   msg(`<b>${kind==='charge'?'Investida':kind==='fallback'?'Recuar':kind==='dash'?'Arrancada':'Reposicionar'}</b> — escolha o nível e depois uma célula. <b class="hl">Escalar consome a altura vertical</b> (ex.: 3″ para subir 3″); caixotes apenas sinalizam paredes acessíveis. <span style="color:var(--mut)">${cost} AP</span>`);
 }
-function setMoveLevel(z){if(!G.moveCells.some(c=>(c.z||0)===z))return;G.moveLevel=z;render();}
+function setMoveLevel(z){if(!G.moveCells.some(c=>(c.z||0)===z))return;G.moveLevel=z;G.showAllMoveLevels=false;render();}
+function showAllMoveLevels(){G.showAllMoveLevels=true;render();}
 function cancelMovement(){G.mode=null;G.moveCells=[];G.targets=[];render();msg(`<b>Movimento cancelado.</b> Nenhum AP foi gasto.`);}
 function movementPath(cell){const path=[];for(let p=cell;p;p=p.parent)path.unshift({x:p.x,y:p.y,z:p.z||0});return path;}
 function confirmReposition(){const p=G.pendingReposition;if(!p)return;G.pendingReposition=null;G.sel=p.op;G.mode='reposition';G.moveCells=[p.cell];window.IsoTactics?.stopWalk?.();doMove(p.cell.x,p.cell.y,p.cell.z||0,false,true);}
@@ -1822,6 +1797,7 @@ function doMove(x,y,z=0,automated=false,confirmed=false){
   if(humanInputLocked()&&!automated){msg('<b class="hl">Aguarde a IA concluir a ativação.</b>');return;}
   const op=G.sel,kind=G.mode;
   const cell=G.moveCells.find(c=>c.x===x&&c.y===y&&c.z===z);if(!cell)return;
+  if(z===0&&terrAt(x,y)){msg('<b>Não é possível terminar dentro de um obstáculo.</b> Escolha um ponto livre após a travessia ou o topo da plataforma.');return;}
   if(!automated&&kind==='reposition'&&!confirmed){
     G.pendingReposition={op,cell,cells:G.moveCells,level:G.moveLevel};G.mode=null;G.moveCells=[];
     window.IsoTactics?.walk?.(op,movementPath(cell));render();msg('<b>Confira o destino.</b> Confirme a andada ou use Desfazer para escolher novamente.');return;
@@ -2086,7 +2062,8 @@ function renderActs(){
   }
   if(['reposition','dash','charge','fallback'].includes(G.mode)){
     const labels={0:'CHÃO / INTERIOR'},levels=[...new Set(G.moveCells.map(c=>c.z||0))].sort((a,b)=>a-b);
-    el.innerHTML=`<div class="move-levels">${levels.map(z=>`<button class="btn ${G.moveLevel===z?'on':''}" onclick="setMoveLevel(${z})">${labels[z]||`ALTURA ${z}″`}<small>${G.moveCells.filter(c=>(c.z||0)===z).length} destinos</small></button>`).join('')}</div>
+    el.innerHTML=`<div class="move-levels"><button class="btn ${G.showAllMoveLevels?'on':''}" onclick="showAllMoveLevels()">TODOS OS PISOS<small>Chão e topos alcançáveis</small></button>${levels.map(z=>`<button class="btn ${!G.showAllMoveLevels&&G.moveLevel===z?'on':''}" onclick="setMoveLevel(${z})">${labels[z]||`TOPO ${z}″`}<small>${G.moveCells.filter(c=>(c.z||0)===z).length} destinos</small></button>`).join('')}</div>
+      <p style="color:var(--txt2);font-size:12px">Clique no topo destacado para subir. O percurso inclui a altura: plataforma de 2″ + 1″ de deslocamento = 3″. Barricadas baixas são transpostas sem custo vertical.</p>
       <button class="btn dgr" style="width:100%" onclick="cancelMovement()">CANCELAR MOVIMENTO · 0 AP GASTOS</button>`;return;
   }
   if(!activationCommitted(op)){
@@ -2382,4 +2359,4 @@ function showLog(){
 /* início */
 window.addEventListener('message',e=>{if(e.data?.type==='auspex-suspend'&&document.getElementById('fpv').classList.contains('on'))closeFPV();});
 initMiniatures();showTitle();
-</script><script src="assets/pixel/eliminator-sheet.js"></script><script src="assets/pixel/captain-sheet.js"></script><script src="assets/pixel/aod-sheets.js"></script><script src="assets/pixel/metropole-data.js"></script><script src="metropole-skin.js"></script><script src="assets/pixel/terminal-sheet.js"></script><script src="pixel-tactics.js"></script></body></html>
+</script><script src="assets/pixel/eliminator-sheet.js"></script><script src="assets/pixel/captain-sheet.js"></script><script src="assets/pixel/aod-sheets.js"></script><script src="assets/pixel/terminal-sheet.js"></script><script src="terrain-painter.js"></script><script src="movement-visual.js"></script><script src="pixel-tactics.js"></script></body></html>
