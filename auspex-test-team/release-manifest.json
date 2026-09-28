@@ -3,7 +3,7 @@
   "version": "3",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-09-22T13:20:44.654Z",
+  "createdAt": "2026-09-28T12:29:55.003Z",
   "validation": "Automated locally; visual playtest approved by user before the three-objective update",
   "files": [
     {
@@ -132,6 +132,11 @@
       "sha256": "d165c8768e22c0aefd6160f12b8880df248383338f5cc62bdc84b0bd4b73392a"
     },
     {
+      "path": "assets/pixel/kommando-sheets.js",
+      "bytes": 33303398,
+      "sha256": "d432b2202ff6fa6657a638ad4b55b61847a4120121c27f7e17107e1186d7b88c"
+    },
+    {
       "path": "assets/pixel/terminal-sheet.js",
       "bytes": 3560737,
       "sha256": "7d57285e6465d3bda615b09eaebf635c0b2b1ce3b6d1d836c39b59ca4d3acb81"
@@ -148,8 +153,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 200315,
-      "sha256": "7da01951f66f506caf4afaeb319d49637eb59e03ba57c99c37c617d708557bb1"
+      "bytes": 201451,
+      "sha256": "935e4408c63acfd61059022ee9f1d73a09338a0c1b21e7280b0de82de181d9a7"
     },
     {
       "path": "killteam_data.js",
@@ -168,8 +173,8 @@
     },
     {
       "path": "pixel-tactics.js",
-      "bytes": 27159,
-      "sha256": "8de6624157051afc5d7bfe0ed42f999c7b222b1b2da6bebeebc455b2d96870af"
+      "bytes": 30080,
+      "sha256": "34ba309dcd781337929fee669f453760308866defa9e81ffed301243d38f14f7"
     },
     {
       "path": "PUBLICAR.md",
@@ -183,8 +188,8 @@
     },
     {
       "path": "terrain-painter.js",
-      "bytes": 4336,
-      "sha256": "e988a2d02baa36f8e4eae932247b22866fcde4b4e9f9856183fc52e4c8bfe769"
+      "bytes": 4860,
+      "sha256": "4c72925709f997a1edd761ce95dbc5985471afad2a8dd3fd9228e2b52336747b"
     }
   ]
 }

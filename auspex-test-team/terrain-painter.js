@@ -17,14 +17,21 @@ const AuspexTerrainArt=(()=>{
     // Rails share the depth lift of roof operatives: near rails hide their feet,
     // far rails do not. Absolute axis derivatives work in all four rotations.
     const d0=depth(t.x,t.y),lift=baseZ>0?(Math.abs(depth(t.x+1,t.y)-d0)+Math.abs(depth(t.x,t.y+1)-d0))/2+.03:0;
+    // A thin parapet segment is one occluder. Splitting its cap and sides by
+    // different depths makes the cap cut through an operative behind the sides.
+    const railDepth=kind==='parapet'?depth(t.x+t.w/2,t.y+t.h/2)+lift:null;
     for(let ox=0;ox<t.w;ox++)for(let oy=0;oy<t.h;oy++){
       const x=t.x+ox,y=t.y+oy,w=Math.min(1,t.w-ox),h=Math.min(1,t.h-oy);
       const world=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]],base=world.map(p=>project(...p,baseZ)),top=world.map(p=>project(...p,baseZ+height));
       for(let i=0;i<4;i++){
         if((i===0&&oy>0)||(i===1&&ox+w<t.w)||(i===2&&oy+h<t.h)||(i===3&&ox>0))continue;
+        // Only camera-facing walls are visible. Drawing the rear face after an
+        // operative can otherwise slice its legs through a thin parapet.
+        const dx=depth(x+1,y)-depth(x,y),dy=depth(x,y+1)-depth(x,y);
+        if([-dy,dx,dy,-dx][i]<=0)continue;
         const j=(i+1)%4,ps=[top[i],top[j],base[j],base[i]],d=(depth(...world[i])+depth(...world[j]))/2+lift;
         const facing=depth(...world[j])-depth(...world[i]);
-        jobs.push({depth:d,kind,draw(ctx){ctx.save();ctx.globalAlpha=opacity;
+        jobs.push({depth:railDepth??d,kind,draw(ctx){ctx.save();ctx.globalAlpha=opacity;
           polygon(ctx,ps,'#3d5562','#101e28');
           if(materials){
             material(ctx,ps,materials,kind==='crate'?2:kind==='cover'||kind==='parapet'?1:0);
@@ -40,7 +47,7 @@ const AuspexTerrainArt=(()=>{
           ctx.strokeStyle=facing>0?'#64747e':'#a4b3b5';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(ps[0].x,ps[0].y);ctx.lineTo(ps[1].x,ps[1].y);ctx.stroke();
           ctx.restore();}});
       }
-      jobs.push({depth:Math.max(...world.map(p=>depth(...p)))+.01+lift,kind,draw(ctx){ctx.save();ctx.globalAlpha=topOpacity;
+      jobs.push({depth:railDepth??(Math.max(...world.map(p=>depth(...p)))+.01+lift),kind,draw(ctx){ctx.save();ctx.globalAlpha=topOpacity;
         polygon(ctx,top,kind==='cover'||kind==='parapet'?'#ba9752':'#7c9099','#172b36');
         if(materials){
           material(ctx,top,materials,kind==='crate'?2:3);

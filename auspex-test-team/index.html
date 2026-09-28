@@ -472,14 +472,22 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
 @media(min-width:701px) and (max-width:1100px) and (pointer:coarse){#acts{grid-template-columns:repeat(3,minmax(0,1fr))}#panel{max-height:34dvh}}
 @media(max-height:540px) and (orientation:landscape){#panel{max-height:34dvh}.fp-card{top:52px;max-height:68vh}.fp-help{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* Readable action hierarchy, including keyboard and touch input. */
+.btn,.roster-step button{min-height:44px;font-size:14px}
+#msg,.inspect-banner{font-size:14px;line-height:1.5}
+.trow .td,.roster-info small,.kzcard small{font-size:13px;line-height:1.5}
+button:focus-visible{outline:3px solid #8be4ff;outline-offset:3px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.score-item small{font-size:11px}.score-item b{font-size:19px}
+@media(max-width:600px){.roster-actions{flex-wrap:wrap}.roster-actions .btn{flex-basis:45%}.roster-actions .confirm{flex-basis:100%}}
 </style>
 </head>
 <body>
 <div class="title-screen on" id="title-screen">
   <div class="title-core">
     <div class="title-kicker">TACTICAL SIMULATION SUITE</div>
-    <h1>AUSPEX<span>Test Teams</span></h1>
-    <div class="title-sub">Escolha uma killzone, monte os times e valide regras, linhas de tiro, cobertura, Vantage e objetivos em uma batalha completa.</div>
+    <h1>AUSPEX<span>Pátio de Ferro</span></h1>
+    <div class="title-sub">Monte sua equipe, use as coberturas e dispute três objetivos. Uma batalha tática em quatro rodadas, contra a IA ou um amigo no mesmo aparelho.</div>
     <div class="mode-grid">
       <button class="mode-btn ai" onclick="chooseGameMode('ai')"><i>01</i><b>1 JOGADOR vs IA</b><small>Enfrente o controlador tático AUSPEX. A IA seleciona, posiciona, move, atira, luta e disputa objetivos.</small></button>
       <button class="mode-btn" onclick="chooseGameMode('pvp')"><i>02</i><b>2 JOGADORES · VS</b><small>Partida local no mesmo aparelho, com escolhas e ativações alternadas.</small></button>
@@ -495,7 +503,7 @@ html[data-killzone="wastes"] .fp-ground{background-color:#1b130c;background-imag
 </div>
 <div id="scorebar" aria-label="Placar em tempo real">
   <div class="score-side p1" id="score0"></div>
-  <div class="score-live">CONTROLE AGORA<b id="scorelive">0 OBJ · 0 OBJ</b></div>
+  <div class="score-live" title="Objetivos sob controle neste instante. Não são pontos de vitória; o controle pontua ao fim do Turning Point.">CONTROLE · NÃO É VP<b id="scorelive">0 OBJ · 0 OBJ</b></div>
   <div class="score-side p2" id="score1"></div>
 </div>
 <div id="maptools" aria-label="Controles do mapa">
@@ -1405,7 +1413,7 @@ function startSelect(){
   showKillzonePicker();
 }
 function showKillzonePicker(){
-  openOv('Escolha a Killzone',`<div class="kzintro">Cada killzone muda linhas de tiro, rotas, objetivos e acesso ao Vantage.</div>
+  openOv('1 · Campo de batalha',`<div class="kzintro">Pátio de Ferro · 30 × 22 polegadas · 3 objetivos. Selecione o mapa para continuar à escolha das equipes.</div>
     <div class="kzgrid">${Object.entries(KILLZONES).map(([id,k])=>`
       <button class="kzcard" data-kz="${id}" onclick="pickKillzone('${id}')" style="--kz:${k.tone}">
         <div class="kzpreview"><i></i><i></i><i></i><span>${k.ico}</span></div>
@@ -1418,10 +1426,10 @@ function pickKillzone(id){
 }
 function showTeamPicker(pi){
   openOv(`${P(pi).n} — escolha o kill team`,
-    `<p style="padding:0 0 12px;color:var(--txt2)">Para jogar com os sprites já criados, escolha <b>Angels of Death</b>. Pode usar a mesma equipe nos dois lados. Outros times usam substitutos onde ainda não há arte.</p><div class="tlist">${Object.entries(TEAMS).map(([k,t])=>`
+    `<p style="padding:0 0 12px;color:var(--txt2)">Para jogar com os sprites já criados, escolha <b>Angels of Death</b> ou <b>Kommandos</b>. Pode usar a mesma equipe nos dois lados. Os Boys alternam entre duas artes. Outros times usam substitutos onde ainda não há arte.</p><div class="tlist">${Object.entries(TEAMS).map(([k,t])=>`
       <button class="trow" onclick="pickTeam(${pi},'${k}')">
         <div class="ic" style="border-color:${t.col};color:${t.col}">${t.ico}</div>
-        <div><div class="tn">${t.name}</div>
+        <div><div class="tn">${t.name}${['aod','kom'].includes(k)?' <small>· PIXEL ART</small>':''}</div>
         <div class="td">${t.fac} · monte exatamente ${t.limit} operativos · 1 líder<br><span style="color:${t.col}">${t.rule.n}:</span> ${t.rule.d}</div></div>
       </button>`).join('')}</div>`,true);
 }
@@ -1433,7 +1441,7 @@ function showRosterBuilder(pi,k,reset=false){
     <div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,totalFull=check.total>=t.limit,canPlus=n<o.max&&(o.leader||!totalFull),weapon=o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
       <div class="roster-icon">${o.ico}</div><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.leader?'<i class="leader">LÍDER · ESCOLHA 1</i>':''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
       <div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
-    <div class="roster-errors ${check.valid?'ok':''}">${errorText}</div><div class="roster-actions"><button class="btn" onclick="showTeamPicker(${pi})">← TROCAR TIME</button><button class="btn" onclick="recommendedRoster()">FORMAÇÃO RECOMENDADA</button><button class="btn pri confirm" onclick="confirmRoster()" ${check.valid?'':'disabled'}>CONFIRMAR E POSICIONAR</button></div>`,true);
+    <div class="roster-errors ${check.valid?'ok':''}">${errorText}</div><div class="roster-actions"><button class="btn" onclick="showTeamPicker(${pi})">← TROCAR TIME</button><button class="btn" onclick="recommendedRoster()">FORMAÇÃO RECOMENDADA</button><button class="btn pri confirm" onclick="confirmRoster()" ${check.valid?'':'disabled'}>${pi===0?'CONFIRMAR EQUIPE → ADVERSÁRIO':'INICIAR POSICIONAMENTO'}</button></div>`,true);
 }
 function changeRoster(id,delta){
   const d=G.rosterDraft;if(!d)return;const t=TEAMS[d.k],o=t.catalog.find(x=>x.id===id);if(!o)return;
@@ -1453,17 +1461,21 @@ function confirmRoster(){
   const d=G.rosterDraft;if(!d)return;const t=TEAMS[d.k],check=RULES.validateRoster(t,d.counts);if(!check.valid)return showRosterBuilder(d.pi,d.k,false);
   const pi=d.pi,k=d.k;setPlayerRoster(pi,k,d.counts);G.rosterDraft=null;closeOv();
   if(pi===0&&G.gameMode==='ai'){
-    msg(`<b>Escolha também a equipe da IA.</b> Angels of Death permite testar nossas artes nos dois lados.`);
+    msg(`<b>Escolha também a equipe da IA.</b> Angels of Death e Kommandos têm nossas artes em pixel art.`);
     setTimeout(()=>showTeamPicker(1),200);
   }else if(pi===0)setTimeout(()=>showTeamPicker(1),200);else startDeploy();
 }
 function startDeploy(){
   G.phase='deploy';G.cur=0;G.ops=[...P(0).ops,...P(1).ops];
-  msg(`<b>Posicionamento</b> — ${P(0).n}, toque numa célula da sua zona (as 4 primeiras colunas) para posicionar <b class="hl">${nextToDeploy(0).n}</b>.`);
+  msg(deploymentPrompt(0));
   render();
   requestAnimationFrame(()=>focusBoard(1,H/2,false));
 }
 const nextToDeploy=pi=>P(pi).ops.find(o=>o.x<0);
+function deploymentPrompt(pi){
+  const ops=P(pi).ops,left=ops.filter(o=>o.x<0).length,next=nextToDeploy(pi);
+  return `<b>Posicionamento · ${ops.length-left}/${ops.length}</b> — ${P(pi).n}: ${left} restantes. ${next?`Posicione <b class="hl">${next.n}</b> na zona destacada (${pi===0?'4 primeiras':'4 últimas'} colunas).`: 'Equipe pronta.'}`;
+}
 function deployAt(x,y,automated=false){
   if(humanInputLocked()&&!automated){msg('<b class="hl">Aguarde a IA concluir o posicionamento.</b>');return;}
   const pi=G.cur, op=nextToDeploy(pi);
@@ -1477,7 +1489,7 @@ function deployAt(x,y,automated=false){
   // alterna se o outro ainda tem gente
   G.cur = (pi===0&&o1)?1:((pi===1&&o0)?0:pi);
   const nx=nextToDeploy(G.cur);
-  msg(`<b>Posicionamento</b> — ${P(G.cur).n}: posicione <b class="hl">${nx.n}</b> (${nx.hp} PV, Save ${nx.sv}+).`);
+  msg(deploymentPrompt(G.cur));
   render();
   if(!isAI(G.cur))requestAnimationFrame(()=>focusBoard(G.cur===0?1:W-2,nx?.y>=0?nx.y:H/2,true));
   if(isAI(G.cur))setTimeout(aiDeploy,380);
@@ -2359,4 +2371,4 @@ function showLog(){
 /* início */
 window.addEventListener('message',e=>{if(e.data?.type==='auspex-suspend'&&document.getElementById('fpv').classList.contains('on'))closeFPV();});
 initMiniatures();showTitle();
-</script><script src="assets/pixel/eliminator-sheet.js"></script><script src="assets/pixel/captain-sheet.js"></script><script src="assets/pixel/aod-sheets.js"></script><script src="assets/pixel/terminal-sheet.js"></script><script src="terrain-painter.js"></script><script src="movement-visual.js"></script><script src="pixel-tactics.js"></script></body></html>
+</script><script src="assets/pixel/eliminator-sheet.js"></script><script src="assets/pixel/captain-sheet.js"></script><script src="assets/pixel/aod-sheets.js"></script><script src="assets/pixel/kommando-sheets.js?v=kommandos-2"></script><script src="assets/pixel/terminal-sheet.js"></script><script src="terrain-painter.js"></script><script src="movement-visual.js"></script><script src="pixel-tactics.js?v=kommandos-2"></script></body></html>

@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v39-patio-ferro-3-objetivos';
+const CACHE = 'auspex-v40-kommandos-ux-parapets';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',
@@ -9,6 +9,8 @@ const ASSETS = [
   './auspex-test-team/movement-visual.js',
   './auspex-test-team/modular-floor.png',
   './auspex-test-team/pixel-tactics.js',
+  './auspex-test-team/pixel-tactics.js?v=kommandos-2',
+  './auspex-test-team/assets/pixel/kommando-sheets.js?v=kommandos-2',
   './auspex-test-team/assets/pixel/eliminator-sheet.js',
   './auspex-test-team/assets/pixel/captain-sheet.js',
   './auspex-test-team/assets/pixel/aod-sheets.js',
