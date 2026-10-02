@@ -1199,8 +1199,7 @@ function mods(op,tgt,wpn,isShoot){
            lethal:6,crit:0,def5crit:false,autoSave:0,pierce:0,devast:0,accurate:0};
   const pl=G.ploys[op.pi]||[];
   const has=id=>pl.includes(id);
-  const ployText=(TEAMS[op.teamId].ploys||[]).filter(p=>pl.includes(p.id)).map(p=>p.d).join(' ').toLowerCase();
-  const semanticApplies=(!isShoot&&!/tiro|ranged|shoot/.test(ployText))||(isShoot&&!/corpo a corpo|melee|fight/.test(ployText));
+  // Effect handlers below are explicit; descriptive text never grants a bonus.
   if(op.hp<op.maxhp/2)m.hit+=1;
   if(isShoot&&tgt&&tgt.order==='engage'&&zOf(op)-zOf(tgt)>=2)m.accurate=1;
   if(RULES.engine(op,TEAMS).blooded&&op.blooded)m.accurate=Math.max(1,m.accurate);
@@ -1209,12 +1208,6 @@ function mods(op,tgt,wpn,isShoot){
   m.ceaseless=hasTag(wpn,'Ceaseless');
   m.relentless=hasTag(wpn,'Relentless');
   m.saturate=hasTag(wpn,'Saturate');
-  if(semanticApplies&&/balanced/.test(ployText))m.balanced=true;
-  if(semanticApplies&&/ceaseless/.test(ployText))m.ceaseless=true;
-  if(semanticApplies&&/relentless/.test(ployText))m.relentless=true;
-  if(semanticApplies&&/saturate/.test(ployText))m.saturate=true;
-  if(semanticApplies&&/re-rol(?:e|ar).*falh|rerrol.*falh/.test(ployText))m.rrFail=true;
-  else if(semanticApplies&&/re-rol|rerrol/.test(ployText))m.balanced=true;
   if(has('aod_doc'))m.balanced=true;
   if(has('ko_dakk')&&isShoot)m.ceaseless=true;
   if(has('ko_waa')&&!isShoot)m.balanced=true;
@@ -1430,23 +1423,23 @@ function showTeamPicker(pi){
       <button class="trow" onclick="pickTeam(${pi},'${k}')">
         <div class="ic" style="border-color:${t.col};color:${t.col}">${t.ico}</div>
         <div><div class="tn">${t.name}${['aod','kom'].includes(k)?' <small>· PIXEL ART</small>':''}</div>
-        <div class="td">${t.fac} · monte exatamente ${t.limit} operativos · 1 líder<br><span style="color:${t.col}">${t.rule.n}:</span> ${t.rule.d}</div></div>
+        <div class="td">${t.fac} · ${t.limit} escolhas · ${k==='wlf'?'1 Lobo Fenrisiano obrigatório + 5 scouts; Pack Leader opcional':k==='kom'?'1 líder; Grot e Bomb Squig valem meia escolha cada':'1 líder'}<br><span style="color:${t.col}">${t.rule.n}:</span> ${t.rule.d}<br><em>Regras parciais — composição e efeitos especiais ainda em auditoria.</em></div></div>
       </button>`).join('')}</div>`,true);
 }
 function pickTeam(pi,k){showRosterBuilder(pi,k,true);}
 function showRosterBuilder(pi,k,reset=false){
   const t=TEAMS[k];if(reset||!G.rosterDraft||G.rosterDraft.pi!==pi||G.rosterDraft.k!==k)G.rosterDraft={pi,k,counts:RULES.defaultSelection(t)};
-  const counts=G.rosterDraft.counts,check=RULES.validateRoster(t,counts),errorText=check.valid?'FORMAÇÃO VÁLIDA · PRONTA PARA O KILLZONE':check.errors.join(' · ');
-  openOv(`${P(pi).n} — montar ${t.name}`,`<div class="roster-head" style="--team:${t.col}"><div><strong>${t.ico} ${t.name}</strong><small>${t.fac} · escolha os operativos antes da batalha</small></div><div class="roster-total ${check.valid?'':'bad'}">${check.total}/${t.limit}<span>OPERATIVOS · ${check.leaders}/1 LÍDER</span></div></div>
-    <div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,totalFull=check.total>=t.limit,canPlus=n<o.max&&(o.leader||!totalFull),weapon=o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
-      <div class="roster-icon">${o.ico}</div><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.leader?'<i class="leader">LÍDER · ESCOLHA 1</i>':''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
-      <div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
+  const counts=G.rosterDraft.counts,check=RULES.validateRoster(t,counts),errorText=check.valid?'FORMAÇÃO ACEITA PELO CADASTRO · REGRAS ESPECIAIS PARCIAIS':check.errors.join(' · ');
+  openOv(`${P(pi).n} — montar ${t.name}`,`<div class="roster-head" style="--team:${t.col}"><div><strong>${t.ico} ${t.name}</strong><small>${t.fac} · ${k==='wlf'?'1 lobo obrigatório + 5 scouts':k==='kom'?'Grot + Bomb Squig ocupam uma escolha juntos':'escolha os operativos antes da batalha'}</small></div><div class="roster-total ${check.valid?'':'bad'}">${check.selections}/${t.limit}<span>ESCOLHAS · ${check.total} OPERATIVOS · ${check.leaders}/1 LÍDER${k==='wlf'?' OPCIONAL':''}</span></div></div>
+    <div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,full=check.selections+(o.selectionCost||1)>t.limit,canPlus=n<o.max&&(o.leader||!full),weapon=o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
+      <div class="roster-icon">${o.ico}</div><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.min?'<i>OBRIGATÓRIO</i>':''}${o.leader?`<i class="leader">LÍDER · ${k==='wlf'?'OPCIONAL':'ESCOLHA 1'}</i>`:''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
+      <div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n>(o.min||0)?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
     <div class="roster-errors ${check.valid?'ok':''}">${errorText}</div><div class="roster-actions"><button class="btn" onclick="showTeamPicker(${pi})">← TROCAR TIME</button><button class="btn" onclick="recommendedRoster()">FORMAÇÃO RECOMENDADA</button><button class="btn pri confirm" onclick="confirmRoster()" ${check.valid?'':'disabled'}>${pi===0?'CONFIRMAR EQUIPE → ADVERSÁRIO':'INICIAR POSICIONAMENTO'}</button></div>`,true);
 }
 function changeRoster(id,delta){
   const d=G.rosterDraft;if(!d)return;const t=TEAMS[d.k],o=t.catalog.find(x=>x.id===id);if(!o)return;
   if(delta>0&&o.leader)t.catalog.filter(x=>x.leader).forEach(x=>d.counts[x.id]=0);
-  d.counts[id]=Math.max(0,Math.min(o.max,(d.counts[id]||0)+delta));showRosterBuilder(d.pi,d.k,false);
+  d.counts[id]=Math.max(o.min||0,Math.min(o.max,(d.counts[id]||0)+delta));showRosterBuilder(d.pi,d.k,false);
 }
 function recommendedRoster(){const d=G.rosterDraft;if(!d)return;d.counts=RULES.defaultSelection(TEAMS[d.k]);showRosterBuilder(d.pi,d.k,false);}
 function setPlayerRoster(pi,k,counts){
@@ -1539,7 +1532,7 @@ function startTP(){
   if(G.gameMode==='ai')setTimeout(aiStrategy,260);
 }
 function aiStrategy(){
-  if(G.phase!=='strategy'||P(G.ai).cp<1)return;const t=TEAMS[P(G.ai).team],opts=t.ploys.filter(p=>p.ty==='s'&&!G.ploys[G.ai].includes(p.id));
+  if(G.phase!=='strategy'||P(G.ai).cp<1)return;const t=TEAMS[P(G.ai).team],opts=t.ploys.filter(p=>p.ty==='s'&&!p.fx?.reference&&P(G.ai).cp>=p.cp&&!G.ploys[G.ai].includes(p.id));
   if(opts.length){const p=opts[(G.tp-1)%opts.length];usePloy(G.ai,p.id);msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativou ${p.n}</b>`);}
 }
 function renderPloys(ty){
@@ -1548,18 +1541,20 @@ function renderPloys(ty){
     const t=TEAMS[P(pi).team];
     return `<div class="rowlbl" style="color:${pi===0?'var(--p1)':'var(--p2)'}">${P(pi).n} — ${P(pi).cp} CP</div>`+
     t.ploys.filter(p=>p.ty===ty).map(p=>{
-      const used=G.ploys[pi].includes(p.id), can=P(pi).cp>=p.cp&&!used&&!isAI(pi);
+      const used=G.ploys[pi].includes(p.id), can=P(pi).cp>=p.cp&&!used&&!isAI(pi)&&!p.fx?.reference;
       return `<div class="plc ${can?'':'dis'}" ${can?`onclick="usePloy(${pi},'${p.id}')"`:''}>
-        <div class="pn"><span>${used?'✓ ':''}${p.n}${p.fx?.reference?' · GUIADO':''}</span><span class="cpb">${p.cp} CP</span></div>
-        <div class="pd">${p.d}${p.fx?.reference?'<br><em>O motor registra o uso; decisões desta regra são aplicadas pelos jogadores.</em>':''}</div></div>`;}).join('');
+        <div class="pn"><span>${used?'✓ ':''}${p.n}${p.fx?.reference?' · SOMENTE CONSULTA':''}</span><span class="cpb">${p.cp} CP</span></div>
+        <div class="pd">${p.d}${p.fx?.reference?'<br><em>Efeito ainda não implementado. Não pode ser ativado e não gasta CP.</em>':''}</div></div>`;}).join('');
   }).join('');
 }
 function usePloy(pi,id){
-  if(P(pi).cp<1)return;
-  P(pi).cp--;G.ploys[pi].push(id);
-  const t=TEAMS[P(pi).team],p=t.ploys.find(x=>x.id===id);
-  log(`${P(pi).n} usou ${p.n} (−1 CP)`);
+  if(![0,1].includes(pi)||!['strategy','firefight'].includes(G.phase))return false;
+  const t=TEAMS[P(pi).team],p=t?.ploys.find(x=>x.id===id);
+  if(!p||p.fx?.reference||G.ploys[pi].includes(id)||P(pi).cp<p.cp||(p.ty==='s'?G.phase!=='strategy':G.phase!=='firefight'))return false;
+  P(pi).cp-=p.cp;G.ploys[pi].push(id);
+  log(`${P(pi).n} usou ${p.n} (−${p.cp} CP)`);
   renderPloys(p.ty);updTop();
+  return true;
 }
 function endStrategy(){
   closeOv();G.phase='firefight';G.cur=G.init;
@@ -1818,7 +1813,7 @@ function doMove(x,y,z=0,automated=false,confirmed=false){
   const cost = kind==='dash'?1:(kind==='fallback'?2:1);
   const oldZ=zOf(op);op.x=x;op.y=y;op.z=z;op.moved=true;
   if(cell.d>3)op.movedFar=true;
-  if(kind==='charge'){op.chargedThis=true;op.order='engage';}
+  if(kind==='charge'){op.chargedThis=true;if(!RULES.canChargeConcealed(op,TEAMS))op.order='engage';}
   recordAction(op,kind);
   log(`${op.n} ${kind==='charge'?'investiu':'moveu'} ${cell.d.toFixed(1)}"${oldZ!==z?` e ${z>oldZ?'subiu':'desceu'} para ${z}"`:''}`);
   G.mode=null;G.moveCells=[];
@@ -1941,7 +1936,7 @@ function toggleOrder(){
   log(`${op.n} → ${op.order==='conceal'?'Conceal':'Engage'}`);
   render();msg(`<b>${op.n}</b> agora está em <b class="hl">${op.order==='conceal'?'Conceal (oculto)':'Engage (engajado)'}</b>.`);
 }
-function securableObjective(op){return OBJS.find((o,i)=>dist(op,o)<=1&&G.secured?.[G.tp+':'+i]!==op.pi);}
+function securableObjective(op){if(op.templateId==='kt-ws-wolf')return undefined;return OBJS.find((o,i)=>dist(op,o)<=1&&G.secured?.[G.tp+':'+i]!==op.pi);}
 function actPickUp(){
   const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;
   if(actionUsed(op,'objective')){msg('<b class="hl">Ação de missão já realizada nesta ativação.</b>');return;}

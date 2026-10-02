@@ -1,6 +1,6 @@
 # AUSPEX Test Team — cobertura do motor de regras
 
-Fonte de dados: `killteam_data.js`. O simulador importa as 15 equipes e monta um roster válido com o limite definido em cada ficha.
+Fonte de dados: `killteam_data.js`. O simulador importa 15 equipes. Os testes de composição conferem o cadastro local, não equivalência integral às regras oficiais. Há fichas resumidas e efeitos por interpretação de texto; consultar `TEAM-AUDIT.md` para as lacunas conhecidas.
 
 ## Automatizado
 

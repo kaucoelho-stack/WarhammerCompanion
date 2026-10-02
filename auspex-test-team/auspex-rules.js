@@ -16,11 +16,14 @@
   const tagsOf=w=>(w.tags||[]).map(t=>String(t).replace(/^Piercing Crits/i,'PiercingCrits').trim());
   function weaponProfiles(w){
     const profiles=Array.isArray(w.profiles)&&w.profiles.length?w.profiles:[w];
-    return profiles.map((p,i)=>({
+    return profiles.map((p,i)=>{
+      const range=p.range??w.range,tags=Array.isArray(p.tags)?tagsOf(p):tagsOf(w);
+      if(range!=='melee'&&/^\d/.test(String(range))&&!tags.some(t=>t.startsWith('Range ')))tags.push('Range '+number(range));
+      return {
       n:profiles.length>1?`${w.name} \u00b7 ${p.name||`Perfil ${i+1}`}`:(w.name||p.name||'Arma'),
       t:(p.range??w.range)==='melee'?'m':'r',a:number(p.A??w.A)||4,h:number(p.skill??w.skill)||4,
-      d:number(p.D??w.D),c:number(p.CD??w.CD),tags:tagsOf(p).length?tagsOf(p):tagsOf(w)
-    }));
+      d:number(p.D??w.D),c:number(p.CD??w.CD),tags
+    };});
   }
   function abilitiesOf(op){
     const src=Array.isArray(op.abilities)?op.abilities:(op.abilities?[{name:'Habilidade',desc:op.abilities}]:[]);
@@ -31,8 +34,7 @@
   }
   function operativeFrom(op,key,team){
       const weapons=(op.weapons||[]).flatMap(weaponProfiles);
-      if(!weapons.some(w=>w.t==='m'))weapons.push({n:'Combate desarmado',t:'m',a:3,h:4,d:2,c:3,tags:[]});
-      if(!weapons.some(w=>w.t==='r'))weapons.push({n:'Arma de curto alcance',t:'r',a:3,h:4,d:2,c:3,tags:['Range 6']});
+      // Missing weapon types are intentional (e.g. the Fenrisian Wolf).
       const ab=abilitiesOf(op);
       if(key==='vsp'&&!/drone/i.test(op.name||''))ab.push({n:'Fly',d:'Pode atravessar terreno durante ações de movimento.',fly:1});
       return{id:safeId(op.id),sourceId:op.id,n:op.name,ico:(op.name||'?').trim()[0].toUpperCase(),
@@ -41,28 +43,39 @@
   }
   function leaderIds(team){
     if(team.id==='kt-angelsofdeath')return new Set(['kt-aod-captain','kt-aod-asgt','kt-aod-isgt']);
-    const first=team.operatives?.[0]?.id;return new Set(first?[first]:[]);
+    const ids={'kt-intercession':'kt-intercessor-sgt','kt-warriors':'kt-warrior-prime','kt-kommandos':'kt-kommando-boss','kt-wolfscouts':'kt-ws-packleader','kt-krieg':'kt-krieg-watchmaster','kt-legionaries':'kt-legionary-aspiring','kt-pathfinders':'kt-pathfinder-shas','kt-nemesisclaw':'kt-nc-visionary','kt-deathwatch':'kt-dw-sergeant','kt-plaguemarines':'kt-pm-champion','kt-blooded':'kt-bl-chieftain','kt-mandrakes':'kt-mand-nightfiend','kt-vespid':'kt-vesp-strainleader','kt-hota':'kt-hota-archsybarite'};
+    return new Set(ids[team.id]?[ids[team.id]]:[]);
   }
   function catalogFor(team,key){
     const leaders=leaderIds(team);
     return(team.operatives||[]).map((op,i)=>({...operativeFrom(op,key,team),catalogIndex:i,
-      max:op.unique===false?Math.max(1,number(op.count)||team.limit):1,unique:op.unique!==false,
+      min:team.id==='kt-wolfscouts'&&op.id==='kt-ws-wolf'?1:0,
+      selectionCost:team.id==='kt-kommandos'&&['kt-kommando-grot','kt-kommando-bombsquig'].includes(op.id)?.5:1,
+      max:team.id==='kt-wolfscouts'&&op.id==='kt-ws-hunter'?5:op.unique===false?Math.max(1,number(op.count)||team.limit):1,unique:op.unique!==false,
       leader:leaders.has(op.id),leaderGroup:leaders.has(op.id)?'leader':null}));
   }
+  function compositionFor(source){
+    return {size:source.limit,leaderMin:source.id==='kt-wolfscouts'?0:1,leaderMax:1,
+      groups:source.id==='kt-angelsofdeath'?[{ids:['kt-aod-heavygunner','kt-aod-eliminator'],max:1,label:'Heavy Intercessor Gunner / Eliminator: no máximo um no total'}]:[]};
+  }
+  function groupAllows(team,counts,op){return (team.composition?.groups||[]).every(g=>!g.ids.includes(op.sourceId)||team.catalog.filter(o=>g.ids.includes(o.sourceId)).reduce((n,o)=>n+(counts[o.id]||0),0)<g.max);}
   function defaultSelection(team){
     const counts={},cat=team.catalog||[];let left=team.limit||0;
-    const leader=cat.find(o=>o.leader);if(leader&&left){counts[leader.id]=1;left--;}
+    for(const o of cat)if(o.min){counts[o.id]=o.min;left-=o.min*(o.selectionCost||1);}
+    const leader=cat.find(o=>o.leader);if(leader&&left&&!counts[leader.id]){counts[leader.id]=1;left--;}
     const ordered=[...cat.filter(o=>!o.leader&&o.unique),...cat.filter(o=>!o.leader&&!o.unique)];
-    for(const o of ordered){const n=Math.min(o.max,left);if(n){counts[o.id]=n;left-=n;}if(!left)break;}
+    for(const o of ordered){const cost=o.selectionCost||1;while((counts[o.id]||0)<o.max&&left>=cost&&groupAllows(team,counts,o)){counts[o.id]=(counts[o.id]||0)+1;left-=cost;}if(!left)break;}
     return counts;
   }
   function validateRoster(team,counts={}){
-    const cat=team.catalog||[],errors=[];let total=0,leaders=0;
-    for(const o of cat){const n=Math.max(0,Math.floor(number(counts[o.id])));total+=n;if(o.leader)leaders+=n;if(n>o.max)errors.push(`${o.n}: máximo ${o.max}`);}
-    for(const id of Object.keys(counts))if(!cat.some(o=>o.id===id)&&number(counts[id])>0)errors.push(`Operativo desconhecido: ${id}`);
-    if(total!==(team.limit||0))errors.push(`Selecione exatamente ${team.limit} operativos (${total}/${team.limit})`);
-    if(cat.some(o=>o.leader)&&leaders!==1)errors.push(`Selecione exatamente 1 líder (${leaders}/1)`);
-    return{valid:errors.length===0,errors,total,leaders,size:team.limit||0};
+    const cat=team.catalog||[],errors=[];let total=0,selections=0,leaders=0;
+    for(const o of cat){const n=Object.prototype.hasOwnProperty.call(counts,o.id)?counts[o.id]:0;if(typeof n!=='number'||!Number.isInteger(n)||n<0){errors.push(`${o.n}: quantidade inválida`);continue;}total+=n;selections+=n*(o.selectionCost||1);if(o.leader)leaders+=n;if(n>o.max)errors.push(`${o.n}: máximo ${o.max}`);if(n<(o.min||0))errors.push(`${o.n}: obrigatório (${o.min})`);}
+    for(const id of Object.keys(counts))if(!cat.some(o=>o.id===id))errors.push(`Operativo desconhecido: ${id}`);
+    if(selections!==(team.limit||0))errors.push(`Selecione exatamente ${team.limit} escolhas (${selections}/${team.limit})`);
+    for(const g of team.composition?.groups||[])if(cat.filter(o=>g.ids.includes(o.sourceId)).reduce((n,o)=>n+(counts[o.id]||0),0)>g.max)errors.push(g.label);
+    const min=team.composition?.leaderMin??(team.sourceId==='kt-wolfscouts'?0:1);
+    if(cat.some(o=>o.leader)&&(leaders<min||leaders>1))errors.push(`Selecione ${min?'exatamente 1':'no máximo 1'} líder (${leaders}/1)`);
+    return{valid:errors.length===0,errors,total,selections,leaders,size:team.limit||0};
   }
   function buildRoster(team,counts={}){
     const check=validateRoster(team,counts);if(!check.valid)return[];const out=[];
@@ -71,7 +84,7 @@
     return out;
   }
   function rosterFor(team,key){
-    const meta={limit:team.limit,catalog:catalogFor(team,key)};return buildRoster(meta,defaultSelection(meta));
+    const meta={limit:team.limit,sourceId:team.id,composition:compositionFor(team),catalog:catalogFor(team,key)};return buildRoster(meta,defaultSelection(meta));
   }
   function inferEngine(team,key){
     const core=text(team.coreRule?.desc||team.coreRule?.d).toLowerCase();
@@ -84,8 +97,8 @@
   }
   function ploysFor(team,key){
     const out=[];for(const [kind,ty] of [['strategy','s'],['firefight','f']])for(const [i,p] of (team.ploys?.[kind]||[]).entries()){
-      const d=p.desc||p.d||'',automated=/balanced|ceaseless|relentless|saturate|re-rol|rerrol|accurate|save|defesa|dano|move|charge|carga|conceal|ocult/i.test(d);
-      out.push({id:`${key}_${ty}_${i}`,n:p.name||p.n,d,cp:1,ty,fx:{semantic:automated,reference:!automated}});
+      const d=p.desc||p.d||'';
+      out.push({id:`${key}_${ty}_${i}`,n:p.name||p.n,d,cp:p.cp??1,ty,fx:{reference:true}});
     }return out;
   }
   function importTeams(target,source){
@@ -93,12 +106,14 @@
     for(const t of source){
       const key=TEAM_KEYS[t.id]||safeId(t.id).slice(0,5),catalog=catalogFor(t,key);
       if(target[key]){
-        const current=target[key];current.limit=t.limit;current.catalog=catalog;current.composition={size:t.limit,leaderMin:1,leaderMax:1};current.sourceId=t.id;
+        const current=target[key];current.limit=t.limit;current.catalog=catalog;current.composition=compositionFor(t);current.sourceId=t.id;
+        // Prefer the app's actual reference cards over legacy prototype ploys.
+        current.ploys=ploysFor(t,key);
         current.ops=buildRoster(current,defaultSelection(current));continue;
       }
       target[key]={name:t.name,fac:t.faction,ico:TEAM_ICONS[key]||t.emoji||'\u25C9',col:t.color||'#7bd6e8',limit:t.limit,
         rule:{n:t.coreRule?.name||'Regra de fac\u00e7\u00e3o',d:String(t.coreRule?.desc||'').replace(/<[^>]+>/g,' ')},
-        ploys:ploysFor(t,key),catalog,composition:{size:t.limit,leaderMin:1,leaderMax:1},engine:inferEngine(t,key),sourceId:t.id};
+        ploys:ploysFor(t,key),catalog,composition:compositionFor(t),engine:inferEngine(t,key),sourceId:t.id};
       target[key].ops=buildRoster(target[key],defaultSelection(target[key]));
     }
     Object.entries(target).forEach(([key,t])=>{t.engine={...inferEngine({coreRule:{desc:t.rule?.d||''}},key),...(t.engine||{})};
@@ -108,7 +123,7 @@
   const team=(op,teams)=>op&&teams?.[op.teamId];
   const engine=(op,teams)=>team(op,teams)?.engine||{};
   const canCounter=(op,teams)=>op.order==='engage'||engine(op,teams).counterAnyOrder;
-  const canChargeConcealed=(op,teams)=>!!engine(op,teams).concealCharge;
+  const canChargeConcealed=(op,teams)=>op.templateId==='kt-ws-wolf'||(!!engine(op,teams).concealCharge&&op.templateId!=='kt-kommando-bombsquig');
   const maxAction=(op,kind,teams)=>engine(op,teams).doubleShootFight&&(kind==='shoot'||kind==='fight')?2:1;
   const heavyBlocked=(op,w)=>{
     const tag=(w.tags||[]).find(t=>String(t).startsWith('Heavy'));if(!tag||!op.moved)return false;
@@ -124,5 +139,5 @@
   const rangeOf=w=>{const t=(w.tags||[]).find(x=>String(x).startsWith('Range '));return t?(number(t)||99):99;};
 
   window.AuspexRules={importTeams,team,engine,canCounter,canChargeConcealed,maxAction,heavyBlocked,limitedBlocked,useWeapon,
-    hasAbility,objectiveAPL,countsForElimination,rangeOf,defaultSelection,validateRoster,buildRoster,version:'2.1'};
+    hasAbility,objectiveAPL,countsForElimination,rangeOf,defaultSelection,validateRoster,buildRoster,version:'2.2'};
 })();

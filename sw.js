@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v40-kommandos-ux-parapets';
+const CACHE = 'auspex-v41-partial-team-rules-audit';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',

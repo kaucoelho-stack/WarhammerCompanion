@@ -1,10 +1,10 @@
 {
   "name": "Pátio de ferro",
-  "version": "3",
+  "version": "4",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-09-28T12:29:55.003Z",
-  "validation": "Automated locally; visual playtest approved by user before the three-objective update",
+  "createdAt": "2026-10-02T13:20:47.496Z",
+  "validation": "Partial team rules audit; see TEAM-AUDIT.md. Not a complete official rules implementation.",
   "files": [
     {
       "path": ".nojekyll",
@@ -143,8 +143,8 @@
     },
     {
       "path": "auspex-rules.js",
-      "bytes": 8836,
-      "sha256": "b655e1f9bce83d056ad87fc41a98a2e7aae3c9db8772a98b7960a9363e2517e0"
+      "bytes": 10852,
+      "sha256": "832374f13515f4cba8b7c67b148f479043e73ee4ba805408a0a4c8590a493eee"
     },
     {
       "path": "battlefield.js",
@@ -153,8 +153,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 201451,
-      "sha256": "935e4408c63acfd61059022ee9f1d73a09338a0c1b21e7280b0de82de181d9a7"
+      "bytes": 201711,
+      "sha256": "28e2c5dda5da1c92e8382f6372a95239bdfce8839faf7a1390e583d83bdbc4f2"
     },
     {
       "path": "killteam_data.js",
@@ -183,8 +183,13 @@
     },
     {
       "path": "RULES-COVERAGE.md",
-      "bytes": 1633,
-      "sha256": "7cf55edddd76235ca12a04850a4dc8d8d128b7f73d25b3bcc01921bbb37cca5b"
+      "bytes": 1785,
+      "sha256": "b81e367f7e24dd7cdd5a9cf56533d3643b1089fb436a6ad3640769557fbde820"
+    },
+    {
+      "path": "TEAM-AUDIT.md",
+      "bytes": 2932,
+      "sha256": "52430c3824c11ca3660098fb3ba3887b5879aa31b5efd358753a754fada20e32"
     },
     {
       "path": "terrain-painter.js",
