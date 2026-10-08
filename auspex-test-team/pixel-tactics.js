@@ -121,12 +121,31 @@
     if(G.sel?.id===o.id||G.aimTarget?.id===o.id){ctx.strokeStyle=G.aimTarget?.id===o.id?'#ff746b':'#ffe08a';ctx.lineWidth=2;ctx.strokeRect(p.x-12*s,p.y-33*s,25*s,37*s);}
     hits.push({type:'op',op:G.ops.find(v=>v.id===o.id)||o,rect:{x:p.x-13*s,y:p.y-33*s,w:26*s,h:38*s}});
   }
+  const healthSeen=new WeakMap();let feedback=[];
+  function drawFeedback(){
+    const now=performance.now(),reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    for(const op of G.ops){
+      const previous=healthSeen.get(op);healthSeen.set(op,op.hp);
+      if(previous!==undefined&&previous!==op.hp){
+        const delta=op.hp-previous;
+        feedback.push({op,x:op.x+.5,y:op.y+.5,z:zOf(op),start:now,text:op.hp<=0?'INCAPACITADO':delta>0?`+${delta} PV`:`−${Math.abs(delta)} PV`,color:delta>0?'#94ffd1':'#ffaaa0'});
+      }
+    }
+    feedback=feedback.filter(f=>now-f.start<1100&&G.ops.includes(f.op));
+    for(const f of feedback){
+      const age=(now-f.start)/1100,p=project(f.x,f.y,f.z);
+      ctx.save();ctx.globalAlpha=reduced?1:Math.min(1,(1-age)*3);
+      label(f.text,{x:p.x,y:p.y-46-(reduced?0:age*22)},f.color);ctx.restore();
+    }
+    if(feedback.length)schedule();
+  }
   function vitals(o){
     const p=project(o.x+.5,o.y+.5,zOf(o)),s=Math.max(.65,unit/13),w=Math.max(28,25*s),y=p.y-((operativeAtlas(o)?.renderHeight||31)+5)*s;
     const hp=Math.max(0,o.hp),max=Math.max(1,o.maxhp||hp),ratio=Math.min(1,hp/max);
     ctx.fillStyle='#0c1825';ctx.fillRect(p.x-w/2-1,y-1,w+2,7);
     ctx.fillStyle=ratio<=.3?'#ff7772':o.pi===0?'#7be0b2':'#87cfff';ctx.fillRect(p.x-w/2,y,w*ratio,5);
     label(`${o.ico||''} ${hp}/${max} · ${o.order==='conceal'?'C':'E'}${o.activated?' ✓':''}`,{x:p.x,y:y-5},o.pi===0?'#ffda89':'#a2ddfa');
+    if(walking?.id===o.id){const start=walking.path[0],end=walking.path.at(-1);label(end.z>start.z?'SUBINDO':end.z<start.z?'DESCENDO':'MOVENDO',{x:p.x,y:y-21},'#baffea');}
   }
   function previewPath(){
     if(walking)return {path:walking.path,cost:null};
@@ -144,7 +163,7 @@
     if(G.pendingReposition){label('ORIGEM',{x:ps[0].x,y:ps[0].y+20},'#c5d4e1');label('PRÉVIA · CONFIRME',{x:end.x,y:end.y+40},'#ffe08a');}
     if(Number.isFinite(preview.cost))label(`${Number(preview.cost.toFixed(1))}″`,{x:end.x,y:end.y+22},'#baffe4');ctx.restore();
   }
-  function draw(){if(!active)return;cw=Math.max(1,stage.clientWidth);ch=Math.max(1,stage.clientHeight);canvas.width=cw;canvas.height=ch;ctx.imageSmoothingEnabled=false;
+  function draw(){if(!active||['killzone','select'].includes(G.phase)||document.body?.classList.contains('setup-screen'))return;cw=Math.max(1,stage.clientWidth);ch=Math.max(1,stage.clientHeight);canvas.width=cw;canvas.height=ch;ctx.imageSmoothingEnabled=false;
     zoomReadout.textContent=Math.round(scale*100)+'%';
     unit=Math.max(5,Math.min((cw-36)/(W+H),(ch-100)/((W+H)*.5+7)))*scale;hits=[];ctx.clearRect(0,0,cw,ch);const jobs=[];
     const destinationCells=G.pendingReposition?[G.pendingReposition.cell]:G.moveCells;
@@ -209,7 +228,7 @@
     const destinations=G.moveCells.filter(visibleDestination).sort((a,b)=>project(a.x+.5,a.y+.5).y-project(b.x+.5,b.y+.5).y||(a.z||0)-(b.z||0));
     destinations.forEach(c=>{const pts=tile(c.x,c.y,c.z||0,c.z>0?'#56dce18a':'#77dca85a',c.z>0?'#bdffff':'#b8ffd7');hits.push({type:'move',cell:c,points:pts});});
     if(choosingDestination)TERRAIN.filter(t=>t.t==='h'&&!t.noClimb&&destinations.some(c=>c.z===t.z&&c.x>=t.x&&c.x<t.x+t.w&&c.y>=t.y&&c.y<t.y+t.h)).forEach(t=>label(`TOPO ${t.z}″`,project(t.x+t.w/2,t.y+t.h/2,t.z), '#baffe4'));
-    drawPath();visibleOps.forEach(vitals);
+    drawPath();visibleOps.forEach(vitals);drawFeedback();
     if(G.sel&&G.mode==='shoot'){(G.aimTarget?[G.aimTarget]:G.targets).forEach(o=>{const a=project(G.sel.x+.5,G.sel.y+.5,zOf(G.sel)+1),b=project(o.x+.5,o.y+.5,zOf(o)+1);ctx.strokeStyle='#ffd37c';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);});}
     info.textContent=choosingDestination?`DESTINO: ${allHeights?'CHÃO + TOPOS':chosenHeight===0?'CHÃO / INTERIOR':chosenHeight+'″'} · Suba pelas aberturas entre as muretas · Prévia mostra o custo total`:`PÁTIO DE FERRO · 30 × 22 | ${cut?'Recorte apenas visual':'28 estruturas · 4 topos com cobertura · 3 objetivos'} | Arraste / pinça · C: Conceal · E: Engage`;
     if(G.ops.some(o=>o.teamId==='kom'))info.textContent+=` | Artes Kommandos: ${Object.keys(kommandoFrames).length}/12${!window.AuspexKommandoSheets?' — arquivo não carregado; atualize a página':''}`;

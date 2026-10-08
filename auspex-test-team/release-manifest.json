@@ -3,7 +3,7 @@
   "version": "4",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-02T13:20:47.496Z",
+  "createdAt": "2026-10-08T16:57:10.662Z",
   "validation": "Partial team rules audit; see TEAM-AUDIT.md. Not a complete official rules implementation.",
   "files": [
     {
@@ -45,6 +45,16 @@
       "path": "assets/aod-wa2.png",
       "bytes": 2678434,
       "sha256": "6847824903acd2fb6a614dff9245c56e97fc79ff87eb0bf48e00a9b240202130"
+    },
+    {
+      "path": "assets/battlefield-menu.png",
+      "bytes": 1175830,
+      "sha256": "5d1f6d716e70ac812c1c513e3aa71dbc83becb07a5f5c2bf56dfd280b21795d5"
+    },
+    {
+      "path": "assets/grimdark-title-v2.png",
+      "bytes": 2262265,
+      "sha256": "d608ebdfeb646b77e82ef06feb6345cd6193aac56caf6419fd30a917d8d86796"
     },
     {
       "path": "assets/mini-aod.png",
@@ -142,9 +152,424 @@
       "sha256": "7d57285e6465d3bda615b09eaebf635c0b2b1ce3b6d1d836c39b59ca4d3acb81"
     },
     {
+      "path": "assets/portraits/kt-aod-asgt.jpg",
+      "bytes": 2568870,
+      "sha256": "f3803cc7eba145b089ee2ec208dcadb40ac7705e56ca7851bdc7e590e25e102e"
+    },
+    {
+      "path": "assets/portraits/kt-aod-awarrior.jpg",
+      "bytes": 2660968,
+      "sha256": "1cb25d619025c52eb89b9457ac3b047153d7d94d341a5f499c97e5ba69453aa4"
+    },
+    {
+      "path": "assets/portraits/kt-aod-captain.jpg",
+      "bytes": 2293738,
+      "sha256": "b759a380a2205a3b754cc338dc0534260fec2c0034f31feeac5abf93544598c9"
+    },
+    {
+      "path": "assets/portraits/kt-aod-eliminator.jpg",
+      "bytes": 2772055,
+      "sha256": "b61af455fe9793aecf9f8ec4b6d8afa5a4f4765771787d98c787ac96169edd19"
+    },
+    {
+      "path": "assets/portraits/kt-aod-grenadier.jpg",
+      "bytes": 2550562,
+      "sha256": "d5b80932d84a6625fb0ec43cfe492af6ac93481042886d660f6f4cde12c1f762"
+    },
+    {
+      "path": "assets/portraits/kt-aod-gunner.jpg",
+      "bytes": 2707931,
+      "sha256": "38617cfd03ecb7a34fa96e2c4d61dbd251b11397fd0b7968eddc716ba48e3a90"
+    },
+    {
+      "path": "assets/portraits/kt-aod-heavygunner.jpg",
+      "bytes": 2606216,
+      "sha256": "4ab9fda4989f022b8c924959f92e78adbde42e24cd9b010d8ea1bc16d5be7b74"
+    },
+    {
+      "path": "assets/portraits/kt-aod-isgt.jpg",
+      "bytes": 2617399,
+      "sha256": "7fb3a9eec080a77bfd41e779aab41c2c49debf44a837fbdad93273eb27de8067"
+    },
+    {
+      "path": "assets/portraits/kt-aod-iwarrior.jpg",
+      "bytes": 2804283,
+      "sha256": "b36421dd1687c2fe2466e94af20a6630aec9efa5a0365e41555d4fd95c8983c9"
+    },
+    {
+      "path": "assets/portraits/kt-bl-butcher.jpg",
+      "bytes": 2364061,
+      "sha256": "f9fc1e1b21988fc4478aa0e41790f111b57072fe6faf0c31ee787ad5761dea55"
+    },
+    {
+      "path": "assets/portraits/kt-bl-chieftain.jpg",
+      "bytes": 2389574,
+      "sha256": "317b446ca30c444089f82a46042b0d532115fe9423d7b801d0d807b6adb80dfb"
+    },
+    {
+      "path": "assets/portraits/kt-bl-commsman.jpg",
+      "bytes": 2553549,
+      "sha256": "618163671138652e099f5eb61523de4ab51ddbb198ea0e755369eb556c7b5948"
+    },
+    {
+      "path": "assets/portraits/kt-bl-corpseman.jpg",
+      "bytes": 2458687,
+      "sha256": "a221435d8428dad242e9d29a5939fca6bacbd9d7811214e0f7dc108d4f61505e"
+    },
+    {
+      "path": "assets/portraits/kt-bl-enforcer.jpg",
+      "bytes": 2472687,
+      "sha256": "6fdd21a92f662d01e83ad8a01a6c6d7b3ed211bc806073920c3976356674b1b8"
+    },
+    {
+      "path": "assets/portraits/kt-bl-flenser.jpg",
+      "bytes": 2773105,
+      "sha256": "24f35f44381f2c97a09c06852441bf1870850a500f864e5e3c17ef9d32059f81"
+    },
+    {
+      "path": "assets/portraits/kt-bl-grenadier.jpg",
+      "bytes": 2597558,
+      "sha256": "d957cb19131f6c0eb49cf96dc065ba15581b4372453ae82f4591a2ea21333cc7"
+    },
+    {
+      "path": "assets/portraits/kt-bl-gunner.jpg",
+      "bytes": 2338335,
+      "sha256": "2667ef2705b2e5cd11a33dfd2f04eca2f6aa45590cda01119390dd87529c499b"
+    },
+    {
+      "path": "assets/portraits/kt-bl-ogryn.jpg",
+      "bytes": 2554124,
+      "sha256": "c3a69c7405ff884b2ca05402ba005801600fe5963b06ad38a862863a7bc877c4"
+    },
+    {
+      "path": "assets/portraits/kt-bl-sharpshooter.jpg",
+      "bytes": 2389158,
+      "sha256": "ee631fce5eeff2ceea2e9283031391fd1a9aa004d1c81070db9ad3ec6a65d308"
+    },
+    {
+      "path": "assets/portraits/kt-bl-thug.jpg",
+      "bytes": 2436314,
+      "sha256": "8f4e12b3b5348ccb14abc5c9951de06fc4ba8d2328fd7a8fabc94a20a69654c1"
+    },
+    {
+      "path": "assets/portraits/kt-bl-trenchsweeper.jpg",
+      "bytes": 2487341,
+      "sha256": "534708beec89209903c093798df71dd38cb5746d54f6468bb66ba7da39bf90f2"
+    },
+    {
+      "path": "assets/portraits/kt-bl-trooper.jpg",
+      "bytes": 2352185,
+      "sha256": "d656e6f72815569642a48315534f469d34d2b10a5f04bb8bf5d8565d39d486be"
+    },
+    {
+      "path": "assets/portraits/kt-dw-aegis.jpg",
+      "bytes": 2807070,
+      "sha256": "118aa6bb7c45fd75fb94ba6c37c0e36de3babb3444d8aeb8cd9e9b3fc4df7b26"
+    },
+    {
+      "path": "assets/portraits/kt-dw-blademaster.jpg",
+      "bytes": 2561011,
+      "sha256": "81ab43c363c30448af6df880698171f4830b56e8039f03310420bae968779461"
+    },
+    {
+      "path": "assets/portraits/kt-dw-bombard.jpg",
+      "bytes": 2765337,
+      "sha256": "645d066678974f2808c84de12d1e29caad816644cde18c64569f13502927b84d"
+    },
+    {
+      "path": "assets/portraits/kt-dw-breacher.jpg",
+      "bytes": 2904721,
+      "sha256": "94fc37e2387462c7830a9542d3ed053b99881215da9e822bc61971d4f29042f0"
+    },
+    {
+      "path": "assets/portraits/kt-dw-demolisher.jpg",
+      "bytes": 2635443,
+      "sha256": "160cfb3a365eaaf8390e53ab8a11e3ce7b9e36796536c22356c6ebb8ee43757c"
+    },
+    {
+      "path": "assets/portraits/kt-dw-disruptor.jpg",
+      "bytes": 2725338,
+      "sha256": "5e22328b362e416f357aba56ac49395ddffafcec2b796ec220d5ffa14a264a07"
+    },
+    {
+      "path": "assets/portraits/kt-dw-gunner.jpg",
+      "bytes": 2625100,
+      "sha256": "a0a543d8e006278e4952c813f97b72864a39990abc4f4beec2649b8f6c5d7a98"
+    },
+    {
+      "path": "assets/portraits/kt-dw-headtaker.jpg",
+      "bytes": 2654000,
+      "sha256": "07b8093c28279164646f5612523d12921cf7e97b737000468e322a5650d04730"
+    },
+    {
+      "path": "assets/portraits/kt-dw-hordeslayer.jpg",
+      "bytes": 3043498,
+      "sha256": "71e94f2fa3adc4940636540c5b23c363d2f615d904016f0f149782449dbe3e4c"
+    },
+    {
+      "path": "assets/portraits/kt-dw-marksman.jpg",
+      "bytes": 2474247,
+      "sha256": "c0b3df88dfb0efcf8568aae211bdb7a2730d0f5f25961742cc348fbe5b2a291a"
+    },
+    {
+      "path": "assets/portraits/kt-dw-sergeant.jpg",
+      "bytes": 2688886,
+      "sha256": "cce183a1b60e418e308d76d3c1efddb64cc0cc2d5611c9fb6536d303d2849e17"
+    },
+    {
+      "path": "assets/portraits/kt-hota-agent.jpg",
+      "bytes": 2228098,
+      "sha256": "6a5e3b4bda2421ef0cb9f185ea5d511d1202b7d9b139d6d1f4675a3de702612c"
+    },
+    {
+      "path": "assets/portraits/kt-hota-archsybarite.jpg",
+      "bytes": 2544839,
+      "sha256": "2d600d110634e34c2a1a9bc9d328bb9d123939613646a22ccfdde4b00cd525ae"
+    },
+    {
+      "path": "assets/portraits/kt-hota-crimsonduellist.jpg",
+      "bytes": 2620919,
+      "sha256": "f54add54dc65ce138b1d62c113e115b6148ee62f9e0705821857eafbfaf66be5"
+    },
+    {
+      "path": "assets/portraits/kt-hota-disciple.jpg",
+      "bytes": 2658838,
+      "sha256": "cf7c043fa64ce0781b74f182a8ea87ae328a0b74e0d363016c9af864c971114a"
+    },
+    {
+      "path": "assets/portraits/kt-hota-elixicant.jpg",
+      "bytes": 2694795,
+      "sha256": "2c8e9adfc5910621b859b95b793a9f027720f70eb16985172f7eedc726e94c33"
+    },
+    {
+      "path": "assets/portraits/kt-hota-flayer.jpg",
+      "bytes": 2708971,
+      "sha256": "c18a85956cbae29865d14dddb8c69cd0f22cb586f0349e9d25e347c3112a3dc2"
+    },
+    {
+      "path": "assets/portraits/kt-hota-gunner.jpg",
+      "bytes": 2666479,
+      "sha256": "53df851b1a71a3e7a37f48f184b3745afea5fd0ff3dfbe5712dc471f87489983"
+    },
+    {
+      "path": "assets/portraits/kt-hota-heavygunner.jpg",
+      "bytes": 2524645,
+      "sha256": "7380a1d4bf5c2047b316b6fa433159c80c2807a263782fba8b7d79f47b1fd877"
+    },
+    {
+      "path": "assets/portraits/kt-hota-skysplinter.jpg",
+      "bytes": 2525216,
+      "sha256": "8b226275b51aecb374f450b1fbca478c5246a4dfd4a1b1c2730a9fcf2b30e2c7"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-bombsquig.jpg",
+      "bytes": 2786454,
+      "sha256": "04ee337758957bd73bf0739d4aff6283f20d619183389a413e680b877248709f"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-boss.jpg",
+      "bytes": 2781287,
+      "sha256": "4a62bb5394ff93e37b08942570454a7dc3d431d31fdf55f4a91e8171f1e0dec0"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-boy.jpg",
+      "bytes": 2658999,
+      "sha256": "92b8171b5aab118881d6fa3e503bd170f385ced495273c8b061c71a2cf6c5382"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-breacha.jpg",
+      "bytes": 2708643,
+      "sha256": "f72fb8ba592831ac6ebdfbc277fe14c006594aab4b00419242909e7fa8c1f55e"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-burna.jpg",
+      "bytes": 2687697,
+      "sha256": "ca5d3798750c433952784fbc3ac8412f08a421b166ceda352de36833e57259c7"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-comms.jpg",
+      "bytes": 2626248,
+      "sha256": "26b639644f393ddf1e2fc4c388e0456a06d3a5e5b3cdf2081110fc53bd99d522"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-dakka.jpg",
+      "bytes": 2614859,
+      "sha256": "9c97d1c17d9ecf46cb05d0b2b575d482a5a00c21f8b9c5a96e3a95105f721a31"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-grot.jpg",
+      "bytes": 2444919,
+      "sha256": "6572aba0c243bf1c7686a9d3e60b0697e57adfc372fc650bc7ce05483de8e445"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-rokkit.jpg",
+      "bytes": 2560176,
+      "sha256": "3581a06768d38c813c9c493fefd5884371fa21a47c53db5ff489800b2ff91adf"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-slasha.jpg",
+      "bytes": 2753170,
+      "sha256": "0af6c3753a4b04596824a50d1dbb6957e0457f6b8e4ab53f233ff9e6b919112b"
+    },
+    {
+      "path": "assets/portraits/kt-kommando-snipa.jpg",
+      "bytes": 2338994,
+      "sha256": "4211d9f6e787ae3127c5e6f51bc4792aa7a1ab3f08f4fc668fcc5bd810d3b5cf"
+    },
+    {
+      "path": "assets/portraits/kt-mand-abyssal.jpg",
+      "bytes": 2594505,
+      "sha256": "f0cd6bc22b6daf0fd27ee4438c4d62cd5c7b107ea105613d87a7ddb24e7453f1"
+    },
+    {
+      "path": "assets/portraits/kt-mand-chooser.jpg",
+      "bytes": 2527781,
+      "sha256": "cde0ea9241136d26e9afb94b951917714047e4f5fef2de44398aeb02de8cffcf"
+    },
+    {
+      "path": "assets/portraits/kt-mand-dirgemaw.jpg",
+      "bytes": 2830187,
+      "sha256": "a6f1337f13fcdb00a60201ec988b63a2bf2501f922861172d5b91075200b9b05"
+    },
+    {
+      "path": "assets/portraits/kt-mand-nightfiend.jpg",
+      "bytes": 2386540,
+      "sha256": "e57d48c5fb072ca414c4a94a5fb4033fd24a41897ebd9af926a1e16cbf8f5a36"
+    },
+    {
+      "path": "assets/portraits/kt-mand-shadeweaver.jpg",
+      "bytes": 2439871,
+      "sha256": "f98d1983ebf321ae823713820e33c4196bbd02481affdc60ddd804ff8f0773ec"
+    },
+    {
+      "path": "assets/portraits/kt-mand-warrior.jpg",
+      "bytes": 2556324,
+      "sha256": "ea6c4f9424bad7d13e1f2c217ea810c39a991bf6bfbeaaf23bba0280dd63e297"
+    },
+    {
+      "path": "assets/portraits/kt-nc-fearmonger.jpg",
+      "bytes": 2695615,
+      "sha256": "ca87dc35c36ec09e05e06785318b49ad560ff25e85413711a52bcd2e78cd215b"
+    },
+    {
+      "path": "assets/portraits/kt-nc-gunner.jpg",
+      "bytes": 2843240,
+      "sha256": "4596e5763e2cc42d4e5248a9dbf2943f30b6a65d8c53e3858bcad072e5adfab4"
+    },
+    {
+      "path": "assets/portraits/kt-nc-heavygunner.jpg",
+      "bytes": 2705298,
+      "sha256": "e19d4dcc08727d248bf235b1dfc3538668c3dec76e564db6444908759c72147a"
+    },
+    {
+      "path": "assets/portraits/kt-nc-screecher.jpg",
+      "bytes": 2737286,
+      "sha256": "076233abe003b08bafb4e2551598dd01f3af15a7811fb8d56e788a64378b5eb2"
+    },
+    {
+      "path": "assets/portraits/kt-nc-skinthief.jpg",
+      "bytes": 2478534,
+      "sha256": "db92701219ea185014bda2e761083996d452c1c94561e5687b9b90a0db04a080"
+    },
+    {
+      "path": "assets/portraits/kt-nc-ventrilokar.jpg",
+      "bytes": 2452676,
+      "sha256": "26151735fc4ccc6d9bf39b3d62a4c130bd049b014c8cc4f8eaaf564742a5989f"
+    },
+    {
+      "path": "assets/portraits/kt-nc-visionary.jpg",
+      "bytes": 2708105,
+      "sha256": "dc6121f08518a684497db82ec5a28c915a9429b1804745fbe3eea12104495071"
+    },
+    {
+      "path": "assets/portraits/kt-nc-warrior.jpg",
+      "bytes": 2376966,
+      "sha256": "09075e7152b6da6110d610b6e9d5ff0f93dfc7c0761cfba98521b5c73f2102f8"
+    },
+    {
+      "path": "assets/portraits/kt-vesp-longsting.jpg",
+      "bytes": 2361653,
+      "sha256": "b7cf4449a6e26e0e2d386d0bedda0bc2d670f0037876a6afd982e18b23481772"
+    },
+    {
+      "path": "assets/portraits/kt-vesp-oversightdrone.jpg",
+      "bytes": 2523761,
+      "sha256": "3e967e66f86f307001309b9afbede1cbf526c3fdd55efc432c98bc3cf284f23c"
+    },
+    {
+      "path": "assets/portraits/kt-vesp-shadestrain.jpg",
+      "bytes": 2368536,
+      "sha256": "29b50cf2a5400b3919c8d58c3f1304125421a34d0da50593bf46ffbb83e910a7"
+    },
+    {
+      "path": "assets/portraits/kt-vesp-skyblast.jpg",
+      "bytes": 2413632,
+      "sha256": "8e92e717e09d9488cbd8d4b79a8e83c705b0993ae0640d03485b49630fb4c268"
+    },
+    {
+      "path": "assets/portraits/kt-vesp-strainleader.jpg",
+      "bytes": 2645056,
+      "sha256": "88726a09d4e9d0450d4046da56c4a6d7ba5dd55aa581654c2335e940ffb107fa"
+    },
+    {
+      "path": "assets/portraits/kt-vesp-swarmguard.jpg",
+      "bytes": 2155173,
+      "sha256": "f981ed027ca85715e8f5e127a324f4663cc5dd170415a726d562c69c82ac5e2e"
+    },
+    {
+      "path": "assets/portraits/kt-vesp-warrior.jpg",
+      "bytes": 2407648,
+      "sha256": "d46feea2e89211c8707b656709d59908a56c8ca1ef5c7bba6b0b5d02fdf96666"
+    },
+    {
+      "path": "assets/portraits/kt-ws-fangbearer.jpg",
+      "bytes": 2883278,
+      "sha256": "fe084277eb111e4a4a0b13d4a57e216e93d00dbffa384d4239db06fc4ad32f39"
+    },
+    {
+      "path": "assets/portraits/kt-ws-frosteye.jpg",
+      "bytes": 2839277,
+      "sha256": "a0aca38512bce7db3b6d25e7f1ba96fd63aa8253f93d23815d34cea2df08e716"
+    },
+    {
+      "path": "assets/portraits/kt-ws-gunner.jpg",
+      "bytes": 2932377,
+      "sha256": "e566214661cec82fb97b5eb6bf34a85b364fe02f54f87a4364a591687556c731"
+    },
+    {
+      "path": "assets/portraits/kt-ws-hunter.jpg",
+      "bytes": 2965694,
+      "sha256": "90aa463572fbdb27a76c81c3648103ffe57e7a1fd7671773feb90799e3febc03"
+    },
+    {
+      "path": "assets/portraits/kt-ws-packleader.jpg",
+      "bytes": 2973776,
+      "sha256": "06ecc6b4c37d812a5d48214582f9c8989164981567b64132ffbf8e5b86149aa7"
+    },
+    {
+      "path": "assets/portraits/kt-ws-skjald.jpg",
+      "bytes": 3069766,
+      "sha256": "f7dbbea841c52615efd015a611e5d3890e19e16d4f33ab5eb9cc32445dce8aa5"
+    },
+    {
+      "path": "assets/portraits/kt-ws-trapmaster.jpg",
+      "bytes": 2978650,
+      "sha256": "6397103ac0480908433c6ecf98a05228992b405bd76c6da2b53b6fbf796c46e7"
+    },
+    {
+      "path": "assets/portraits/kt-ws-wolf.jpg",
+      "bytes": 3013852,
+      "sha256": "4fa30c1c7a8e01d5f01357c2751429fb2e2b60931b46d27f02388b157651c29c"
+    },
+    {
+      "path": "assets/title-screen.png",
+      "bytes": 3303121,
+      "sha256": "fc36f016815134124eabc97d8ae3f261f645640ece12b85f4dd09c6b49d2546d"
+    },
+    {
       "path": "auspex-rules.js",
-      "bytes": 10852,
-      "sha256": "832374f13515f4cba8b7c67b148f479043e73ee4ba805408a0a4c8590a493eee"
+      "bytes": 10870,
+      "sha256": "87d72d22eca08e39fe22bf201bfa8501f9af9b8b873338b3c4466d1551b9115c"
     },
     {
       "path": "battlefield.js",
@@ -153,8 +578,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 201711,
-      "sha256": "28e2c5dda5da1c92e8382f6372a95239bdfce8839faf7a1390e583d83bdbc4f2"
+      "bytes": 226345,
+      "sha256": "a1193053c6b37979f71c0aa8c024abf3235665c9fb0863807a18d40b09d05d82"
     },
     {
       "path": "killteam_data.js",
@@ -173,8 +598,8 @@
     },
     {
       "path": "pixel-tactics.js",
-      "bytes": 30080,
-      "sha256": "34ba309dcd781337929fee669f453760308866defa9e81ffed301243d38f14f7"
+      "bytes": 31269,
+      "sha256": "839f9be2255f92471b25d0142bea3d6a89bfef7fdd9cb0f80c8789633ae1b4ef"
     },
     {
       "path": "PUBLICAR.md",

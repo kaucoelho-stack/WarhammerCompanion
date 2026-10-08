@@ -38,7 +38,7 @@
       const ab=abilitiesOf(op);
       if(key==='vsp'&&!/drone/i.test(op.name||''))ab.push({n:'Fly',d:'Pode atravessar terreno durante ações de movimento.',fly:1});
       return{id:safeId(op.id),sourceId:op.id,n:op.name,ico:(op.name||'?').trim()[0].toUpperCase(),
-        apl:number(op.APL)||2,ga:number(op.GA)||1,df:number(op.DF)||3,mv:number(op.M)||6,sv:number(op.SV)||5,w:number(op.W)||7,
+          apl:number(op.APL)||2,ga:key==='aod'?1:(number(op.GA)||1),df:number(op.DF)||3,mv:number(op.M)||6,sv:number(op.SV)||5,w:number(op.W)||7,
         wpn:weapons,abl:ab,expendable:ab.some(a=>a.expendable),engine:{sourceTeam:team.id}}
   }
   function leaderIds(team){

@@ -480,20 +480,117 @@ button:focus-visible{outline:3px solid #8be4ff;outline-offset:3px}
 button:disabled{opacity:.45;cursor:not-allowed}
 .score-item small{font-size:11px}.score-item b{font-size:19px}
 @media(max-width:600px){.roster-actions{flex-wrap:wrap}.roster-actions .btn{flex-basis:45%}.roster-actions .confirm{flex-basis:100%}}
+.operative-panel{display:flex;align-items:center;gap:12px;width:100%;padding:10px;background:#102331;border:1px solid #365369;border-radius:8px;font-size:14px;line-height:1.5}
+.operative-panel img{width:60px;height:66px;object-fit:contain;background:#08121b;border-radius:6px}
+.operative-panel small{color:var(--txt2)}
+.action-reason{display:block;white-space:normal;max-width:180px;font-size:11px;margin-top:5px;line-height:1.3}
+#acts .btn:disabled{opacity:.65}
+.movement-summary{width:100%;padding:10px;color:#bdebdc;font-size:13px;line-height:1.5;background:#10272a;border-radius:6px}
+#operative-rail{position:absolute;left:8px;top:58px;bottom:32px;z-index:24;width:76px;overflow-y:auto;overscroll-behavior:contain;padding:4px;background:#08131bd9;border:1px solid #496172;border-radius:8px;scrollbar-width:thin}
+#operative-rail[hidden],#operative-rail [hidden]{display:none}
+.rail-team{font-size:10px;text-align:center;color:var(--p1);padding:8px 0 4px}.rail-team.enemy{color:var(--p2)}
+.rail-op{position:relative;display:block;width:100%;min-height:66px;margin:4px 0;padding:3px;background:#142535;border:2px solid transparent;border-radius:5px;color:#fff;cursor:pointer}
+.rail-op img{display:block;width:100%;height:48px;object-fit:contain}.rail-op.spent img{filter:grayscale(1);opacity:.55}.rail-op.casualty img{filter:grayscale(1);opacity:.25}
+.rail-op.selected{border-color:#ffd477;background:#3b3422}.rail-op:focus-visible{outline:3px solid #fff}.rail-op:hover{border-color:#a8cada}
+.rail-state{position:absolute;right:3px;top:2px;padding:1px 3px;background:#08131be8;font-size:12px}.rail-hp{display:block;font-size:10px}.rail-fallback{display:block;font-size:24px;height:48px}
+@media(max-width:600px){#operative-rail{width:54px;left:4px;top:62px}.rail-op{min-height:56px}.rail-op img,.rail-fallback{height:36px}.rail-team{font-size:9px}}
+.tactics-menu,.tactics-controls{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tactics-menu .btn{text-align:left;min-height:44px;font-size:14px;white-space:normal}
+.tactics-heading{color:#f8d68e;font-size:13px;letter-spacing:2px;padding:8px 4px;border-bottom:1px solid #786344}
+.tactics-description{font-size:12px;color:#b5c8d6;line-height:1.5;padding:8px 4px}
+.tactics-category{display:flex;justify-content:space-between;align-items:center}
+.tactics-category:hover,.tactics-category:focus-visible{border-color:#f8d68e!important;color:#ffe1a0}
+.tactics-controls>.btn{min-height:44px;white-space:normal}
+@media(min-width:901px) and (min-height:650px){
+  #panel.tactics-hud{position:absolute;inset:auto 12px 8px 96px;z-index:26;border:0;background:none;box-shadow:none;pointer-events:none;overflow:visible;max-height:none;display:grid;grid-template-columns:minmax(0,340px) 290px;grid-template-rows:1fr auto;justify-content:space-between;gap:6px 16px;align-items:end}
+  .tactics-hud #msg{grid-column:1;grid-row:1;max-width:100%;max-height:120px;overflow-y:auto;background:#08131bee;border:1px solid #365369;border-radius:6px;pointer-events:auto}
+  .tactics-hud #acts,.tactics-hud #acts>.tactics-controls{display:contents}
+  .tactics-hud .operative-panel{grid-column:1;grid-row:2;width:100%;max-width:none;pointer-events:auto;box-shadow:0 8px 24px #0009}
+  .tactics-hud .operative-panel img{width:82px;height:92px}
+  .tactics-hud #acts>.tactics-controls{display:flex;grid-column:2;grid-row:1 / 3;width:290px;max-height:52vh;overflow-y:auto;padding:12px;background:linear-gradient(145deg,#1a3043f5,#0a1521fa);border:1px solid #8b7956;border-radius:8px;pointer-events:auto;box-shadow:0 8px 24px #0009}
+}
+@media(max-width:900px),(max-height:649px){.tactics-hud #acts{display:flex;flex-direction:column}.tactics-controls{width:100%}.tactics-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.tactics-heading,.tactics-description{grid-column:1/-1}.tactics-hud .operative-panel img{height:48px;width:48px}}
+.title-screen.art-title{background:#090809}.art-title::before,.art-title::after{display:none}
+.title-art{position:relative;width:min(100vw,177.683vh);aspect-ratio:1672 / 941;background:url('assets/title-screen.png') center/100% 100% no-repeat}
+.title-hotspot{position:absolute;top:86.1%;height:7.2%;border:2px solid transparent;background:transparent;border-radius:8px;cursor:pointer;color:transparent}
+.title-hotspot:hover,.title-hotspot:focus-visible{background:#ffd67720;border-color:#ffd677;box-shadow:0 0 24px #e9933070;outline:2px solid #fff8}
+.title-hotspot.start{left:24.5%;width:17%}.title-hotspot.options{left:42.5%;width:16%}.title-hotspot.quit{left:59%;width:16%}
+.title-dialog{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,92vw);max-height:85vh;overflow:auto;padding:24px;background:#101921f5;border:1px solid #be9a59;border-radius:10px;box-shadow:0 15px 80px #000;color:#f5e4bf}.title-dialog[hidden]{display:none}.title-dialog h2{margin-top:0}.title-dialog .btn{min-height:44px;margin-top:10px}.title-dialog p{line-height:1.6}
+@media(max-width:700px) and (orientation:portrait){.title-hotspot{top:100%;height:48px;margin-top:16px;color:#f5dfac;background:#1d1811;border:1px solid #997c42;font-size:12px}.title-hotspot.start{left:3%;width:32%}.title-hotspot.options{left:37%;width:29%}.title-hotspot.quit{left:68%;width:29%}}
+/* Grimdark interface: real controls, separate from the illustration. */
+:root{--bg:#121111;--panel:#211f1e;--panel2:#2b2725;--line:#514942;--line2:#716258;--txt:#e6dfcd;--txt2:#b8afa3;--mut:#92877c;--p1:#d2c4ac;--p2:#bb7975;--ok:#a5b78e;--bad:#e38b82;--warn:#d9b79a;--fd:'Courier New',monospace;--fb:'Courier New',monospace}
+.title-screen.art-title{background:#101010;isolation:isolate;overflow-y:auto;justify-content:flex-start}
+.title-art{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;background:linear-gradient(90deg,#0d0c0bea 0%,#100e0c88 35%,transparent 68%),url('assets/grimdark-title-v2.png') center/cover no-repeat;image-rendering:pixelated;z-index:-1}
+.grim-title-menu{width:min(460px,88vw);margin:48px 0 48px clamp(24px,7vw,120px);padding:24px 0;color:#e6dfcd}
+.grim-title-menu .edition{font-size:11px;letter-spacing:3px;color:#c29d91;border-left:4px solid #8b3434;padding-left:12px;margin-bottom:24px}
+.grim-title-menu h1{font:900 clamp(48px,7vw,90px)/1 'Courier New',monospace;letter-spacing:-4px;text-shadow:4px 4px #171010,6px 6px #713232;margin:0}
+.grim-title-menu h1 span{display:block;font-size:20px;letter-spacing:7px;line-height:2;color:#b9ada0;text-shadow:2px 2px #171010}
+.grim-title-menu p{font-size:13px;line-height:1.7;max-width:330px;color:#afa69c;margin:20px 0 30px}
+.grim-title-menu .title-hotspot{position:relative;display:flex;align-items:center;justify-content:space-between;left:auto;top:auto;width:100%;height:auto;min-height:56px;margin:12px 0;padding:16px 20px;color:#e6dfcd;background:#211d1be8;border:2px solid #766659;border-radius:0;box-shadow:4px 4px #080707,inset 0 2px #ffffff10;font-weight:bold;font-size:16px;text-align:left;letter-spacing:1px}
+.grim-title-menu .title-hotspot.start{background:#542524;border-color:#a66b60}.grim-title-menu .title-hotspot::after{content:'›';font-size:24px;color:#ad9688}
+.grim-title-menu .title-hotspot:hover,.grim-title-menu .title-hotspot:focus-visible{background:#713431;border-color:#e6dfcd;outline:2px solid #e6dfcd;outline-offset:3px;box-shadow:4px 4px #080707;transform:none}
+.grim-title-menu footer{font-size:10px;line-height:1.8;color:#a29588;margin-top:28px;max-width:360px}
+.title-dialog{background:#1e1a18fa;border:3px double #958170;border-radius:0;box-shadow:8px 8px #080707;color:#e6dfcd}
+.btn,.mode-btn,.roster-op,.wpn,.abl,.pchip,.quit-match,.rail-op,.operative-panel,.tactics-menu{border-radius:0!important}
+.btn,.mode-btn{background:#292321!important;border:1px solid #776459!important;color:#e6dfcd!important;box-shadow:2px 2px #0a0808!important;text-shadow:none!important}
+.btn.pri,.mode-btn.ai{background:#602c2a!important;border-color:#bd8170!important;color:#f0e3cc!important}
+.btn:hover:not(:disabled),.mode-btn:hover{background:#49322c!important;border-color:#d7c6ad!important;transform:none!important}
+.btn:focus-visible,.mode-btn:focus-visible{outline:2px solid #e6dfcd;outline-offset:3px}
+#top,#scorebar,#panel,#msg,.operative-panel,#operative-rail{background:#1b1816!important;border-color:#66584c!important}
+.tactics-hud #acts>.tactics-controls{background:#201b18f5!important;border-color:#807060!important;border-radius:0!important}
+#panel.tactics-hud{background:transparent!important}.tactics-heading{color:#dac9b0;border-color:#786456}.tactics-description,.operative-panel small{color:#b8afa3}
+.tactics-category:hover,.tactics-category:focus-visible{color:#fff0db!important;border-color:#bb7b6b!important}
+.rail-op.selected{border-color:#e1cdb2;background:#54312b}.rail-team,.rail-team.enemy{color:#d4b6a5}
+@media(max-width:700px){.title-art{background-position:62% center}.grim-title-menu{margin:24px auto;padding:20px;background:#100e0bc9;width:90vw}.grim-title-menu h1{font-size:56px}.grim-title-menu .title-hotspot{min-height:52px;font-size:14px}.grim-title-menu p{margin:12px 0 20px}}
+@media(max-height:560px) and (min-width:701px){.grim-title-menu{margin:14px 0 14px 5vw;padding:0;width:340px}.grim-title-menu h1{font-size:48px}.grim-title-menu .edition,.grim-title-menu p{margin-bottom:10px}.grim-title-menu .title-hotspot{min-height:44px;padding:10px 16px;margin:8px 0}.grim-title-menu footer{margin-top:12px}}
+.setup-screen>#top,.setup-screen>#scorebar,.setup-screen>#maptools,.setup-screen>#boardwrap,.setup-screen>#panel{display:none!important}
+.setup-screen{background:#141110 url('assets/grimdark-title-v2.png') center/cover fixed}
+.setup-screen .ov{background:#110e0de8;backdrop-filter:none;align-items:stretch;padding:clamp(12px,3vw,40px)}
+.setup-screen .sheet{max-width:1400px;max-height:none;height:100%;border:2px solid #766254;background:#1b1715f5;border-radius:0;box-shadow:8px 8px #0009}
+.sheet{background:#211c19;border:1px solid #796452;border-radius:0;color:#e6dfcd}.shd{background:#28201b;border-color:#796452}.shd h3{font-size:20px;font-weight:bold}.shb{font-size:14px;line-height:1.5}
+.setup-screen .shb{padding:24px}.setup-screen .tlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.setup-screen .trow{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:12px;background:#29211d;border:2px solid #665548;border-radius:0;text-align:left;transition:none}
+.setup-screen .trow:hover,.setup-screen .trow:focus-visible{border-color:#e4cdb0;background:#482a25;outline:2px solid #b57363;outline-offset:2px}
+.army-portrait{width:100%;height:180px;object-fit:contain;background:#120f0e;image-rendering:auto}.tn{color:#ead9c0;font-size:16px}.td{font-size:12px;color:#c2b1a2}
+.setup-screen .roster-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));max-height:none;overflow:visible;gap:12px}
+.setup-screen .roster-op{display:flex;flex-direction:column;background:#28211c;border:2px solid #5c4e43;padding:12px;align-items:stretch}.setup-screen .roster-op.chosen{border-color:#bc8d77;background:#392823;box-shadow:inset 0 0 0 2px #170f0b}
+.recruit-portrait{height:160px;width:100%;object-fit:contain;background:#100e0c}.setup-screen .roster-info b{white-space:normal;font-size:14px}.setup-screen .roster-info small{font-size:12px}.setup-screen .roster-step{justify-content:space-between;margin-top:auto;padding-top:12px}.roster-step button{min-width:44px;min-height:44px;background:#4d3029;border-color:#977460;color:#f1dec8}.roster-tags i{color:#cfbba1;border-color:#735c49;background:#261d18}
+.roster-head{background:#261e19;border-color:#7a6250}.roster-total,.roster-head strong{color:#e4cdb0!important}.roster-actions{position:sticky;bottom:0;background:#1b1512;padding:12px;border-top:1px solid #88705b;z-index:2}
+.battlefield-card-art{display:block;width:100%;max-height:45vh;object-fit:contain;background:#100f0e}.setup-screen .kzgrid{display:block;max-width:850px;margin:24px auto}.setup-screen .kzcard{width:100%;background:#282019;border:2px solid #957963;border-radius:0;padding:18px}.kzcard strong{color:#e6ccb0!important;font-size:22px}.kzcard small,.kzcard em{color:#c8b6a2}
+.ploy,.plc,.stat,.abl,.wpn{background:#2b231d;border-color:#715d4b;color:#dccbb5;border-radius:0}.plc.dis{opacity:.75}.plc .pn,.plc .pd,.cpb{color:#dccbb5}.cpb{background:#423025;border-color:#836650}
+@media(max-width:600px){.setup-screen .shb{padding:12px}.setup-screen .tlist,.setup-screen .roster-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.army-portrait,.recruit-portrait{height:110px}.setup-screen .trow{padding:8px}.shd h3{font-size:16px}.roster-actions{display:flex;flex-wrap:wrap}}
+.setup-screen .roster-op{min-width:0;box-sizing:border-box}
+.setup-screen .roster-step{grid-template-columns:44px minmax(0,1fr) 44px;width:100%;min-width:0;box-sizing:border-box;gap:4px}
+.setup-screen .roster-step button{width:44px;box-sizing:border-box}
+.army-card{position:relative;min-width:0;display:flex;flex-direction:column;border:1px solid #735c49;background:#211c19}
+.setup-screen .army-card .trow{width:100%;flex:1;border:0;box-sizing:border-box;min-width:0}
+.army-card .army-help{align-self:flex-end;margin:8px;min-width:44px}
+.army-card .td{line-height:1.65;padding-top:8px;color:#d5c7b7}
 </style>
 </head>
 <body>
-<div class="title-screen on" id="title-screen">
-  <div class="title-core">
-    <div class="title-kicker">TACTICAL SIMULATION SUITE</div>
-    <h1>AUSPEX<span>Pátio de Ferro</span></h1>
-    <div class="title-sub">Monte sua equipe, use as coberturas e dispute três objetivos. Uma batalha tática em quatro rodadas, contra a IA ou um amigo no mesmo aparelho.</div>
+<div class="title-screen art-title on" id="title-screen" aria-label="Auspex Test Team — menu inicial">
+  <div class="title-art" aria-hidden="true"></div>
+  <main class="grim-title-menu">
+    <div class="edition">SIMULADOR DE COMBATE TÁTICO</div>
+    <h1>AUSPEX<span>TEST TEAM</span></h1>
+    <p>Entre ruínas e cinzas, cada ordem importa.<br>Seu esquadrão. Sua missão.</p>
+    <button class="title-hotspot start" aria-label="Iniciar missão" onclick="openTitleDialog('mission')">INICIAR MISSÃO</button>
+    <button class="title-hotspot options" aria-label="Opções" onclick="openTitleDialog('options')">OPÇÕES</button>
+    <button class="title-hotspot quit" aria-label="Sair" onclick="openTitleDialog('quit')">SAIR</button>
+    <footer>PÁTIO DE FERRO · 3 OBJETIVOS<br>VERSÃO DE TESTES · REGRAS PARCIALMENTE AUTOMATIZADAS</footer>
+  </main>
+  <section class="title-dialog" id="title-mission" role="dialog" aria-label="Escolher modo de jogo" hidden>
+    <h2>Iniciar missão</h2>
     <div class="mode-grid">
       <button class="mode-btn ai" onclick="chooseGameMode('ai')"><i>01</i><b>1 JOGADOR vs IA</b><small>Enfrente o controlador tático AUSPEX. A IA seleciona, posiciona, move, atira, luta e disputa objetivos.</small></button>
       <button class="mode-btn" onclick="chooseGameMode('pvp')"><i>02</i><b>2 JOGADORES · VS</b><small>Partida local no mesmo aparelho, com escolhas e ativações alternadas.</small></button>
     </div>
-    <div class="title-foot">PÁTIO DE FERRO · 3 OBJETIVOS · REGRAS PARCIALMENTE AUTOMATIZADAS · 4 TURNING POINTS</div>
-  </div>
+    <p>Pátio de Ferro · 3 objetivos · Regras parcialmente automatizadas.</p>
+    <button class="btn" onclick="openTitleDialog()">← VOLTAR</button>
+  </section>
+  <section class="title-dialog" id="title-options" role="dialog" aria-label="Opções" hidden><h2>Opções</h2><p>Durante a partida, use os controles do mapa para girar, ajustar o zoom e exibir a grade. As animações de feedback respeitam a preferência de movimento reduzido do seu dispositivo.</p><button class="btn" onclick="toggleTitleFullscreen()">ALTERNAR TELA CHEIA</button><button class="btn" onclick="openTitleDialog()">← VOLTAR</button></section>
+  <section class="title-dialog" id="title-quit" role="dialog" aria-label="Sair" hidden><h2>Sair do Test Team</h2><p>Você pode fechar esta aba para sair. O navegador não permite que o jogo feche uma aba aberta por você.</p><button class="btn" onclick="openTitleDialog()">VOLTAR AO MENU</button></section>
 </div>
 <div id="top">
   <div id="tp">TP <b id="tpn">1</b>/4</div>
@@ -514,6 +611,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
   <button type="button" onclick="zoomBoard(4)" aria-label="Aumentar mapa">+</button>
 </div>
 <div id="boardwrap">
+  <nav id="operative-rail" aria-label="Operativos por equipe — não representa ordem de ativação" hidden></nav>
   <div id="kzname">▦ Distrito Volkus</div>
   <div class="maplegend" aria-label="Legenda do mapa">
     <span><i class="lg-light"></i> COBERTURA LEVE</span>
@@ -1396,12 +1494,15 @@ function checkElimination(){
   return true;
 }
 /* ═══════════════ FLUXO DO JOGO ═══════════════ */
-function showTitle(){document.getElementById('title-screen').classList.add('on');msg('Escolha um modo de jogo para iniciar.');}
+function openTitleDialog(name){for(const id of ['mission','options','quit'])document.getElementById('title-'+id).hidden=id!==name;}
+async function toggleTitleFullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{}}
+function showTitle(){openTitleDialog();document.getElementById('title-screen').classList.add('on');msg('Escolha um modo de jogo para iniciar.');}
 function chooseGameMode(mode){
   G.gameMode=mode;G.ai=1;P(0).n=mode==='ai'?'Comandante':'Jogador 1';P(1).n=mode==='ai'?'IA AUSPEX':'Jogador 2';
   document.getElementById('title-screen').classList.remove('on');startSelect();
 }
 function startSelect(){
+  document.body.classList.add('setup-screen');
   G.phase='killzone';G.selIdx=0;
   showKillzonePicker();
 }
@@ -1409,22 +1510,43 @@ function showKillzonePicker(){
   openOv('1 · Campo de batalha',`<div class="kzintro">Pátio de Ferro · 30 × 22 polegadas · 3 objetivos. Selecione o mapa para continuar à escolha das equipes.</div>
     <div class="kzgrid">${Object.entries(KILLZONES).map(([id,k])=>`
       <button class="kzcard" data-kz="${id}" onclick="pickKillzone('${id}')" style="--kz:${k.tone}">
-        <div class="kzpreview"><i></i><i></i><i></i><span>${k.ico}</span></div>
+        <img class="battlefield-card-art" src="assets/battlefield-menu.png" alt="Vista do Pátio de Ferro">
         <strong>${k.name}</strong><small>${k.sub}</small><em>${k.objs.length} objetivos · ${k.indoor?'paredes Wall absolutas, sem escalada':'paredes escaláveis pela altura real'}</em>
       </button>`).join('')}</div>`,true);
 }
 function pickKillzone(id){
-  applyKillzone(id);G.killzone=id;G.phase='select';closeOv();render();
+  G.killzone=id;G.phase='select';closeOv();
   setTimeout(()=>showTeamPicker(0),180);
+}
+const TEAM_PITCH={
+ aod:'Space Marines versáteis: a precisão do bolter, a fúria da lâmina. Nenhuma distância oferece abrigo.',
+ pmr:'Death Guard de resistência implacável. Eles não precisam correr: a ruína sempre chega.',
+ kom:'Infiltradores Orks brutais. Quando você ouvir a risada, a emboscada já começou.',
+ pth:'Batedores T’au de fogo coordenado. Marque o alvo. Apague sua existência.',
+ int:'Uma linha de batalha em cada guerreiro. Poucos irmãos, poder de fogo devastador.',
+ tyr:'Predadores da Mente-Colmeia. Não há medo, não há piedade — apenas a caçada.',
+ wlf:'Caçadores de Fenris, aço e presas na mesma matilha. O inverno chegou para sua presa.',
+ krg:'Soldados de Krieg: disciplina, números e sacrifício. Cada passo é pago; nenhum é devolvido.',
+ leg:'Veteranos do Caos, forjados em guerra eterna. Dez mil anos de ódio apontados para você.',
+ nmc:'Caçadores da noite que transformam terror em arma. A escuridão tem dentes.',
+ dwt:'Especialistas da Deathwatch. Conheça o inimigo. Escolha a arma. Cumpra a sentença.',
+ bld:'Traidores famintos por glória sombria. O sangue derramado é só o começo.',
+ mnd:'Assassinos das sombras. Entre o último suspiro e a escuridão, eles já passaram.',
+ vsp:'Caçadores alados de ataque veloz. A morte não pede passagem: vem do céu.',
+ hoa:'Saqueadores Drukhari de ambição cruel. Sua dor é o tributo; a vitória, apenas o começo.'
+};
+function showTeamDetails(pi,k){
+ const t=TEAMS[k];if(!t)return;
+ openOv(`${t.name} — dossiê`, `<p>${TEAM_PITCH[k]||t.fac}</p><h3>${t.fac} · ${t.limit} escolhas</h3><p>${k==='wlf'?'1 Lobo Fenrisiano obrigatório + 5 scouts. Pack Leader opcional.':k==='kom'?'1 líder. Grot e Bomb Squig ocupam meia escolha cada.':'Inclua 1 líder e respeite os limites de cada operativo.'}</p><h3>${t.rule.n}</h3><p>${t.rule.d}</p><h3>Operativos disponíveis</h3>${t.catalog.map(o=>`<p><b>${o.n}</b> — ${o.w} PV · ${o.apl} APL · proteção ${o.sv}+ · máximo ${o.max}${o.min?' · obrigatório':''}<br>${(o.abl||[]).map(a=>`${a.n}: ${a.d||''}`).join('<br>')}</p>`).join('')}<p>Regras especiais parcialmente implementadas. Este dossiê descreve o cadastro do app, não substitui as regras oficiais. Algumas equipes ainda utilizam sprites substitutos.</p><button class="btn" onclick="showTeamPicker(${pi})">← VOLTAR À SELEÇÃO</button>`,true);
 }
 function showTeamPicker(pi){
   openOv(`${P(pi).n} — escolha o kill team`,
-    `<p style="padding:0 0 12px;color:var(--txt2)">Para jogar com os sprites já criados, escolha <b>Angels of Death</b> ou <b>Kommandos</b>. Pode usar a mesma equipe nos dois lados. Os Boys alternam entre duas artes. Outros times usam substitutos onde ainda não há arte.</p><div class="tlist">${Object.entries(TEAMS).map(([k,t])=>`
+    `<p>Escolha quem levará sua bandeira à batalha. Use ? para consultar o dossiê. Regras especiais parciais; alguns times usam sprites substitutos.</p><div class="tlist">${Object.entries(TEAMS).map(([k,t])=>`<article class="army-card">
       <button class="trow" onclick="pickTeam(${pi},'${k}')">
-        <div class="ic" style="border-color:${t.col};color:${t.col}">${t.ico}</div>
+        <img class="army-portrait" src="assets/portraits/${t.catalog.find(o=>o.leader)?.sourceId||t.catalog[0]?.sourceId}.jpg" alt="${t.name}" onerror="this.hidden=true">
         <div><div class="tn">${t.name}${['aod','kom'].includes(k)?' <small>· PIXEL ART</small>':''}</div>
-        <div class="td">${t.fac} · ${t.limit} escolhas · ${k==='wlf'?'1 Lobo Fenrisiano obrigatório + 5 scouts; Pack Leader opcional':k==='kom'?'1 líder; Grot e Bomb Squig valem meia escolha cada':'1 líder'}<br><span style="color:${t.col}">${t.rule.n}:</span> ${t.rule.d}<br><em>Regras parciais — composição e efeitos especiais ainda em auditoria.</em></div></div>
-      </button>`).join('')}</div>`,true);
+        <div class="td">${TEAM_PITCH[k]||t.fac}</div></div>
+      </button><button class="btn army-help" aria-label="Detalhes de ${t.name}" onclick="showTeamDetails(${pi},'${k}')">?</button></article>`).join('')}</div>`,true);
 }
 function pickTeam(pi,k){showRosterBuilder(pi,k,true);}
 function showRosterBuilder(pi,k,reset=false){
@@ -1432,7 +1554,7 @@ function showRosterBuilder(pi,k,reset=false){
   const counts=G.rosterDraft.counts,check=RULES.validateRoster(t,counts),errorText=check.valid?'FORMAÇÃO ACEITA PELO CADASTRO · REGRAS ESPECIAIS PARCIAIS':check.errors.join(' · ');
   openOv(`${P(pi).n} — montar ${t.name}`,`<div class="roster-head" style="--team:${t.col}"><div><strong>${t.ico} ${t.name}</strong><small>${t.fac} · ${k==='wlf'?'1 lobo obrigatório + 5 scouts':k==='kom'?'Grot + Bomb Squig ocupam uma escolha juntos':'escolha os operativos antes da batalha'}</small></div><div class="roster-total ${check.valid?'':'bad'}">${check.selections}/${t.limit}<span>ESCOLHAS · ${check.total} OPERATIVOS · ${check.leaders}/1 LÍDER${k==='wlf'?' OPCIONAL':''}</span></div></div>
     <div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,full=check.selections+(o.selectionCost||1)>t.limit,canPlus=n<o.max&&(o.leader||!full),weapon=o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
-      <div class="roster-icon">${o.ico}</div><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.min?'<i>OBRIGATÓRIO</i>':''}${o.leader?`<i class="leader">LÍDER · ${k==='wlf'?'OPCIONAL':'ESCOLHA 1'}</i>`:''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
+      <img class="recruit-portrait" src="assets/portraits/${o.sourceId}.jpg" alt="${o.n}" onerror="this.hidden=true"><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.min?'<i>OBRIGATÓRIO</i>':''}${o.leader?`<i class="leader">LÍDER · ${k==='wlf'?'OPCIONAL':'ESCOLHA 1'}</i>`:''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
       <div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n>(o.min||0)?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
     <div class="roster-errors ${check.valid?'ok':''}">${errorText}</div><div class="roster-actions"><button class="btn" onclick="showTeamPicker(${pi})">← TROCAR TIME</button><button class="btn" onclick="recommendedRoster()">FORMAÇÃO RECOMENDADA</button><button class="btn pri confirm" onclick="confirmRoster()" ${check.valid?'':'disabled'}>${pi===0?'CONFIRMAR EQUIPE → ADVERSÁRIO':'INICIAR POSICIONAMENTO'}</button></div>`,true);
 }
@@ -1454,11 +1576,15 @@ function confirmRoster(){
   const d=G.rosterDraft;if(!d)return;const t=TEAMS[d.k],check=RULES.validateRoster(t,d.counts);if(!check.valid)return showRosterBuilder(d.pi,d.k,false);
   const pi=d.pi,k=d.k;setPlayerRoster(pi,k,d.counts);G.rosterDraft=null;closeOv();
   if(pi===0&&G.gameMode==='ai'){
-    msg(`<b>Escolha também a equipe da IA.</b> Angels of Death e Kommandos têm nossas artes em pixel art.`);
-    setTimeout(()=>showTeamPicker(1),200);
+    const candidates=Object.entries(TEAMS).filter(([,team])=>RULES.validateRoster(team,RULES.defaultSelection(team)).valid);
+    const [enemyKey,enemy]=candidates[Math.floor(Math.random()*candidates.length)];
+    setPlayerRoster(1,enemyKey,RULES.defaultSelection(enemy));
+    startDeploy();
+    msg(`<b>Adversário revelado: ${enemy.name}.</b> ${deploymentPrompt(0)}`);
   }else if(pi===0)setTimeout(()=>showTeamPicker(1),200);else startDeploy();
 }
 function startDeploy(){
+  applyKillzone(G.killzone||'modular');document.body.classList.remove('setup-screen');
   G.phase='deploy';G.cur=0;G.ops=[...P(0).ops,...P(1).ops];
   msg(deploymentPrompt(0));
   render();
@@ -1557,6 +1683,7 @@ function usePloy(pi,id){
   return true;
 }
 function endStrategy(){
+  if(G.phase!=='strategy')return;
   closeOv();G.phase='firefight';G.cur=G.init;
   nextActivation();
 }
@@ -1729,8 +1856,19 @@ function commitActivation(op){
 }
 function beginActivation(){
   const op=G.sel;if(!op||activationCommitted(op))return;
+  op.cancelStart=(!G.counterMode&&!op.poisoned&&!op.terrorchem&&!op.aplPenalty)?{ap:op.ap,hp:op.hp,order:op.order,x:op.x,y:op.y,z:zOf(op)}:null;
   if(!commitActivation(op))return;
   render();msg(`<b class="hl">${op.n} ativado.</b> Agora as ações pertencem somente a ele até você encerrar a ativação.`);
+}
+function canCancelActivation(op){
+  const s=op?.cancelStart;
+  return !!(s&&G.phase==='firefight'&&activationCommitted(op)&&!humanInputLocked()&&!G.fightResolving&&!G.pendingReposition&&!G.mode&&!op._countering&&!op.orderLocked&&!op.usedActs.length&&op.ap===s.ap&&op.hp===s.hp&&op.x===s.x&&op.y===s.y&&zOf(op)===s.z);
+}
+function cancelActivation(){
+  const op=G.sel;if(!canCancelActivation(op)){msg('A ativação só pode ser cancelada antes de qualquer ação ou efeito resolvido.');return false;}
+  op.order=op.cancelStart.order;op.activationStarted=false;op.cancelStart=null;
+  G.sel=null;G.mode=null;G.moveCells=[];G.targets=[];render();
+  msg('Ativação cancelada sem gastar AP. Escolha outro operativo.');return true;
 }
 function clearInspection(){
   if(activationCommitted(G.sel))return;G.sel=null;G.mode=null;G.moveCells=[];G.targets=[];render();
@@ -2049,7 +2187,53 @@ function updTop(){
   });
 }
 function msg(s){document.getElementById('msg').innerHTML=s;}
+function movementSummary(cell){
+  const path=movementPath(cell);let up=0,down=0;
+  for(let i=1;i<path.length;i++){const dz=path[i].z-path[i-1].z;up+=Math.max(0,dz);down+=Math.max(0,-dz);}
+  return `Percurso total: ${cell.d.toFixed(1)}″ · Subidas: ${up.toFixed(1)}″ · Descidas: ${down.toFixed(1)}″ · Destino: altura ${cell.z||0}″. O total já inclui os custos do terreno; não some a altura novamente.`;
+}
+function operativePanel(op){
+  const id=op.templateId||op.sourceId;
+  return `<section class="operative-panel"><img src="assets/portraits/${id}.jpg" alt="Retrato de ${op.n}" onerror="this.hidden=true"><div><b>${op.n}</b><div>${op.hp}/${op.maxhp} PV · ${op.ap} AP · ${op.order==='conceal'?'Oculto (Conceal)':'Pronto para atacar (Engage)'}</div><meter min="0" max="${op.maxhp}" value="${Math.max(0,op.hp)}" aria-label="Vida de ${op.n}" style="width:100%;height:12px"></meter><small>${op.hp<op.maxhp/2?'Ferido · ':''}Altura ${zOf(op)}″ · ${op.activated?'Ativação concluída':activationCommitted(op)?'Em ativação':'Em inspeção'}</small></div></section>`;
+}
+function renderOperativeRail(){
+  const rail=document.getElementById('operative-rail');
+  rail.hidden=!['strategy','firefight'].includes(G.phase);
+  if(rail.hidden){rail.innerHTML='';return;}
+  rail.innerHTML=[0,1].map(pi=>`<div class="rail-team ${pi?'enemy':''}">EQUIPE ${pi+1}</div>`+G.ops.filter(o=>o.pi===pi).map(o=>{
+    const state=o.dead?'Incapacitado':o.activated?'Já ativado':G.sel===o&&activationCommitted(o)?'Em ativação':'Disponível';
+    return `<button type="button" class="rail-op ${o.activated?'spent':''} ${o.dead?'casualty':''} ${G.sel===o?'selected':''}" aria-label="${o.n} — ${state} — ${o.hp}/${o.maxhp} PV" aria-pressed="${G.sel===o}" title="${o.n} · ${state}" onclick="inspectRailOperative('${o.id}')"><img src="assets/portraits/${o.templateId||o.sourceId}.jpg" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="rail-fallback" hidden>${o.ico||'?'}</span><span class="rail-state">${o.dead?'✕':o.activated?'✓':G.sel===o?'◆':''}</span><span class="rail-hp">${o.hp}/${o.maxhp}</span></button>`;
+  }).join('')).join('');
+}
+function inspectRailOperative(id){
+  const op=opById(id);if(!op)return;
+  if(G.fightResolving||humanInputLocked()||G.pendingReposition||G.mode){msg('Conclua ou cancele a ação atual antes de usar a lista de operativos.');return;}
+  if(G.phase==='firefight')selectOp(op);else if(G.phase==='strategy')showCard(op);
+}
+let tacticsMenu='main',tacticsMenuOp=null;
+function openTacticsMenu(menu){tacticsMenu=menu;renderActs();}
+function tacticsActions(html){
+  const buttons=html.match(/<button\b[\s\S]*?<\/button>/g)||[];
+  const groups={move:[],attack:[],status:[],objective:[],end:[]};
+  for(const button of buttons){const group=button.includes('actMove(')?'move':/actShoot\(|actFight\(/.test(button)?'attack':button.includes('actPickUp(')?'objective':button.includes('endActivation(')?'end':'status';groups[group].push(button);}
+  const tips={main:'Escolha uma categoria. Nenhum AP é gasto ao abrir os menus.',move:'Escolha o movimento. Custos e restrições aparecem em cada opção; alturas entram no percurso.',attack:'Escolha tiro ou corpo a corpo. Você revisará a arma e o alvo antes da resolução.',status:'Consulte armas e habilidades ou altere a ordem quando permitido. Habilidades descritas não são necessariamente automatizadas.'};
+  if(canCancelActivation(G.sel))groups.end.push('<button class="btn" onclick="cancelActivation()">Cancelar ativação<small>Voltar à escolha · nenhum AP gasto</small></button>');
+  const category=(id,label)=>`<button class="btn tactics-category" onclick="openTacticsMenu('${id}')">${label}<span>›</span></button>`;
+  return `<div class="tactics-menu"><div class="tactics-heading">${{main:'COMANDOS',move:'MOVIMENTO',attack:'COMBATE',status:'OPERATIVO'}[tacticsMenu]||'COMANDOS'}</div><div class="tactics-description">${tips[tacticsMenu]||tips.main}</div>${tacticsMenu==='main'?category('move','Mover')+category('attack','Atacar')+category('status','Habilidades e status')+groups.objective.join('')+groups.end.join(''):`<button class="btn" onclick="openTacticsMenu('main')">← Voltar</button>`+(groups[tacticsMenu]||[]).join('')}</div>`;
+}
 function renderActs(){
+  renderOperativeRail();
+  renderActsBody();
+  const focused=!!G.sel&&G.phase==='firefight'&&!humanInputLocked();
+  document.getElementById('panel').classList.toggle('tactics-hud',focused);
+  if(tacticsMenuOp!==G.sel?.id||G.mode||G.pendingReposition){tacticsMenu='main';tacticsMenuOp=G.sel?.id;}
+  if(focused&&activationCommitted(G.sel)&&!G.mode&&!G.pendingReposition){const el=document.getElementById('acts');el.innerHTML=tacticsActions(el.innerHTML);}
+  if(G.pendingReposition){const el=document.getElementById('acts');el.innerHTML=`<div class="movement-summary">${movementSummary(G.pendingReposition.cell)} · Custo ao confirmar: 1 AP. Desfazer: nenhum AP gasto.</div>`+el.innerHTML;}
+  if(G.sel&&G.phase==='firefight'&&!humanInputLocked()){
+    const el=document.getElementById('acts');el.innerHTML=operativePanel(G.sel)+`<div class="tactics-controls">${el.innerHTML}</div>`;
+  }
+}
+function renderActsBody(){
   const el=document.getElementById('acts');
   if(G.pendingReposition){const p=G.pendingReposition;el.innerHTML=`<div class="inspect-banner">DESTINO: ${p.cell.z||0}″ · ${p.cell.d.toFixed(1)}″ de movimento · aguardando confirmação</div><button class="btn pri" onclick="confirmReposition()">CONFIRMAR REPOSICIONAMENTO · 1 AP</button><button class="btn" onclick="undoReposition()">↶ DESFAZER MOVIMENTO</button>`;return;}
   if(G.phase!=='firefight'){el.innerHTML='';return;}
@@ -2086,7 +2270,16 @@ function renderActs(){
   const inCR=inEnemyCR(op.x,op.y,op.pi,zOf(op));
   const maxT=RULES.maxAction(op,'shoot',TEAMS),maxF=RULES.maxAction(op,'fight',TEAMS);
   const canShootWeapon=ranged.some(w=>!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w)&&(op.order==='engage'||hasTag(w,'Silent')));
-  const b=(lbl,fn,cost,dis,cls='')=>`<button class="btn ${cls}" ${dis?'disabled':''} onclick="${fn}">${lbl}<span class="ap">${cost}AP</span></button>`;
+  const reason=(fn,cost)=>{
+    if(op.ap<cost)return 'AP insuficientes';
+    if(fn.includes('actShoot'))return !ranged.length?'Sem arma de tiro':inCR?'Inimigo em alcance de controle':op.shotThis>=maxT?'Limite de tiros atingido':'Ordem ou restrição da arma';
+    if(fn.includes('actFight'))return !melee.length?'Sem arma corpo a corpo':!inCR?'Nenhum inimigo em alcance de controle':'Limite de lutas atingido';
+    if(fn.includes('actPickUp'))return actionUsed(op,'objective')?'Ação já utilizada':'Nenhum objetivo elegível';
+    if(fn.includes('fallback')&&!inCR)return 'Não está em alcance de controle';
+    if(inCR&&!fn.includes('fallback'))return 'Precisa recuar do inimigo';
+    return 'Ação já usada ou incompatível com o movimento realizado';
+  };
+  const b=(lbl,fn,cost,dis,cls='')=>`<button class="btn ${cls}" ${dis?'disabled':''} onclick="${fn}">${lbl}<span class="ap">${cost}AP</span>${dis?`<small class="action-reason">${reason(fn,cost)}</small>`:''}</button>`;
   el.innerHTML=
     `<button class="btn" onclick="showCard(opById('${op.id}'))" style="border-color:${op.pi===0?'var(--p1)':'var(--p2)'}">
        ${op.ico} ${op.n} · ${op.hp}/${op.maxhp} PV · ${op.ap} AP</button>`
