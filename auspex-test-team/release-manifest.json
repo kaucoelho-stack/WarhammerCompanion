@@ -3,7 +3,7 @@
   "version": "4",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-08T16:57:10.662Z",
+  "createdAt": "2026-10-08T17:14:48.937Z",
   "validation": "Partial team rules audit; see TEAM-AUDIT.md. Not a complete official rules implementation.",
   "files": [
     {
@@ -120,6 +120,16 @@
       "path": "assets/miniatures/aod/aod-iwarrior.png",
       "bytes": 364985,
       "sha256": "8aa797a8ba53a41431b11311318ef618a3ec75cf189463f764bce80830bff0db"
+    },
+    {
+      "path": "assets/music/battle-loop.ogg",
+      "bytes": 1604064,
+      "sha256": "6620a1a5d1d3a910470d2cf33120393a85e51e0c990a7ba928857e72ed906ed8"
+    },
+    {
+      "path": "assets/music/menu-loop.ogg",
+      "bytes": 2966194,
+      "sha256": "629570ce9055430157ba86e872c338f11a794ae01aab64d5e691628f9c3970e1"
     },
     {
       "path": "assets/pixel/aod-sheets.js",
@@ -578,8 +588,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 226345,
-      "sha256": "a1193053c6b37979f71c0aa8c024abf3235665c9fb0863807a18d40b09d05d82"
+      "bytes": 227170,
+      "sha256": "82cc331a7aaaeb56ef3df1a5e89fd90da66c980689ea9798744b86f2766a06c5"
     },
     {
       "path": "killteam_data.js",
@@ -595,6 +605,11 @@
       "path": "movement-visual.js",
       "bytes": 2002,
       "sha256": "ebdb238b574dcc302d7bca5ae1ae0e40e9abcc7c70f69c8cc5aadebff6bae180"
+    },
+    {
+      "path": "music.js",
+      "bytes": 1890,
+      "sha256": "4e37f49fbf5b48b6853c4ddfab56f6115cf2c0bcff46a369bb5f20998cc3b4d7"
     },
     {
       "path": "pixel-tactics.js",

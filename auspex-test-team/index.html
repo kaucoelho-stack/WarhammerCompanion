@@ -566,6 +566,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .setup-screen .army-card .trow{width:100%;flex:1;border:0;box-sizing:border-box;min-width:0}
 .army-card .army-help{align-self:flex-end;margin:8px;min-width:44px}
 .army-card .td{line-height:1.65;padding-top:8px;color:#d5c7b7}
+#music-controls{position:fixed;right:10px;top:44px;z-index:10000;display:flex;align-items:center;gap:8px;background:#211c19;border:1px solid #796452;padding:5px;color:#e6dfcd;font:12px monospace}#music-volume{width:70px;accent-color:#bc8d77}#music-toggle{background:none;border:0;color:inherit;cursor:pointer;min-height:28px}
 </style>
 </head>
 <body>
@@ -647,6 +648,8 @@ button:disabled{opacity:.45;cursor:not-allowed}
 
 
 
+<aside id="music-controls" aria-label="Música de fundo"><button id="music-toggle" onclick="AuspexMusic.toggle()" aria-label="Silenciar música" aria-pressed="false">MÚSICA: ON</button><input id="music-volume" aria-label="Volume da música" type="range" min="0" max="100" value="25" oninput="AuspexMusic.volume(this.value)"></aside>
+<script src="music.js"></script>
 <script src="battlefield.js"></script>
 <script src="killteam_data.js"></script>
 <script src="auspex-rules.js"></script>
@@ -1496,7 +1499,7 @@ function checkElimination(){
 /* ═══════════════ FLUXO DO JOGO ═══════════════ */
 function openTitleDialog(name){for(const id of ['mission','options','quit'])document.getElementById('title-'+id).hidden=id!==name;}
 async function toggleTitleFullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{}}
-function showTitle(){openTitleDialog();document.getElementById('title-screen').classList.add('on');msg('Escolha um modo de jogo para iniciar.');}
+function showTitle(){window.AuspexMusic?.scene('menu');openTitleDialog();document.getElementById('title-screen').classList.add('on');msg('Escolha um modo de jogo para iniciar.');}
 function chooseGameMode(mode){
   G.gameMode=mode;G.ai=1;P(0).n=mode==='ai'?'Comandante':'Jogador 1';P(1).n=mode==='ai'?'IA AUSPEX':'Jogador 2';
   document.getElementById('title-screen').classList.remove('on');startSelect();
@@ -2108,6 +2111,7 @@ function zoomBoard(delta){
   requestAnimationFrame(()=>focusBoard(Math.max(0,Math.min(W-1,bx)),Math.max(0,Math.min(H-1,by)),false));
 }
 function render(){
+  window.AuspexMusic?.scene(['deploy','strategy','firefight'].includes(G.phase)?'battle':'menu');
   if(window.IsoTactics?.active){window.IsoTactics.render();updTop();updScoreboard();renderActs();return;}
   bd.style.width=W*CS+'px';bd.style.height=H*CS+'px';
   bd.style.setProperty('--grid-size',CS+'px');bd.style.backgroundSize=`${CS}px ${CS}px`;
