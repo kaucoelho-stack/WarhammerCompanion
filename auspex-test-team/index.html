@@ -511,7 +511,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 }
 @media(max-width:900px),(max-height:649px){.tactics-hud #acts{display:flex;flex-direction:column}.tactics-controls{width:100%}.tactics-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.tactics-heading,.tactics-description{grid-column:1/-1}.tactics-hud .operative-panel img{height:48px;width:48px}}
 .title-screen.art-title{background:#090809}.art-title::before,.art-title::after{display:none}
-.title-art{position:relative;width:min(100vw,177.683vh);aspect-ratio:1672 / 941;background:url('assets/title-screen.png') center/100% 100% no-repeat}
+.title-art{position:relative;width:min(100vw,177.683vh);aspect-ratio:1672 / 941}
 .title-hotspot{position:absolute;top:86.1%;height:7.2%;border:2px solid transparent;background:transparent;border-radius:8px;cursor:pointer;color:transparent}
 .title-hotspot:hover,.title-hotspot:focus-visible{background:#ffd67720;border-color:#ffd677;box-shadow:0 0 24px #e9933070;outline:2px solid #fff8}
 .title-hotspot.start{left:24.5%;width:17%}.title-hotspot.options{left:42.5%;width:16%}.title-hotspot.quit{left:59%;width:16%}
@@ -1459,9 +1459,12 @@ async function offerCommandReroll(pi,dice,label,weapon=null){
     const eligible=dice.map((d,i)=>({d,i})).filter(({d})=>Number.isInteger(d.v)&&!d.reroll&&d.classify);
     if(!eligible.length)return;
     if(isAI(pi)){
+      // Preserve tactical options before the final turning point; one paid retry per pool.
+      const reserve=G.tp>=4?0:1;
+      if(P(pi).cp<=reserve)return;
       const failed=eligible.find(({d})=>d.k==='fail');
       if(!failed)return;
-      commandRerollDie(pi,dice,failed.i,weapon);continue;
+      commandRerollDie(pi,dice,failed.i,weapon);return;
     }
     const choice=await new Promise(resolve=>{
       G.rerollChoice=index=>{delete G.rerollChoice;closeOv();resolve(index);};
@@ -1688,6 +1691,10 @@ function confirmRoster(){
   }else if(pi===0)setTimeout(()=>showTeamPicker(1),200);else startDeploy();
 }
 function startDeploy(){
+  if(window.AuspexAssets&&!G.assetsReady){
+    G.assetsReady=true;msg('Carregando os sprites dos esquadrões…');
+    window.AuspexAssets.loadTeams([P(0).team,P(1).team]).then(()=>{window.IsoTactics?.loadSprites();startDeploy();}).catch(error=>{console.warn(error);startDeploy();});return;
+  }
   applyKillzone(G.killzone||'modular');document.body.classList.remove('setup-screen');
   G.phase='deploy';G.cur=0;G.ops=[...P(0).ops,...P(1).ops];
   msg(deploymentPrompt(0));
@@ -1971,7 +1978,7 @@ function endGame(reason='FIM DO QUARTO TURNING POINT',forcedWinner=null){
       <div style="display:flex;gap:14px;justify-content:center;margin-top:16px">
         ${[0,1].map(i=>`<div><div class="rowlbl" style="color:${P(i).col}">${P(i).n}</div>
           <div style="font-family:var(--fd);font-size:30px">${P(i).vp} VP</div>
-          <div style="font-size:11px;color:var(--txt2)">Objetivos ${P(i).objectiveVP||0} · Tac Ops ${P(i).tacVP||0}<br>Eliminações ${P(i).kills||0} · ${alive(i).length} vivos</div></div>`).join('')}
+          <div style="font-size:11px;color:var(--txt2)">Objetivos ${P(i).objectiveVP||0} · Tac Ops: não implementadas<br>Eliminações ${P(i).kills||0} · ${alive(i).length} vivos</div></div>`).join('')}
       </div></div>
     <button class="btn pri" style="width:100%" onclick="location.reload()">JOGAR DE NOVO</button>`,true);
 }
@@ -2337,7 +2344,7 @@ function objectiveControl(o){return[0,1].map(pi=>alive(pi).filter(op=>dist(op,o)
 function updScoreboard(){
   const controlled=[0,0];OBJS.forEach(o=>{const c=objectiveControl(o);if(c[0]>c[1])controlled[0]++;else if(c[1]>c[0])controlled[1]++;});
   [0,1].forEach(i=>{const p=P(i),el=document.getElementById('score'+i);if(!el)return;el.innerHTML=
-    `<div class="score-item" title="Pontos de vitória totais"><b>${p.vp||0}</b><small>VP</small></div><div class="score-item" title="Pontos de objetivos"><b>${p.objectiveVP||0}</b><small>OBJ</small></div><div class="score-item" title="Pontos de Tac Ops"><b>${p.tacVP||0}</b><small>TAC</small></div><div class="score-item" title="Eliminações"><b>${p.kills||0}</b><small>ELIM</small></div>`;});
+    `<div class="score-item" title="Pontos de vitória totais"><b>${p.vp||0}</b><small>VP</small></div><div class="score-item" title="Pontos de objetivos"><b>${p.objectiveVP||0}</b><small>OBJ</small></div><div class="score-item" title="Tac Ops não implementadas nesta missão" aria-label="Tac Ops não implementadas"><b>—</b><small>TAC</small></div><div class="score-item" title="Eliminações"><b>${p.kills||0}</b><small>ELIM</small></div>`;});
   const live=document.getElementById('scorelive');if(live)live.textContent=`${controlled[0]} OBJ · ${controlled[1]} OBJ`;
 }
 function updTop(){
@@ -2356,7 +2363,7 @@ function movementSummary(cell){
   return `Percurso total: ${cell.d.toFixed(1)}″ · Subidas: ${up.toFixed(1)}″ · Descidas: ${down.toFixed(1)}″ · Destino: altura ${cell.z||0}″. O total já inclui os custos do terreno; não some a altura novamente.`;
 }
 const failedPortraits=new Set();
-function portraitSource(id){return failedPortraits.has(id)?'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=':`assets/portraits/${id}.jpg`;}
+function portraitSource(id){return failedPortraits.has(id)?'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=':`assets/portraits/${id}.webp`;}
 function portraitFailed(img,id){
   failedPortraits.add(id);img.onerror=null;img.hidden=true;
   if(img.nextElementSibling?.classList.contains('rail-fallback'))img.nextElementSibling.hidden=false;
@@ -2730,4 +2737,4 @@ function showLog(){
 /* início */
 window.addEventListener('message',e=>{if(e.data?.type==='auspex-suspend'&&document.getElementById('fpv').classList.contains('on'))closeFPV();});
 initMiniatures();showTitle();
-</script><script src="assets/pixel/eliminator-sheet.js"></script><script src="assets/pixel/captain-sheet.js"></script><script src="assets/pixel/aod-sheets.js"></script><script src="assets/pixel/kommando-sheets.js?v=kommandos-2"></script><script src="assets/pixel/terminal-sheet.js"></script><script src="terrain-painter.js"></script><script src="movement-visual.js"></script><script src="pixel-tactics.js?v=kommandos-2"></script></body></html>
+</script><script src="sprite-assets.js"></script><script src="terrain-painter.js"></script><script src="movement-visual.js"></script><script src="pixel-tactics.js?v=kommandos-2"></script></body></html>

@@ -51,7 +51,8 @@
   function spriteRow(o){let [dx,dy]=facings.get(o.id)||[o.pi===0?1:-1,0];if(G.sel?.id===o.id&&G.aimTarget){dx=G.aimTarget.x-o.x;dy=G.aimTarget.y-o.y;}
     const origin=rotate(0,0),end=rotate(dx,dy),a=end[0]-origin[0],b=end[1]-origin[1];return a+b>=0?(a-b>=0?0:1):(a-b<0?2:3);
   }
-  function loadEliminator(src=window.AuspexEliminatorSheet,columns=5,onLoaded=atlas=>{eliminatorFrames=atlas;},rows=4){if(!src)return;const img=new Image();
+  const loadedSheetSources=new Set();
+  function loadEliminator(src=window.AuspexEliminatorSheet,columns=5,onLoaded=atlas=>{eliminatorFrames=atlas;},rows=4){if(!src||loadedSheetSources.has(src))return;loadedSheetSources.add(src);const img=new Image();
     img.onload=()=>{try{const frames=[];let maxHeight=1;
       for(let row=0;row<rows;row++)for(let col=0;col<columns;col++){
         const x=Math.round(col*img.width/columns),y=Math.round(row*img.height/rows),w=Math.round((col+1)*img.width/columns)-x,h=Math.round((row+1)*img.height/rows)-y;
@@ -260,7 +261,9 @@
   api.walk=(op,path)=>{if(path.length<2)path=[{x:op.x,y:op.y,z:op.z||0},...path];path=motionPath(path);if(path.length<2)return;const lengths=[0];for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i];lengths.push(lengths[i-1]+Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z));}const distance=lengths.at(-1);walking={id:op.id,path,lengths,distance,start:performance.now(),duration:Math.min(6500,Math.max(900,distance*450))};schedule();};
   api.walkRemaining=()=>walking?Math.max(0,walking.duration-(performance.now()-walking.start)):0;
   api.stopWalk=()=>{walking=null;schedule();};
-  bw.classList.toggle('iso-active',true);fit();loadEliminator();if(window.AuspexCaptainSheet)loadEliminator(window.AuspexCaptainSheet,6,atlas=>{captainFrames=atlas;});
+  bw.classList.toggle('iso-active',true);fit();
+  api.loadSprites=()=>{
+  loadEliminator();if(window.AuspexCaptainSheet)loadEliminator(window.AuspexCaptainSheet,6,atlas=>{captainFrames=atlas;});
   for(const [id,src]of Object.entries(window.AuspexAodSheets||{}))loadEliminator(src,6,atlas=>{aodFrames['kt-aod-'+id]=atlas;});
   for(const [id,sheet]of Object.entries(window.AuspexKommandoSheets||{}))loadEliminator(sheet.src,sheet.columns,atlas=>{
     // Find the planted stance separately in each directional row; source columns
@@ -283,4 +286,6 @@
     kommandoFrames[id]={...atlas,idleFrames,renderHeight:sheet.renderHeight};
   });
   if(window.AuspexTerminalSheet)loadEliminator(window.AuspexTerminalSheet,4,atlas=>{terminalFrames=atlas;},1);
+  };
+  api.loadSprites();
 })();
