@@ -13,6 +13,7 @@
   if(slider)slider.value=Math.round(volume*100);
  }
  window.AuspexMusic={
+  settings(){document.getElementById('audio-settings').showModal();},
   scene(name){if(!tracks[name]||name===current)return;current=name;play();},
   toggle(){muted=!muted;unlocked=true;save();sync();play();},
   volume(value){volume=Math.max(0,Math.min(1,Number(value)/100));save();sync();play();}
@@ -27,5 +28,7 @@
    if(levels[key]===0&&target===0&&!a.paused)a.pause();
   }
  },50);
+ const options=document.getElementById('title-options');
+ if(options&&document.createElement){const button=document.createElement('button');button.className='btn';button.textContent='CONFIGURAÇÕES DE ÁUDIO';button.onclick=()=>window.AuspexMusic.settings();options.appendChild(button);}
  sync();
 })();

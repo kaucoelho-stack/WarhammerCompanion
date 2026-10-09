@@ -3,7 +3,7 @@
   "version": "4",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-08T17:14:48.937Z",
+  "createdAt": "2026-10-09T00:51:38.106Z",
   "validation": "Partial team rules audit; see TEAM-AUDIT.md. Not a complete official rules implementation.",
   "files": [
     {
@@ -588,8 +588,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 227170,
-      "sha256": "82cc331a7aaaeb56ef3df1a5e89fd90da66c980689ea9798744b86f2766a06c5"
+      "bytes": 228040,
+      "sha256": "74c2e8365108d00a5532b99c825f1c9639851bc7685defa10862f4773a52dffd"
     },
     {
       "path": "killteam_data.js",
@@ -608,13 +608,13 @@
     },
     {
       "path": "music.js",
-      "bytes": 1890,
-      "sha256": "4e37f49fbf5b48b6853c4ddfab56f6115cf2c0bcff46a369bb5f20998cc3b4d7"
+      "bytes": 2249,
+      "sha256": "549abcc8201ffcdae668f0c5e9128d6d124e457489bb949ccfd62f006e6a03ca"
     },
     {
       "path": "pixel-tactics.js",
-      "bytes": 31269,
-      "sha256": "839f9be2255f92471b25d0142bea3d6a89bfef7fdd9cb0f80c8789633ae1b4ef"
+      "bytes": 31647,
+      "sha256": "907d0a767af3cd2bbebe336a1757a7cf415a38c0a2c710c869a7313b2d2150af"
     },
     {
       "path": "PUBLICAR.md",

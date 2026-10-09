@@ -566,7 +566,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .setup-screen .army-card .trow{width:100%;flex:1;border:0;box-sizing:border-box;min-width:0}
 .army-card .army-help{align-self:flex-end;margin:8px;min-width:44px}
 .army-card .td{line-height:1.65;padding-top:8px;color:#d5c7b7}
-#music-controls{position:fixed;right:10px;top:44px;z-index:10000;display:flex;align-items:center;gap:8px;background:#211c19;border:1px solid #796452;padding:5px;color:#e6dfcd;font:12px monospace}#music-volume{width:70px;accent-color:#bc8d77}#music-toggle{background:none;border:0;color:inherit;cursor:pointer;min-height:28px}
+#audio-settings{width:min(380px,calc(100vw - 32px));box-sizing:border-box;padding:22px;background:#211c19;border:2px solid #796452;color:#e6dfcd;font:14px monospace;box-shadow:8px 8px #0008}#audio-settings::backdrop{background:#0009}#audio-settings h2{margin-top:0;font-size:18px}#music-controls{display:grid;gap:16px}#music-controls label{display:flex;justify-content:space-between;align-items:center;gap:12px}#music-volume{width:160px;max-width:60%;accent-color:#bc8d77}#music-toggle{background:#392823;border:1px solid #796452;color:inherit;cursor:pointer;min-height:44px}#audio-settings p{font-size:12px;color:#c2b1a2;line-height:1.5}
 </style>
 </head>
 <body>
@@ -648,7 +648,12 @@ button:disabled{opacity:.45;cursor:not-allowed}
 
 
 
-<aside id="music-controls" aria-label="Música de fundo"><button id="music-toggle" onclick="AuspexMusic.toggle()" aria-label="Silenciar música" aria-pressed="false">MÚSICA: ON</button><input id="music-volume" aria-label="Volume da música" type="range" min="0" max="100" value="25" oninput="AuspexMusic.volume(this.value)"></aside>
+<dialog id="audio-settings" aria-labelledby="audio-heading" onclick="if(event.target===this){const r=this.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)this.close();}">
+ <h2 id="audio-heading">CONFIGURAÇÕES · ÁUDIO</h2>
+ <section id="music-controls" aria-label="Música de fundo"><button id="music-toggle" onclick="AuspexMusic.toggle()" aria-label="Silenciar música" aria-pressed="false">MÚSICA: ON</button><label for="music-volume">Volume <input id="music-volume" aria-label="Volume da música" type="range" min="0" max="100" value="25" oninput="AuspexMusic.volume(this.value)"></label></section>
+ <p>Ajustes salvos automaticamente. Os efeitos sonoros terão controle separado quando forem adicionados.</p>
+ <button class="btn" onclick="document.getElementById('audio-settings').close()">FECHAR</button>
+</dialog>
 <script src="music.js"></script>
 <script src="battlefield.js"></script>
 <script src="killteam_data.js"></script>

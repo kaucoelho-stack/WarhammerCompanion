@@ -24,6 +24,7 @@
   const useMetropole=()=>metropole&&TERRAIN.some(t=>t.kind==='stronghold')&&!!window.MetropoleSkin;
   skinButton.style.display='none';
   const gridButton=document.createElement('button');gridButton.textContent='GRADE: ON';gridButton.dataset.action='grid';gridButton.setAttribute('aria-pressed','true');stage.querySelector('#iso-tools').append(gridButton);
+  const settingsButton=document.createElement('button');settingsButton.textContent='⚙';settingsButton.title='Configurações de áudio';settingsButton.setAttribute('aria-label','Configurações de áudio');settingsButton.setAttribute('aria-haspopup','dialog');settingsButton.onclick=()=>window.AuspexMusic?.settings();stage.querySelector('#iso-tools').append(settingsButton);
   const zoomReadout=document.createElement('span');zoomReadout.style.cssText='padding:10px;color:#e8f6ff;background:#172333ed;font:700 13px monospace';zoomReadout.setAttribute('aria-label','Zoom do mapa');stage.querySelector('#iso-tools').append(zoomReadout);
   const levelControls=document.createElement('div');levelControls.style.cssText='display:none;gap:5px;flex-wrap:wrap;pointer-events:auto';stage.querySelector('#iso-tools').append(levelControls);
   levelControls.onclick=e=>{const level=e.target.dataset.level;if(level===undefined||humanInputLocked())return;hoverCell=null;if(level==='all')showAllMoveLevels();else setMoveLevel(Number(level));schedule();};
