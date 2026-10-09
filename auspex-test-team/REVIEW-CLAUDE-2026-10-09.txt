@@ -1,0 +1,84 @@
+Contexto: projeto "Auspex Test Team", simulador tático de Kill Team em HTML/JS (index.html, pixel-tactics.js, auspex-rules.js, killteam_data.js, battlefield.js, terrain-painter.js, music.js). Os testes test-ai-recovery.cjs e test-combat-lifecycle.cjs precisam continuar passando. Faça uma mudança por vez, explique o que alterou e não declare nenhuma regra como "oficial/validada" (veja TEAM-AUDIT.md). Quando um item disser "decidir", me pergunte antes de escolher.
+
+Evidência: rodei partidas IA vs IA completas em Chromium headless (4 Turning Points, 0 erros de JS, 0 travamentos) e capturei telas em desktop (1280x800) e celular emulado (390x844).
+
+═══ P0 — REGRAS E DADOS ═══
+
+1. Ação "assegurar objetivo" não pontua
+- actPickUp grava G.secured, mas nenhum código lê isso. scoreObjectives pontua só por APL dentro de 3" do objetivo.
+- tacVP nunca é atribuído, e a tela final mostra "Tac Ops 0".
+- A IA gasta AP nessa ação (4 a 7 vezes por partida) sem ganhar nada.
+- Decidir: (a) ligar a ação à pontuação, ou (b) remover a ação e o campo tacVP/Tac Ops da UI.
+- Aceite: um teste que mostra o efeito (ou a ausência) da ação na pontuação.
+
+2. Ploys inativos e CP sem função
+- Em auspex-rules.js, importTeams sobrescreve os ploys das 4 equipes originais com ploysFor(), que marca TODOS com fx:{reference:true}. Resultado: 0 de 100 ploys são ativáveis, e a CP acumula (a IA termina o TP4 com 7–8 CP).
+- Os ganchos antigos em mods() e rollDef, com ids como aod_doc, aod_hardy, ko_dakk, pm_lumb e tau_kau, ficaram inalcançáveis porque os ids novos são `${key}_${s|f}_${i}`.
+- Fazer, nesta ordem:
+  (1) implementar o Command Re-roll universal (1 CP, re-rolar 1 dado);
+  (2) religar os ploys legados que já têm gancho, mapeando pelo nome novo;
+  (3) deixar a IA usar ploys de firefight e gastar CP;
+  (4) manter os demais como "somente consulta".
+- Aceite: teste automatizado em que um ploy gasta CP e altera a rolagem.
+
+3. Objetivo central assimétrico
+- battlefield.js: o objetivo central está em (14,10). Como a distância usa índices de célula, o centro simétrico do 30x22 é (14.5,10.5). Hoje o jogador 1 fica cerca de 1" mais perto.
+- Corrigir com coordenadas fracionárias (verificar render, distância e controle) ou redesenhar o mapa.
+- Aceite: distância do objetivo à zona de deploy igual para os dois lados.
+
+4. Auditoria de dados por equipe
+- Move (M) é 3 em Intercession, Tyranid Warriors, Krieg, Legionaries e Pathfinders (3/4), e 5–8 nas outras. Intercession tem APL 2 e 12–14 PV, enquanto Angels of Death tem APL 3 e 14–15 PV.
+- Isso pode ser edições misturadas ou erro de cadastro. NÃO assuma qual está certo: compare com a datacard oficial da edição que o projeto adota e me mostre uma tabela (time, operativo, valor atual, valor oficial, fonte).
+- Resultados observados (1 partida cada contra AoD): Pathfinders 0–8 VP, Intercession 0–7, Tyranids 1–5. Isso é anedótico, mas é compatível com dados desiguais.
+
+═══ P1 — IA ═══
+
+5. IA fixa no jogador 2
+- aiDeploy usa a zona x>=W-4 fixa, aiTurnImpl usa enemies=alive(0) e G.ai=1 é hardcoded.
+- Parametrizar a IA para qualquer lado. Isso habilita um modo espectador IA vs IA e um script de autoplay para balanceamento.
+- Aceite: partida IA vs IA completa sem intervenção.
+
+6. A IA ignora o papel do time
+- Tyranid Warriors: 0 cargas e 0 lutas na partida. Pathfinders: 0 eliminações em 31 ativações, com 31 Reposition, 19 Dash e só 4 tiros.
+- Causa provável (verificar): em aiActImpl o Charge só é tentado se Reposition/Dash ainda não foram usados, e o destino padrão é sempre "ir ao objetivo". Também suspeito que a IA não use Markerlight (não confirmado).
+- Fazer: times de corpo a corpo priorizam a carga, times de tiro buscam posição de tiro, e a IA usa Markerlight antes de atirar.
+- Também reduzir o AP desperdiçado: de 5 a 16 ativações por partida terminam com AP sobrando.
+
+═══ P1 — PERFORMANCE ═══
+
+7. 75 MB de JS carregados antes do título
+- Os assets/pixel/*-sheets.js carregam PNG em base64: kommando 33 MB, aod 29 MB, captain 4,6 MB, eliminator 4 MB, terminal 3,6 MB. Em localhost (sem limite de rede) a página levou 8,9 s e usou cerca de 200 MB de heap.
+- Fazer: carregar só os sheets do time escolhido (lazy-load) e servir PNG/WebP como arquivo em vez de base64.
+- Aceite: tempo até o título abaixo de 2 s em localhost; a partida continua com sprites corretos.
+
+8. Tamanho do pacote
+- O release-manifest.json soma 340 MB em 126 arquivos. Os retratos têm cerca de 3 MB cada: converter para WebP de 100–200 KB.
+- ruins-sheets.js (16,7 MB) e metropole-data.js (0,8 MB) não são referenciados por index.html nem por pixel-tactics.js: remover do pacote. Também confirmar se assets/title-screen.png ainda é usado.
+
+9. Tempestade de requisições de retratos
+- Com retrato ausente, ele é pedido de novo a cada renderização (3.039 falhas em uma partida de 84 s).
+- Fazer: onerror de uso único, cache do resultado e fallback visual (letra/ícone) em vez do ícone de imagem quebrada na barra lateral.
+
+10. Aviso do Canvas2D
+- Muitos avisos "Multiple readback operations using getImageData". Criar o contexto com {willReadFrequently:true}.
+
+═══ P2 — UI ═══
+
+Celular (390x844):
+11. Barra de pontuação: os rótulos "VP TOTAL / OBJ VP / TAC OP / ELIM" se sobrepõem. Reduzir ou abreviar os rótulos.
+12. Barra de ferramentas quebra em duas linhas e o painel "EQUIPE 1" cobre botões de zoom e grade.
+13. O tabuleiro ocupa só cerca de um quarto da tela porque os botões de operativos ocupam quase metade. Compactar ou tornar recolhível. O texto de dica do mapa também fica sobreposto ao tabuleiro.
+14. Nomes dos jogadores truncados no topo.
+15. Tela de título: o recorte no mobile esconde os marines. Ajustar o background-position para a direita.
+
+Desktop (1280x800):
+16. O tabuleiro começa cortado embaixo no TP1. Ajustar o zoom e o centro iniciais para caber.
+17. Ao girar a vista o tabuleiro não é recentralizado: chamar IsoTactics.center() no rotate.
+18. O painel de ação à direita cobre o próprio esquadrão em algumas vistas.
+19. Com muitos operativos (Blooded, 14), os rótulos de HP se empilham. Mostrar só em hover/seleção quando houver aglomeração.
+20. No card do Heavy Intercessor Gunner o destaque é "Pistola Bolter", e não a arma principal. Mostrar a arma principal.
+
+═══ TESTES A ADICIONAR ═══
+- Smoke test em Playwright: partida IA vs IA completa (4 TPs) sem erros de JS e sem travar.
+- Captura de tela em 390x844 e 1280x800 da barra de pontuação, da barra de ferramentas e do tabuleiro, para checar sobreposição.
+- Teste do item 1 (ação de objetivo) e do item 2 (ploy gasta CP e altera rolagem).

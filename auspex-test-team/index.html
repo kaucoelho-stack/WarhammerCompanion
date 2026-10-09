@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AUSPEX · Pátio de ferro</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -567,6 +567,37 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .army-card .army-help{align-self:flex-end;margin:8px;min-width:44px}
 .army-card .td{line-height:1.65;padding-top:8px;color:#d5c7b7}
 #audio-settings{width:min(380px,calc(100vw - 32px));box-sizing:border-box;padding:22px;background:#211c19;border:2px solid #796452;color:#e6dfcd;font:14px monospace;box-shadow:8px 8px #0008}#audio-settings::backdrop{background:#0009}#audio-settings h2{margin-top:0;font-size:18px}#music-controls{display:grid;gap:16px}#music-controls label{display:flex;justify-content:space-between;align-items:center;gap:12px}#music-volume{width:160px;max-width:60%;accent-color:#bc8d77}#music-toggle{background:#392823;border:1px solid #796452;color:inherit;cursor:pointer;min-height:44px}#audio-settings p{font-size:12px;color:#c2b1a2;line-height:1.5}
+/* Small screens: keep the board visible and put long controls in scrollable areas. */
+@media(min-width:901px) and (min-height:650px){
+  body:has(#panel.tactics-hud) #boardwrap{margin-right:310px}
+  .tactics-hud #acts>.tactics-controls{max-height:calc(100dvh - 180px)}
+}
+@media(max-width:600px){
+  #top{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 36px;gap:4px;padding:4px;align-items:stretch}
+  #tp{font-size:10px;align-self:center;letter-spacing:0;padding:4px}
+  #tp b{font-size:13px}.pchip{padding:5px;min-width:0}
+  .pchip .nm{white-space:normal;overflow-wrap:anywhere;font-size:10px;letter-spacing:0;line-height:1.3}
+  .pchip .st{font-size:9px;line-height:1.3}.quit-match{align-self:center}
+  #scorebar{grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:4px;gap:3px}
+  .score-side{grid-template-columns:repeat(4,minmax(0,1fr));padding:3px;gap:1px}
+  .score-item b{font-size:15px}.score-item small{font-size:8px;letter-spacing:0;white-space:normal;line-height:1.2}
+  .score-live{grid-column:1/-1;grid-row:2;display:flex;justify-content:center;align-items:center;gap:8px;font-size:8px;min-height:18px}
+  .score-live b{margin:0;font-size:10px}
+  #boardwrap{min-height:0;flex:1 1 0}
+  #boardwrap.iso-active{min-height:200px}
+  #operative-rail{top:60px;bottom:8px;left:4px;width:48px;padding:2px}
+  .rail-op{min-height:48px;margin:3px 0;padding:2px}.rail-op img,.rail-fallback{height:30px}.rail-hp{font-size:9px}
+  #panel,#panel.tactics-hud{position:relative;max-height:32dvh;overflow-y:auto;flex:0 1 auto;padding-bottom:env(safe-area-inset-bottom);min-height:0}
+  #msg{min-height:0;padding:7px 8px;font-size:11px;line-height:1.35}
+  #acts,.tactics-hud #acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:6px}
+  #acts>.operative-panel,#acts>.tactics-controls,#acts>.movement-summary{grid-column:1/-1}
+  #acts .btn{min-height:44px;font-size:11px;padding:7px;overflow-wrap:anywhere}
+  .operative-panel{padding:6px;font-size:11px;gap:8px;line-height:1.3}.operative-panel img{width:42px!important;height:44px!important}
+  .operative-panel small{font-size:9px}.tactics-menu{gap:5px}.tactics-heading{font-size:11px;padding:4px;letter-spacing:1px}
+  .tactics-description{font-size:10px;padding:3px}.action-reason{font-size:9px;max-width:none}
+  .title-art{background-position:78% center!important}.grim-title-menu h1{font-size:clamp(38px,12vw,56px)}
+  .sheet{width:calc(100vw - 16px);max-height:calc(100dvh - 24px);margin:auto}.shb{overflow-x:hidden}
+}
 </style>
 </head>
 <body>
@@ -1245,15 +1276,37 @@ function weaponTraitsHTML(w){return(w.tags||[]).map(tag=>{const r=weaponTraitInf
 function weaponChipsHTML(w){return(w.tags||[]).map(tag=>`<span class="trait-chip">${tag}</span>`).join('');}
 const seekIgnoresCover=(op,tgt,w,los)=>{
   const tags=w?.tags||[],seek=tags.includes('Seek'),seekLight=tags.includes('Seek Light');
-  return seek||(seekLight&&los.coverType==='light')||(op.teamId==='pth'&&(tgt.marks||0)>=4);
+  return seek||(seekLight&&los.coverType==='light')||(op.teamId==='pth'&&markerCount(tgt,op.pi)>=4&&los.coverType==='light');
 };
 const weaponsOf=(op,type)=>op.wpn.filter(w=>w.t===type);
+const markerCount=(target,pi)=>target.markerTokens?.[pi]||0;
+const markerCapable=op=>op.teamId==='pth'&&['kt-pathfinder-shas','kt-pathfinder','kt-pathfinder-drone'].includes(op.templateId||op.sourceId);
+const markerRecon=op=>(op.templateId||op.sourceId)==='kt-pathfinder-drone';
+function addMarker(target,pi){
+  target.markerTokens=target.markerTokens||{};
+  target.markerTokens[pi]=Math.min(4,markerCount(target,pi)+1);
+  target.marks=Object.values(target.markerTokens).reduce((a,b)=>a+b,0);
+}
+function markerTargets(op){
+  if(!markerCapable(op)||actionUsed(op,'markerlight')||(!((op.templateId||op.sourceId)==='kt-pathfinder')&&inEnemyCR(op.x,op.y,op.pi,zOf(op))))return[];
+  return enemiesOf(op.pi).filter(t=>markerCount(t,op.pi)<4&&checkLoS(op,t).vis&&(markerRecon(op)||!op.shotPrimaryTarget||op.shotPrimaryTarget===t.id));
+}
+function actMarkerlight(id=null){
+  const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;
+  const targets=markerTargets(op);
+  if(!id){openOv('MARCAR ALVO · 1 AP',targets.map(t=>`<button class="btn" onclick="actMarkerlight('${t.id}')">${t.n} · ${markerCount(t,op.pi)} marcas</button>`).join('')||'<p>Nenhum alvo elegível.</p>');return;}
+  const target=targets.find(t=>t.id===id);if(!target)return;
+  closeOv();addMarker(target,op.pi);
+  if(markerRecon(op))enemiesOf(op.pi).filter(t=>t!==target&&dist(t,target)<=3&&checkLoS(op,t).vis).forEach(t=>addMarker(t,op.pi));
+  op.markerTarget=target.id;recordAction(op,'markerlight');log(`${op.n} marcou ${target.n} · 1 AP`);spend(op,1);render();
+}
 const bestWeapon=(op,type)=>[...weaponsOf(op,type)].sort((a,b)=>(b.a*((7-b.h)/6)*((b.d+b.c)/2))-(a.a*((7-a.h)/6)*((a.d+a.c)/2)))[0];
 function shotTargetState(op,tgt,w){
   const los=checkLoS(op,tgt);
   if(dist(op,tgt)>RULES.rangeOf(w))return{valid:false,reason:'fora do alcance',los};
   if(!los.vis)return{valid:false,reason:'parede sólida bloqueia completamente a miniatura',los};
-  if(los.obscured&&!(op.teamId==='pth'&&(tgt.marks||0)>=3))return{valid:false,reason:'terreno pesado obscurece o alvo',los};
+  if(los.obscured&&!(op.teamId==='pth'&&markerCount(tgt,op.pi)>=3))return{valid:false,reason:'terreno pesado obscurece o alvo',los};
+  if(op.teamId==='pth'&&!markerRecon(op)&&op.markerTarget&&op.markerTarget!==tgt.id)return{valid:false,reason:'Markerlight e tiro devem escolher o mesmo alvo nesta ativação',los};
   if(tgt.order==='conceal'&&los.cover&&dist(op,tgt)>2&&!los.vantageReveal&&!seekIgnoresCover(op,tgt,w,los))
     return{valid:false,reason:'alvo em Conceal protegido pela cobertura',los};
   if(inEnemyCR(tgt.x,tgt.y,tgt.pi,zOf(tgt)))return{valid:false,reason:'alvo dentro do control range de um aliado do atacante',los};
@@ -1322,11 +1375,12 @@ function mods(op,tgt,wpn,isShoot){
   // Lethal / Severe / Rending vindo da arma
   const lethalTag=wpn.tags.find(t=>t.startsWith('Lethal '));if(lethalTag)m.lethal=tagVal(wpn,'Lethal')||6;
   // Markerlight (T'au) — bônus cumulativo
-  if(isShoot&&tgt&&tgt.marks>0){
-    if(tgt.marks>=1)m.saturate=true;
-    if(tgt.marks>=2)m.balanced=true;
-    if(tgt.marks>=3)m.ignoreObsc=true;
-    if(tgt.marks>=4)m.seekLight=true;
+  if(isShoot&&op.teamId==='pth'&&tgt&&!/fusion grenade/i.test(wpn.n)){
+    const marks=markerCount(tgt,op.pi);
+    if(marks>=1){m.saturate=true;m.balanced=true;}
+    if(marks>=2)m.hit-=Math.max(0,Math.min(1,wpn.h+m.hit-3));
+    if(marks>=3)m.ignoreObsc=true;
+    if(marks>=4)m.seekLight=true;
   }
   if(has('tau_focus')&&isShoot&&tgt&&tgt.marks>0)m.rrFail=true;
   // Contágio dos Plague Marines piora o Hit do inimigo
@@ -1342,10 +1396,11 @@ function mods(op,tgt,wpn,isShoot){
 function rollAtk(wpn,mo,n){
   const accurate=Math.min(n,mo.accurate||0);
   let dice=[];for(let i=0;i<n-accurate;i++)dice.push(d6());
+  const repeated=new Set();
   const hit=Math.max(2,Math.min(6,wpn.h+mo.hit));
   const classify=v=>v===1?'fail':(v>=6?'crit':(v>=mo.lethal?'crit':(v>=hit?'suc':'fail')));
   // re-rolls
-  const doRR=(pred)=>{dice=dice.map(v=>pred(v)?d6():v);};
+  const doRR=(pred)=>{dice=dice.map((v,i)=>{if(!pred(v)||repeated.has(i))return v;repeated.add(i);return d6();});};
   if(mo.relentless)doRR(v=>classify(v)==='fail');
   else if(mo.ceaseless){
     // Ceaseless: escolha um resultado numérico e rerrole todos os dados com ele.
@@ -1354,10 +1409,10 @@ function rollAtk(wpn,mo,n){
     const choice=Object.keys(freq).sort((a,b)=>freq[b]-freq[a])[0];
     if(choice!==undefined)doRR(v=>v===Number(choice));
   }
-  else if(mo.balanced){const i=dice.findIndex(v=>classify(v)==='fail');if(i>=0)dice[i]=d6();}
+  else if(mo.balanced){const i=dice.findIndex(v=>classify(v)==='fail');if(i>=0){dice[i]=d6();repeated.add(i);}}
   if(mo.rrFail)doRR(v=>classify(v)==='fail');
   // Severe: se nenhum crítico, converte um sucesso em crítico
-  let res=dice.map(v=>({v,k:classify(v)}));
+  let res=dice.map((v,i)=>({v,k:classify(v),reroll:repeated.has(i),classify}));
   for(let i=0;i<accurate;i++)res.push({v:'A',k:'suc',accurate:true});
   if(hasTag(wpn,'Severe')&&!res.some(r=>r.k==='crit')){
     const i=res.findIndex(r=>r.k==='suc');if(i>=0)res[i].k='crit';
@@ -1378,25 +1433,62 @@ function rollDef(op,n,cover,pierce,extra,wpn=null){
   const baseSv=RULES.engine(op,TEAMS).shadowSave&&inShadow?Math.max(2,op.sv-1):op.sv;
   const sv=soulstrike?Math.max(2,Math.min(5,op.apl)):baseSv;
   const def5 = op.def5 || (G.ploys[op.pi]||[]).includes('aod_hardy');
-  let res=dice.map(v=>soulstrike
-    ?({v,k:v===1?'crit':(v===6?'fail':(v<=sv?'suc':'fail'))})
-    :({v,k:v===1?'fail':(v>=6?'crit':(def5&&v>=5?'crit':(v>=sv?'suc':'fail')))}));
+  const classify=v=>soulstrike?(v===1?'crit':v===6?'fail':v<=sv?'suc':'fail'):(v===1?'fail':v>=6||def5&&v>=5?'crit':v>=sv?'suc':'fail');
+  let res=dice.map(v=>({v,k:classify(v),classify}));
   for(let i=0;i<coverCount;i++)res.push({v:'C',k:'suc',cover:true});
   if(RULES.engine(op,TEAMS).synapse&&alive(op.pi).some(a=>a!==op&&dist(a,op)<=6&&/synapse/i.test((a.abl||[]).map(x=>x.n+' '+x.d).join(' ')))){
-    const i=res.findIndex(d=>d.k==='fail');if(i>=0){const v=d6();res[i]={v,k:v===1?'fail':(v>=6?'crit':(v>=sv?'suc':'fail')),reroll:true};}
+    const i=res.findIndex(d=>d.k==='fail');if(i>=0){const v=d6();res[i]={v,k:classify(v),classify,reroll:true};}
   }
   if(extra&&res.length){const i=res.findIndex(d=>d.k==='fail');if(i>=0)res[i]={v:'★',k:'suc',auto:true};}
   return res;
 }
 
+function commandRerollDie(pi,dice,index,weapon=null){
+  const die=dice[index];
+  if(P(pi).cp<1||!die||!Number.isInteger(die.v)||die.reroll||!die.classify)return false;
+  P(pi).cp--;die.v=d6();die.reroll=true;
+  dice.forEach(d=>{if(d.classify)d.k=d.classify(d.v);});
+  if(weapon){
+    if(hasTag(weapon,'Severe')&&!dice.some(d=>d.k==='crit')){const d=dice.find(d=>d.k==='suc');if(d)d.k='crit';}
+    if(hasTag(weapon,'Rending')&&dice.some(d=>d.k==='crit')){const d=dice.find(d=>d.k==='suc');if(d)d.k='crit';}
+  }
+  log(`${P(pi).n}: Command Re-roll · 1 CP · resultado ${die.v}`);return true;
+}
+async function offerCommandReroll(pi,dice,label,weapon=null){
+  while(P(pi).cp>0){
+    const eligible=dice.map((d,i)=>({d,i})).filter(({d})=>Number.isInteger(d.v)&&!d.reroll&&d.classify);
+    if(!eligible.length)return;
+    if(isAI(pi)){
+      const failed=eligible.find(({d})=>d.k==='fail');
+      if(!failed)return;
+      commandRerollDie(pi,dice,failed.i,weapon);continue;
+    }
+    const choice=await new Promise(resolve=>{
+      G.rerollChoice=index=>{delete G.rerollChoice;closeOv();resolve(index);};
+      openOv('COMMAND RE-ROLL',`<p>${P(pi).n} · ${label} · ${P(pi).cp} CP. Repetir um dado custa 1 CP.</p><div class="dice">${dice.map((d,i)=>`<button class="btn" ${eligible.some(e=>e.i===i)?'':'disabled'} onclick="G.rerollChoice(${i})">${d.v} · ${d.k}</button>`).join('')}</div><button class="btn pri" onclick="G.rerollChoice(-1)">MANTER DADOS</button>`,true);
+    });
+    if(choice<0)return;
+    commandRerollDie(pi,dice,choice,weapon);
+  }
+}
+async function prepareShotDice(att,tgt,wpn){
+  const mo=mods(att,tgt,wpn,true),los=checkLoS(att,tgt),atk=rollAtk(wpn,mo,wpn.a);
+  await offerCommandReroll(att.pi,atk,'Ataque',wpn);
+  if(hasTag(wpn,'Markerlight'))return{atk,def:[]};
+  const cover=los.cover&&!hasTag(wpn,'Saturate')&&!mo.saturate?(los.vantageReveal&&tgt.order==='conceal'?2:1):0;
+  let pierce=RULES.engine(tgt,TEAMS).ignorePiercing?0:mo.pierce;
+  if(hasTag(wpn,'PiercingCrits')&&atk.some(d=>d.k==='crit'))pierce=tagVal(wpn,'PiercingCrits');
+  const def=rollDef(tgt,tgt.df||3,cover,pierce,(G.ploys[tgt.pi]||[]).includes('tau_shield'),wpn);
+  await offerCommandReroll(tgt.pi,def,'Defesa');return{atk,def};
+}
 /* Resolve uma sequência de TIRO completa */
-function resolveShoot(att,tgt,wpn){
+function resolveShoot(att,tgt,wpn,prepared=null){
   const mo=mods(att,tgt,wpn,true);
   const los=checkLoS(att,tgt);
-  const atk=rollAtk(wpn,mo,wpn.a);
+  const atk=prepared?.atk||rollAtk(wpn,mo,wpn.a);
   // Markerlight não causa dano — só marca
   if(hasTag(wpn,'Markerlight')){
-    if(atk.some(r=>r.k!=='fail')){tgt.marks=Math.min(4,(tgt.marks||0)+1);
+    if(atk.some(r=>r.k!=='fail')){addMarker(tgt,att.pi);
       log(`${att.n} marcou ${tgt.n} (${tgt.marks} marcações)`);}
     else log(`${att.n} errou a marcação`);
     return {atk,def:[],dmg:0,marker:true};
@@ -1406,7 +1498,7 @@ function resolveShoot(att,tgt,wpn){
   const extra=(G.ploys[att.pi===0?1:0]||[]).includes('tau_shield');
   let pierce=RULES.engine(tgt,TEAMS).ignorePiercing?0:mo.pierce;
   if(hasTag(wpn,'PiercingCrits')&&atk.some(r=>r.k==='crit'))pierce=tagVal(wpn,'PiercingCrits');
-  let def=rollDef(tgt,tgt.df||3,cover,pierce,extra,wpn);
+  let def=prepared?.def||rollDef(tgt,tgt.df||3,cover,pierce,extra,wpn);
   // Devastating: críticos causam dano direto, ignoram defesa
   let dmg=0, devastHits=0;
   let atkLeft=atk.filter(r=>r.k!=='fail');
@@ -1433,6 +1525,10 @@ function resolveShoot(att,tgt,wpn){
 /* Resolve retained dice one at a time, applying resilience before checking death. */
 async function resolveFight(att,def,aw,dw){
   const A=rollAtk(aw,mods(att,def,aw,false),aw.a),D=rollAtk(dw,mods(def,att,dw,false),dw.a);
+  if(typeof offerCommandReroll==='function'){
+    await offerCommandReroll(att.pi,A,'Ataque corpo a corpo',aw);
+    await offerCommandReroll(def.pi,D,'Ataque corpo a corpo',dw);
+  }
   const pools=[A.filter(r=>r.k!=='fail'),D.filter(r=>r.k!=='fail')],ops=[att,def],weapons=[aw,dw];
   const damage=[0,0],stunned=[false,false],shocked=[false,false];let turn=0;
   G.fightResolving=true;
@@ -1551,7 +1647,7 @@ function showTeamPicker(pi){
   openOv(`${P(pi).n} — escolha o kill team`,
     `<p>Escolha quem levará sua bandeira à batalha. Use ? para consultar o dossiê. Regras especiais parciais; alguns times usam sprites substitutos.</p><div class="tlist">${Object.entries(TEAMS).map(([k,t])=>`<article class="army-card">
       <button class="trow" onclick="pickTeam(${pi},'${k}')">
-        <img class="army-portrait" src="assets/portraits/${t.catalog.find(o=>o.leader)?.sourceId||t.catalog[0]?.sourceId}.jpg" alt="${t.name}" onerror="this.hidden=true">
+        <img class="army-portrait" src="${portraitSource(t.catalog.find(o=>o.leader)?.sourceId||t.catalog[0]?.sourceId)}" alt="${t.name}" onerror="portraitFailed(this,'${t.catalog.find(o=>o.leader)?.sourceId||t.catalog[0]?.sourceId}')">
         <div><div class="tn">${t.name}${['aod','kom'].includes(k)?' <small>· PIXEL ART</small>':''}</div>
         <div class="td">${TEAM_PITCH[k]||t.fac}</div></div>
       </button><button class="btn army-help" aria-label="Detalhes de ${t.name}" onclick="showTeamDetails(${pi},'${k}')">?</button></article>`).join('')}</div>`,true);
@@ -1561,8 +1657,8 @@ function showRosterBuilder(pi,k,reset=false){
   const t=TEAMS[k];if(reset||!G.rosterDraft||G.rosterDraft.pi!==pi||G.rosterDraft.k!==k)G.rosterDraft={pi,k,counts:RULES.defaultSelection(t)};
   const counts=G.rosterDraft.counts,check=RULES.validateRoster(t,counts),errorText=check.valid?'FORMAÇÃO ACEITA PELO CADASTRO · REGRAS ESPECIAIS PARCIAIS':check.errors.join(' · ');
   openOv(`${P(pi).n} — montar ${t.name}`,`<div class="roster-head" style="--team:${t.col}"><div><strong>${t.ico} ${t.name}</strong><small>${t.fac} · ${k==='wlf'?'1 lobo obrigatório + 5 scouts':k==='kom'?'Grot + Bomb Squig ocupam uma escolha juntos':'escolha os operativos antes da batalha'}</small></div><div class="roster-total ${check.valid?'':'bad'}">${check.selections}/${t.limit}<span>ESCOLHAS · ${check.total} OPERATIVOS · ${check.leaders}/1 LÍDER${k==='wlf'?' OPCIONAL':''}</span></div></div>
-    <div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,full=check.selections+(o.selectionCost||1)>t.limit,canPlus=n<o.max&&(o.leader||!full),weapon=o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
-      <img class="recruit-portrait" src="assets/portraits/${o.sourceId}.jpg" alt="${o.n}" onerror="this.hidden=true"><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.min?'<i>OBRIGATÓRIO</i>':''}${o.leader?`<i class="leader">LÍDER · ${k==='wlf'?'OPCIONAL':'ESCOLHA 1'}</i>`:''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
+    <div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,full=check.selections+(o.selectionCost||1)>t.limit,canPlus=n<o.max&&(o.leader||!full),weapon=o.wpn?.find(w=>w.t==='r'&&!/pistol|pistola/i.test(w.n))||o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
+      <img class="recruit-portrait" src="${portraitSource(o.sourceId)}" alt="${o.n}" onerror="portraitFailed(this,'${o.sourceId}')"><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.min?'<i>OBRIGATÓRIO</i>':''}${o.leader?`<i class="leader">LÍDER · ${k==='wlf'?'OPCIONAL':'ESCOLHA 1'}</i>`:''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
       <div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n>(o.min||0)?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
     <div class="roster-errors ${check.valid?'ok':''}">${errorText}</div><div class="roster-actions"><button class="btn" onclick="showTeamPicker(${pi})">← TROCAR TIME</button><button class="btn" onclick="recommendedRoster()">FORMAÇÃO RECOMENDADA</button><button class="btn pri confirm" onclick="confirmRoster()" ${check.valid?'':'disabled'}>${pi===0?'CONFIRMAR EQUIPE → ADVERSÁRIO':'INICIAR POSICIONAMENTO'}</button></div>`,true);
 }
@@ -1624,16 +1720,19 @@ function deployAt(x,y,automated=false){
 function aiDeploy(){
   if(G.phase!=='deploy'||!isAI(G.cur))return;const op=nextToDeploy(G.cur);if(!op)return;
   const idx=P(G.cur).deployed,total=P(G.cur).ops.length,targetY=((idx+.5)/total)*H;
-  const cells=[];for(let y=0;y<H;y++)for(let x=W-4;x<W;x++)if(terrAt(x,y)!=='h'&&!occupied(x,y)){
+  const deployLeft=G.cur===0?0:W-4,deployRight=G.cur===0?4:W;
+  const cells=[];for(let y=0;y<H;y++)for(let x=deployLeft;x<deployRight;x++)if(terrAt(x,y)!=='h'&&!occupied(x,y)){
     const nearCover=TERRAIN.some(t=>t.t&&Math.hypot(x-(t.x+t.w/2),y-(t.y+t.h/2))<2.5);
     const objDist=Math.min(...OBJS.map(o=>Math.hypot(x-o.x,y-o.y)));
-    cells.push({x,y,score:Math.abs(y-targetY)*1.7+objDist*.08+(x-(W-4))*.25-(nearCover?1.4:0)+Math.random()*.5});}
+    const edgeDistance=G.cur===0?W-1-x:x;
+    cells.push({x,y,score:Math.abs(y-targetY)*1.7+objDist*.08+edgeDistance*.25-(nearCover?1.4:0)+Math.random()*.5});}
   if(!cells.length)return;cells.sort((a,b)=>a.score-b.score);msg(`<b class="ai-pulse" style="color:var(--p2)">IA posicionando ${op.n}…</b>`);deployAt(cells[0].x,cells[0].y,true);
 }
 function startTP(){
+  G.secured={};
   G.phase='strategy';G.gaRequired=null;
   G.ops.forEach(o=>{o._finishing=false;o.activated=false;o.ap=o.dead?0:o.apl;o.moved=false;o.movedFar=false;
-    o.chargedThis=false;o.shotThis=0;o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;o.aiObjective=null;});
+    o.chargedThis=false;o.shotThis=0;o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;o.aiObjective=null;o.markerTarget=null;o.shotPrimaryTarget=null;});
   [0,1].forEach(pi=>{if(RULES.engine(alive(pi)[0],TEAMS).blooded){const mark=alive(pi).find(o=>!o.blooded)||alive(pi)[0];if(mark)mark.blooded=1;}});
   [0,1].forEach(pi=>{if(TEAMS[P(pi).team]?.sourceId==='kt-vespid')P(pi).communion=(d6()%3+1)+(alive(pi).some(o=>/oversight drone/i.test(o.n))?1:0);});
   G.ploys={0:[],1:[]};
@@ -1720,6 +1819,26 @@ function aiPotentialTargets(op){
     return shotTargetState(op,e,w).valid;
   }));
 }
+function aiShotChoice(op){
+  const choices=[];
+  for(const weapon of weaponsOf(op,'r')){
+    if(RULES.heavyBlocked(op,weapon)||RULES.limitedBlocked(op,weapon))continue;
+    if(op.order==='conceal'&&op.orderLocked&&!hasTag(weapon,'Silent'))continue;
+    for(const target of enemiesOf(op.pi)){
+      if(!shotTargetState(op,target,weapon).valid)continue;
+      let value=weapon.a*Math.max(0,7-weapon.h)/6*(weapon.d+weapon.c)/2;
+      if(hasTag(weapon,'Markerlight')){
+        if((target.marks||0)>=4)continue;
+        const support=alive(op.pi).filter(ally=>ally!==op&&!ally.activated&&aiPotentialTargets(ally).includes(target)).length;
+        if(!support)continue;
+        value=support*3;
+      }
+      const onObjective=OBJS.some(o=>dist(target,o)<=1);
+      choices.push({weapon,target,score:value+(onObjective?2:0)+(target.hp<=value?3:0)});
+    }
+  }
+  return choices.sort((a,b)=>b.score-a.score||a.target.hp-b.target.hp)[0]||null;
+}
 function aiObjectiveFor(op,force=false){
   if(!force&&Number.isInteger(op.aiObjective)&&OBJS[op.aiObjective])return op.aiObjective;
   const ranked=OBJS.map((o,i)=>{const c=objectiveControl(o),near=alive(op.pi).filter(a=>a!==op&&dist(a,o)<=3.2).length,
@@ -1738,10 +1857,10 @@ function recoverAI(error){
 }
 function aiTurnImpl(){
   if(G.phase!=='firefight'||!isAI(G.cur)||G.aiBusy)return;G.aiBusy=true;
-  const pool=G.counterMode?alive(G.ai).filter(o=>o.activated&&!o.counteracted&&RULES.canCounter(o,TEAMS)):alive(G.ai).filter(o=>!o.activated&&(!G.gaRequired||o.templateId===G.gaRequired));
+  const pool=G.counterMode?alive(G.cur).filter(o=>o.activated&&!o.counteracted&&RULES.canCounter(o,TEAMS)):alive(G.cur).filter(o=>!o.activated&&(!G.gaRequired||o.templateId===G.gaRequired));
   if(!pool.length){G.aiBusy=false;nextActivation();return;}
   pool.forEach(o=>aiObjectiveFor(o,true));
-  const enemies=alive(0),score=o=>{const oi=aiObjectiveFor(o),obj=OBJS[oi],onObj=OBJS.some(x=>dist(o,x)<=1),shots=aiPotentialTargets(o).length;
+  const enemies=alive(1-G.cur),score=o=>{const oi=aiObjectiveFor(o),obj=OBJS[oi],onObj=OBJS.some(x=>dist(o,x)<=1),shots=aiPotentialTargets(o).length;
     return dist(o,obj)*.55+(onObj?-5:0)+(shots?-2.5:0)+Math.min(...enemies.map(e=>dist(o,e)))*.08-o.hp*.02;};
   pool.sort((a,b)=>score(a)-score(b));const op=pool[0];
   if(!op.orderLocked){const threat=aiPotentialTargets(op).length||enemies.some(e=>dist(op,e)<=op.mv+2);op.order=threat?'engage':'conceal';}
@@ -1751,8 +1870,24 @@ function aiTurnImpl(){
 function aiAct(op,step){
   try{return aiActImpl(op,step);}catch(error){recoverAI(error);}
 }
+function aiPrefersMelee(op){
+  const power=w=>w?w.a*Math.max(0,7-w.h)*(w.d+w.c):0;
+  return power(bestWeapon(op,'m'))>power(bestWeapon(op,'r'))*1.15;
+}
+function aiTryCharge(op,step){
+  if(op.ap<2||op._countering||inEnemyCR(op.x,op.y,op.pi,zOf(op))||['charge','reposition','dash','fallback'].some(k=>actionUsed(op,k))||!weaponsOf(op,'m').length)return false;
+  actMove('charge');
+  if(G.mode!=='charge'||!G.moveCells.length)return false;
+  const cell=[...G.moveCells].sort((a,b)=>{
+    const target=c=>enemiesOf(op.pi).filter(e=>dist(c,e)<=1.001).reduce((hp,e)=>Math.min(hp,e.hp),999);
+    return target(a)-target(b)||a.d-b.d;
+  })[0];
+  doMove(cell.x,cell.y,cell.z||0,true);
+  setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(650,(window.IsoTactics?.walkRemaining?.()||0)+150));
+  return true;
+}
 function aiActImpl(op,step){
-  if(G.phase!=='firefight'||G.cur!==G.ai){G.aiBusy=false;return;}
+  if(G.phase!=='firefight'||G.cur!==op.pi||!isAI(op.pi)){G.aiBusy=false;return;}
   if(op.dead||op.hp<=0){G.aiBusy=false;if(!checkElimination())finishOp(op);return;}
   if(!op._countering&&op.activated){G.aiBusy=false;return;}
   if(step>=5||op.ap<=0){G.aiBusy=false;finishOp(op);return;}
@@ -1762,32 +1897,37 @@ function aiActImpl(op,step){
     op.order='engage';actFight();if(G.targets.length){const tgt=melee[0],wpn=G.weapon||bestWeapon(op,'m');
       showAIAttackWarning('COMBATE',op,tgt,wpn,()=>doFight(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}).catch(recoverAI));return;}
   }
-  const assignedObjective=OBJS[aiObjectiveFor(op)],assignedIndex=OBJS.indexOf(assignedObjective),assignedKey=G.tp+':'+assignedIndex;
-  if(op.ap>=1&&!actionUsed(op,'objective')&&assignedObjective&&dist(op,assignedObjective)<=1&&G.secured?.[assignedKey]!==op.pi){
+  if(aiPrefersMelee(op)&&aiTryCharge(op,step))return;
+  const markerChoice=markerTargets(op).map(target=>({target,support:alive(op.pi).filter(ally=>ally!==op&&!ally.activated&&aiPotentialTargets(ally).includes(target)).length})).sort((a,b)=>b.support-a.support)[0];
+  if(markerChoice&&op.ap>=1&&(markerChoice.support>=2||op.ap>=2&&aiShotChoice(op)?.target===markerChoice.target)){
+    actMarkerlight(markerChoice.target.id);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},500);return;
+  }
+  const assignedObjective=OBJS[aiObjectiveFor(op)];
+  if(op.ap>=1&&!actionUsed(op,'objective')&&assignedObjective&&securableObjective(op)){
     actPickUp();setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},800);return;
   }
   if(op.ap>=1&&op.shotThis<RULES.maxAction(op,'shoot',TEAMS)&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&weaponsOf(op,'r').some(w=>!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w))){
-    if(!op.orderLocked)op.order='engage';actShoot();
+    const choice=aiShotChoice(op);
+    if(choice){if(!op.orderLocked&&!hasTag(choice.weapon,'Silent'))op.order='engage';actShoot(choice.weapon);}
+    else{G.mode=null;G.targets=[];G.weapon=null;}
     const clearTargets=G.mode==='shoot'?G.targets.filter(t=>shotTargetState(op,t,G.weapon||bestWeapon(op,'r')).valid):[];
-    if(G.mode==='shoot'&&clearTargets.length){const tgt=[...clearTargets].sort((a,b)=>{
+    if(G.mode==='shoot'&&clearTargets.length){const tgt=clearTargets.includes(choice?.target)?choice.target:[...clearTargets].sort((a,b)=>{
         const ao=OBJS.some(o=>dist(a,o)<=3)?-4:0,bo=OBJS.some(o=>dist(b,o)<=3)?-4:0;return (a.hp+ao)-(b.hp+bo)||dist(op,a)-dist(op,b);})[0],wpn=G.weapon||bestWeapon(op,'r');
-      showAIAttackWarning('TIRO',op,tgt,wpn,()=>doShoot(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}));return;}
+      showAIAttackWarning('TIRO',op,tgt,wpn,()=>doShoot(tgt,{ai:true,onContinue:result=>afterAICombat(op,step,result.casualties)}).catch(recoverAI));return;}
     if(G.mode==='shoot'&&G.targets.length&&!clearTargets.length){
       log(`${op.n}: tiro da IA bloqueado por parede física`);G.mode=null;G.targets=[];G.weapon=null;render();setTimeout(()=>aiAct(op,step+1),180);return;}
   }
-  if(op.ap>=1&&!op._countering&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&!actionUsed(op,'charge')&&!actionUsed(op,'reposition')&&!actionUsed(op,'dash')&&!actionUsed(op,'fallback')&&weaponsOf(op,'m').length){
-    actMove('charge');if(G.moveCells.length){const cell=[...G.moveCells].sort((a,b)=>{
-      const ea=enemiesOf(op.pi).filter(e=>dist(a,e)<=1.001).sort((x,y)=>x.hp-y.hp)[0],eb=enemiesOf(op.pi).filter(e=>dist(b,e)<=1.001).sort((x,y)=>x.hp-y.hp)[0];
-      return (ea?.hp??999)-(eb?.hp??999)||a.d-b.d;})[0];doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(650,(window.IsoTactics?.walkRemaining?.()||0)+150));return;}
-  }
+  if(aiTryCharge(op,step))return;
   const kind=!actionUsed(op,'reposition')?'reposition':(!actionUsed(op,'dash')?'dash':null);
   if(kind&&op.ap>=1&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))){actMove(kind);
     if(G.moveCells.length){const oi=aiObjectiveFor(op),target=OBJS[oi],enemy=enemiesOf(op.pi);const cellScore=c=>{
       const od=Math.hypot(c.x-target.x,c.y-target.y),ed=Math.min(...enemy.map(e=>Math.hypot(c.x-e.x,c.y-e.y))),
         crowd=alive(op.pi).filter(a=>a!==op&&Math.hypot(c.x-a.x,c.y-a.y)<3).length,
         cover=TERRAIN.some(t=>Math.hypot(c.x-(t.x+t.w/2),c.y-(t.y+t.h/2))<2),onTarget=od<=1;
-      return od*1.3+crowd*4+ed*.08-(cover?1.1:0)-(onTarget?4:0)-((c.z||0)>0&&weaponsOf(op,'r').length?0.6:0);};
-      const cell=[...G.moveCells].sort((a,b)=>cellScore(a)-cellScore(b))[0];doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(800,(window.IsoTactics?.walkRemaining?.()||0)+150));return;}
+      const probe={...op,x:c.x,y:c.y,z:c.z||0,moved:true,movedFar:op.movedFar||c.d>3};
+      const shots=op.ap>=2&&!aiPrefersMelee(op)?aiPotentialTargets(probe).length:0;
+      return od*1.3+crowd*4+ed*.08-(cover?1.1:0)-(onTarget?4:0)-Math.min(shots,3)*3-((c.z||0)>0&&weaponsOf(op,'r').length?0.6:0);};
+      const cell=G.moveCells.map(c=>({cell:c,score:cellScore(c)})).sort((a,b)=>a.score-b.score)[0].cell;doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(800,(window.IsoTactics?.walkRemaining?.()||0)+150));return;}
   }
   G.aiBusy=false;finishOp(op);
 }
@@ -1805,12 +1945,16 @@ function endTP(){
   G.tp++;startTP();
 }
 function scoreObjectives(){
+  if(G.scoredTP===G.tp)return;
+  G.scoredTP=G.tp;
   let s=[0,0];
-  OBJS.forEach(o=>{
-    const c=[0,1].map(pi=>alive(pi).filter(op=>dist(op,o)<=3)
-      .reduce((n,op)=>n+RULES.objectiveAPL(op),0));
+  OBJS.forEach((o,i)=>{
+    if(G.tp===1||G.secured?.[G.tp+':'+i]===undefined)return;
+    const c=objectiveControl(o);
     if(c[0]>c[1])s[0]++;else if(c[1]>c[0])s[1]++;
   });
+  const held=s.slice();
+  s=s.map((n,pi)=>(n>0?1:0)+(n>held[1-pi]?1:0));
   P(0).objectiveVP=(P(0).objectiveVP||0)+s[0];P(1).objectiveVP=(P(1).objectiveVP||0)+s[1];
   P(0).vp=(P(0).objectiveVP||0)+(P(0).tacVP||0);P(1).vp=(P(1).objectiveVP||0)+(P(1).tacVP||0);
   log(`Fim do TP${G.tp}: objetivos ${P(0).n} +${s[0]} VP · ${P(1).n} +${s[1]} VP`);
@@ -1852,7 +1996,7 @@ const activationCommitted=op=>!!(op&&!op.dead&&op.hp>0&&(op._countering||(!op.ac
 function commitActivation(op){
   if(!op||op.dead)return false;
   const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&RULES.canCounter(op,TEAMS);
-  if(counterOK&&!op._countering){op._finishing=false;op.ap=1;op.usedActs=[];op.orderLocked=true;op._countering=true;}
+  if(counterOK&&!op._countering){op._finishing=false;op.ap=1;op.usedActs=[];op.orderLocked=true;op._countering=true;op.markerTarget=null;op.shotPrimaryTarget=null;}
   if(!counterOK&&!op.activationStarted){
     op.activationStarted=true;
     if(op.aplPenalty){op.ap=Math.max(1,op.ap-op.aplPenalty);op.aplPenalty=0;}
@@ -1960,6 +2104,10 @@ function doMove(x,y,z=0,automated=false,confirmed=false){
   const oldZ=zOf(op);op.x=x;op.y=y;op.z=z;op.moved=true;
   if(cell.d>3)op.movedFar=true;
   if(kind==='charge'){op.chargedThis=true;if(!RULES.canChargeConcealed(op,TEAMS))op.order='engage';}
+  if(!['dash','charge','fallback','reposition'].some(k=>actionUsed(op,k))&&op.markerTokens){
+    Object.keys(op.markerTokens).forEach(pi=>op.markerTokens[pi]=Math.max(0,op.markerTokens[pi]-1));
+    op.marks=Object.values(op.markerTokens).reduce((a,b)=>a+b,0);
+  }
   recordAction(op,kind);
   log(`${op.n} ${kind==='charge'?'investiu':'moveu'} ${cell.d.toFixed(1)}"${oldZ!==z?` e ${z>oldZ?'subiu':'desceu'} para ${z}"`:''}`);
   G.mode=null;G.moveCells=[];
@@ -2010,7 +2158,7 @@ function showShotPreview(tgt){
 function cancelShotPreview(){closeOv();G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();msg('<b>Ataque cancelado.</b> Nenhum AP ou uso de arma foi gasto.');}
 function changeShotWeapon(){closeOv();G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();actShoot();}
 function confirmShot(id){const tgt=opById(id);closeOv();if(tgt)doShoot(tgt,{confirmed:true});}
-function doShoot(tgt,opts={}){
+async function doShoot(tgt,opts={}){
   if(!canAct(G.sel,1)||!tgt||tgt.dead||tgt.hp<=0)return;
   const op=G.sel,w=G.weapon||bestWeapon(op,'r');
   const targetNow=shotTargetState(op,tgt,w);
@@ -2018,17 +2166,20 @@ function doShoot(tgt,opts={}){
   if(!opts.ai&&!opts.confirmed){showShotPreview(tgt);return;}
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){const nearest=enemiesOf(op.pi).filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(nearest&&nearest!==tgt){if(P(op.pi).communion<1){G.mode=null;G.targets=[];render();msg('<b class="hl">Communion:</b> sem pontos para ignorar o inimigo mais próximo.');return;}P(op.pi).communion--;}}
   const wasAlive=new Set(G.ops.filter(o=>!o.dead).map(o=>o.id));
-  const r=resolveShoot(op,tgt,w);
-  op.shotThis++;
+  const prepared=await prepareShotDice(op,tgt,w);
+  const r=resolveShoot(op,tgt,w,prepared);
+  op.shotPrimaryTarget=tgt.id;op.shotThis++;
   RULES.useWeapon(op,w);
   recordAction(op,'shoot');
   let extra=[];
   // Blast / Torrent atingem vizinhos
   const splash=tagVal(w,'Blast')||tagVal(w,'Torrent');
   if(splash&&!r.marker){
-    enemiesOf(op.pi).filter(e=>e!==tgt&&dist(e,tgt)<=splash&&checkLoS(tgt,e).vis).forEach(e=>{
-      const r2=resolveShoot(op,e,w);const d2=applyDmg(e,r2.dmg,op);
-      if(d2)extra.push(`${e.n} −${d2}`);});
+    for(const e of enemiesOf(op.pi).filter(e=>e!==tgt&&dist(e,tgt)<=splash&&checkLoS(tgt,e).vis)){
+      const secondaryDice=await prepareShotDice(op,e,w);
+      const r2=resolveShoot(op,e,w,secondaryDice);const d2=applyDmg(e,r2.dmg,op);
+      if(d2)extra.push(`${e.n} −${d2}`);
+    }
   }
   const dealt=r.marker?0:applyDmg(tgt,r.dmg,op);
   if(dealt>0&&(hasTag(w,'Poison')||hasTag(w,'Toxic')))tgt.poisoned=Math.max(1,tgt.poisoned||0);
@@ -2082,18 +2233,21 @@ function toggleOrder(){
   log(`${op.n} → ${op.order==='conceal'?'Conceal':'Engage'}`);
   render();msg(`<b>${op.n}</b> agora está em <b class="hl">${op.order==='conceal'?'Conceal (oculto)':'Engage (engajado)'}</b>.`);
 }
-function securableObjective(op){if(op.templateId==='kt-ws-wolf')return undefined;return OBJS.find((o,i)=>dist(op,o)<=1&&G.secured?.[G.tp+':'+i]!==op.pi);}
+function securableObjective(op){
+  if(G.tp===1||op.templateId==='kt-ws-wolf'||inEnemyCR(op.x,op.y,op.pi,zOf(op)))return undefined;
+  return OBJS.find((o,i)=>{const c=objectiveControl(o);return dist(op,o)<=1&&c[op.pi]>c[1-op.pi]&&G.secured?.[G.tp+':'+i]===undefined;});
+}
 function actPickUp(){
   const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;
   if(actionUsed(op,'objective')){msg('<b class="hl">Ação de missão já realizada nesta ativação.</b>');return;}
   const o=securableObjective(op);
-  if(!o){msg('<b class="hl">Nenhum objetivo</b> no control range.');return;}
+  if(!o){msg('<b class="hl">Transmissão indisponível:</b> a partir do TP2, controle um objetivo a 1″ e esteja fora do alcance de controle inimigo.');return;}
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){if(P(op.pi).communion<1){msg('<b class="hl">Communion:</b> é necessário 1 ponto para uma ação de missão.');return;}P(op.pi).communion--;}
   const oi=OBJS.indexOf(o);G.secured=G.secured||{};const key=G.tp+':'+oi;
   if(G.secured[key]===op.pi){msg('<b class="hl">Este objetivo já foi assegurado por você neste Turning Point.</b>');return;}
-  G.secured[key]=op.pi;log(`${op.n} assegurou o objetivo`);recordAction(op,'objective');
+  G.secured[key]=op.pi;log(`${op.n} iniciou transmissão no objetivo ${oi+1}`);recordAction(op,'objective');
   spend(op,1);render();
-  msg(`<b>${op.n}</b> assegurou o objetivo para a pontuação do Turning Point.`);
+  msg(`<b>${op.n}</b> iniciou a transmissão. No fim do TP: 1 VP por controlar ao menos um transmissor, +1 VP por controlar mais que o adversário.`);
 }
 function endActivation(){if(G.pendingReposition)return;const op=G.sel;if(op&&activationCommitted(op))finishOp(op);}
 /* ═══════════════ RENDERIZAÇÃO ═══════════════ */
@@ -2179,11 +2333,11 @@ function render(){
   bd.innerHTML=h;
   updTop();updScoreboard();renderActs();
 }
-function objectiveControl(o){return[0,1].map(pi=>alive(pi).filter(op=>dist(op,o)<=3).reduce((n,op)=>n+RULES.objectiveAPL(op),0));}
+function objectiveControl(o){return[0,1].map(pi=>alive(pi).filter(op=>dist(op,o)<=1).reduce((n,op)=>n+RULES.objectiveAPL(op),0));}
 function updScoreboard(){
   const controlled=[0,0];OBJS.forEach(o=>{const c=objectiveControl(o);if(c[0]>c[1])controlled[0]++;else if(c[1]>c[0])controlled[1]++;});
   [0,1].forEach(i=>{const p=P(i),el=document.getElementById('score'+i);if(!el)return;el.innerHTML=
-    `<div class="score-item"><b>${p.vp||0}</b><small>VP TOTAL</small></div><div class="score-item"><b>${p.objectiveVP||0}</b><small>OBJ VP</small></div><div class="score-item"><b>${p.tacVP||0}</b><small>TAC OP</small></div><div class="score-item"><b>${p.kills||0}</b><small>ELIM</small></div>`;});
+    `<div class="score-item" title="Pontos de vitória totais"><b>${p.vp||0}</b><small>VP</small></div><div class="score-item" title="Pontos de objetivos"><b>${p.objectiveVP||0}</b><small>OBJ</small></div><div class="score-item" title="Pontos de Tac Ops"><b>${p.tacVP||0}</b><small>TAC</small></div><div class="score-item" title="Eliminações"><b>${p.kills||0}</b><small>ELIM</small></div>`;});
   const live=document.getElementById('scorelive');if(live)live.textContent=`${controlled[0]} OBJ · ${controlled[1]} OBJ`;
 }
 function updTop(){
@@ -2201,9 +2355,15 @@ function movementSummary(cell){
   for(let i=1;i<path.length;i++){const dz=path[i].z-path[i-1].z;up+=Math.max(0,dz);down+=Math.max(0,-dz);}
   return `Percurso total: ${cell.d.toFixed(1)}″ · Subidas: ${up.toFixed(1)}″ · Descidas: ${down.toFixed(1)}″ · Destino: altura ${cell.z||0}″. O total já inclui os custos do terreno; não some a altura novamente.`;
 }
+const failedPortraits=new Set();
+function portraitSource(id){return failedPortraits.has(id)?'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=':`assets/portraits/${id}.jpg`;}
+function portraitFailed(img,id){
+  failedPortraits.add(id);img.onerror=null;img.hidden=true;
+  if(img.nextElementSibling?.classList.contains('rail-fallback'))img.nextElementSibling.hidden=false;
+}
 function operativePanel(op){
   const id=op.templateId||op.sourceId;
-  return `<section class="operative-panel"><img src="assets/portraits/${id}.jpg" alt="Retrato de ${op.n}" onerror="this.hidden=true"><div><b>${op.n}</b><div>${op.hp}/${op.maxhp} PV · ${op.ap} AP · ${op.order==='conceal'?'Oculto (Conceal)':'Pronto para atacar (Engage)'}</div><meter min="0" max="${op.maxhp}" value="${Math.max(0,op.hp)}" aria-label="Vida de ${op.n}" style="width:100%;height:12px"></meter><small>${op.hp<op.maxhp/2?'Ferido · ':''}Altura ${zOf(op)}″ · ${op.activated?'Ativação concluída':activationCommitted(op)?'Em ativação':'Em inspeção'}</small></div></section>`;
+  return `<section class="operative-panel"><img src="${portraitSource(id)}" ${failedPortraits.has(id)?'hidden':''} alt="Retrato de ${op.n}" onerror="portraitFailed(this,'${id}')"><div><b>${op.n}</b><div>${op.hp}/${op.maxhp} PV · ${op.ap} AP · ${op.order==='conceal'?'Oculto (Conceal)':'Pronto para atacar (Engage)'}</div><meter min="0" max="${op.maxhp}" value="${Math.max(0,op.hp)}" aria-label="Vida de ${op.n}" style="width:100%;height:12px"></meter><small>${op.hp<op.maxhp/2?'Ferido · ':''}Altura ${zOf(op)}″ · ${op.activated?'Ativação concluída':activationCommitted(op)?'Em ativação':'Em inspeção'}</small></div></section>`;
 }
 function renderOperativeRail(){
   const rail=document.getElementById('operative-rail');
@@ -2211,7 +2371,8 @@ function renderOperativeRail(){
   if(rail.hidden){rail.innerHTML='';return;}
   rail.innerHTML=[0,1].map(pi=>`<div class="rail-team ${pi?'enemy':''}">EQUIPE ${pi+1}</div>`+G.ops.filter(o=>o.pi===pi).map(o=>{
     const state=o.dead?'Incapacitado':o.activated?'Já ativado':G.sel===o&&activationCommitted(o)?'Em ativação':'Disponível';
-    return `<button type="button" class="rail-op ${o.activated?'spent':''} ${o.dead?'casualty':''} ${G.sel===o?'selected':''}" aria-label="${o.n} — ${state} — ${o.hp}/${o.maxhp} PV" aria-pressed="${G.sel===o}" title="${o.n} · ${state}" onclick="inspectRailOperative('${o.id}')"><img src="assets/portraits/${o.templateId||o.sourceId}.jpg" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="rail-fallback" hidden>${o.ico||'?'}</span><span class="rail-state">${o.dead?'✕':o.activated?'✓':G.sel===o?'◆':''}</span><span class="rail-hp">${o.hp}/${o.maxhp}</span></button>`;
+    const portraitId=o.templateId||o.sourceId,missing=failedPortraits.has(portraitId);
+    return `<button type="button" class="rail-op ${o.activated?'spent':''} ${o.dead?'casualty':''} ${G.sel===o?'selected':''}" aria-label="${o.n} — ${state} — ${o.hp}/${o.maxhp} PV" aria-pressed="${G.sel===o}" title="${o.n} · ${state}" onclick="inspectRailOperative('${o.id}')"><img src="${portraitSource(portraitId)}" ${missing?'hidden':''} alt="" onerror="portraitFailed(this,'${portraitId}')"><span class="rail-fallback" ${missing?'':'hidden'}>${o.ico||'?'}</span><span class="rail-state">${o.dead?'✕':o.activated?'✓':G.sel===o?'◆':''}</span><span class="rail-hp">${o.hp}/${o.maxhp}</span></button>`;
   }).join('')).join('');
 }
 function inspectRailOperative(id){
@@ -2298,7 +2459,8 @@ function renderActsBody(){
    + b('Recuar',"actMove('fallback')",2,op.ap<2||!inCR||actionUsed(op,'fallback')||actionUsed(op,'reposition')||actionUsed(op,'charge'))
    + b(`Atirar${ranged.length>1?' ▾':''}`,"actShoot()",1,op.ap<1||!canShootWeapon||inCR||op.shotThis>=maxT,'pri')
    + b(`Lutar${melee.length>1?' ▾':''}`,"actFight()",1,op.ap<1||!inCR||!melee.length||op.foughtThis>=maxF,'pri')
-    + b('Objetivo',"actPickUp()",1,op.ap<1||actionUsed(op,'objective')||!securableObjective(op))
+    + b('Iniciar transmissão',"actPickUp()",1,op.ap<1||actionUsed(op,'objective')||!securableObjective(op))
+    + (markerCapable(op)?b('Marcar alvo',"actMarkerlight()",1,op.ap<1||!markerTargets(op).length):'')
     + `<button class="btn fpbtn" onclick="showFirstPerson(opById('${op.id}'))">◉ Visão 1ª pessoa</button>`
     + `<button class="btn" ${op.orderLocked?'disabled':''} onclick="toggleOrder()">${op.order==='conceal'?'👁 → Engage':'⚔ → Conceal'}</button>`
    + `<button class="btn dgr" onclick="endActivation()">Encerrar ativação</button>`;

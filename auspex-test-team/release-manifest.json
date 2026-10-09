@@ -1,10 +1,10 @@
 {
   "name": "Pátio de ferro",
-  "version": "4",
+  "version": "5",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-09T00:51:38.106Z",
-  "validation": "Partial team rules audit; see TEAM-AUDIT.md. Not a complete official rules implementation.",
+  "createdAt": "2026-10-09T18:24:36.613Z",
+  "validation": "Partial audit in progress; see AUDIT-PROGRESS.md and RULES-BASELINE.md. Not a complete official rules implementation.",
   "files": [
     {
       "path": ".nojekyll",
@@ -55,6 +55,16 @@
       "path": "assets/grimdark-title-v2.png",
       "bytes": 2262265,
       "sha256": "d608ebdfeb646b77e82ef06feb6345cd6193aac56caf6419fd30a917d8d86796"
+    },
+    {
+      "path": "assets/marine-poses-v1.png",
+      "bytes": 1695568,
+      "sha256": "a8ebe7c40d3ecc62938fc093ca32e87232c2e90895d7ee0d008d1bcb50b2be8c"
+    },
+    {
+      "path": "assets/marine-stance-v2.png",
+      "bytes": 1162608,
+      "sha256": "7354805cd7f8e2a4c4ed69bca223d0338683ccddbccd95820ccb96b921225f67"
     },
     {
       "path": "assets/mini-aod.png",
@@ -577,19 +587,24 @@
       "sha256": "fc36f016815134124eabc97d8ae3f261f645640ece12b85f4dd09c6b49d2546d"
     },
     {
+      "path": "AUDIT-PROGRESS.md",
+      "bytes": 2856,
+      "sha256": "bb95f78e47527785ba00e243f999a7c1be4efd933d38d7c13f9cf2c9044f976c"
+    },
+    {
       "path": "auspex-rules.js",
       "bytes": 10870,
       "sha256": "87d72d22eca08e39fe22bf201bfa8501f9af9b8b873338b3c4466d1551b9115c"
     },
     {
       "path": "battlefield.js",
-      "bytes": 1976,
-      "sha256": "e266fee2685cbf499c72074ecc390f6ad7fe714ea43e72e19045ce9356ebc338"
+      "bytes": 1980,
+      "sha256": "3e42d21868b6cf4fac80bdfe4f8ca58cc7d696db99880bf746b89dcc41d5436b"
     },
     {
       "path": "index.html",
-      "bytes": 228040,
-      "sha256": "74c2e8365108d00a5532b99c825f1c9639851bc7685defa10862f4773a52dffd"
+      "bytes": 238820,
+      "sha256": "e590ce8e19cc06e074578461482cb790254bb914cfc70229a8178ddec7e2beaa"
     },
     {
       "path": "killteam_data.js",
@@ -613,8 +628,8 @@
     },
     {
       "path": "pixel-tactics.js",
-      "bytes": 31647,
-      "sha256": "907d0a767af3cd2bbebe336a1757a7cf415a38c0a2c710c869a7313b2d2150af"
+      "bytes": 33072,
+      "sha256": "ca1c66f9039ddae5717382e1dcf97f7cf1cf87bf6bb0cc9d4789d09095143025"
     },
     {
       "path": "PUBLICAR.md",
@@ -622,9 +637,24 @@
       "sha256": "7ea14a8a7bb288a0e12692f2b3e231e41b1010f08f25329751cc7815e5685b10"
     },
     {
+      "path": "REVIEW-CLAUDE-2026-10-09.txt",
+      "bytes": 6853,
+      "sha256": "01b1348a51f13a316ab9e178482c46dd43116937cac08f2268c5658240d87306"
+    },
+    {
+      "path": "RULES-BASELINE.md",
+      "bytes": 3027,
+      "sha256": "600880ed06b8b5276e0fc413ad853c0d8ded734fec4aea57d0f16f9a8baef49e"
+    },
+    {
       "path": "RULES-COVERAGE.md",
       "bytes": 1785,
       "sha256": "b81e367f7e24dd7cdd5a9cf56533d3643b1089fb436a6ad3640769557fbde820"
+    },
+    {
+      "path": "stance-lab.html",
+      "bytes": 7616,
+      "sha256": "29d9d399a3922fa00d577cc39b3b863a6221a54e8c3270c1109db43898835f0d"
     },
     {
       "path": "TEAM-AUDIT.md",

@@ -10,7 +10,7 @@
   #iso-info{position:absolute;bottom:7px;left:8px;right:8px;color:#e9ddbb;background:#111b2bea;padding:7px;font:12px monospace;pointer-events:none;text-align:center}
   #boardwrap.iso-active{display:block;overflow:hidden;padding:0;perspective:none;min-height:220px}
   #boardwrap.iso-active>#board,#boardwrap.iso-active>.maplegend,#boardwrap.iso-active>#kzname{display:none}
-  @media(max-width:600px){#iso-tools button{font-size:10px;padding:7px}#iso-info{font-size:10px}}`;
+  @media(max-width:600px){#iso-tools{left:4px;right:4px;top:4px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior:contain;pointer-events:auto;gap:4px;padding-bottom:4px;scrollbar-width:thin}#iso-tools>*{flex-shrink:0}#iso-tools button{font-size:10px;padding:7px;white-space:nowrap}#iso-info{display:none}#boardwrap.iso-active{min-height:200px}}`;
   document.head.append(style);
   const stage=document.createElement('div');stage.id='iso-stage';
   stage.innerHTML='<canvas aria-label="Tabuleiro isométrico: toque para selecionar, arraste para mover a câmera"></canvas><div id="iso-tools"><button data-action="rotate-left">↶ GIRAR</button><button data-action="rotate">↻ GIRAR</button><button data-action="cut" aria-pressed="false">RECORTE: OFF</button><button data-action="fit">VER MAPA</button><button data-action="minus">−</button><button data-action="plus">+</button></div><div id="iso-info"></div>';
@@ -19,7 +19,8 @@
   const canvas=stage.querySelector('canvas'),ctx=canvas.getContext('2d'),info=stage.querySelector('#iso-info');
   const active=true;
   let angle=0,cut=false,scale=1,panX=0,panY=0,unit=18,hits=[],cw=1,ch=1,queued=false;
-  let walking=null,hoverCell=null,grid=true;
+  let walking=null,hoverCell=null,hoverOperative=null,grid=true,battleFramed=false;
+  let crowdedOperatives=new Set();
   let metropole=true;
   const useMetropole=()=>metropole&&TERRAIN.some(t=>t.kind==='stronghold')&&!!window.MetropoleSkin;
   skinButton.style.display='none';
@@ -54,7 +55,7 @@
     img.onload=()=>{try{const frames=[];let maxHeight=1;
       for(let row=0;row<rows;row++)for(let col=0;col<columns;col++){
         const x=Math.round(col*img.width/columns),y=Math.round(row*img.height/rows),w=Math.round((col+1)*img.width/columns)-x,h=Math.round((row+1)*img.height/rows)-y;
-        const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d');cx.drawImage(img,x,y,w,h,0,0,w,h);
+        const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(img,x,y,w,h,0,0,w,h);
         const pixels=cx.getImageData(0,0,w,h),d=pixels.data,seen=new Uint8Array(w*h),queue=new Int32Array(w*h);let head=0,tail=0;
         const visit=i=>{if(i<0||i>=w*h||seen[i])return;seen[i]=1;const p=i*4,mn=Math.min(d[p],d[p+1],d[p+2]),mx=Math.max(d[p],d[p+1],d[p+2]);if(d[p+3]===0||(mn>=185&&mx-mn<=24)){d[p+3]=0;queue[tail++]=i;}};
         for(let px=0;px<w;px++){visit(px);visit((h-1)*w+px);}for(let py=0;py<h;py++){visit(py*w);visit(py*w+w-1);}
@@ -141,6 +142,7 @@
     if(feedback.length)schedule();
   }
   function vitals(o){
+    if(crowdedOperatives.has(o.id)&&G.sel?.id!==o.id&&G.aimTarget?.id!==o.id&&hoverOperative!==o.id&&walking?.id!==o.id)return;
     const p=project(o.x+.5,o.y+.5,zOf(o)),s=Math.max(.65,unit/13),w=Math.max(28,25*s),y=p.y-((operativeAtlas(o)?.renderHeight||31)+5)*s;
     const hp=Math.max(0,o.hp),max=Math.max(1,o.maxhp||hp),ratio=Math.min(1,hp/max);
     ctx.fillStyle='#0c1825';ctx.fillRect(p.x-w/2-1,y-1,w+2,7);
@@ -165,6 +167,7 @@
     if(Number.isFinite(preview.cost))label(`${Number(preview.cost.toFixed(1))}″`,{x:end.x,y:end.y+22},'#baffe4');ctx.restore();
   }
   function draw(){if(!active||['killzone','select'].includes(G.phase)||document.body?.classList.contains('setup-screen'))return;cw=Math.max(1,stage.clientWidth);ch=Math.max(1,stage.clientHeight);canvas.width=cw;canvas.height=ch;ctx.imageSmoothingEnabled=false;
+    if(!battleFramed&&G.tp===1&&['strategy','firefight'].includes(G.phase)){scale=1;panX=0;panY=0;battleFramed=true;}
     zoomReadout.textContent=Math.round(scale*100)+'%';
     unit=Math.max(5,Math.min((cw-36)/(W+H),(ch-100)/((W+H)*.5+7)))*scale;hits=[];ctx.clearRect(0,0,cw,ch);const jobs=[];
     const destinationCells=G.pendingReposition?[G.pendingReposition.cell]:G.moveCells;
@@ -207,6 +210,9 @@
       }
     });
     const visibleOps=G.ops.filter(o=>o.x>=0&&!o.dead).map(visualOperative);
+    crowdedOperatives=new Set();
+    const heads=visibleOps.map(o=>{const p=project(o.x+.5,o.y+.5,zOf(o)),s=Math.max(.65,unit/13);return{id:o.id,x:p.x,y:p.y-((operativeAtlas(o)?.renderHeight||31)+5)*s};});
+    for(let i=0;i<heads.length;i++)for(let j=i+1;j<heads.length;j++)if(Math.abs(heads[i].x-heads[j].x)<85&&Math.abs(heads[i].y-heads[j].y)<28){crowdedOperatives.add(heads[i].id);crowdedOperatives.add(heads[j].id);}
     visibleOps.forEach(o=>{const support=TERRAIN.find(t=>zOf(o)>0&&zOf(o)>=t.z-.001&&o.x+.5>=t.x&&o.x+.5<t.x+t.w&&o.y+.5>=t.y&&o.y+.5<t.y+t.h);let depth=project(o.x+.5,o.y+.5).y+.5;
       if(support){
         depth=project(o.x+.5,o.y+.5).y+unit*.5+.1;
@@ -236,7 +242,7 @@
   }
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;draw();});}
   function fit(){scale=1;panX=0;panY=0;schedule();}
-  stage.querySelector('#iso-tools').onclick=e=>{const a=e.target.dataset.action;if(a==='rotate'||a==='rotate-left'){angle=(angle+(a==='rotate'?1:3))%4;hoverCell=null;schedule();}if(a==='cut'){cut=!cut;e.target.textContent='RECORTE: '+(cut?'ON':'OFF');e.target.setAttribute('aria-pressed',String(cut));schedule();}if(a==='grid'){grid=!grid;gridButton.textContent='GRADE: '+(grid?'ON':'OFF');gridButton.setAttribute('aria-pressed',String(grid));schedule();}if(a==='fit')fit();if(a==='plus')api.zoom(1.2);if(a==='minus')api.zoom(1/1.2);};
+  stage.querySelector('#iso-tools').onclick=e=>{const a=e.target.dataset.action;if(a==='rotate'||a==='rotate-left'){angle=(angle+(a==='rotate'?1:3))%4;hoverCell=null;api.center(G.sel?.x??(W-1)/2,G.sel?.y??(H-1)/2);}if(a==='cut'){cut=!cut;e.target.textContent='RECORTE: '+(cut?'ON':'OFF');e.target.setAttribute('aria-pressed',String(cut));schedule();}if(a==='grid'){grid=!grid;gridButton.textContent='GRADE: '+(grid?'ON':'OFF');gridButton.setAttribute('aria-pressed',String(grid));schedule();}if(a==='fit')fit();if(a==='plus')api.zoom(1.2);if(a==='minus')api.zoom(1/1.2);};
   function contains(p,points){let inside=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)inside=!inside;}return inside;}
   function click(x,y){if(humanInputLocked())return;const hit=[...hits].reverse().find(h=>h.rect?x>=h.rect.x&&x<=h.rect.x+h.rect.w&&y>=h.rect.y&&y<=h.rect.y+h.rect.h:contains({x,y},h.points));if(!hit)return;
     if(hit.type==='deploy')deployAt(hit.x,hit.y);if(hit.type==='move')doMove(hit.cell.x,hit.cell.y,hit.cell.z||0);
@@ -245,7 +251,8 @@
   const pointers=new Map();let gesture=null;
   canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});gesture={x:e.clientX,y:e.clientY,moved:pointers.size>1};});
   canvas.addEventListener('pointermove',e=>{const old=pointers.get(e.pointerId);if(!old||!gesture){const rect=canvas.getBoundingClientRect(),p={x:e.clientX-rect.left,y:e.clientY-rect.top};const next=humanInputLocked()?null:[...hits].reverse().find(h=>h.type==='move'&&contains(p,h.points))?.cell||null;if(next!==hoverCell){hoverCell=next;schedule();}return;}hoverCell=null;const other=[...pointers.entries()].find(([id])=>id!==e.pointerId)?.[1];if(other){const before=Math.hypot(old.x-other.x,old.y-other.y),after=Math.hypot(e.clientX-other.x,e.clientY-other.y);if(before>10)scale=Math.max(.7,Math.min(5,scale*after/before));gesture.moved=true;}else{panX+=e.clientX-old.x;panY+=e.clientY-old.y;if(Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>6)gesture.moved=true;}pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});schedule();});
-  canvas.addEventListener('pointerleave',()=>{hoverCell=null;schedule();});
+  canvas.addEventListener('pointerleave',()=>{hoverCell=null;hoverOperative=null;schedule();});
+  canvas.addEventListener('pointermove',e=>{if(pointers.size)return;const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const next=[...hits].reverse().find(h=>h.type==='op'&&h.rect&&x>=h.rect.x&&x<=h.rect.x+h.rect.w&&y>=h.rect.y&&y<=h.rect.y+h.rect.h)?.op.id||null;if(next!==hoverOperative){hoverOperative=next;schedule();}});
   canvas.addEventListener('pointerup',e=>{pointers.delete(e.pointerId);if(gesture&&!gesture.moved){const r=canvas.getBoundingClientRect();click(e.clientX-r.left,e.clientY-r.top);}if(!pointers.size)gesture=null;});
   canvas.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);gesture=null;});
   canvas.addEventListener('wheel',e=>{e.preventDefault();api.zoom(e.deltaY<0?1.1:1/1.1);},{passive:false});new ResizeObserver(schedule).observe(bw);

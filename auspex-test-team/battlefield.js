@@ -35,7 +35,7 @@ const AuspexBattlefield=(()=>{
     }
   }
   // One central floor tile, plus one objective inside each enclosed ruin.
-  const objectives=[{x:14,y:10},{x:7,y:7},{x:22,y:14}];
+  const objectives=[{x:14.5,y:10.5},{x:7,y:7},{x:22,y:14}];
   const terrain=pieces.map(p=>({...p,t:p.type==='cover'?'l':'h'}));
   return {W,H,pieces,terrain,objectives,name:'Pátio de ferro',version:3};
 })();
