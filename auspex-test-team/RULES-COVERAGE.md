@@ -10,7 +10,7 @@ Pendências impeditivas de equivalência integral:
 
 - As ações especiais de Kommandos receberam handlers nesta rodada; continuam necessárias conferências de interação com as lacunas gerais abaixo e QA externo. Breach/Hook/Smoke usam a geometria aproximada do tabuleiro, não medidas físicas exatas pelas bases.
 - Equipamentos universais de terreno e utilidade, posicionamento e ações correspondentes.
-- Alternância/passagem de gambits; escolha da iniciativa e desempate após TP1.
+- Iniciativa aleatória pré-deploy, escolha de zona e posicionamento em grupos de um terço (arredondado para cima) implementados. A fase de estratégia permite escolha pelo vencedor, empate decidido por quem não tinha a iniciativa, CP após a decisão e gambits alternados até dois passes consecutivos. Setup ainda usa zonas de quatro colunas do Pátio e coordenadas de grade, não testes físicos das bases inteiramente dentro da zona; equipamentos universais pré-batalha seguem pendentes.
 - Alternância de repetições entre jogadores no combate; escolha da arma de retaliação e alocação humana de defesas; escolhas de Torrent/ordem de ataques secundários.
 - Consolidação de alterações de APL e duração de Stun; timing de dano de Devastating e mudanças de estatística durante ações.
 - Medidas por bordas das bases, seleção de cobertura/Obscured e trajetórias de Charge conforme o Core Book. O tabuleiro usa aproximações de grade/visibilidade.

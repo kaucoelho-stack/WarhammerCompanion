@@ -3,7 +3,7 @@
   "version": "5",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-10T18:11:15.338Z",
+  "createdAt": "2026-10-10T23:48:18.939Z",
   "validation": "Partial audit in progress; see AUDIT-PROGRESS.md and RULES-BASELINE.md. Not a complete official rules implementation.",
   "files": [
     {
@@ -693,8 +693,8 @@
     },
     {
       "path": "AUDIT-PROGRESS.md",
-      "bytes": 22279,
-      "sha256": "adf43ec8d691f07b1c5aed74747d3a7d452f50f1d081daf1e93adc388749c72e"
+      "bytes": 24733,
+      "sha256": "2594f85a37757488b6dde91dee87cb3ac323387a9f823d16e1af3114d40151df"
     },
     {
       "path": "auspex-rules.js",
@@ -713,8 +713,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 317481,
-      "sha256": "4fd9c87d971693e1f26f2c26b065a7fca4e27563655ae20e8561050e3b6dd755"
+      "bytes": 326659,
+      "sha256": "4e96d279ee65773b948572001d1061e286b2b6c3fa796e59fa25f679fe062ea3"
     },
     {
       "path": "killteam_data.js",
@@ -743,8 +743,8 @@
     },
     {
       "path": "pixel-tactics.js",
-      "bytes": 38652,
-      "sha256": "1e9a15e4b39a193ca24a41ccc453cd00ea9c7c79a3ea3a4d65f29bf70333d07a"
+      "bytes": 38740,
+      "sha256": "5d5afd228096599cd18f01eb5257b0b77f659da69a302026373029daca4ab920"
     },
     {
       "path": "PUBLICAR.md",
@@ -768,8 +768,8 @@
     },
     {
       "path": "RULES-COVERAGE.md",
-      "bytes": 3640,
-      "sha256": "463d6e4031aaa050045f369e4fd35380fde189fee5ff9138d9799c6d0033af5b"
+      "bytes": 4055,
+      "sha256": "3782b16c26b91a6154653e78d34fc89c47a76544b7f2a01b8bf29a0801cfcde1"
     },
     {
       "path": "sprite-assets.js",

@@ -192,7 +192,7 @@
     levelControls.style.display=choosingDestination&&!G.pendingReposition?'flex':'none';
     const levels=[...new Set(G.moveCells.map(c=>c.z||0))].sort((a,b)=>a-b),levelMarkup='<button data-level="all" aria-pressed="'+!!allHeights+'">TODOS OS PISOS</button>'+levels.map(z=>`<button data-level="${z}" aria-pressed="${!allHeights&&chosenHeight===z}">${z?`SUBIR / TOPO ${z}″`:'CHÃO'}</button>`).join('');
     if(levelControls.innerHTML!==levelMarkup)levelControls.innerHTML=levelMarkup;
-    for(let y=0;y<H;y++)for(let x=0;x<W;x++){const n=(x*17+y*31)%9,deploy=G.phase==='deploy'&&(G.cur===0?x<4:x>=W-4),road=x>=10&&x<=19,pts=tile(x,y,0,deploy?'#586f4c':road?(n<4?'#424b59':'#4b5663'):n<2?'#535a64':n<5?'#616875':'#687080','#444c5b');
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){const n=(x*17+y*31)%9,deploy=G.phase==='deploy'&&G.deploymentState?.stage==='placing'&&((G.dropZones?.[G.cur]||(G.cur===0?'left':'right'))==='left'?x<4:x>=W-4),road=x>=10&&x<=19,pts=tile(x,y,0,deploy?'#586f4c':road?(n<4?'#424b59':'#4b5663'):n<2?'#535a64':n<5?'#616875':'#687080','#444c5b');
       if(floorReady&&!deploy){const [o,a,,b]=pts;ctx.save();ctx.transform(a.x-o.x,a.y-o.y,b.x-o.x,b.y-o.y,o.x,o.y);ctx.drawImage(floorTexture,x*floorTexture.width/W,y*floorTexture.height/H,floorTexture.width/W,floorTexture.height/H,0,0,1,1);ctx.restore();}
       if(grid)poly(pts,'#ffffff00','#bfccd13d');
       if((x*19+y*11)%13===0){const a=project(x+.25,y+.3),b=project(x+.6,y+.5),c=project(x+.45,y+.8);ctx.strokeStyle='#242e3c';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.stroke();ctx.fillStyle='#aaa598';ctx.fillRect(Math.round(a.x)+2,Math.round(a.y),2,1);}

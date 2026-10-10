@@ -801,6 +801,10 @@ button:disabled{opacity:.45;cursor:not-allowed}
  <h2 id="score-help-heading">ENTENDA O PLACAR</h2><div id="score-help-body"></div>
  <button class="btn" onclick="document.getElementById('score-help').close()">VOLTAR AO JOGO</button>
 </dialog>
+<dialog id="equipment-help" aria-labelledby="equipment-help-heading" style="width:min(520px,calc(100vw - 32px));max-height:80dvh;overflow:auto;box-sizing:border-box;padding:22px;background:#211c19;border:2px solid #796452;color:#e6dfcd;font:14px monospace">
+ <h2 id="equipment-help-heading"></h2><div id="equipment-help-body"></div>
+ <button class="btn" style="min-height:44px" onclick="document.getElementById('equipment-help').close()">VOLTAR</button>
+</dialog>
 <script src="music.js"></script>
 <script src="battlefield.js"></script>
 <script src="killteam_data.js"></script>
@@ -1408,10 +1412,27 @@ const seekIgnoresCover=(op,tgt,w,los)=>{
 };
 const FACTION_EQUIPMENT={aod:{purity:'Purity Seals',auspex:'Auspex',reliquaries:'Chapter Reliquaries',shields:'Tilting Shields'},kom:{choppas:'Choppas',stocks:'Collapsible Stocks',dynamite:'Dynamite',harpoon:'Harpoon'}};
 const hasEquipment=(pi,id)=>(P(pi)?.equipment||[]).includes(id);
+const EQUIPMENT_HELP={
+ purity:{name:'Purity Seals',effect:'Após as repetições dos dados de ataque, se houver pelo menos duas falhas, descarte uma delas e transforme a outra em um sucesso normal.',limit:'Uma vez por turno para toda a equipe. Não gasta CP.'},
+ auspex:{name:'Auspex',effect:'Ao escolher um alvo, permite ignorar Obscured (obscurecido) contra inimigos a até 8″ durante essa ativação ou contra-ação. Não permite enxergar através de paredes nem ignorar a proteção de Conceal em cobertura.',limit:'Uma vez por turno para toda a equipe.'},
+ reliquaries:{name:'Chapter Reliquaries',effect:'O ploy Wrath of Vengeance custa 0 CP quando o operativo está em Engage. Isso não concede AP adicionais por si só.',limit:'Depende das condições e limites do próprio ploy.'},
+ shields:{name:'Tilting Shields',effect:'Em combate corpo a corpo, após a rolagem inicial do adversário e antes das repetições, os ataques dele só podem ser críticos com resultado 6. Impede críticos abaixo de 6 provenientes de Lethal, Rending e Severe.',limit:'Uma vez por turno para toda a equipe, ao lutar ou retaliar.'},
+ choppas:{name:'Choppas',effect:'Concede a arma corpo a corpo Choppa: 3 dados, acerta em 3+, dano 4 normal / 5 crítico. Um perfil melhor já existente continua disponível.',limit:'Disponível para os Kommandos, exceto Grot e Bomb Squig.'},
+ stocks:{name:'Collapsible Stocks',effect:'Remove o limite de alcance das armas Slugga e Shokka. Não afeta a Dakka e não remove as exigências de linha de visão e alvo válido.',limit:'Efeito contínuo enquanto o equipamento estiver selecionado.'},
+ dynamite:{name:'Dynamite',effect:'Ataque de alcance 4″: 5 dados, acerta em 4+, dano 4 normal / 5 crítico. Blast 1″ atinge também operativos próximos, inclusive aliados. Saturate impede reter dado de cobertura; Heavy permite somente Reposition junto desse ataque.',limit:'Um uso por batalha, compartilhado pela equipe. Grot e Bomb Squig não podem usar.'},
+ harpoon:{name:'Harpoon',effect:'Ataque de alcance 8″: 4 dados, acerta em 4+, dano 4 normal / 5 crítico. Lethal 5+ produz críticos em 5 ou 6; Stun reduz o APL do alvo quando há um crítico retido.',limit:'Um uso por turno, compartilhado pela equipe. Grot e Bomb Squig não podem usar.'},
+ explosive:{name:'Explosive Grenades',effect:'Frag: alcance 6″, 4 dados em 4+, dano 2/4 e Blast 2″ (pode atingir aliados). Krak: alcance 6″, 4 dados em 4+, dano 4/5 e Piercing 1 (remove um dado de defesa). Ambas têm Saturate, impedindo reter dado de cobertura.',limit:'No app: uma frag e uma krak por batalha, compartilhadas pela equipe. O estoque próprio do Grenadier é separado. Grot e Bomb Squig não usam. A escolha oficial de duas granadas iguais ainda não está disponível.'}
+};
+function showEquipmentHelp(id){
+  const help=EQUIPMENT_HELP[id];if(!help)return;
+  document.getElementById('equipment-help-heading').textContent=help.name;
+  document.getElementById('equipment-help-body').innerHTML=`<p>${help.effect}</p><p><b>Uso e restrições:</b> ${help.limit}</p><small>Esta explicação descreve o equipamento implementado no app. Se não estiver selecionado, não concede efeitos.</small>`;
+  document.getElementById('equipment-help').showModal?.();
+}
 function equipmentControls(){
   const d=G.rosterDraft,options={...(FACTION_EQUIPMENT[d?.k]||{}),explosive:'Explosive Grenades · 1 frag + 1 krak'};
   if(!FACTION_EQUIPMENT[d?.k])return '';
-  return `<div class="abl"><b>EQUIPAMENTO · até 4 opções distintas</b>${Object.entries(options).map(([id,name])=>`<label style="display:block;margin:6px"><input type="checkbox" ${(d.equipment||[]).includes(id)?'checked':''} onchange="toggleRosterEquipment('${id}',this.checked)"> ${name}</label>`).join('')}<small>Esta lista será ampliada com os equipamentos de terreno e utilidade. Nenhum equipamento não selecionado concede bônus.</small></div>`;
+  return `<div class="abl"><b>EQUIPAMENTO · até 4 opções distintas</b>${Object.entries(options).map(([id,name])=>`<div style="display:flex;align-items:center;gap:8px;margin:6px;min-width:0"><label style="flex:1;min-width:0;overflow-wrap:anywhere"><input type="checkbox" ${(d.equipment||[]).includes(id)?'checked':''} onchange="toggleRosterEquipment('${id}',this.checked)"> ${name}</label><button type="button" class="btn" style="flex:none;min-width:44px;min-height:44px" aria-label="Informações: ${name}" onclick="showEquipmentHelp('${id}')">?</button></div>`).join('')}<small>Esta lista será ampliada com os equipamentos de terreno e utilidade. Nenhum equipamento não selecionado concede bônus.</small></div>`;
 }
 function toggleRosterEquipment(id,selected){
   const d=G.rosterDraft;if(!d||![...Object.keys(FACTION_EQUIPMENT[d.k]||{}),'explosive'].includes(id))return;
@@ -2113,6 +2134,7 @@ function chooseGameMode(mode){
   document.getElementById('title-screen').classList.remove('on');startSelect();
 }
 function startSelect(){
+  G.deploymentState=null;G.dropZones=null;G.strategyState=null;G.tp=1;
   G.smoke=[];G.boomQueue=[];G.boomResolving=false;G.dakkaCombo=null;G.breachMove=null;G.breaches=[];
   document.body.classList.add('setup-screen');
   G.phase='killzone';G.selIdx=0;
@@ -2209,7 +2231,7 @@ function confirmRoster(){
     const [enemyKey,enemy]=candidates[Math.floor(Math.random()*candidates.length)];
     setPlayerRoster(1,enemyKey,RULES.defaultSelection(enemy));
     startDeploy();
-    msg(`<b>Adversário revelado: ${enemy.name}.</b> ${deploymentPrompt(0)}`);
+    msg(`<b>Adversário revelado: ${enemy.name}.</b> Aguarde a escolha da zona de posicionamento.`);
   }else if(pi===0)setTimeout(()=>showTeamPicker(1),200);else startDeploy();
 }
 function startDeploy(){
@@ -2227,42 +2249,63 @@ function startDeploy(){
     });return;
   }
   applyKillzone(G.killzone||'modular');document.body.classList.remove('setup-screen');
-  G.phase='deploy';G.cur=0;G.ops=[...P(0).ops,...P(1).ops];
-  msg(deploymentPrompt(0));
+  G.phase='deploy';G.ops=[...P(0).ops,...P(1).ops];
+  const first=d6()<=3?0:1;G.init=first;G.cur=first;
+  G.deploymentState={stage:'zone',first,remaining:0};G.dropZones=null;
+  openOv('Zona de posicionamento',`<p><b>${P(first).n}</b> recebeu a iniciativa de preparação e escolhe sua zona. O adversário fica com a zona oposta.</p><button class="btn" ${isAI(first)?'disabled':''} onclick="chooseDropZone(${first},'left')">ZONA ESQUERDA</button><button class="btn" ${isAI(first)?'disabled':''} onclick="chooseDropZone(${first},'right')">ZONA DIREITA</button><p>Posicionamento alternado: até um terço da equipe, arredondado para cima, por grupo. Todos começam em Conceal.</p>`,true);
   render();
-  requestAnimationFrame(()=>focusBoard(1,H/2,false));
+  const setup=G.deploymentState;
+  if(isAI(first))setTimeout(()=>{if(G.phase==='deploy'&&G.deploymentState===setup&&setup.stage==='zone')chooseDropZone(first,'right');},380);
 }
-const nextToDeploy=pi=>P(pi).ops.find(o=>o.x<0);
+const deploymentLeft=pi=>(G.dropZones?.[pi]|| (pi===0?'left':'right'))==='left';
+function chooseDropZone(pi,side){
+  const s=G.deploymentState;
+  if(G.phase!=='deploy'||s?.stage!=='zone'||s.first!==pi||!['left','right'].includes(side))return false;
+  G.dropZones={[pi]:side,[1-pi]:side==='left'?'right':'left'};s.stage='placing';G.cur=pi;
+  s.remaining=Math.ceil(P(pi).ops.length/3);closeOv();msg(deploymentPrompt(pi));render();
+  requestAnimationFrame(()=>focusBoard(deploymentLeft(pi)?1:W-2,H/2,false));
+  if(isAI(pi))setTimeout(aiDeploy,380);return true;
+}
+const nextToDeploy=pi=>P(pi).ops.find(o=>o.x<0&&o.id===G.deploymentState?.selectedId)||P(pi).ops.find(o=>o.x<0);
+function selectDeployment(id){
+  const s=G.deploymentState,op=P(G.cur).ops.find(o=>o.id===id&&o.x<0);
+  if(G.phase!=='deploy'||s?.stage!=='placing'||isAI(G.cur)||!op)return false;
+  s.selectedId=id;msg(deploymentPrompt(G.cur));render();return true;
+}
 function deploymentPrompt(pi){
   const ops=P(pi).ops,left=ops.filter(o=>o.x<0).length,next=nextToDeploy(pi);
-  return `<b>Posicionamento · ${ops.length-left}/${ops.length}</b> — ${P(pi).n}: ${left} restantes. ${next?`Posicione <b class="hl">${next.n}</b> na zona destacada (${pi===0?'4 primeiras':'4 últimas'} colunas).`: 'Equipe pronta.'}`;
+  return `<b>Posicionamento · ${ops.length-left}/${ops.length}</b> — ${P(pi).n}: ${left} restantes · ${G.deploymentState?.remaining||0} neste grupo. ${next?`Posicione <b class="hl">${next.n}</b> na zona destacada (${deploymentLeft(pi)?'esquerda':'direita'}).`: 'Equipe pronta.'}`;
 }
 function deployAt(x,y,automated=false){
+  if(G.phase!=='deploy'||G.deploymentState?.stage!=='placing'||!Number.isInteger(x)||!Number.isInteger(y)||x<0||x>=W||y<0||y>=H)return false;
   if(humanInputLocked()&&!automated){msg('<b class="hl">Aguarde a IA concluir o posicionamento.</b>');return;}
   const pi=G.cur, op=nextToDeploy(pi);
   if(!op)return;
-  const zone = pi===0 ? x<4 : x>=W-4;
-  if(!zone){msg(`<b class="hl">Fora da zona.</b> ${P(pi).n} posiciona nas ${pi===0?'4 primeiras':'4 últimas'} colunas.`);return;}
+  const zone = deploymentLeft(pi) ? x<4 : x>=W-4;
+  if(!zone){msg(`<b class="hl">Fora da zona.</b> ${P(pi).n} posiciona na zona ${deploymentLeft(pi)?'esquerda':'direita'}.`);return;}
   if(terrAt(x,y)==='h'||occupied(x,y)){msg('<b class="hl">Célula ocupada ou bloqueada.</b> Escolha outra.');return;}
-  op.x=x;op.y=y;P(pi).deployed++;
+  op.x=x;op.y=y;op.order='conceal';P(pi).deployed++;G.deploymentState.remaining--;G.deploymentState.selectedId=null;
   const o0=nextToDeploy(0), o1=nextToDeploy(1);
   if(!o0&&!o1){startTP();return;}
-  // alterna se o outro ainda tem gente
-  G.cur = (pi===0&&o1)?1:((pi===1&&o0)?0:pi);
+  // Alternate batches, not individual operatives; completed teams are skipped.
+  if(G.deploymentState.remaining<=0||!nextToDeploy(pi)){
+    G.cur=nextToDeploy(1-pi)?1-pi:pi;
+    G.deploymentState.remaining=Math.min(Math.ceil(P(G.cur).ops.length/3),P(G.cur).ops.filter(o=>o.x<0).length);
+  }
   const nx=nextToDeploy(G.cur);
   msg(deploymentPrompt(G.cur));
   render();
-  if(!isAI(G.cur))requestAnimationFrame(()=>focusBoard(G.cur===0?1:W-2,nx?.y>=0?nx.y:H/2,true));
+  if(!isAI(G.cur))requestAnimationFrame(()=>focusBoard(deploymentLeft(G.cur)?1:W-2,nx?.y>=0?nx.y:H/2,true));
   if(isAI(G.cur))setTimeout(aiDeploy,380);
 }
 function aiDeploy(){
-  if(G.phase!=='deploy'||!isAI(G.cur))return;const op=nextToDeploy(G.cur);if(!op)return;
+  if(G.phase!=='deploy'||G.deploymentState?.stage!=='placing'||!isAI(G.cur))return;const op=nextToDeploy(G.cur);if(!op)return;
   const idx=P(G.cur).deployed,total=P(G.cur).ops.length,targetY=((idx+.5)/total)*H;
-  const deployLeft=G.cur===0?0:W-4,deployRight=G.cur===0?4:W;
+  const deployLeft=deploymentLeft(G.cur)?0:W-4,deployRight=deploymentLeft(G.cur)?4:W;
   const cells=[];for(let y=0;y<H;y++)for(let x=deployLeft;x<deployRight;x++)if(terrAt(x,y)!=='h'&&!occupied(x,y)){
     const nearCover=TERRAIN.some(t=>t.t&&Math.hypot(x-(t.x+t.w/2),y-(t.y+t.h/2))<2.5);
     const objDist=Math.min(...OBJS.map(o=>Math.hypot(x-o.x,y-o.y)));
-    const edgeDistance=G.cur===0?W-1-x:x;
+    const edgeDistance=deploymentLeft(G.cur)?W-1-x:x;
     cells.push({x,y,score:Math.abs(y-targetY)*1.7+objDist*.08+edgeDistance*.25-(nearCover?1.4:0)+Math.random()*.5});}
   if(!cells.length)return;cells.sort((a,b)=>a.score-b.score);msg(`<b class="ai-pulse" style="color:var(--p2)">IA posicionando ${op.n}…</b>`);deployAt(cells[0].x,cells[0].y,true);
 }
@@ -2280,17 +2323,29 @@ function startTP(){
   // posicionado também precisa aparecer imediatamente, sem aguardar a próxima fase.
   render();
   // roll-off de iniciativa
-  let r0,r1;do{r0=d6();r1=d6();}while(r0===r1);
-  G.init = r0>r1?0:1; G.cur=G.init;
+  const r0=d6(),r1=d6(),previous=G.init;
+  G.strategyState={tp:G.tp,rolls:[r0,r1],chooser:r0===r1?1-previous:(r0>r1?0:1),stage:'initiative',turn:null,passes:0};
+  const chooser=G.strategyState.chooser;
+  openOv('Escolher iniciativa',`<p>${P(0).n}: ${r0} · ${P(1).n}: ${r1}</p><p>${r0===r1?'Empate: quem não tinha a iniciativa decide.':'Quem venceu o roll-off decide.'} <b>${P(chooser).n}</b> escolhe quem começa.</p>${[0,1].map(pi=>`<button class="btn" ${isAI(chooser)?'disabled':''} onclick="chooseInitiative(${chooser},${pi})">${P(pi).n} começa</button>`).join('')}`,true);
+  if(isAI(chooser)){const tp=G.tp;setTimeout(()=>{if(G.tp===tp)chooseInitiative(chooser,chooser);},400);}
+}
+function chooseInitiative(chooser,pi){
+  const s=G.strategyState;
+  if(G.phase!=='strategy'||!s||s.tp!==G.tp||s.stage!=='initiative'||s.chooser!==chooser||![0,1].includes(pi))return false;
+  G.init=pi;G.cur=pi;s.stage='gambits';s.turn=pi;s.passes=0;
   P(0).cp+= G.tp===1?1:(G.init===0?1:2);
   P(1).cp+= G.tp===1?1:(G.init===1?1:2);
+  showStrategy();return true;
+}
+function showStrategy(){
+  const [r0,r1]=G.strategyState?.rolls||[0,0];
   openOv('Fase de Estratégia',`
     <div style="text-align:center;padding:6px 0 14px">
       <div class="rowlbl">ROLL-OFF DE INICIATIVA</div>
       <div class="dice" style="justify-content:center">
-        <div class="d rolling" data-final="${r0}" data-kind="${r0>r1?'suc':'fail'}">?</div>
+        <div class="d ${r0>r1?'suc':'fail'}">${r0}</div>
         <div style="align-self:center;color:var(--mut);font-family:var(--fd)">vs</div>
-        <div class="d rolling" data-final="${r1}" data-kind="${r1>r0?'suc':'fail'}">?</div></div>
+        <div class="d ${r1>r0?'suc':'fail'}">${r1}</div></div>
       <div class="combat-result" style="font-family:var(--fd);font-size:15px;color:${G.init===0?'var(--p1)':'var(--p2)'}">
         ${P(G.init).n} tem a iniciativa</div>
       <div class="combat-result" style="font-size:11px;color:var(--txt2);margin-top:5px">
@@ -2298,15 +2353,33 @@ function startTP(){
     </div>
     <div class="rowlbl">PLOYS DE ESTRATÉGIA — confira custos e exceções nas opções</div>
     <div id="ploylist"></div>
-    <button class="btn pri combat-continue" style="width:100%;margin-top:10px" onclick="endStrategy()" disabled>
-      IR PARA A FASE DE FIREFIGHT</button>`,true);
+    <div id="gambit-status"></div>
+    <button class="btn pri" id="gambit-pass" style="width:100%;margin-top:10px" onclick="passGambit(G.strategyState.turn)">PASSAR GAMBIT</button>`,true);
   renderPloys('s');
-  animateDiceReveal(760);
-  if(G.gameMode==='ai')setTimeout(aiStrategy,260);
+  scheduleStrategyAI();
+}
+function scheduleStrategyAI(){
+  const s=G.strategyState;if(!s||s.stage!=='gambits'||G.strategyMoving||!isAI(s.turn))return;
+  const tp=G.tp,turn=s.turn;setTimeout(()=>{if(G.phase==='strategy'&&G.tp===tp&&G.strategyState?.turn===turn)aiStrategy();},400);
+}
+function finishGambit(pi,passed=false){
+  const s=G.strategyState;if(!s||s.stage!=='gambits'||s.turn!==pi)return false;
+  s.passes=passed?s.passes+1:0;G.doctrinePicker=null;G.adaptivePicker=null;
+  if(s.passes===2){s.stage='complete';endStrategy();return true;}
+  s.turn=1-pi;renderPloys('s');scheduleStrategyAI();return true;
+}
+function passGambit(pi){
+  const s=G.strategyState;
+  if(G.phase!=='strategy'||!s||s.stage!=='gambits'||s.turn!==pi||G.strategyMoving||G.ployChoice)return false;
+  log(`${P(pi).n} passou o gambit`);return finishGambit(pi,true);
 }
 function aiStrategy(){
-  if(G.phase!=='strategy'||G.strategyMoving||G.ployChoice)return;const t=TEAMS[P(G.ai).team],opts=t.ploys.filter(p=>p.ty==='s'&&!p.fx?.reference&&!(p.fx?.sssh&&G.tp===1)&&P(G.ai).cp>=(p.fx?.combatDoctrine?Math.min(...Object.keys(COMBAT_DOCTRINES).map(name=>combatDoctrineCost(G.ai,name).cp)):p.cp)&&!G.ploys[G.ai].includes(p.id));
-  if(opts.length){const p=opts[(G.tp-1)%opts.length];if(usePloy(G.ai,p.id))msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativou ${p.n}</b>`);}
+  if(G.phase!=='strategy'||G.strategyMoving||G.ployChoice)return;
+  const pi=G.strategyState?.turn??G.ai;
+  if(G.strategyState&&(G.strategyState.stage!=='gambits'||!isAI(pi)))return;
+  const t=TEAMS[P(pi).team],opts=t.ploys.filter(p=>p.ty==='s'&&!p.fx?.reference&&!p.fx?.event&&!p.fx?.adjustDoctrine&&!(p.fx?.sssh&&G.tp===1)&&P(pi).cp>=(p.fx?.combatDoctrine?Math.min(...Object.keys(COMBAT_DOCTRINES).map(name=>combatDoctrineCost(pi,name).cp)):p.cp)&&!G.ploys[pi].includes(p.id));
+  if(opts.length){const p=opts[(G.tp-1)%opts.length];if(usePloy(pi,p.id)){msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativou ${p.n}</b>`);return;}}
+  if(G.strategyState)passGambit(pi);
 }
 const COMBAT_DOCTRINES={devastator:'Devastador · tiros além de 6″',tactical:'Tático · tiros até 6″',assault:'Assalto · lutar ou retaliar'};
 function combatDoctrineCost(pi,name,useFree=true){
@@ -2330,11 +2403,12 @@ function renderPloys(ty){
     return `<div class="rowlbl" style="color:${pi===0?'var(--p1)':'var(--p2)'}">${P(pi).n} — ${P(pi).cp} CP</div>`+
     t.ploys.filter(p=>p.ty===ty).map(p=>{
       const used=G.ploys[pi].includes(p.id),cost=p.fx?.combatDoctrine?Math.min(...Object.keys(COMBAT_DOCTRINES).map(name=>combatDoctrineCost(pi,name).cp)):p.cp;
-      const can=P(pi).cp>=cost&&!used&&!isAI(pi)&&!p.fx?.reference&&!p.fx?.adjustDoctrine&&!p.fx?.event&&!(p.fx?.sssh&&G.tp===1)&&!G.strategyMoving&&!G.ployChoice;
+      const can=P(pi).cp>=cost&&!used&&!isAI(pi)&&!p.fx?.reference&&!p.fx?.adjustDoctrine&&!p.fx?.event&&!(p.fx?.sssh&&G.tp===1)&&!G.strategyMoving&&!G.ployChoice&&(!G.strategyState||ty!=='s'||G.strategyState.stage==='gambits'&&G.strategyState.turn===pi);
       return `<div class="plc ${can?'':'dis'}" ${can?`onclick="usePloy(${pi},'${p.id}')"`:''}>
         <div class="pn"><span>${used?'✓ ':''}${p.n}${p.fx?.reference?' · SOMENTE CONSULTA':''}</span><span class="cpb">${p.cp} CP</span></div>
         <div class="pd">${p.d}${p.fx?.reference?'<br><em>Efeito ainda não implementado. Não pode ser ativado e não gasta CP.</em>':p.fx?.event||p.fx?.adjustDoctrine?'<br><em>Oferecido no momento legal durante a batalha.</em>':''}</div>${p.fx?.combatDoctrine&&G.doctrinePicker===pi&&can?doctrineOptionsHTML(pi,p.id):''}${p.fx?.adaptive&&G.adaptivePicker===pi&&can?`<div style="display:grid;gap:6px">${Object.entries(CHAPTER_TACTICS).filter(([name])=>name!==P(pi).chapter?.secondary).map(([name,label])=>`<button class="btn" onclick="event.stopPropagation();usePloy(${pi},'${p.id}','${name}')">${label} · 1 CP</button>`).join('')}<button class="btn" onclick="event.stopPropagation();G.adaptivePicker=null;renderPloys('s')">CANCELAR · 0 CP</button></div>`:''}</div>`;}).join('');
   }).join('');
+  if(ty==='s'&&G.strategyState){const s=G.strategyState;document.getElementById('gambit-status').textContent=s.stage==='gambits'?`Vez de ${P(s.turn).n} · ${s.passes} passe consecutivo. Dois passes consecutivos encerram a estratégia.`:'';document.getElementById('gambit-pass').disabled=s.stage!=='gambits'||isAI(s.turn)||G.strategyMoving||!!G.ployChoice;}
 }
 function usePloy(pi,id,doctrineName=null,useFree=true,atActivation=false){
   if(![0,1].includes(pi)||!['strategy','firefight'].includes(G.phase)||G.strategyMoving||G.ployChoice)return false;
@@ -2342,6 +2416,7 @@ function usePloy(pi,id,doctrineName=null,useFree=true,atActivation=false){
   const heroic=atActivation===true&&id==='aod_doc'?heroicDoctrineContext():null;
   if(atActivation&&(!heroic||heroic.op.pi!==pi||doctrineName===null))return false;
   if(!p||p.fx?.reference||p.fx?.event||p.fx?.adjustDoctrine||G.ploys[pi].includes(id)||(p.ty==='s'?G.phase!=='strategy'&&!heroic:G.phase!=='firefight'))return false;
+  if(p.ty==='s'&&!heroic&&G.strategyState&&(G.strategyState.stage!=='gambits'||G.strategyState.turn!==pi))return false;
   if(p.fx?.sssh&&G.tp===1)return false;
   if(p.fx?.adaptive){
     if(!P(pi).chapter)return false;
@@ -2368,6 +2443,7 @@ function usePloy(pi,id,doctrineName=null,useFree=true,atActivation=false){
   log(`${P(pi).n} usou ${p.n}${p.fx?.combatDoctrine?' · '+COMBAT_DOCTRINES[doctrineName]:''} (−${cost.cp} CP)`);
   renderPloys(p.ty);updTop();
   if(p.fx?.sssh){G.strategyMoving=true;setTimeout(()=>queueQuietDashes(pi),0);}
+  else if(p.ty==='s'&&!heroic)finishGambit(pi);
   return true;
 }
 function quietDashEligible(op){
@@ -2386,7 +2462,7 @@ async function queueQuietDashes(pi){
     if(index>=0&&G.phase==='strategy'&&G.tp===tp&&!op.dead){const c=cells[index];if(reachable(op,3,{allowClimb:false}).some(x=>x.x===c.x&&x.y===c.y&&x.z===c.z)){window.IsoTactics?.walk?.(op,movementPath(c));op.x=c.x;op.y=c.y;op.z=c.z||0;log(`${op.n}: SSSSHHHH! · Dash grátis ${c.d.toFixed(1)}″`);render();}}
   }
   G.strategyMoving=false;
-  if(G.phase==='strategy'&&G.tp===tp){openOv('Fase de Estratégia',body,true);renderPloys('s');document.querySelectorAll('#ov .combat-continue').forEach(b=>b.disabled=false);}
+  if(G.phase==='strategy'&&G.tp===tp){openOv('Fase de Estratégia',body,true);finishGambit(pi);renderPloys('s');}
 }
 async function activationPloys(op){
   if(op._countering){if(await offerEventPloy(op,'aod_wrath','Esta counteraction permite duas ações de 1 AP diferentes, em vez de uma.')){op.wrathCounter=true;op.ap=2;}}
@@ -2457,6 +2533,8 @@ function applyAdjustDoctrine(opId,name,useFree=true){
 }
 function endStrategy(){
   if(G.phase!=='strategy'||G.strategyMoving||G.ployChoice)return;
+  if(G.strategyState&&G.strategyState.stage!=='complete')return;
+  G.strategyState=null;
   closeOv();G.phase='firefight';G.cur=G.init;
   nextActivation();
 }
@@ -3004,7 +3082,7 @@ function focusBoard(x,y,smooth=false){
 }
 function centerBoard(){
   const op=G.sel&&G.sel.x>=0?G.sel:null;if(op)return focusBoard(op.x,op.y,true);
-  if(G.phase==='deploy')return focusBoard(G.cur===0?1:W-2,H/2,true);
+  if(G.phase==='deploy')return focusBoard(deploymentLeft(G.cur)?1:W-2,H/2,true);
   focusBoard(W/2,H/2,true);
 }
 function zoomBoard(delta){
@@ -3059,7 +3137,7 @@ function render(){
   // deploy: células clicáveis
   if(G.phase==='deploy'){
     const pi=G.cur;
-    for(let y=0;y<H;y++)for(let x=(pi===0?0:W-4);x<(pi===0?4:W);x++){
+    for(let y=0;y<H;y++)for(let x=(deploymentLeft(pi)?0:W-4);x<(deploymentLeft(pi)?4:W);x++){
       if(terrAt(x,y)==='h'||occupied(x,y))continue;
       h+=`<div class="cell mv" style="left:${x*CS+1}px;top:${y*CS+1}px;width:${CS-2}px;height:${CS-2}px;opacity:.5" onclick="deployAt(${x},${y})"></div>`;}
   }
@@ -3226,6 +3304,9 @@ function renderActs(){
 }
 function renderActsBody(){
   const el=document.getElementById('acts');
+  if(G.phase==='deploy'&&G.deploymentState?.stage==='placing'){
+    el.innerHTML=isAI(G.cur)?'<p>IA posicionando seu grupo…</p>':`<p>Escolha quem posicionar · ${G.deploymentState.remaining} neste grupo</p>`+P(G.cur).ops.filter(o=>o.x<0).map(o=>`<button class="btn" aria-pressed="${nextToDeploy(G.cur)===o}" onclick="selectDeployment('${o.id}')">${o.n}</button>`).join('');return;
+  }
   if(G.pendingReposition){const p=G.pendingReposition;el.innerHTML=`<div class="inspect-banner">DESTINO: ${p.cell.z||0}″ · ${p.cell.d.toFixed(1)}″ de movimento · aguardando confirmação</div><button class="btn pri" onclick="confirmReposition()">CONFIRMAR REPOSICIONAMENTO · 1 AP</button><button class="btn" onclick="undoReposition()">↶ DESFAZER MOVIMENTO</button>`;return;}
   if(G.phase!=='firefight'){el.innerHTML='';return;}
   if(humanInputLocked()){
