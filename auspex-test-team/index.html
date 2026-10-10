@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AUSPEX · Pátio de ferro</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -605,6 +605,77 @@ button:disabled{opacity:.45;cursor:not-allowed}
   .title-art{background-position:78% center!important}.grim-title-menu h1{font-size:clamp(38px,12vw,56px)}
   .sheet{width:calc(100vw - 16px);max-height:calc(100dvh - 24px);margin:auto}.shb{overflow-x:hidden}
 }
+/* Short landscape viewports must not inherit desktop-sized HUD or canvas minima. */
+@media(max-height:540px) and (orientation:landscape){
+  body{height:100dvh;min-height:0;overflow:hidden}
+  #top{min-height:0;flex:0 0 auto;display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 44px;gap:4px;padding:2px 4px}
+  #tp{font-size:10px;padding:2px;align-self:center}#tp b{font-size:12px}
+  .pchip{min-width:0;padding:3px 5px}.pchip .nm{font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pchip .st{font-size:9px;line-height:1.2}
+  .quit-match{min-width:44px;width:44px;height:36px;padding:3px;align-self:center}.quit-match span{display:none}
+  #scorebar{min-height:0;flex:0 0 auto;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:4px;padding:2px 4px}
+  .score-side{padding:2px;gap:1px}.score-item b{font-size:12px}.score-item small{font-size:8px;line-height:1.1;white-space:nowrap}
+  .score-live{grid-column:2;grid-row:1;min-width:80px;min-height:0;font-size:8px}.score-live b{font-size:9px;margin:0}
+  #boardwrap,#boardwrap.iso-active{min-height:0!important;flex:1 1 0;overflow:hidden}
+  #rail-toggle{display:block;position:absolute;top:56px;left:4px;z-index:25;min-height:44px;min-width:44px;padding:4px;background:#201b18;color:#dac9b0;border:1px solid #807060}
+  #rail-toggle[hidden]{display:none}#operative-rail:not(.mobile-open){display:none}
+  #operative-rail.mobile-open{top:104px;bottom:4px;left:4px;width:48px;padding:2px}.rail-op{min-height:48px}.rail-op img,.rail-fallback{height:30px}
+  #panel,#panel.tactics-hud{position:relative;inset:auto;display:block;flex:0 1 auto;min-height:0;max-height:30dvh;overflow-y:auto;overscroll-behavior:contain;padding:0 0 env(safe-area-inset-bottom);pointer-events:auto}
+  #msg{min-height:0;padding:3px 6px;font-size:10px;line-height:1.2;max-height:28px;overflow-y:auto}
+  #acts,.tactics-hud #acts{display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;gap:4px;padding:3px 4px}
+  #acts>.btn{flex:0 0 auto;max-width:190px}#acts .btn{min-height:44px;font-size:11px;padding:5px 7px}
+  .tactics-hud #acts>.operative-panel{display:none}
+  .tactics-controls{display:flex;flex-direction:row;width:auto;min-width:0;gap:4px}
+  .tactics-menu{display:flex;flex-wrap:nowrap;gap:4px}.tactics-menu>.btn,.tactics-controls>.btn{flex:0 0 auto;min-width:100px;max-width:190px}
+  .tactics-heading,.tactics-description{display:none}.action-reason{font-size:9px;max-width:170px}
+  .sheet,.ov.targeting .sheet{max-height:calc(100dvh - 12px);margin:auto}.shd{padding:6px 10px}.shb{padding:8px;overflow-y:auto}
+}
+/* Mobile battle shell: keep desktop HUD and game rules independent. */
+#mobile-bar,#mobile-roster{display:none}
+#mobile-menu{color:var(--txt);background:var(--panel);border:1px solid var(--line2);margin:auto;padding:16px;width:min(94vw,460px);max-height:85dvh;overflow:auto}
+#mobile-menu::backdrop{background:#000b}
+#mobile-menu button{min-height:44px;font-size:12px}
+#mobile-menu .mobile-menu-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+@media(max-width:900px){
+ body{overscroll-behavior:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+ body:not(.setup-screen) #top,body:not(.setup-screen) #scorebar,#maptools,#operative-rail,#rail-toggle{display:none!important}
+ body:not(.setup-screen) #mobile-bar{display:flex;flex:0 0 44px;align-items:center;justify-content:space-between;background:var(--panel);border-bottom:1px solid var(--line2);padding-left:12px}
+ #mobile-bar{order:-1}
+ #mobile-bar button{min-height:44px;font-size:12px;padding:0 12px}
+ #mobile-bar #mobile-summary{flex:1;display:flex;justify-content:space-between;gap:8px;text-align:left}
+ #mobile-roster:not([hidden]){display:flex;flex:0 0 52px;align-items:center;gap:8px;padding:4px 8px;overflow-x:auto;overscroll-behavior:contain;background:var(--bg)}
+ #mobile-roster .rail-op{position:relative;flex:0 0 44px;width:44px;height:44px;min-height:44px;margin:0;padding:2px;border-radius:50%;overflow:hidden;border:2px solid var(--p1);background:var(--panel)}
+ #mobile-roster .rail-op img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+ #mobile-roster .rail-op.spent{opacity:.45;filter:grayscale(1)}
+ #mobile-roster .rail-op.selected{background:var(--p1);border-color:var(--txt);opacity:1}
+ #mobile-roster .rail-hp{display:none}
+ #mobile-roster .rail-state{font-size:12px}
+ #boardwrap,#boardwrap.iso-active{flex:1 1 0!important;min-height:0!important;margin:0!important;overflow:hidden}
+ #kzname,.maplegend,#iso-info{display:none!important}
+ #panel,#panel.tactics-hud{position:relative!important;inset:auto!important;display:flex!important;flex-direction:column;flex:0 0 176px;width:100%!important;max-width:none!important;max-height:176px!important;margin:0!important;padding:6px 8px!important;border-top:1px solid var(--line2);background:var(--panel);overflow:auto!important}
+ #panel #msg{position:static!important;max-width:none!important;max-height:32px;flex:0 0 auto;overflow:auto;margin:0;padding:2px 0;font-size:12px}
+ #panel #acts{display:block!important;overflow:visible!important;padding:0!important}
+ #panel .mobile-active{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:32px;font-size:12px}
+ #panel .mobile-active button{min-height:44px;min-width:44px;font-size:12px}
+ #panel .mobile-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+ #panel .btn{min-width:0!important;min-height:44px;font-size:12px!important;margin:0;padding:6px!important;white-space:normal;overflow-wrap:anywhere}
+ #panel .mobile-actions .mobile-end{grid-column:1/-1}
+ #panel .mobile-actions small{display:none}
+ #panel .mobile-actions .ap{display:block;font-size:12px}
+ #panel .mobile-submenu{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+ #panel .mobile-submenu .inspect-banner,#panel .mobile-submenu p,#panel .mobile-submenu .move-levels{grid-column:1/-1}
+ #panel .mobile-ap{color:var(--p1);white-space:nowrap}
+ #panel .mobile-active b{max-width:52%;line-height:1.2}
+ #panel .mobile-active{touch-action:none;cursor:ns-resize}
+ #panel.mobile-expanded{flex-basis:min(55dvh,420px)!important;max-height:min(55dvh,420px)!important}
+ #panel p{font-size:12px}
+ body.setup-screen #mobile-roster,body.setup-screen #mobile-bar{display:none!important}
+}
+@media(max-width:900px) and (max-height:540px) and (orientation:landscape){
+ #panel,#panel.tactics-hud{flex-basis:30dvh;max-height:30dvh!important}
+ #mobile-roster:not([hidden]){flex-basis:48px;padding:2px 8px}
+ #iso-tools{flex-direction:row!important;top:8px!important;width:auto!important;gap:4px!important}
+ #iso-tools button[data-action="fit"]{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -663,6 +734,9 @@ button:disabled{opacity:.45;cursor:not-allowed}
   </div>
   <div id="board"></div>
 </div>
+<header id="mobile-bar" aria-label="Resumo da batalha"><button id="mobile-summary" onclick="showMobileMenu()" aria-label="Ver placar completo"></button><button onclick="showMobileMenu()" aria-label="Menu da batalha">☰</button></header>
+<nav id="mobile-roster" aria-label="Sua equipe — toque para inspecionar um operativo" hidden></nav>
+<dialog id="mobile-menu" aria-labelledby="mobile-menu-title"><h3 id="mobile-menu-title">COMANDO TÁTICO</h3><div id="mobile-menu-body"></div><div class="mobile-menu-actions"><button class="btn" onclick="document.getElementById('mobile-menu').close();showScoreHelp()">Entender o placar</button><button class="btn" onclick="document.getElementById('mobile-menu').close();window.AuspexMusic?.settings()">Áudio</button><button class="btn" onclick="window.IsoTactics?.fit()">Ver mapa inteiro</button><button class="btn" onclick="window.IsoTactics?.toggleGrid()">Grade</button><button class="btn" onclick="window.IsoTactics?.toggleCut()">Recorte das paredes</button><button class="btn" onclick="document.getElementById('mobile-menu').close();requestEndMatch()">Encerrar partida</button><button class="btn" onclick="document.getElementById('mobile-menu').close()">Voltar ao jogo</button></div></dialog>
 <div id="panel">
   <div id="msg">Carregando…</div>
   <div id="acts"></div>
@@ -692,6 +766,10 @@ button:disabled{opacity:.45;cursor:not-allowed}
  <section id="music-controls" aria-label="Música de fundo"><button id="music-toggle" onclick="AuspexMusic.toggle()" aria-label="Silenciar música" aria-pressed="false">MÚSICA: ON</button><label for="music-volume">Volume <input id="music-volume" aria-label="Volume da música" type="range" min="0" max="100" value="25" oninput="AuspexMusic.volume(this.value)"></label></section>
  <p>Ajustes salvos automaticamente. Os efeitos sonoros terão controle separado quando forem adicionados.</p>
  <button class="btn" onclick="document.getElementById('audio-settings').close()">FECHAR</button>
+</dialog>
+<dialog id="score-help" aria-labelledby="score-help-heading" style="width:min(440px,calc(100vw - 32px));max-height:80vh;overflow:auto;box-sizing:border-box;padding:22px;background:#211c19;border:2px solid #796452;color:#e6dfcd;font:14px monospace">
+ <h2 id="score-help-heading">ENTENDA O PLACAR</h2><div id="score-help-body"></div>
+ <button class="btn" onclick="document.getElementById('score-help').close()">VOLTAR AO JOGO</button>
 </dialog>
 <script src="music.js"></script>
 <script src="battlefield.js"></script>
@@ -1312,12 +1390,15 @@ const bestWeapon=(op,type)=>[...weaponsOf(op,type)].sort((a,b)=>(b.a*((7-b.h)/6)
 function shotTargetState(op,tgt,w){
   const los=checkLoS(op,tgt);
   if(dist(op,tgt)>RULES.rangeOf(w))return{valid:false,reason:'fora do alcance',los};
-  if(!los.vis)return{valid:false,reason:'parede sólida bloqueia completamente a miniatura',los};
+  if(!los.vis)return{valid:false,reason:'parede ou estrutura sólida bloqueia completamente a miniatura',los};
   if(los.obscured&&!(op.teamId==='pth'&&markerCount(tgt,op.pi)>=3))return{valid:false,reason:'terreno pesado obscurece o alvo',los};
   if(op.teamId==='pth'&&!markerRecon(op)&&op.markerTarget&&op.markerTarget!==tgt.id)return{valid:false,reason:'Markerlight e tiro devem escolher o mesmo alvo nesta ativação',los};
   if(tgt.order==='conceal'&&los.cover&&dist(op,tgt)>2&&!los.vantageReveal&&!seekIgnoresCover(op,tgt,w,los))
     return{valid:false,reason:'alvo em Conceal protegido pela cobertura',los};
-  if(inEnemyCR(tgt.x,tgt.y,tgt.pi,zOf(tgt)))return{valid:false,reason:'alvo dentro do control range de um aliado do atacante',los};
+  if(inEnemyCR(tgt.x,tgt.y,tgt.pi,zOf(tgt))){
+    const engaged=alive(op.pi).filter(ally=>dist(ally,tgt)<=1.001&&checkLoS(ally,tgt).vis).map(ally=>ally.n);
+    return{valid:false,reason:`alvo em combate próximo com aliado: ${engaged.join(', ')}. Não pode receber este tiro`,los};
+  }
   return{valid:true,reason:'',los};
 }
 if(location.hostname==='127.0.0.1'||location.hostname==='localhost'){
@@ -2201,17 +2282,19 @@ function actShoot(chosen=null){
     if(dist(op,e)>rng)return false;
     return shotTargetState(op,e,w).valid;});
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)&&P(op.pi).communion<=0){const near=[...tg].filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(near)tg=[near];}
-  if(!tg.length){msg('<b class="hl">Nenhum alvo válido.</b> Verifique linha de visão, alcance e ordens.');return;}
+  if(!tg.length&&isAI(op.pi)){msg('<b class="hl">Nenhum alvo válido para este tiro.</b>');return;}
   G.mode='shoot';G.targets=tg;G.weapon=w;render();
-  msg(`<b>Atirar</b> com ${w.n} — escolha um alvo válido. <span style="color:var(--mut)">${tg.length} disponível(is)</span>`);
+  msg(`<b>Atirar</b> com ${w.n} — ${tg.length?'escolha um alvo válido':'nenhum alvo válido; consulte o motivo de cada bloqueio'}. <span style="color:var(--mut)">${tg.length} disponível(is)</span>`);
   showShotTargets(tg,w);
 }
 function showShotTargets(targets,w){
   const op=G.sel;if(!op||G.mode!=='shoot')return;
   const aimed=G.aimTarget&&targets.includes(G.aimTarget)?G.aimTarget:null;
+  const blocked=enemiesOf(op.pi).filter(t=>!targets.includes(t));
   openOv('ESCOLHA E CONFIRA O ALVO',`<div class="target-guide"><b>${w.n}</b> · toque num nome ou marcador no mapa. A unidade escolhida ficará destacada; o tabuleiro continua nítido para você conferir a linha de tiro.</div>
     <div class="tlist">${targets.map(t=>{const los=checkLoS(op,t),cover=los.cover?(los.coverType==='light'?'COBERTURA LEVE':'COBERTURA PESADA'):'SEM COBERTURA',range=weaponDamageRange(op,t,w);return`<button class="trow target-choice ${aimed===t?'on':''}" onclick="focusShotTarget('${t.id}')">
-      <div class="ic">${t.ico}</div><div><div class="tn">${t.n}</div><div class="td">${dist(op,t).toFixed(1)}″ · ${t.hp}/${t.maxhp} PV · ${t.order==='conceal'?'CONCEAL':'ENGAGE'} · ${cover} · dano 0–${range.max}</div></div></button>`;}).join('')}</div>
+      <div class="ic">${t.ico}</div><div><div class="tn">${t.n}</div><div class="td">ALVO VÁLIDO · ${dist(op,t).toFixed(1)}″ · ${t.hp}/${t.maxhp} PV · ${t.order==='conceal'?'CONCEAL':'ENGAGE'} · ${cover} · dano 0–${range.max}</div></div></button>`;}).join('')}</div>
+    ${blocked.length?`<h4>ALVOS BLOQUEADOS · ${blocked.length}</h4><div class="tlist">${blocked.map(t=>{const state=shotTargetState(op,t,w);return`<article class="trow"><div class="ic">×</div><div><div class="tn">${t.n} · ${dist(op,t).toFixed(1)}″</div><div class="td">BLOQUEADO: ${state.reason||'restrição de seleção da regra deste time'}</div></div></article>`;}).join('')}</div><p class="target-guide">Ver a miniatura na câmera não garante um tiro válido. Unidades não são tratadas como paredes: o bloqueio por aliado indicado aqui é combate próximo com o alvo.</p>`:''}
     <div class="target-confirm"><button class="btn" onclick="cancelShotPreview()">CANCELAR</button><button class="btn" onclick="changeShotWeapon()">TROCAR ARMA</button><button class="btn pri confirm" ${aimed?'':'disabled'} onclick="confirmShotTargetChoice()">${aimed?'REVISAR ATAQUE EM '+aimed.n.toUpperCase():'SELECIONE UM ALVO'}</button></div>`,true,'targeting');
 }
 function focusShotTarget(id){const tgt=opById(id);if(!tgt||G.mode!=='shoot'||!G.targets.includes(tgt))return;G.aimTarget=tgt;render();focusBoard(tgt.x,tgt.y,false);showShotTargets(G.targets,G.weapon);msg(`<b style="color:var(--warn)">ALVO TRAVADO:</b> ${tgt.n}. Confira o marcador pulsando no mapa antes de confirmar.`);}
@@ -2275,6 +2358,7 @@ function actFight(chosen=null){
   const tg=enemiesOf(op.pi).filter(e=>dist(op,e)<=1);
   if(!tg.length){msg('<b class="hl">Nenhum inimigo no control range</b> para lutar.');return;}
   G.mode='fight';G.targets=tg;G.weapon=chosen;render();
+  if(tg.length===1&&!isAI(op.pi))return doFight(tg[0]);
   msg('<b>Lutar</b> — toque no inimigo adjacente.');
 }
 async function doFight(tgt,opts={}){
@@ -2407,14 +2491,23 @@ function render(){
   updTop();updScoreboard();renderActs();
 }
 function objectiveControl(o){return[0,1].map(pi=>alive(pi).filter(op=>dist(op,o)<=1).reduce((n,op)=>n+RULES.objectiveAPL(op),0));}
+function showScoreHelp(){
+  document.getElementById('score-help-body').innerHTML=`<p><b>VP — Pontos de vitória:</b> total que decide o vencedor. Nesta missão, vêm dos objetivos.</p><p><b>OBJ — Pontos de objetivos:</b> pontuação acumulada por transmissão. No fim dos turnos 2, 3 e 4: +1 VP se controlar algum objetivo transmitindo; +1 VP se controlar mais desses objetivos que o adversário. O turno 1 não pontua.</p><p><b>TAC — Tac Ops:</b> objetivos secundários ainda não implementados. O traço significa indisponível, não zero pontos.</p><p><b>ELIM — Eliminações:</b> inimigos incapacitados que contam para esse registro. Não concedem VP nesta missão.</p><p><b>Controle agora — OBJ entre os placares:</b> quantidade de marcadores controlados neste momento, não pontos já ganhos. Dentro de 1″, soma-se o APL dos operativos; empate não dá controle. Use <b>Iniciar transmissão</b> para habilitar a pontuação do marcador.</p>`;
+  document.getElementById('score-help').showModal?.();
+}
 function updScoreboard(){
   const controlled=[0,0];OBJS.forEach(o=>{const c=objectiveControl(o);if(c[0]>c[1])controlled[0]++;else if(c[1]>c[0])controlled[1]++;});
   [0,1].forEach(i=>{const p=P(i),el=document.getElementById('score'+i);if(!el)return;el.innerHTML=
-    `<div class="score-item" title="Pontos de vitória totais"><b>${p.vp||0}</b><small>VP</small></div><div class="score-item" title="Pontos de objetivos"><b>${p.objectiveVP||0}</b><small>OBJ</small></div><div class="score-item" title="Tac Ops não implementadas nesta missão" aria-label="Tac Ops não implementadas"><b>—</b><small>TAC</small></div><div class="score-item" title="Eliminações"><b>${p.kills||0}</b><small>ELIM</small></div>`;});
-  const live=document.getElementById('scorelive');if(live)live.textContent=`${controlled[0]} OBJ · ${controlled[1]} OBJ`;
+    `<div class="score-item" role="button" tabindex="0" onclick="showScoreHelp()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showScoreHelp();}" title="Pontos de vitória totais · toque para entender o placar"><b>${p.vp||0}</b><small>VP ⓘ</small></div><div class="score-item" role="button" tabindex="0" onclick="showScoreHelp()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showScoreHelp();}" title="Pontos de objetivos · toque para saber como pontuar"><b>${p.objectiveVP||0}</b><small>OBJ ⓘ</small></div><div class="score-item" role="button" tabindex="0" onclick="showScoreHelp()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showScoreHelp();}" title="Tac Ops não implementadas nesta missão" aria-label="Tac Ops não implementadas"><b>—</b><small>TAC ⓘ</small></div><div class="score-item" role="button" tabindex="0" onclick="showScoreHelp()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showScoreHelp();}" title="Eliminações · não dão VP nesta missão"><b>${p.kills||0}</b><small>ELIM ⓘ</small></div>`;});
+  const live=document.getElementById('scorelive');if(live){
+    live.textContent=`${controlled[0]} OBJ · ${controlled[1]} OBJ`;
+    live.setAttribute('role','button');live.setAttribute('tabindex','0');live.setAttribute('title','Objetivos controlados agora; não são VP. Toque para entender.');
+    live.onclick=showScoreHelp;live.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();showScoreHelp();}};
+  }
 }
 function updTop(){
   document.getElementById('tpn').textContent=G.tp;
+  if(mobileBattleLayout())updateMobileSummary();
   [0,1].forEach(i=>{
     const p=P(i),t=p.team?TEAMS[p.team]:null;
     document.getElementById('pn'+i).textContent=t?`${t.ico}  ${p.n} · ${t.name}`:p.n;
@@ -2458,7 +2551,62 @@ function inspectRailOperative(id){
   if(G.phase==='firefight')selectOp(op);else if(G.phase==='strategy')showCard(op);
 }
 let tacticsMenu='main',tacticsMenuOp=null;
+function mobileBattleLayout(){return window.innerWidth<=900;}
+addEventListener('resize',()=>{if(['strategy','firefight','deploy'].includes(G.phase))renderActs();});
+function updateMobileSummary(){
+  document.getElementById('mobile-summary').innerHTML=`<b>TP ${G.tp}/4</b><span>${P(0).vp||0} – ${P(1).vp||0} VP</span><span>${P(G.cur).cp||0} CP</span>`;
+}
+function showMobileMenu(){
+  document.getElementById('mobile-menu-body').innerHTML=[0,1].map(pi=>{
+    const p=P(pi),t=TEAMS[p.team];
+    return `<p><b>${p.n} · ${t?.name||'Equipe não escolhida'}</b><br>${p.vp||0} VP · ${p.objectiveVP||0} OBJ · ${p.kills||0} eliminações · ${p.cp||0} CP<br>${alive(pi).length} operativos vivos</p>`;
+  }).join('')+'<p>TP '+G.tp+'/4 · '+(G.counterMode?'Counteract':G.phase==='firefight'?'Combate':'Preparação')+'</p>';
+  document.getElementById('mobile-menu').showModal?.();
+}
+function renderMobileBattle(){
+  const roster=document.getElementById('mobile-roster');
+  updateMobileSummary();
+  const pi=isAI(G.cur)?1-G.cur:G.cur;
+  roster.hidden=G.phase!=='firefight';
+  roster.innerHTML=roster.hidden?'':G.ops.filter(o=>o.pi===pi).map(o=>{
+    const id=o.templateId||o.sourceId;
+    return `<button class="rail-op ${o.activated?'spent':''} ${G.sel===o?'selected':''}" ${o.dead?'disabled':''} onclick="inspectRailOperative('${o.id}')" aria-pressed="${G.sel===o}" aria-label="${o.n} · ${o.hp}/${o.maxhp} PV · ${o.dead?'Incapacitado':o.activated?'Já ativado':'Disponível'}"><img src="${portraitSource(id)}" ${failedPortraits.has(id)?'hidden':''} alt="" onerror="portraitFailed(this,'${id}')"><span class="rail-fallback" ${failedPortraits.has(id)?'':'hidden'}>${o.ico||'?'}</span><span class="rail-state">${o.dead?'✕':o.activated?'✓':''}</span></button>`;
+  }).join('');
+  const el=document.getElementById('acts'),op=G.sel;
+  if(G.phase!=='firefight')return;
+  if(!op&&!humanInputLocked()){el.innerHTML='<p>Toque em um retrato ou no mapa para escolher seu operativo.</p><button class="btn" onclick="showLog()">Registro da batalha</button>';return;}
+  if(humanInputLocked())return;
+  const raw=el.innerHTML,buttons=raw.match(/<button\b[\s\S]*?<\/button>/g)||[];
+  const active=`<div class="mobile-active"><b>${op.n}</b><span>${op.hp}/${op.maxhp} PV <span class="mobile-ap">${'●'.repeat(Math.max(0,op.ap||0))} ${op.ap||0} AP</span></span><button onclick="openTacticsMenu('status')" aria-label="Armas, status e outras ações">⋯</button></div>`;
+  if(tacticsMenuOp!==op.id){tacticsMenu='main';tacticsMenuOp=op.id;}
+  if(G.mode||G.pendingReposition||!activationCommitted(op)){el.innerHTML=active+`<div class="mobile-submenu">${raw}</div>`;return;}
+  const find=pattern=>buttons.find(b=>pattern.test(b))||'';
+  const move=buttons.filter(b=>b.includes('actMove('));
+  const status=buttons.filter(b=>!(/actMove\(|actShoot\(|actFight\(|actPickUp\(|endActivation\(/.test(b)));
+  if(canCancelActivation(op))status.push('<button class="btn" onclick="cancelActivation()">Cancelar ativação · 0 AP</button>');
+  status.push('<button class="btn" onclick="showLog()">Registro da batalha</button>');
+  if(tacticsMenu!=='main'){
+    el.innerHTML=active+`<div class="mobile-submenu"><button class="btn" onclick="openTacticsMenu('main')">← Voltar</button>${(tacticsMenu==='move'?move:status).join('')}</div>`;return;
+  }
+  const rename=(button,name)=>button.replace(/(onclick="[^"]*">)[^<]*/,`$1${name}`);
+  const fight=find(/actFight\(/),charge=find(/actMove\('charge'\)/);
+  el.innerHTML=active+'<div class="mobile-actions"><button class="btn" onclick="openTacticsMenu(\'move\')">MOVER</button>'+rename(find(/actShoot\(/),'ATIRAR')+rename(fight&&!fight.includes('disabled')?fight:charge,fight&&!fight.includes('disabled')?'LUTAR':'CARREGAR')+rename(find(/actPickUp\(/),'OBJETIVO')+find(/endActivation\(/).replace('class="btn','class="btn mobile-end')+'</div>';
+}
 function openTacticsMenu(menu){tacticsMenu=menu;renderActs();}
+let mobileSheetDrag=null;
+const mobileSheet=document.getElementById('panel');
+mobileSheet.addEventListener('pointerdown',event=>{
+  if(!mobileBattleLayout()||!event.target.closest('.mobile-active')||event.target.closest('button'))return;
+  mobileSheetDrag={id:event.pointerId,y:event.clientY};mobileSheet.setPointerCapture?.(event.pointerId);
+});
+mobileSheet.addEventListener('pointerup',event=>{
+  const drag=mobileSheetDrag;mobileSheetDrag=null;
+  if(!drag||drag.id!==event.pointerId||G.mode||G.pendingReposition||humanInputLocked()||!activationCommitted(G.sel))return;
+  const delta=event.clientY-drag.y;
+  if(Math.abs(delta)>32)openTacticsMenu(delta<0?'status':'main');
+});
+mobileSheet.addEventListener('pointercancel',()=>{mobileSheetDrag=null;});
+mobileSheet.addEventListener('lostpointercapture',()=>{mobileSheetDrag=null;});
 function tacticsActions(html){
   const buttons=html.match(/<button\b[\s\S]*?<\/button>/g)||[];
   const groups={move:[],attack:[],status:[],objective:[],end:[]};
@@ -2471,6 +2619,11 @@ function tacticsActions(html){
 function renderActs(){
   renderOperativeRail();
   renderActsBody();
+  if(mobileBattleLayout()){
+    mobileSheet.classList.remove('tactics-hud');renderMobileBattle();
+    mobileSheet.classList.toggle('mobile-expanded',!!G.sel&&activationCommitted(G.sel)&&!G.mode&&!G.pendingReposition&&!humanInputLocked()&&tacticsMenu!=='main');return;
+  }
+  mobileSheet.classList.remove('mobile-expanded');
   const focused=!!G.sel&&G.phase==='firefight'&&!humanInputLocked();
   document.getElementById('panel').classList.toggle('tactics-hud',focused);
   if(tacticsMenuOp!==G.sel?.id||G.mode||G.pendingReposition){tacticsMenu='main';tacticsMenuOp=G.sel?.id;}
