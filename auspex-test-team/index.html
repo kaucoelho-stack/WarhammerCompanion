@@ -1349,7 +1349,7 @@ function pickWeapon(op,type,title,callback){
 function showWeaponPicker(){const p=G.pendingWeapon;if(!p)return;
   openOv(p.title,`<div style="font-size:9px;color:var(--txt2);margin-bottom:8px">Toque numa arma para revisar o perfil e entender todos os atributos antes de usá-la.</div><div class="tlist">${p.ws.map((w,i)=>`<button class="trow" onclick="inspectPendingWeapon(${i})">
     <div class="ic">${p.type==='r'?'▹':'⚔'}</div><div><div class="tn">${w.n}</div>
-    <div class="td">A${w.a} · ${w.h}+ · ${w.d}/${w.c} · potencial 0–${weaponDamageRange(p.op,null,w).max} PV</div><div>${weaponChipsHTML(w)}</div></div></button>`).join('')}</div>`);
+    <div class="td">A${w.a} · ${w.h}+ · ${w.d}/${w.c} · potencial 0–${weaponDamageRange(p.op,null,w).max} PV${p.type==='r'?` · ${RULES.shootPermission(p.op,w,TEAMS).cost} AP<br>${RULES.shootPermission(p.op,w,TEAMS).reason}`:''}</div><div>${weaponChipsHTML(w)}</div></div></button>`).join('')}</div>`);
 }
 function inspectPendingWeapon(i){const p=G.pendingWeapon,w=p?.ws?.[i];if(!p||!w)return;
   openOv('PERFIL E ATRIBUTOS',`<div class="weapon-inspect"><h4>${w.n}</h4><div class="weapon-profile">ATAQUES ${w.a} · HIT ${w.h}+ · DANO ${w.d}/${w.c} · POTENCIAL 0–${weaponDamageRange(p.op,null,w).max} PV</div><div class="trait-explain">${weaponTraitsHTML(w)}</div></div>
@@ -1361,13 +1361,14 @@ function showCardWeaponInfo(opId,i){const op=opById(opId),w=op?.wpn?.[i];if(!op|
 }
 
 // Coleta modificadores de ploys/habilidades ativos
+function injuryPenaltyApplies(op){return op.hp<op.maxhp/2&&!(G.ploys[op.pi]||[]).includes('aod_fearless');}
 function mods(op,tgt,wpn,isShoot){
   const m={hit:0,rrFail:false,rrOne:false,ceaseless:false,balanced:false,relentless:false,
            lethal:6,crit:0,def5crit:false,autoSave:0,pierce:0,devast:0,accurate:0};
   const pl=G.ploys[op.pi]||[];
   const has=id=>pl.includes(id);
   // Effect handlers below are explicit; descriptive text never grants a bonus.
-  if(op.hp<op.maxhp/2)m.hit+=1;
+  if(injuryPenaltyApplies(op))m.hit+=1;
   if(isShoot&&tgt&&tgt.order==='engage'&&zOf(op)-zOf(tgt)>=2)m.accurate=1;
   if(RULES.engine(op,TEAMS).blooded&&op.blooded)m.accurate=Math.max(1,m.accurate);
   // Regras universais da arma e modificadores de ploy.
@@ -1378,6 +1379,7 @@ function mods(op,tgt,wpn,isShoot){
   if(has('aod_doc'))m.balanced=true;
   if(has('ko_dakk')&&isShoot)m.ceaseless=true;
   if(has('ko_waa')&&!isShoot)m.balanced=true;
+  m.punishing=hasTag(wpn,'Punishing')||(has('ko_punishing')&&isShoot);
   if(has('pm_lumb')&&!op.movedFar)m.ceaseless=true;
   if(has('tau_kau')&&isShoot&&!op.moved)m.balanced=true;
   // Lethal / Severe / Rending vindo da arma
@@ -1420,7 +1422,7 @@ function rollAtk(wpn,mo,n){
   else if(mo.balanced){const i=dice.findIndex(v=>classify(v)==='fail');if(i>=0){dice[i]=d6();repeated.add(i);}}
   if(mo.rrFail)doRR(v=>classify(v)==='fail');
   // Severe: se nenhum crítico, converte um sucesso em crítico
-  let res=dice.map((v,i)=>({v,k:classify(v),reroll:repeated.has(i),classify}));
+  let res=dice.map((v,i)=>({v,k:classify(v),reroll:repeated.has(i),classify,punishing:!!mo.punishing}));
   for(let i=0;i<accurate;i++)res.push({v:'A',k:'suc',accurate:true});
   if(hasTag(wpn,'Severe')&&!res.some(r=>r.k==='crit')){
     const i=res.findIndex(r=>r.k==='suc');if(i>=0)res[i].k='crit';
@@ -1428,6 +1430,7 @@ function rollAtk(wpn,mo,n){
   if(hasTag(wpn,'Rending')&&res.some(r=>r.k==='crit')){
     const i=res.findIndex(r=>r.k==='suc');if(i>=0)res[i].k='crit';
   }
+  if(mo.punishing&&res.some(r=>r.k==='crit')){const fail=res.find(r=>r.k==='fail');if(fail)fail.k='suc';}
   return res;
 }
 function rollDef(op,n,cover,pierce,extra,wpn=null){
@@ -1435,7 +1438,8 @@ function rollDef(op,n,cover,pierce,extra,wpn=null){
   // dados coletados, em vez de criar um quarto dado.
   n=Math.max(0,n-pierce);
   const coverCount=Math.min(n,Number(cover)||0);
-  let dice=[];for(let i=0;i<n-coverCount;i++)dice.push(d6());
+  const skulkCount=op.order==='conceal'&&(G.ploys[op.pi]||[]).includes('ko_skulk')?Math.min(1,n-coverCount):0;
+  let dice=[];for(let i=0;i<n-coverCount-skulkCount;i++)dice.push(d6());
   const soulstrike=wpn&&hasTag(wpn,'Soulstrike');
   const inShadow=zOf(op)>0||TERRAIN.some(t=>t.t==='h'&&Math.hypot(op.x-(t.x+t.w/2),op.y-(t.y+t.h/2))<=Math.max(t.w,t.h)/2+1);
   const baseSv=RULES.engine(op,TEAMS).shadowSave&&inShadow?Math.max(2,op.sv-1):op.sv;
@@ -1444,6 +1448,7 @@ function rollDef(op,n,cover,pierce,extra,wpn=null){
   const classify=v=>soulstrike?(v===1?'crit':v===6?'fail':v<=sv?'suc':'fail'):(v===1?'fail':v>=6||def5&&v>=5?'crit':v>=sv?'suc':'fail');
   let res=dice.map(v=>({v,k:classify(v),classify}));
   for(let i=0;i<coverCount;i++)res.push({v:'C',k:'suc',cover:true});
+  for(let i=0;i<skulkCount;i++)res.push({v:'S',k:'suc',auto:true,skulk:true});
   if(RULES.engine(op,TEAMS).synapse&&alive(op.pi).some(a=>a!==op&&dist(a,op)<=6&&/synapse/i.test((a.abl||[]).map(x=>x.n+' '+x.d).join(' ')))){
     const i=res.findIndex(d=>d.k==='fail');if(i>=0){const v=d6();res[i]={v,k:classify(v),classify,reroll:true};}
   }
@@ -1460,6 +1465,7 @@ function commandRerollDie(pi,dice,index,weapon=null){
     if(hasTag(weapon,'Severe')&&!dice.some(d=>d.k==='crit')){const d=dice.find(d=>d.k==='suc');if(d)d.k='crit';}
     if(hasTag(weapon,'Rending')&&dice.some(d=>d.k==='crit')){const d=dice.find(d=>d.k==='suc');if(d)d.k='crit';}
   }
+  if(dice.some(d=>d.punishing)&&dice.some(d=>d.k==='crit')){const fail=dice.find(d=>d.k==='fail');if(fail)fail.k='suc';}
   log(`${P(pi).n}: Command Re-roll · 1 CP · resultado ${die.v}`);return true;
 }
 async function offerCommandReroll(pi,dice,label,weapon=null){
@@ -1664,13 +1670,23 @@ function showTeamPicker(pi){
       </button><button class="btn army-help" aria-label="Detalhes de ${t.name}" onclick="showTeamDetails(${pi},'${k}')">?</button></article>`).join('')}</div>`,true);
 }
 function pickTeam(pi,k){showRosterBuilder(pi,k,true);}
+function rosterLoadoutControls(o,n){
+  const options=RULES.loadoutOptions(o);if(options.length<2||!n)return '';
+  const d=G.rosterDraft;d.loadouts=d.loadouts||{};
+  return Array.from({length:n},(_,copy)=>`<label style="display:block;font-size:10px;margin:6px 0;min-width:0">ARMAS${n>1?' · '+(copy+1):''}<select aria-label="Armas de ${o.n} ${copy+1}" style="display:block;width:100%;max-width:100%;min-width:0;background:#211c19;color:#e7d8c2;font:inherit" onchange="changeRosterLoadout('${o.id}',${copy},this.value)">${options.map((option,i)=>`<option value="${i}" ${(d.loadouts[`${o.id}:${copy}`]??0)===i?'selected':''}>${option.label}</option>`).join('')}</select></label>`).join('');
+}
+function changeRosterLoadout(id,copy,value){
+  const d=G.rosterDraft;if(!d)return;const o=TEAMS[d.k].catalog.find(o=>o.id===id),selected=Number(value);
+  if(!o||!Number.isInteger(selected)||!RULES.loadoutOptions(o)[selected]||copy<0||copy>=(d.counts[id]||0))return;
+  (d.loadouts||(d.loadouts={}))[`${id}:${copy}`]=selected;
+}
 function showRosterBuilder(pi,k,reset=false){
   const t=TEAMS[k];if(reset||!G.rosterDraft||G.rosterDraft.pi!==pi||G.rosterDraft.k!==k)G.rosterDraft={pi,k,counts:RULES.defaultSelection(t)};
   const counts=G.rosterDraft.counts,check=RULES.validateRoster(t,counts),errorText=check.valid?'FORMAÇÃO ACEITA PELO CADASTRO · REGRAS ESPECIAIS PARCIAIS':check.errors.join(' · ');
   openOv(`${P(pi).n} — montar ${t.name}`,`<div class="roster-head" style="--team:${t.col}"><div><strong>${t.ico} ${t.name}</strong><small>${t.fac} · ${k==='wlf'?'1 lobo obrigatório + 5 scouts':k==='kom'?'Grot + Bomb Squig ocupam uma escolha juntos':'escolha os operativos antes da batalha'}</small></div><div class="roster-total ${check.valid?'':'bad'}">${check.selections}/${t.limit}<span>ESCOLHAS · ${check.total} OPERATIVOS · ${check.leaders}/1 LÍDER${k==='wlf'?' OPCIONAL':''}</span></div></div>
     <div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,full=check.selections+(o.selectionCost||1)>t.limit,canPlus=n<o.max&&(o.leader||!full),weapon=o.wpn?.find(w=>w.t==='r'&&!/pistol|pistola/i.test(w.n))||o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
       <img class="recruit-portrait" src="${portraitSource(o.sourceId)}" alt="${o.n}" onerror="portraitFailed(this,'${o.sourceId}')"><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.min?'<i>OBRIGATÓRIO</i>':''}${o.leader?`<i class="leader">LÍDER · ${k==='wlf'?'OPCIONAL':'ESCOLHA 1'}</i>`:''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
-      <div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n>(o.min||0)?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
+      ${rosterLoadoutControls(o,n)}<div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n>(o.min||0)?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
     <div class="roster-errors ${check.valid?'ok':''}">${errorText}</div><div class="roster-actions"><button class="btn" onclick="showTeamPicker(${pi})">← TROCAR TIME</button><button class="btn" onclick="recommendedRoster()">FORMAÇÃO RECOMENDADA</button><button class="btn pri confirm" onclick="confirmRoster()" ${check.valid?'':'disabled'}>${pi===0?'CONFIRMAR EQUIPE → ADVERSÁRIO':'INICIAR POSICIONAMENTO'}</button></div>`,true);
 }
 function changeRoster(id,delta){
@@ -1678,18 +1694,18 @@ function changeRoster(id,delta){
   if(delta>0&&o.leader)t.catalog.filter(x=>x.leader).forEach(x=>d.counts[x.id]=0);
   d.counts[id]=Math.max(o.min||0,Math.min(o.max,(d.counts[id]||0)+delta));showRosterBuilder(d.pi,d.k,false);
 }
-function recommendedRoster(){const d=G.rosterDraft;if(!d)return;d.counts=RULES.defaultSelection(TEAMS[d.k]);showRosterBuilder(d.pi,d.k,false);}
-function setPlayerRoster(pi,k,counts){
-  const t=TEAMS[k],built=RULES.buildRoster(t,counts);P(pi).team=k;
+function recommendedRoster(){const d=G.rosterDraft;if(!d)return;d.counts=RULES.defaultSelection(TEAMS[d.k]);d.loadouts={};showRosterBuilder(d.pi,d.k,false);}
+function setPlayerRoster(pi,k,counts,loadouts={}){
+  const t=TEAMS[k],built=RULES.buildRoster(t,counts,loadouts);if(!built.length)return false;P(pi).team=k;
   P(pi).ops=built.map((o,i)=>({
     ...o, unitId:o.catalogId||o.id, templateId:o.sourceId||o.id, id:`p${pi}_${o.id}_${i}`, pi, teamId:k, n:o.n,
     hp:o.w,maxhp:o.w,x:-1,y:-1,z:0,order:'conceal',ap:o.apl,activated:false,dead:false,marks:0,moved:false,movedFar:false,
-    chargedThis:false,shotThis:0,foughtThis:0,usedActs:[],orderLocked:false,counteracted:false,def5:o.abl.some(a=>a.def5),weaponUses:{},poisoned:0,terrorchem:0,aplPenalty:0,pain:0,blooded:0
+    chargedThis:false,shotThis:0,shotWeapons:[],foughtThis:0,usedActs:[],orderLocked:false,counteracted:false,def5:o.abl.some(a=>a.def5),weaponUses:{},poisoned:0,terrorchem:0,aplPenalty:0,pain:0,blooded:0
   }));
 }
 function confirmRoster(){
   const d=G.rosterDraft;if(!d)return;const t=TEAMS[d.k],check=RULES.validateRoster(t,d.counts);if(!check.valid)return showRosterBuilder(d.pi,d.k,false);
-  const pi=d.pi,k=d.k;setPlayerRoster(pi,k,d.counts);G.rosterDraft=null;closeOv();
+  const pi=d.pi,k=d.k;if(setPlayerRoster(pi,k,d.counts,d.loadouts)===false)return;G.rosterDraft=null;closeOv();
   if(pi===0&&G.gameMode==='ai'){
     const candidates=Object.entries(TEAMS).filter(([,team])=>RULES.validateRoster(team,RULES.defaultSelection(team)).valid);
     const [enemyKey,enemy]=candidates[Math.floor(Math.random()*candidates.length)];
@@ -1756,7 +1772,7 @@ function startTP(){
   G.secured={};
   G.phase='strategy';G.gaRequired=null;
   G.ops.forEach(o=>{o._finishing=false;o.activated=false;o.ap=o.dead?0:o.apl;o.moved=false;o.movedFar=false;
-    o.chargedThis=false;o.shotThis=0;o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;o.aiObjective=null;o.markerTarget=null;o.shotPrimaryTarget=null;});
+    o.chargedThis=false;o.shotThis=0;o.shotWeapons=[];o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;o.aiObjective=null;o.markerTarget=null;o.shotPrimaryTarget=null;});
   [0,1].forEach(pi=>{if(RULES.engine(alive(pi)[0],TEAMS).blooded){const mark=alive(pi).find(o=>!o.blooded)||alive(pi)[0];if(mark)mark.blooded=1;}});
   [0,1].forEach(pi=>{if(TEAMS[P(pi).team]?.sourceId==='kt-vespid')P(pi).communion=(d6()%3+1)+(alive(pi).some(o=>/oversight drone/i.test(o.n))?1:0);});
   G.ploys={0:[],1:[]};
@@ -1846,6 +1862,7 @@ function aiPotentialTargets(op){
 function aiShotChoice(op){
   const choices=[];
   for(const weapon of weaponsOf(op,'r')){
+    if(RULES.shootPermission&&!RULES.shootPermission(op,weapon,TEAMS).allowed)continue;
     if(RULES.heavyBlocked(op,weapon)||RULES.limitedBlocked(op,weapon))continue;
     if(op.order==='conceal'&&op.orderLocked&&!hasTag(weapon,'Silent'))continue;
     for(const target of enemiesOf(op.pi)){
@@ -2031,7 +2048,7 @@ const activationCommitted=op=>!!(op&&!op.dead&&op.hp>0&&(op._countering||(!op.ac
 function commitActivation(op){
   if(!op||op.dead)return false;
   const counterOK=G.counterMode&&op.pi===G.cur&&op.activated&&!op.counteracted&&RULES.canCounter(op,TEAMS);
-  if(counterOK&&!op._countering){op._finishing=false;op.ap=1;op.usedActs=[];op.orderLocked=true;op._countering=true;op.markerTarget=null;op.shotPrimaryTarget=null;}
+  if(counterOK&&!op._countering){op._finishing=false;op.ap=1;op.usedActs=[];op.shotThis=0;op.shotWeapons=[];op.foughtThis=0;op.moved=false;op.movedFar=false;op.chargedThis=false;op.orderLocked=true;op._countering=true;op.markerTarget=null;op.shotPrimaryTarget=null;}
   if(!counterOK&&!op.activationStarted){
     op.activationStarted=true;
     if(op.aplPenalty){op.ap=Math.max(1,op.ap-op.aplPenalty);op.aplPenalty=0;}
@@ -2101,7 +2118,7 @@ function actMove(kind){
   if(kind==='fallback'&&(actionUsed(op,'reposition')||actionUsed(op,'charge')))return msg('<b class="hl">Fall Back é incompatível com Reposition/Charge.</b>');
   if(kind==='charge'&&(actionUsed(op,'reposition')||actionUsed(op,'dash')||actionUsed(op,'fallback')))return msg('<b class="hl">Charge é incompatível com Reposition, Dash e Fall Back.</b>');
   if(kind==='reposition'&&op.chargedThis)return;
-  const injured=op.hp<op.maxhp/2;
+  const injured=injuryPenaltyApplies(op);
   let baseMove=Math.max(1,op.mv-(injured?2:0));
   let d = kind==='dash'?3:(kind==='charge'?baseMove+2:baseMove);
   if(op._countering)d=Math.min(d,2);
@@ -2155,6 +2172,8 @@ function actShoot(chosen=null){
   const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;G.aimTarget=null;
   if(!chosen)return pickWeapon(op,'r','Escolha a arma de tiro',w=>actShoot(w));
   const w=chosen;
+  const permission=RULES.shootPermission(op,w,TEAMS);
+  if(!permission.allowed){msg(`<b class="hl">${permission.reason}</b>`);return;}
   if(op.order==='conceal'&&!hasTag(w,'Silent')){msg('<b class="hl">Atirar exige Engage, exceto com arma Silent.</b>');return;}
   if(inEnemyCR(op.x,op.y,op.pi,zOf(op))){msg('<b class="hl">Não pode atirar</b> com inimigo no control range.');return;}
   if(RULES.heavyBlocked(op,w)){msg('<b class="hl">Arma Heavy:</b> o movimento feito nesta ativação não permite esse disparo.');return;}
@@ -2188,7 +2207,7 @@ function showShotPreview(tgt){
     <div class="shot-range"><span>DANO POSSÍVEL</span><strong>${range.min}–${range.max} PV</strong></div>
     <div class="shot-meta"><div><b>${tgt.hp}/${tgt.maxhp}</b><small>PV DO ALVO</small></div><div><b>${tgt.sv}+</b><small>SAVE</small></div><div><b>${cover}</b><small>PROTEÇÃO</small></div></div>
     <div style="font-size:9px;color:var(--txt2);line-height:1.45;margin-top:9px">${range.note}<br>O ataque ainda não gastou AP e nenhum dado foi rolado.</div></div>
-    <div class="roster-actions"><button class="btn" onclick="cancelShotPreview()">CANCELAR</button><button class="btn" onclick="changeShotWeapon()">TROCAR ARMA</button><button class="btn pri confirm" onclick="confirmShot('${tgt.id}')">CONFIRMAR TIRO</button></div>`,true);
+    <div class="roster-actions"><button class="btn" onclick="cancelShotPreview()">CANCELAR</button><button class="btn" onclick="changeShotWeapon()">TROCAR ARMA</button><button class="btn pri confirm" onclick="confirmShot('${tgt.id}')">CONFIRMAR TIRO · ${RULES.shootPermission(op,w,TEAMS).cost} AP</button></div>`,true);
 }
 function cancelShotPreview(){closeOv();G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();msg('<b>Ataque cancelado.</b> Nenhum AP ou uso de arma foi gasto.');}
 function changeShotWeapon(){closeOv();G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();actShoot();}
@@ -2196,6 +2215,8 @@ function confirmShot(id){const tgt=opById(id);closeOv();if(tgt)doShoot(tgt,{conf
 async function doShoot(tgt,opts={}){
   if(!canAct(G.sel,1)||!tgt||tgt.dead||tgt.hp<=0)return;
   const op=G.sel,w=G.weapon||bestWeapon(op,'r');
+  const permission=RULES.shootPermission(op,w,TEAMS);
+  if(!permission.allowed){msg(`<b class="hl">${permission.reason}</b>`);return;}
   const targetNow=shotTargetState(op,tgt,w);
   if(!G.targets.includes(tgt)||!targetNow.valid){G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();msg(`<b class="hl">Tiro cancelado:</b> ${targetNow.reason||'o alvo deixou de ser válido'}.`);return;}
   if(!opts.ai&&!opts.confirmed){showShotPreview(tgt);return;}
@@ -2204,6 +2225,7 @@ async function doShoot(tgt,opts={}){
   const prepared=await prepareShotDice(op,tgt,w);
   const r=resolveShoot(op,tgt,w,prepared);
   op.shotPrimaryTarget=tgt.id;op.shotThis++;
+  (op.shotWeapons||(op.shotWeapons=[])).push(w.n);
   RULES.useWeapon(op,w);
   recordAction(op,'shoot');
   let extra=[];
@@ -2227,7 +2249,7 @@ async function doShoot(tgt,opts={}){
   log(`${op.n} atirou em ${tgt.n} com ${w.n}: ${dealt} de dano${hot?` · Hot causou ${hot} em ${op.n}`:''}${tgt.dead?' · INCAPACITADO':''}`);
   if(hot)extra.push(`${op.n} sofreu −${hot} por Hot`);G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;
   showCombat('TIRO',op,tgt,w,r,dealt,extra,opts.onContinue?()=>opts.onContinue({casualties,dealt,target:tgt}):null,!!opts.ai);
-  spend(op,1,!!opts.ai);render();if(!opts.ai)checkElimination();
+  spend(op,permission.cost,!!opts.ai);render();if(!opts.ai)checkElimination();
 }
 function actFight(chosen=null){
   const op=G.sel;if(!op||!activationCommitted(op)||!canAct(op,1))return;
@@ -2478,7 +2500,7 @@ function renderActsBody(){
   const ranged=weaponsOf(op,'r'), melee=weaponsOf(op,'m');
   const inCR=inEnemyCR(op.x,op.y,op.pi,zOf(op));
   const maxT=RULES.maxAction(op,'shoot',TEAMS),maxF=RULES.maxAction(op,'fight',TEAMS);
-  const canShootWeapon=ranged.some(w=>!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w)&&(op.order==='engage'||hasTag(w,'Silent')));
+  const canShootWeapon=ranged.some(w=>RULES.shootPermission(op,w,TEAMS).allowed&&!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w)&&(op.order==='engage'||hasTag(w,'Silent')));
   const reason=(fn,cost)=>{
     if(op.ap<cost)return 'AP insuficientes';
     if(fn.includes('actShoot'))return !ranged.length?'Sem arma de tiro':inCR?'Inimigo em alcance de controle':op.shotThis>=maxT?'Limite de tiros atingido':'Ordem ou restrição da arma';

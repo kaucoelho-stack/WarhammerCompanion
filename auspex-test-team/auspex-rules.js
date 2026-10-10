@@ -34,6 +34,14 @@
   }
   function operativeFrom(op,key,team){
       const weapons=(op.weapons||[]).flatMap(weaponProfiles);
+      if(['aod','kom'].includes(key))for(const w of weapons){
+        if(w.t!=='r'||w.tags.some(t=>t.startsWith('Range ')))continue;
+        const short=(op.weapons||[]).some(src=>src.range==='short'&&(w.n===src.name||w.n.startsWith(src.name+' · ')));
+        if(short&&op.id!=='kt-kommando-bombsquig'){
+          const range=op.id==='kt-kommando-slasha'?6:op.id==='kt-kommando-burna'&&/Dilúvio/.test(w.n)?4:8;
+          w.tags.push('Range '+range);
+        }
+      }
       // Missing weapon types are intentional (e.g. the Fenrisian Wolf).
       const ab=abilitiesOf(op);
       if(key==='vsp'&&!/drone/i.test(op.name||''))ab.push({n:'Fly',d:'Pode atravessar terreno durante ações de movimento.',fly:1});
@@ -56,7 +64,7 @@
   }
   function compositionFor(source){
     return {size:source.limit,leaderMin:source.id==='kt-wolfscouts'?0:1,leaderMax:1,
-      groups:source.id==='kt-angelsofdeath'?[{ids:['kt-aod-heavygunner','kt-aod-eliminator'],max:1,label:'Heavy Intercessor Gunner / Eliminator: no máximo um no total'}]:[]};
+      groups:[]};
   }
   function groupAllows(team,counts,op){return (team.composition?.groups||[]).every(g=>!g.ids.includes(op.sourceId)||team.catalog.filter(o=>g.ids.includes(o.sourceId)).reduce((n,o)=>n+(counts[o.id]||0),0)<g.max);}
   function defaultSelection(team){
@@ -77,10 +85,32 @@
     if(cat.some(o=>o.leader)&&(leaders<min||leaders>1))errors.push(`Selecione ${min?'exatamente 1':'no máximo 1'} líder (${leaders}/1)`);
     return{valid:errors.length===0,errors,total,selections,leaders,size:team.limit||0};
   }
-  function buildRoster(team,counts={}){
+  function loadoutOptions(op){
+    const families=[...new Set((op.wpn||[]).map(w=>w.n.split(' · ')[0]))];
+    const melee=[...new Set((op.wpn||[]).filter(w=>w.t==='m').map(w=>w.n))];
+    const rifles=families.filter(n=>['Bolter Automático','Bolt Rifle','Rifle Bolter Stalker'].includes(n));
+    let combinations=[];
+    if(op.sourceId==='kt-aod-asgt'){
+      for(const ranged of ['Lança-chamas de Mão','Pistola Bolter Pesada'])for(const close of melee)combinations.push([ranged,close]);
+      combinations.push(['Pistola de Plasma','Espada Sierra']);
+    }else if(op.sourceId==='kt-aod-isgt'){
+      for(const ranged of rifles)for(const close of melee)combinations.push([ranged,close]);
+    }else if(['kt-aod-iwarrior','kt-aod-gunner'].includes(op.sourceId)){
+      for(const ranged of rifles)combinations.push([ranged,...families.filter(n=>!rifles.includes(n))]);
+    }else if(op.sourceId==='kt-kommando-boss'){
+      for(const close of melee)combinations.push([...families.filter(n=>!melee.includes(n)),close]);
+    }else combinations=[families];
+    return combinations.map(names=>({label:names.join(' + '),names}));
+  }
+  function buildRoster(team,counts={},loadouts={}){
     const check=validateRoster(team,counts);if(!check.valid)return[];const out=[];
-    for(const o of team.catalog||[])for(let copy=0;copy<(counts[o.id]||0);copy++)out.push({...o,
-      id:`${o.id}-${copy}`,n:o.n+(copy?` ${copy+1}`:''),catalogId:o.id});
+    for(const o of team.catalog||[])for(let copy=0;copy<(counts[o.id]||0);copy++){
+      const options=loadoutOptions(o),selected=loadouts[`${o.id}:${copy}`]??0;
+      if(!Number.isInteger(selected)||!options[selected])return[];
+      const choice=options[selected];
+      out.push({...o,wpn:o.wpn.filter(w=>choice.names.includes(w.n.split(' · ')[0])),loadout:choice.label,
+        id:`${o.id}-${copy}`,n:o.n+(copy?` ${copy+1}`:''),catalogId:o.id});
+    }
     return out;
   }
   function rosterFor(team,key){
@@ -98,7 +128,12 @@
   function ploysFor(team,key){
     const out=[];for(const [kind,ty] of [['strategy','s'],['firefight','f']])for(const [i,p] of (team.ploys?.[kind]||[]).entries()){
       const d=p.desc||p.d||'';
-      out.push({id:`${key}_${ty}_${i}`,n:p.name||p.n,d,cp:p.cp??1,ty,fx:{reference:true}});
+      const name=p.name||p.n;
+      const implemented=key==='kom'&&ty==='s'&&name==='WAAAGH!'?{id:'ko_waa',fx:{meleeBalanced:true}}:
+        key==='kom'&&ty==='s'&&name==='DAKKA! DAKKA! DAKKA!'?{id:'ko_punishing',fx:{rangedPunishing:true}}:
+        key==='kom'&&ty==='s'&&name==='Skulk About'?{id:'ko_skulk',fx:{concealRetain:true}}:
+        key==='aod'&&ty==='s'&&name==='Eles Não Temem'?{id:'aod_fearless',fx:{ignoreInjury:true}}:null;
+      out.push({id:implemented?.id||`${key}_${ty}_${i}`,n:name,d,cp:p.cp??1,ty,fx:implemented?.fx||{reference:true}});
     }return out;
   }
   function importTeams(target,source){
@@ -127,20 +162,39 @@
   const engine=(op,teams)=>team(op,teams)?.engine||{};
   const canCounter=(op,teams)=>op.order==='engage'||engine(op,teams).counterAnyOrder;
   const canChargeConcealed=(op,teams)=>op.templateId==='kt-ws-wolf'||(!!engine(op,teams).concealCharge&&op.templateId!=='kt-kommando-bombsquig');
-  const maxAction=(op,kind,teams)=>engine(op,teams).doubleShootFight&&(kind==='shoot'||kind==='fight')?2:1;
+  const maxAction=(op,kind,teams)=>{
+    if(op._countering)return 1;
+    if(kind==='fight'&&op.templateId==='kt-kommando-boss')return 2;
+    if(team(op,teams)?.sourceId==='kt-angelsofdeath'&&((kind==='shoot'&&(op.foughtThis||0)>=2)||(kind==='fight'&&(op.shotThis||0)>=2)))return 1;
+    return engine(op,teams).doubleShootFight&&(kind==='shoot'||kind==='fight')?2:1;
+  };
+  // Profiles of the same weapon still count as the same weapon for Astartes.
+  const weaponFamily=w=>String(w?.n||w||'').split(' · ')[0].trim().toLowerCase();
+  function shootPermission(op,w,teams){
+    let cost=1,reason='';
+    if((op.shotThis||0)>=maxAction(op,'shoot',teams))reason='Limite de tiros atingido nesta ativação.';
+    if(!reason&&team(op,teams)?.sourceId==='kt-angelsofdeath'&&(op.shotThis||0)>=1){
+      const previous=weaponFamily(op.shotWeapons?.[0]),current=weaponFamily(w);
+      if(!previous)reason='Histórico do primeiro tiro indisponível; não é possível validar Astartes.';
+      else if(!/bolt/.test(previous)&&!/bolt/.test(current))reason='Astartes: pelo menos um dos dois tiros precisa usar uma arma de bolter.';
+      if((/^(bolter pesado|heavy bolter)$/.test(previous)&&/^(bolter pesado|heavy bolter)$/.test(current))||(/^bolt sniper rifle$/.test(previous)&&/^bolt sniper rifle$/.test(current)))cost=2;
+    }
+    if(!reason&&(op.ap||0)<cost)reason=`AP insuficientes: este tiro custa ${cost} AP.`;
+    return {allowed:!reason,cost,reason};
+  }
   const heavyBlocked=(op,w)=>{
     const tag=(w.tags||[]).find(t=>String(t).startsWith('Heavy'));if(!tag||!op.moved)return false;
     if(/Dash only/i.test(tag))return (op.usedActs||[]).some(a=>['reposition','charge','fallback'].includes(a));
     if(/Reposition only/i.test(tag))return (op.usedActs||[]).some(a=>['dash','charge','fallback'].includes(a));
     return true;
   };
-  const limitedBlocked=(op,w)=>{const m=String((w.tags||[]).find(t=>String(t).startsWith('Limited'))||'');if(!m)return false;const n=number(m)||1;return (op.weaponUses?.[w.n]||0)>=n;};
+  const limitedBlocked=(op,w)=>{const m=String((w.tags||[]).find(t=>String(t).startsWith('Limited'))||'');if(!m)return false;const n=number(m.slice(7))||1;return (op.weaponUses?.[w.n]||0)>=n;};
   const useWeapon=(op,w)=>{op.weaponUses=op.weaponUses||{};op.weaponUses[w.n]=(op.weaponUses[w.n]||0)+1;};
   const hasAbility=(op,re)=>text(op.abl).match(re);
   const objectiveAPL=op=>op.apl+(op.abl?.some(a=>a.oc)?1:0);
   const countsForElimination=op=>!op.expendable;
-  const rangeOf=w=>{const t=(w.tags||[]).find(x=>String(x).startsWith('Range '));return t?(number(t)||99):99;};
+  const rangeOf=w=>{const t=(w.tags||[]).find(x=>String(x).startsWith('Range '));return t?(number(String(t).slice(6))||99):99;};
 
   window.AuspexRules={importTeams,team,engine,canCounter,canChargeConcealed,maxAction,heavyBlocked,limitedBlocked,useWeapon,
-    hasAbility,objectiveAPL,countsForElimination,rangeOf,defaultSelection,validateRoster,buildRoster,version:'2.2'};
+    hasAbility,objectiveAPL,countsForElimination,rangeOf,defaultSelection,validateRoster,buildRoster,loadoutOptions,shootPermission,version:'2.3'};
 })();

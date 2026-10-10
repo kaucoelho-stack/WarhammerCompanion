@@ -3,7 +3,7 @@
   "version": "5",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-10T01:09:13.341Z",
+  "createdAt": "2026-10-10T01:32:41.205Z",
   "validation": "Partial audit in progress; see AUDIT-PROGRESS.md and RULES-BASELINE.md. Not a complete official rules implementation.",
   "files": [
     {
@@ -693,13 +693,13 @@
     },
     {
       "path": "AUDIT-PROGRESS.md",
-      "bytes": 8568,
-      "sha256": "b23ca471d7a165f22888d7ca58b5fe1277cecfe47442c8cfc5e41e78ca022a0e"
+      "bytes": 10226,
+      "sha256": "baddba7db4831f8081cf18627edfaae65801470ab27bd780e7fe81c5d1716110"
     },
     {
       "path": "auspex-rules.js",
-      "bytes": 11019,
-      "sha256": "8e08510c884245b47941a7350eb586b2c00a69ea4af959d6b43bd8a850f6d395"
+      "bytes": 14623,
+      "sha256": "2123c00a5f7e1100a65a4e5f3911baf6267496c83f58aa5d490bfaf5fb87475b"
     },
     {
       "path": "battlefield.js",
@@ -708,18 +708,18 @@
     },
     {
       "path": "DATACARD-AUDIT.md",
-      "bytes": 1514,
-      "sha256": "686709da2765e093da43b9636e9cb38e181528c250e3573606ac7d2ed48c1c70"
+      "bytes": 4683,
+      "sha256": "6411efaefc4de214ae3d1ece95868f857e679d631f24810f8a98080a824dc849"
     },
     {
       "path": "index.html",
-      "bytes": 241000,
-      "sha256": "617ff958fda4931efa8188aaae106c38d3199ea511a78bbc5a9066759b53dccc"
+      "bytes": 243556,
+      "sha256": "4753d2da45d6c51d70e153b91c0d89542967d524e237ed26533b246f9dba6cca"
     },
     {
       "path": "killteam_data.js",
-      "bytes": 133896,
-      "sha256": "9cd4dae147b1b20c1239be2dc6072f10465c8dc0d4fa935b14ae6f3a5b57000a"
+      "bytes": 133937,
+      "sha256": "d676c66eb7f20e230dddb7f05be16b51a735307f02ffe9bcb0fd4f2c55759962"
     },
     {
       "path": "modular-floor.png",
@@ -778,8 +778,8 @@
     },
     {
       "path": "TEAM-AUDIT.md",
-      "bytes": 2932,
-      "sha256": "52430c3824c11ca3660098fb3ba3887b5879aa31b5efd358753a754fada20e32"
+      "bytes": 3108,
+      "sha256": "aff5fc40281f45053f0dcf3a3c6c57f2a613c487bdfc530a5739c1a30e978a3d"
     },
     {
       "path": "terrain-painter.js",

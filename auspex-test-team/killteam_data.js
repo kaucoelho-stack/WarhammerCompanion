@@ -451,7 +451,7 @@ const KT_TEAMS = [
         M:'6"', APL:3, GA:1, DF:3, SV:3, W:15,
         abilities:[
           {name:'LÍDER', desc:'Este operativo é o líder do time.'},
-          {name:'Heroic Leader', desc:'1x por turno, pode fazer um dos três: usar um Firefight Ploy de graça (exceto Command Re-roll) se for o operativo específico; usar o Ploy Doutrina de Combate de graça se estiver em campo e longe de inimigos (não pode repetir se já usou esse ploy no turno); usar o Ploy Ajustar Doutrina de graça na mesma condição.'},
+          {name:'Heroic Leader', desc:'1x por turno, pode fazer um dos três: usar um Firefight Ploy de graça (exceto Command Re-roll) se for o operativo específico; usar Doutrina de Combate ao ativar um aliado, pagando seu CP normalmente, se o Captain estiver em campo e fora do alcance de controle inimigo (não pode repetir esse ploy no turno); usar Ajustar Doutrina de graça na mesma condição.'},
           {name:'Iron Halo', desc:'1x por batalha, quando um dado de ataque causar dano Normal neste operativo, pode ignorar aquele dano.'},
         ],
         weapons:[

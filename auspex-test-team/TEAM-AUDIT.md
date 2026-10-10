@@ -10,7 +10,7 @@ Esta revisão compara as 15 equipes importadas com `killteam_data.js`. Não cert
 - Fenrisian Wolf pode carregar em Conceal, não recebe arma de tiro e não executa a ação de missão do simulador.
 - Exceção de Bomb Squig à carga em Conceal da equipe.
 - Cargas autorizadas em Conceal preservam a ordem ao concluir o movimento.
-- Angels of Death: limite compartilhado de um Heavy Intercessor Gunner ou Eliminator.
+- Angels of Death: restrição compartilhada Heavy Intercessor Gunner / Eliminator removida conforme PDF enviado pelo usuário (26/08, errata anterior explicitamente remove esse limite). Ambos podem ser selecionados, mantendo máximo individual e seis escolhas.
 - Kommandos: Grot e Bomb Squig custam meia escolha cada; tamanho físico e escolhas são exibidos separadamente.
 - Ploys usam as fichas do app, sem efeitos adivinhados pelo texto. Os ainda não implementados ficam somente para consulta, não ativam nem consomem CP. Isso limita a jogabilidade e não equivale a implementar essas regras.
 - Perfis com lista vazia de características não herdam características do perfil pai; alcances numéricos são preservados.
