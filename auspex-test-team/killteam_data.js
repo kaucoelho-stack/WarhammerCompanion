@@ -434,7 +434,7 @@ const KT_TEAMS = [
     coreRule: {name:"Astartes", desc:"Cada operativo pode fazer 2 ações de Tiro ou 2 de Luta na mesma ativação. Se forem 2 de Tiro, uma arma bolter deve ser usada em pelo menos uma; se for bolt sniper rifle ou heavy bolter, a segunda ação custa +1 AP. Pode contra-atacar independente da ordem."},
     ploys: {
       strategy: [
-        {name:"Doutrina de Combate", desc:"Escolha Devastador, Tático ou Assalto — unidades ganham re-roll de 1 dado de ataque na situação escolhida neste turno."},
+        {name:"Doutrina de Combate", desc:"Escolha Devastador (tiro além de 6″), Tático (tiro até 6″) ou Assalto (lutar/retaliar). Armas ganham Balanced apenas na situação escolhida neste turno. Custa 1 CP; Doctrine Warfare pode conceder usos gratuitos específicos."},
         {name:"Eles Não Temem", desc:"Ignora mudanças de status (inclusive de armas) por estar ferido."},
         {name:"Táticas Adaptativas", desc:"Troca a Chapter Tactic secundária até o fim do turno."},
         {name:"Indomitus", desc:"Se o inimigo errar 2+ dados ao te atirar, descarta uma falha e transforma outra em sucesso."},

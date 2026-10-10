@@ -132,7 +132,9 @@
       const implemented=key==='kom'&&ty==='s'&&name==='WAAAGH!'?{id:'ko_waa',fx:{meleeBalanced:true}}:
         key==='kom'&&ty==='s'&&name==='DAKKA! DAKKA! DAKKA!'?{id:'ko_punishing',fx:{rangedPunishing:true}}:
         key==='kom'&&ty==='s'&&name==='Skulk About'?{id:'ko_skulk',fx:{concealRetain:true}}:
-        key==='aod'&&ty==='s'&&name==='Eles Não Temem'?{id:'aod_fearless',fx:{ignoreInjury:true}}:null;
+        key==='aod'&&ty==='s'&&name==='Eles Não Temem'?{id:'aod_fearless',fx:{ignoreInjury:true}}:
+        key==='aod'&&ty==='s'&&name==='Doutrina de Combate'?{id:'aod_doc',fx:{combatDoctrine:true}}:
+        key==='aod'&&ty==='f'&&name==='Ajustar Doutrina'?{id:'aod_adjust',fx:{adjustDoctrine:true}}:null;
       out.push({id:implemented?.id||`${key}_${ty}_${i}`,n:name,d,cp:p.cp??1,ty,fx:implemented?.fx||{reference:true}});
     }return out;
   }

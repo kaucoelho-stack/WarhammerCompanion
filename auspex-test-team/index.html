@@ -668,13 +668,43 @@ button:disabled{opacity:.45;cursor:not-allowed}
  #panel .mobile-active{touch-action:none;cursor:ns-resize}
  #panel.mobile-expanded{flex-basis:min(55dvh,420px)!important;max-height:min(55dvh,420px)!important}
  #panel p{font-size:12px}
+ #panel .mobile-move-confirm{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ #panel .mobile-move-confirm h3,#panel .mobile-move-confirm p{grid-column:1/-1;margin:0;font-size:12px}
+ #panel .mobile-move-confirm .btn{min-height:56px}
+ #ov.mobile-battle-sheet{align-items:flex-end;padding:0 8px calc(8px + env(safe-area-inset-bottom));background:#0004;backdrop-filter:none}
+ #ov.mobile-battle-sheet .sheet{width:100%;max-width:none;margin:0;max-height:62dvh;border-radius:0;border:1px solid #796452}
+ #ov.mobile-battle-sheet .shd h3{font-size:14px}
+ #ov.mobile-battle-sheet .shb{padding:12px;overflow-y:auto;font-size:12px}
+ #ov.mobile-battle-sheet .shb p,#ov.mobile-battle-sheet .shb small,#ov.mobile-battle-sheet .rowlbl,#ov.mobile-battle-sheet .shb div[style*="font-size"]{font-size:12px!important}
+ #ov.mobile-battle-sheet .btn,#ov.mobile-battle-sheet .x{min-width:44px;min-height:44px;font-size:12px}
+ #ov.mobile-battle-sheet .d{width:44px;height:44px;min-width:44px;font-size:22px}
+ #mobile-menu .mobile-auto-ai{display:flex;align-items:center;gap:12px;min-height:44px;margin-top:12px;font-size:12px}
+ #mobile-menu .mobile-auto-ai input{width:24px;height:24px}
  body.setup-screen #mobile-roster,body.setup-screen #mobile-bar{display:none!important}
 }
-@media(max-width:900px) and (max-height:540px) and (orientation:landscape){
- #panel,#panel.tactics-hud{flex-basis:30dvh;max-height:30dvh!important}
- #mobile-roster:not([hidden]){flex-basis:48px;padding:2px 8px}
- #iso-tools{flex-direction:row!important;top:8px!important;width:auto!important;gap:4px!important}
- #iso-tools button[data-action="fit"]{display:none!important}
+/* Landscape mobile: three real columns, never floating over the board. */
+@media(max-width:900px) and (orientation:landscape){
+ body:not(.setup-screen){display:grid;grid-template-columns:64px minmax(0,1fr) 168px;grid-template-rows:44px minmax(0,1fr)}
+ body:not(.setup-screen) #mobile-bar{grid-column:1/-1;grid-row:1;min-width:0;min-height:0}
+ body:not(.setup-screen) #boardwrap{grid-column:2;grid-row:2;min-width:0}
+ body:not(.setup-screen) #mobile-roster:not([hidden]){grid-column:1;grid-row:2;min-height:0;min-width:0;flex-direction:column;justify-content:flex-start;padding:8px 10px;overflow-x:hidden;overflow-y:auto;border-right:1px solid var(--line2)}
+ body:not(.setup-screen) #panel,body:not(.setup-screen) #panel.tactics-hud,body:not(.setup-screen) #panel.mobile-expanded{grid-column:3;grid-row:2;min-height:0;max-height:100%!important;flex-basis:auto!important;border-top:0;border-left:1px solid var(--line2)}
+ #panel .mobile-active{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:2px 4px;touch-action:auto;cursor:auto}
+ #panel .mobile-active>b{grid-column:1;grid-row:1;max-width:none;font-size:12px}
+ #panel .mobile-active>span{grid-column:1;grid-row:2;font-size:12px}
+ #panel .mobile-active>button{grid-column:2;grid-row:1/3}
+ #panel .mobile-ap{display:block}
+ #panel .mobile-actions,#panel .mobile-submenu,#panel .mobile-move-confirm{grid-template-columns:minmax(0,1fr)}
+ #panel .mobile-actions .mobile-end{grid-column:1}
+ #panel .mobile-actions .ap{display:inline;margin-left:5px}
+ #panel .mobile-move-confirm .btn{min-height:56px}
+ #boardwrap #iso-tools{flex-direction:column!important;top:72px!important;width:44px!important;gap:8px!important}
+ #boardwrap #iso-tools button[data-action="fit"]{display:block!important}
+ #ov.mobile-battle-sheet .sheet{max-height:calc(100dvh - 60px);max-width:360px}
+}
+@media(max-width:900px) and (max-height:320px) and (orientation:landscape){
+ #boardwrap #iso-tools{flex-direction:row!important;top:8px!important;width:auto!important;gap:4px!important}
+ #boardwrap #iso-tools button[data-action="fit"]{display:none!important}
 }
 </style>
 </head>
@@ -1457,7 +1487,10 @@ function mods(op,tgt,wpn,isShoot){
   m.ceaseless=hasTag(wpn,'Ceaseless');
   m.relentless=hasTag(wpn,'Relentless');
   m.saturate=hasTag(wpn,'Saturate');
-  if(has('aod_doc'))m.balanced=true;
+  const doctrine=G.combatDoctrine?.[op.pi];
+  if(has('aod_doc')&&doctrine?.tp===G.tp&&TEAMS[op.teamId]?.sourceId==='kt-angelsofdeath'){
+    if(!isShoot&&doctrine.name==='assault'||isShoot&&tgt&&(doctrine.name==='devastator'&&dist(op,tgt)>6||doctrine.name==='tactical'&&dist(op,tgt)<=6))m.balanced=true;
+  }
   if(has('ko_dakk')&&isShoot)m.ceaseless=true;
   if(has('ko_waa')&&!isShoot)m.balanced=true;
   m.punishing=hasTag(wpn,'Punishing')||(has('ko_punishing')&&isShoot);
@@ -1856,7 +1889,7 @@ function startTP(){
     o.chargedThis=false;o.shotThis=0;o.shotWeapons=[];o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;o.aiObjective=null;o.markerTarget=null;o.shotPrimaryTarget=null;});
   [0,1].forEach(pi=>{if(RULES.engine(alive(pi)[0],TEAMS).blooded){const mark=alive(pi).find(o=>!o.blooded)||alive(pi)[0];if(mark)mark.blooded=1;}});
   [0,1].forEach(pi=>{if(TEAMS[P(pi).team]?.sourceId==='kt-vespid')P(pi).communion=(d6()%3+1)+(alive(pi).some(o=>/oversight drone/i.test(o.n))?1:0);});
-  G.ploys={0:[],1:[]};
+  G.ploys={0:[],1:[]};G.combatDoctrine={};G.doctrinePicker=null;
   // Atualiza o tabuleiro antes do painel de estratégia: o último operativo
   // posicionado também precisa aparecer imediatamente, sem aguardar a próxima fase.
   render();
@@ -1877,7 +1910,7 @@ function startTP(){
       <div class="combat-result" style="font-size:11px;color:var(--txt2);margin-top:5px">
         CP: ${P(0).n} ${P(0).cp} · ${P(1).n} ${P(1).cp}</div>
     </div>
-    <div class="rowlbl">PLOYS DE ESTRATÉGIA — cada um custa 1 CP</div>
+    <div class="rowlbl">PLOYS DE ESTRATÉGIA — confira custos e exceções nas opções</div>
     <div id="ploylist"></div>
     <button class="btn pri combat-continue" style="width:100%;margin-top:10px" onclick="endStrategy()" disabled>
       IR PARA A FASE DE FIREFIGHT</button>`,true);
@@ -1886,8 +1919,23 @@ function startTP(){
   if(G.gameMode==='ai')setTimeout(aiStrategy,260);
 }
 function aiStrategy(){
-  if(G.phase!=='strategy'||P(G.ai).cp<1)return;const t=TEAMS[P(G.ai).team],opts=t.ploys.filter(p=>p.ty==='s'&&!p.fx?.reference&&P(G.ai).cp>=p.cp&&!G.ploys[G.ai].includes(p.id));
-  if(opts.length){const p=opts[(G.tp-1)%opts.length];usePloy(G.ai,p.id);msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativou ${p.n}</b>`);}
+  if(G.phase!=='strategy')return;const t=TEAMS[P(G.ai).team],opts=t.ploys.filter(p=>p.ty==='s'&&!p.fx?.reference&&P(G.ai).cp>=(p.fx?.combatDoctrine?Math.min(...Object.keys(COMBAT_DOCTRINES).map(name=>combatDoctrineCost(G.ai,name).cp)):p.cp)&&!G.ploys[G.ai].includes(p.id));
+  if(opts.length){const p=opts[(G.tp-1)%opts.length];if(usePloy(G.ai,p.id))msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativou ${p.n}</b>`);}
+}
+const COMBAT_DOCTRINES={devastator:'Devastador · tiros além de 6″',tactical:'Tático · tiros até 6″',assault:'Assalto · lutar ou retaliar'};
+function combatDoctrineCost(pi,name,useFree=true){
+  const provider=useFree&&alive(pi).find(op=>{
+    if(op.x<0||TEAMS[op.teamId]?.sourceId!=='kt-angelsofdeath'||(op.doctrineWarfareUsed||[]).includes(name))return false;
+    const id=op.templateId||op.sourceId||'';
+    return id==='kt-aod-asgt'&&['assault','tactical'].includes(name)||id==='kt-aod-isgt'&&['devastator','tactical'].includes(name);
+  });
+  return {cp:provider?0:1,provider:provider||null};
+}
+function doctrineOptionsHTML(pi,id){
+  return `<div class="doctrine-options" style="display:grid;gap:6px;margin-top:8px">${Object.entries(COMBAT_DOCTRINES).map(([name,label])=>{
+    const cost=combatDoctrineCost(pi,name);
+    return `<button class="btn" ${P(pi).cp<cost.cp?'disabled':''} onclick="event.stopPropagation();usePloy(${pi},'${id}','${name}')">${label} · ${cost.cp} CP${cost.provider?`<small>Doctrine Warfare: ${cost.provider.n} · uso gratuito desta doutrina 1× por batalha</small>`:''}</button>`+(cost.provider&&P(pi).cp>=1?`<button class="btn" onclick="event.stopPropagation();usePloy(${pi},'${id}','${name}',false)">Pagar 1 CP · preservar uso gratuito de ${label.split(' · ')[0]}</button>`:'');
+  }).join('')}<button class="btn" onclick="event.stopPropagation();G.doctrinePicker=null;renderPloys('s')">CANCELAR · nenhum CP gasto</button></div>`;
 }
 function renderPloys(ty){
   const el=document.getElementById('ploylist');if(!el)return;
@@ -1895,20 +1943,58 @@ function renderPloys(ty){
     const t=TEAMS[P(pi).team];
     return `<div class="rowlbl" style="color:${pi===0?'var(--p1)':'var(--p2)'}">${P(pi).n} — ${P(pi).cp} CP</div>`+
     t.ploys.filter(p=>p.ty===ty).map(p=>{
-      const used=G.ploys[pi].includes(p.id), can=P(pi).cp>=p.cp&&!used&&!isAI(pi)&&!p.fx?.reference;
+      const used=G.ploys[pi].includes(p.id),cost=p.fx?.combatDoctrine?Math.min(...Object.keys(COMBAT_DOCTRINES).map(name=>combatDoctrineCost(pi,name).cp)):p.cp;
+      const can=P(pi).cp>=cost&&!used&&!isAI(pi)&&!p.fx?.reference&&!p.fx?.adjustDoctrine;
       return `<div class="plc ${can?'':'dis'}" ${can?`onclick="usePloy(${pi},'${p.id}')"`:''}>
         <div class="pn"><span>${used?'✓ ':''}${p.n}${p.fx?.reference?' · SOMENTE CONSULTA':''}</span><span class="cpb">${p.cp} CP</span></div>
-        <div class="pd">${p.d}${p.fx?.reference?'<br><em>Efeito ainda não implementado. Não pode ser ativado e não gasta CP.</em>':''}</div></div>`;}).join('');
+        <div class="pd">${p.d}${p.fx?.reference?'<br><em>Efeito ainda não implementado. Não pode ser ativado e não gasta CP.</em>':''}</div>${p.fx?.combatDoctrine&&G.doctrinePicker===pi&&can?doctrineOptionsHTML(pi,p.id):''}</div>`;}).join('');
   }).join('');
 }
-function usePloy(pi,id){
+function usePloy(pi,id,doctrineName=null,useFree=true){
   if(![0,1].includes(pi)||!['strategy','firefight'].includes(G.phase))return false;
   const t=TEAMS[P(pi).team],p=t?.ploys.find(x=>x.id===id);
-  if(!p||p.fx?.reference||G.ploys[pi].includes(id)||P(pi).cp<p.cp||(p.ty==='s'?G.phase!=='strategy':G.phase!=='firefight'))return false;
-  P(pi).cp-=p.cp;G.ploys[pi].push(id);
-  log(`${P(pi).n} usou ${p.n} (−${p.cp} CP)`);
+  if(!p||p.fx?.reference||p.fx?.adjustDoctrine||G.ploys[pi].includes(id)||(p.ty==='s'?G.phase!=='strategy':G.phase!=='firefight'))return false;
+  let cost={cp:p.cp,provider:null};
+  if(p.fx?.combatDoctrine){
+    if(doctrineName===null){
+      if(isAI(pi)){const close=alive(pi).some(op=>enemiesOf(pi).some(enemy=>dist(op,enemy)<=6));doctrineName=alive(pi).some(op=>inEnemyCR(op.x,op.y,pi,zOf(op)))?'assault':close?'tactical':'devastator';if(P(pi).cp<combatDoctrineCost(pi,doctrineName).cp)doctrineName=Object.keys(COMBAT_DOCTRINES).find(name=>P(pi).cp>=combatDoctrineCost(pi,name).cp);}
+      else{if(!Object.keys(COMBAT_DOCTRINES).some(name=>P(pi).cp>=combatDoctrineCost(pi,name).cp))return false;G.doctrinePicker=pi;renderPloys('s');return false;}
+    }
+    if(!Object.hasOwn(COMBAT_DOCTRINES,doctrineName)||typeof useFree!=='boolean')return false;
+    cost=combatDoctrineCost(pi,doctrineName,useFree);
+  }
+  if(P(pi).cp<cost.cp)return false;
+  P(pi).cp-=cost.cp;G.ploys[pi].push(id);
+  if(p.fx?.combatDoctrine){
+    (G.combatDoctrine||(G.combatDoctrine={}))[pi]={name:doctrineName,tp:G.tp};G.doctrinePicker=null;
+    if(cost.provider)(cost.provider.doctrineWarfareUsed||(cost.provider.doctrineWarfareUsed=[])).push(doctrineName);
+  }
+  log(`${P(pi).n} usou ${p.n}${p.fx?.combatDoctrine?' · '+COMBAT_DOCTRINES[doctrineName]:''} (−${cost.cp} CP)`);
   renderPloys(p.ty);updTop();
   return true;
+}
+function adjustDoctrineContext(){
+  const op=G.sel,pi=op?.pi,doctrine=G.combatDoctrine?.[pi];
+  if(G.phase!=='firefight'||!activationCommitted(op)||op._countering||pi!==G.cur||humanInputLocked()||G.fightResolving||G.pendingReposition||G.mode||TEAMS[op.teamId]?.sourceId!=='kt-angelsofdeath'||!G.ploys[pi].includes('aod_doc')||doctrine?.tp!==G.tp||G.ploys[pi].includes('aod_adjust'))return null;
+  const captain=alive(pi).find(o=>TEAMS[o.teamId]?.sourceId==='kt-angelsofdeath'&&(o.templateId||o.sourceId)==='kt-aod-captain'&&o.x>=0&&o.heroicLeaderUsedTP!==G.tp&&!inEnemyCR(o.x,o.y,pi,zOf(o)));
+  return {op,pi,doctrine,captain,cp:captain?0:1};
+}
+function showAdjustDoctrine(){
+  const context=adjustDoctrineContext();if(!context||P(context.pi).cp<context.cp||document.getElementById('ov').classList.contains('on'))return false;
+  G.adjustDoctrineOp=context.op.id;
+  const choices=Object.entries(COMBAT_DOCTRINES).filter(([name])=>name!==context.doctrine.name).map(([name,label])=>`<button class="btn" onclick="applyAdjustDoctrine('${context.op.id}','${name}')">${label} · ${context.cp} CP${context.captain?'<small>Heroic Leader · uso deste turno</small>':''}</button>`+(context.captain&&P(context.pi).cp>=1?`<button class="btn" onclick="applyAdjustDoctrine('${context.op.id}','${name}',false)">Pagar 1 CP · preservar Heroic Leader</button>`:'')).join('');
+  openOv('AJUSTAR DOUTRINA',`<p>Doutrina atual: ${COMBAT_DOCTRINES[context.doctrine.name]}. A alteração vale para toda a equipe neste turno e não gasta AP.</p>${choices}<button class="btn" onclick="G.adjustDoctrineOp=null;closeOv()">CANCELAR · nenhum CP gasto</button>`);
+  return true;
+}
+function applyAdjustDoctrine(opId,name,useFree=true){
+  const context=adjustDoctrineContext();
+  if(!context||G.adjustDoctrineOp!==opId||context.op.id!==opId||!document.getElementById('ov').classList.contains('on')||!Object.hasOwn(COMBAT_DOCTRINES,name)||name===context.doctrine.name||typeof useFree!=='boolean')return false;
+  const captain=useFree&&context.captain,cost=captain?0:1;
+  if(P(context.pi).cp<cost)return false;
+  P(context.pi).cp-=cost;G.ploys[context.pi].push('aod_adjust');context.doctrine.name=name;
+  if(captain)captain.heroicLeaderUsedTP=G.tp;
+  context.op.cancelStart=null;G.adjustDoctrineOp=null;closeOv();
+  log(`${P(context.pi).n} ajustou a doutrina: ${COMBAT_DOCTRINES[name]} (−${cost} CP)`);updTop();renderActs();return true;
 }
 function endStrategy(){
   if(G.phase!=='strategy')return;
@@ -2560,7 +2646,7 @@ function showMobileMenu(){
   document.getElementById('mobile-menu-body').innerHTML=[0,1].map(pi=>{
     const p=P(pi),t=TEAMS[p.team];
     return `<p><b>${p.n} · ${t?.name||'Equipe não escolhida'}</b><br>${p.vp||0} VP · ${p.objectiveVP||0} OBJ · ${p.kills||0} eliminações · ${p.cp||0} CP<br>${alive(pi).length} operativos vivos</p>`;
-  }).join('')+'<p>TP '+G.tp+'/4 · '+(G.counterMode?'Counteract':G.phase==='firefight'?'Combate':'Preparação')+'</p>';
+  }).join('')+'<p>TP '+G.tp+'/4 · '+(G.counterMode?'Counteract':G.phase==='firefight'?'Combate':'Preparação')+'</p>'+`<label class="mobile-auto-ai"><input type="checkbox" ${G.mobileAutoAI?'checked':''} onchange="G.mobileAutoAI=this.checked">Resolver ataques da IA automaticamente no celular</label><p>As decisões de Command Re-roll e de luta continuam sendo suas. Esta opção vale apenas nesta sessão.</p>`;
   document.getElementById('mobile-menu').showModal?.();
 }
 function renderMobileBattle(){
@@ -2574,12 +2660,16 @@ function renderMobileBattle(){
   }).join('');
   const el=document.getElementById('acts'),op=G.sel;
   if(G.phase!=='firefight')return;
-  if(!op&&!humanInputLocked()){el.innerHTML='<p>Toque em um retrato ou no mapa para escolher seu operativo.</p><button class="btn" onclick="showLog()">Registro da batalha</button>';return;}
+  if(!op&&!humanInputLocked()){el.innerHTML='<p>Toque em um retrato ou no mapa para escolher seu operativo.</p>'+(window.innerHeight>window.innerWidth?'<p>Mais espaço para jogar? Experimente girar o aparelho.</p>':'')+'<button class="btn" onclick="showLog()">Registro da batalha</button>';return;}
   if(humanInputLocked())return;
   const raw=el.innerHTML,buttons=raw.match(/<button\b[\s\S]*?<\/button>/g)||[];
   const active=`<div class="mobile-active"><b>${op.n}</b><span>${op.hp}/${op.maxhp} PV <span class="mobile-ap">${'●'.repeat(Math.max(0,op.ap||0))} ${op.ap||0} AP</span></span><button onclick="openTacticsMenu('status')" aria-label="Armas, status e outras ações">⋯</button></div>`;
   if(tacticsMenuOp!==op.id){tacticsMenu='main';tacticsMenuOp=op.id;}
-  if(G.mode||G.pendingReposition||!activationCommitted(op)){el.innerHTML=active+`<div class="mobile-submenu">${raw}</div>`;return;}
+  if(G.pendingReposition){
+    const p=G.pendingReposition;
+    el.innerHTML=`<div class="mobile-move-confirm"><h3>MOVER · REPOSICIONAR</h3><p>Destino a ${p.cell.d.toFixed(1)}″ · custa 1 AP · restarão ${Math.max(0,op.ap-1)} AP<br>Altura ${p.cell.z||0}″ · percurso já inclui a escalada</p><button class="btn" onclick="undoReposition()">DESFAZER</button><button class="btn pri" onclick="confirmReposition()">CONFIRMAR · 1 AP</button></div>`;return;
+  }
+  if(G.mode||!activationCommitted(op)){el.innerHTML=active+`<div class="mobile-submenu">${raw}</div>`;return;}
   const find=pattern=>buttons.find(b=>pattern.test(b))||'';
   const move=buttons.filter(b=>b.includes('actMove('));
   const status=buttons.filter(b=>!(/actMove\(|actShoot\(|actFight\(|actPickUp\(|endActivation\(/.test(b)));
@@ -2691,6 +2781,7 @@ function renderActsBody(){
    + b(`Lutar${melee.length>1?' ▾':''}`,"actFight()",1,op.ap<1||!inCR||!melee.length||op.foughtThis>=maxF,'pri')
     + b('Iniciar transmissão',"actPickUp()",1,op.ap<1||actionUsed(op,'objective')||!securableObjective(op))
     + (markerCapable(op)?b('Marcar alvo',"actMarkerlight()",1,op.ap<1||!markerTargets(op).length):'')
+    + (adjustDoctrineContext()?`<button class="btn" ${P(op.pi).cp<adjustDoctrineContext().cp?'disabled':''} onclick="showAdjustDoctrine()">Ajustar Doutrina<small>${adjustDoctrineContext().cp} CP · não gasta AP</small></button>`:'')
     + `<button class="btn fpbtn" onclick="showFirstPerson(opById('${op.id}'))">◉ Visão 1ª pessoa</button>`
     + `<button class="btn" ${op.orderLocked?'disabled':''} onclick="toggleOrder()">${op.order==='conceal'?'👁 → Engage':'⚔ → Conceal'}</button>`
    + `<button class="btn dgr" onclick="endActivation()">Encerrar ativação</button>`;
@@ -2700,10 +2791,12 @@ function renderActsBody(){
 function openOv(t,b,noClose,variant=''){
   document.getElementById('ovt').textContent=t;
   document.getElementById('ovb').innerHTML=b;
-  const ov=document.getElementById('ov');ov.classList.remove('targeting');if(variant)ov.classList.add(variant);ov.classList.add('on');
+  const ov=document.getElementById('ov');ov.classList.remove('targeting','mobile-battle-sheet');
+  if(mobileBattleLayout()&&G.phase==='firefight'&&!['Fim da batalha','Encerrar partida','IA INTERROMPIDA'].includes(t))ov.classList.add('mobile-battle-sheet');
+  if(variant)ov.classList.add(variant);ov.classList.add('on');
   document.querySelector('#ov .x').style.display=noClose?'none':'flex';
 }
-function closeOv(){document.getElementById('ov').classList.remove('on','targeting');}
+function closeOv(){G.adjustDoctrineOp=null;document.getElementById('ov').classList.remove('on','targeting','mobile-battle-sheet');}
 let overlayContinue=null;
 function continueOverlay(){
   const fn=overlayContinue;overlayContinue=null;closeOv();
@@ -2711,6 +2804,10 @@ function continueOverlay(){
 }
 function showAIAttackWarning(tipo,att,def,wpn,onReady){
   overlayContinue=onReady;
+  if(mobileBattleLayout()&&G.mobileAutoAI){
+    overlayContinue=()=>{if(G.phase==='firefight'&&G.sel===att&&G.ops.includes(att)&&!att.dead&&!def.dead)return onReady();};
+    continueOverlay();return;
+  }
   const ranged=tipo==='TIRO',range=dist(att,def).toFixed(1),tags=wpn.tags.length?wpn.tags.join(' · '):'Sem regras especiais';
   openOv('⚠ SEU OPERATIVO ESTÁ SOB ATAQUE',`
     <div class="ai-alert"><div class="ai-alert-kicker">AÇÃO DA IA PAUSADA · CONFIRMAÇÃO NECESSÁRIA</div>
@@ -2952,7 +3049,9 @@ function showCombat(tipo,att,def,wpn,r,dealt,extra,onContinue=null,aiControlled=
     </div>
     <button class="btn pri combat-continue" style="width:100%" onclick="${onContinue?'continueOverlay()':'closeOv()'}" disabled>ROLANDO OS DADOS…</button>`,true);
   const rollTime=aiControlled?950:650;animateDiceReveal(rollTime);
+  if(mobileBattleLayout()&&!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches){try{navigator.vibrate?.(20);}catch(error){/* Haptics are optional and never block combat. */}}
   setTimeout(()=>{const b=document.querySelector('#ov .combat-continue');if(b)b.textContent=aiControlled?'CONFIRMAR RESULTADO':'CONTINUAR';},rollTime+30);
+  if(aiControlled&&onContinue&&mobileBattleLayout()&&G.mobileAutoAI)setTimeout(()=>{if(mobileBattleLayout()&&G.mobileAutoAI&&overlayContinue===onContinue&&G.phase==='firefight'&&G.ops.includes(att)&&G.ops.includes(def))continueOverlay();},rollTime+120);
 }
 function showLog(){
   openOv('Registro da batalha',`<div id="log">${G.log.map(l=>`<div>${l}</div>`).join('')||'<div style="color:var(--mut)">Nada ainda.</div>'}</div>`);

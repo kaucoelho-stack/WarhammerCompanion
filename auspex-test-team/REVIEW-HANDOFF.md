@@ -23,3 +23,13 @@ IA tenta Reposition e Dash legais e só se move quando melhora a avaliação tá
 5. Verificar requisições *-optimized.js/WebP e ausência de JS base64 no carregamento inicial.
 
 Regras ainda parciais: não considerar todos os times validados. Ver AUDIT-PROGRESS.md, DATACARD-AUDIT.md e RULES-BASELINE.md.
+
+## Atualização mobile — 2026-10-10
+
+Regras AoD adicionadas no mesmo candidato: Combat Doctrine na estratégia com escolha e escopo por alcance (6″ inclusive para Tactical) e melee, Doctrine Warfare por doutrina uma vez por batalha, Ajustar Doutrina durante a ativação, custo de CP e opção gratuita de Heroic Leader do Captain uma vez por TP quando elegível. Revisar cancelamento sem gasto, atualização do bônus para toda a equipe, e ausência de repetição no TP. Não inferir Heroic Leader completo: uso de Combat Doctrine ao ativar e demais firefight gratuitos ainda pendentes. IA não automatiza Ajustar Doutrina. Ver DATACARD-AUDIT.md; testes novos test-combat-doctrine.cjs e test-adjust-doctrine.cjs.
+
+Até 900px, HUD dedicado com resumo TP/VP/CP, retratos circulares, painel expansível, confirmação de movimento de 56px e overlays de combate no rodapé. Toque duplo enquadra o mapa fora da confirmação; pinça permite zoom e rotação discreta; deslocamento de até 8px não move a câmera. Resolver avisos/resultados da IA automaticamente é opt-in no menu do celular; não pula Command Re-roll nem escolhas humanas da luta.
+
+Paisagem usa grid real com equipe de 64px à esquerda, tabuleiro central e comandos de 168px à direita. Topo mantém 44px por acessibilidade, em vez dos 36px do wireframe. Laterais rolam quando necessário; em altura até 320px as ferramentas ficam em uma linha e Ver mapa continua no menu. Retrato apenas sugere girar o aparelho, sem bloquear o jogo. Acima de 900px o redesenho não se aplica.
+
+Pedir screenshots 390x844 e 844x390 (início de firefight, seleção, movimento e combate), teste real de orientação com barras do navegador/safe-area, acesso ao botão Terminar no painel lateral e uma partida completa com automático desligado e ligado. Os 40 testes locais e o Canvas nativo não confirmam layout de navegador, três toques por ação nem uma partida IA x IA completa. Host precisa ser testado junto com iframe; laboratório permanece intacto.
