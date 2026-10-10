@@ -103,7 +103,10 @@
   }
   function importTeams(target,source){
     if(!target||!Array.isArray(source))return 0;
+    // Retired prototype, not a supported team in the project's current rules roster.
+    delete target.tyr;
     for(const t of source){
+      if(t.id==='kt-warriors')continue;
       const key=TEAM_KEYS[t.id]||safeId(t.id).slice(0,5),catalog=catalogFor(t,key);
       if(target[key]){
         const current=target[key];current.limit=t.limit;current.catalog=catalog;current.composition=compositionFor(t);current.sourceId=t.id;

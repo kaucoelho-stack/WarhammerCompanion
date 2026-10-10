@@ -255,7 +255,8 @@
   canvas.addEventListener('pointerleave',()=>{hoverCell=null;hoverOperative=null;schedule();});
   canvas.addEventListener('pointermove',e=>{if(pointers.size)return;const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const next=[...hits].reverse().find(h=>h.type==='op'&&h.rect&&x>=h.rect.x&&x<=h.rect.x+h.rect.w&&y>=h.rect.y&&y<=h.rect.y+h.rect.h)?.op.id||null;if(next!==hoverOperative){hoverOperative=next;schedule();}});
   canvas.addEventListener('pointerup',e=>{pointers.delete(e.pointerId);if(gesture&&!gesture.moved){const r=canvas.getBoundingClientRect();click(e.clientX-r.left,e.clientY-r.top);}if(!pointers.size)gesture=null;});
-  canvas.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);gesture=null;});
+  canvas.addEventListener('pointercancel',()=>{pointers.clear();gesture=null;hoverCell=null;schedule();});
+  canvas.addEventListener('lostpointercapture',e=>{if(pointers.has(e.pointerId)){pointers.clear();gesture=null;}});
   canvas.addEventListener('wheel',e=>{e.preventDefault();api.zoom(e.deltaY<0?1.1:1/1.1);},{passive:false});new ResizeObserver(schedule).observe(bw);
   const api=window.IsoTactics={get active(){return active;},render:draw,zoom(f){scale=Math.max(.7,Math.min(5,scale*f));schedule();},center(x,y){const [a,b]=rotate(x+.5,y+.5),[ca,cb]=rotate(W/2,H/2);panX=-(a-b-ca+cb)*unit;panY=-(a+b-ca-cb)*unit*.5;schedule();}};
   api.walk=(op,path)=>{if(path.length<2)path=[{x:op.x,y:op.y,z:op.z||0},...path];path=motionPath(path);if(path.length<2)return;const lengths=[0];for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i];lengths.push(lengths[i-1]+Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z));}const distance=lengths.at(-1);walking={id:op.id,path,lengths,distance,start:performance.now(),duration:Math.min(6500,Math.max(900,distance*450))};schedule();};

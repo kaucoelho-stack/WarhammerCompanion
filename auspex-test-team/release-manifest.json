@@ -3,7 +3,7 @@
   "version": "5",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-09T19:05:15.240Z",
+  "createdAt": "2026-10-10T01:09:13.341Z",
   "validation": "Partial audit in progress; see AUDIT-PROGRESS.md and RULES-BASELINE.md. Not a complete official rules implementation.",
   "files": [
     {
@@ -137,64 +137,69 @@
       "sha256": "629570ce9055430157ba86e872c338f11a794ae01aab64d5e691628f9c3970e1"
     },
     {
-      "path": "assets/pixel/aod-sheets-AuspexAodSheets-asgt.png",
-      "bytes": 3078774,
-      "sha256": "89d06d5290f8a9c274211d0c066e574d6c800e1b7c8116e616afc443dabc1e2c"
+      "path": "assets/pixel/aod-sheets-AuspexAodSheets-asgt.webp",
+      "bytes": 2146646,
+      "sha256": "76825333c0d1734f5c2accce6f2c4b848af3812c098b3e7037f501901d0f5026"
     },
     {
-      "path": "assets/pixel/aod-sheets-AuspexAodSheets-awarrior.png",
-      "bytes": 3001383,
-      "sha256": "f633791d64174ede65e0bcff17af6d474d14f499bfee676ec932bbde7725e6d1"
+      "path": "assets/pixel/aod-sheets-AuspexAodSheets-awarrior.webp",
+      "bytes": 2039872,
+      "sha256": "f8ee8ef70702d1c56947894e92fcfe4a88f15fc75b6012f6594cb34daf5f3943"
     },
     {
-      "path": "assets/pixel/aod-sheets-AuspexAodSheets-grenadier.png",
-      "bytes": 3131635,
-      "sha256": "4c444aa3a5abfbff583038e32adaa7c4a24c07e9465771fcdca134e15f8041b4"
+      "path": "assets/pixel/aod-sheets-AuspexAodSheets-grenadier.webp",
+      "bytes": 2186256,
+      "sha256": "00b37e0c1aa1fb75cfc548fceea8e04049c0709689e2fe483b9009aeb559504e"
     },
     {
-      "path": "assets/pixel/aod-sheets-AuspexAodSheets-gunner.png",
-      "bytes": 3286185,
-      "sha256": "87b78eab48dc9600f8e5f6303b0bd304e8b7635550554678b75c937879cca68d"
+      "path": "assets/pixel/aod-sheets-AuspexAodSheets-gunner.webp",
+      "bytes": 2306872,
+      "sha256": "569a38632d5286c693d7ba13ff60d9679a591da6ddf4cda86b52edd9d4516757"
     },
     {
-      "path": "assets/pixel/aod-sheets-AuspexAodSheets-heavygunner.png",
-      "bytes": 3176135,
-      "sha256": "45ecf0aec2d944b6791ed30d599fe564b271a235f0b7533dbc127f37c260f0df"
+      "path": "assets/pixel/aod-sheets-AuspexAodSheets-heavygunner.webp",
+      "bytes": 2212142,
+      "sha256": "885beacc3b76078b357ee99e45c808e1b61024c3fd4895f4ccd206831c3271f5"
     },
     {
-      "path": "assets/pixel/aod-sheets-AuspexAodSheets-isgt.png",
-      "bytes": 3174958,
-      "sha256": "eb4be6e2b9578c39d4faaf066471d2e4cfbd9a6dd8989d5c1386fece9a971556"
+      "path": "assets/pixel/aod-sheets-AuspexAodSheets-isgt.webp",
+      "bytes": 2145144,
+      "sha256": "dae3501e9e1cf94c0124cfff1e9ca19166e1184b6d3798c1c7ae4c58c56f52d0"
     },
     {
-      "path": "assets/pixel/aod-sheets-AuspexAodSheets-iwarrior.png",
-      "bytes": 3187528,
-      "sha256": "b9d16276df4d3cf2c50ffee797f27b1ab5eb66683e80d32c1d87870c4c008d7a"
+      "path": "assets/pixel/aod-sheets-AuspexAodSheets-iwarrior.webp",
+      "bytes": 2181932,
+      "sha256": "50891af1076f3a08457381438b517804d412ccfa910d6cefa317fc7d26fa91af"
     },
     {
-      "path": "assets/pixel/aod-sheets-external.js",
-      "bytes": 476,
-      "sha256": "036e83678cdec6e59831a0201552be408b4e52f070dcfaafe7937102cb23e7d1"
+      "path": "assets/pixel/aod-sheets-optimized.js",
+      "bytes": 484,
+      "sha256": "3fc67093fac3df9630040b2a196188b48c8b47d99f34c58473fbad4fb2660f57"
     },
     {
-      "path": "assets/pixel/captain-sheet-AuspexCaptainSheet.png",
-      "bytes": 3425924,
-      "sha256": "400d77274df6c936a6dff820c456048eec0894699e6bd1f0baa651ee7fe60b36"
+      "path": "assets/pixel/captain-sheet-AuspexCaptainSheet.webp",
+      "bytes": 2401546,
+      "sha256": "874d78c2bb77d610471845401724eb4a3747ac47efdeb14ef2078582b1c96820"
     },
     {
-      "path": "assets/pixel/captain-sheet-external.js",
-      "bytes": 79,
-      "sha256": "6bc73820fabdffb4a805cd4ab985d3410460111f6f54beff281afbc5dcda083f"
+      "path": "assets/pixel/captain-sheet-optimized.js",
+      "bytes": 81,
+      "sha256": "3e61b7ca17739d95117ac32adb21ebb3f2c5007c13f4f8b17f6185e13d7ca7c8"
     },
     {
-      "path": "assets/pixel/eliminator-sheet-AuspexEliminatorSheet.png",
-      "bytes": 2967041,
-      "sha256": "5fe4338a2f1800b75ef75dbe340365111068cb0e092c6c547e88684e679b466b"
+      "path": "assets/pixel/compression-report.json",
+      "bytes": 3145,
+      "sha256": "5c5e69bebddd61290eb3ef83dca47d155d82f25993d1dbd80faeae889d1067bb"
     },
     {
-      "path": "assets/pixel/eliminator-sheet-external.js",
-      "bytes": 88,
-      "sha256": "6fc8708ada9876565ef1f12e7173a36ddb56f31799b542a2393b912f861c56c3"
+      "path": "assets/pixel/eliminator-sheet-AuspexEliminatorSheet.webp",
+      "bytes": 1804498,
+      "sha256": "017c795d92f22763bda4e4c9e3debb78ff680979bf98cb78cf9ca18ac702ac24"
+    },
+    {
+      "path": "assets/pixel/eliminator-sheet-optimized.js",
+      "bytes": 90,
+      "sha256": "53ad8b455dd52d795d0cb888c484cdc427780ee2cc495dc599e9cd5c503d3db0"
     },
     {
       "path": "assets/pixel/industrial-materials-v1.png",
@@ -202,79 +207,79 @@
       "sha256": "d165c8768e22c0aefd6160f12b8880df248383338f5cc62bdc84b0bd4b73392a"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-bombsquig-src.png",
-      "bytes": 1725035,
-      "sha256": "b09448649b151f52f49dc533a09978d7820d95a34ecd305ac463e3c070c28fe4"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-bombsquig-src.webp",
+      "bytes": 1077936,
+      "sha256": "a81fa82918b6dec045478b1dd857d336b14399cd1390a61a5687171b069af988"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-boss-src.png",
-      "bytes": 3137011,
-      "sha256": "b0fdfab1d790dbbd1d1126a87adff9b480baefcccb3b62b4e4ea4332710afb7a"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-boss-src.webp",
+      "bytes": 2001962,
+      "sha256": "2561bdadfe327505bbc9057101ad97026b9facc35905039c9cc556241bc3da54"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-boy1-src.png",
-      "bytes": 1844166,
-      "sha256": "c6896a19d99bcc3284fd70e79a83e62c7ca7aea92a2faef9ed19100ff2ce1251"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-boy1-src.webp",
+      "bytes": 1136832,
+      "sha256": "c4b4b1d86065816e2da2dfd5dd93c8a02be463ef0a99cf941e6325fd45a15774"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-boy2-src.png",
-      "bytes": 1928864,
-      "sha256": "43f1379cc308c72714c4574bd3f47496ae17407a8a472b8c591306b0bf8884d8"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-boy2-src.webp",
+      "bytes": 1195110,
+      "sha256": "9cc293fc17e5d6f7f9781c725910739d375d597cbcd0164e6bbbc4de6a32aee6"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-breacha-src.png",
-      "bytes": 2246224,
-      "sha256": "d40a6cb5c70e40e4d0a0236d2bedf196649512b93c005e4809f6260c00242f36"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-breacha-src.webp",
+      "bytes": 1449930,
+      "sha256": "72ed59b3598aac3e0ec14a34b2e1d63ca4dd0f64af6165fc40750bce242dde66"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-burna-src.png",
-      "bytes": 2073243,
-      "sha256": "7d3abb66ca9e5fd13e2c9f5e3dabff63ac05e5e349a36fa440cd800c6ae531fc"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-burna-src.webp",
+      "bytes": 1364600,
+      "sha256": "c4af6aa344107b6f637ebabc470ad777fa989504b7365a344aa52f3fd2549c24"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-comms-src.png",
-      "bytes": 2285588,
-      "sha256": "37307da16a1c21bc722f050f5abdae5fdad1abea50fbc158061c7f743c5d26c4"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-comms-src.webp",
+      "bytes": 1533086,
+      "sha256": "1bee0a54ad3a68502d9b92818bbb52f1b9075a1eb9e25e897ea465a58847494b"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-dakka-src.png",
-      "bytes": 2119454,
-      "sha256": "779781c4cc658b3651201844272a2010a14e8f1b0da077d8b80572505926f5b7"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-dakka-src.webp",
+      "bytes": 1366554,
+      "sha256": "dadfca822e3f34aa491b2ede9e9cba57c2abf776a8f7ce4f6787dd2d124d5e2d"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-grot-src.png",
-      "bytes": 1498627,
-      "sha256": "378cfef0900ccb047bb7af60cf7ace2a8d0ae433df691a1539eaa7301b51092a"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-grot-src.webp",
+      "bytes": 925974,
+      "sha256": "0bcb6e8527ad27a2b108dc12caace2bc37af6fbefb565e7b6e8eb0dedbd26624"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-rokkit-src.png",
-      "bytes": 2069617,
-      "sha256": "0af87b22e03c5cc409caabcd95cde6045fc0543f7d21e0f7ac8dca8d40ece23e"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-rokkit-src.webp",
+      "bytes": 1316782,
+      "sha256": "8cd4699a572b217f7fbfbca098e001df4271915e6f30a42c57ce6ce7b1cbece4"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-slasha-src.png",
-      "bytes": 2139021,
-      "sha256": "be9ffbe4214a47b2156a2cb69f042db40e9b67f69cc090470dfc0072159910ce"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-slasha-src.webp",
+      "bytes": 1365950,
+      "sha256": "b1258f9f86e026a8b52b88b5c5e9ab0b4ef3c5233246dab362f8a1348ba4810b"
     },
     {
-      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-snipa-src.png",
-      "bytes": 1909976,
-      "sha256": "910c37b0f698029c3de34d79fa7fd1639c51f46d0568c613cfaeec8873fee7a1"
+      "path": "assets/pixel/kommando-sheets-AuspexKommandoSheets-snipa-src.webp",
+      "bytes": 1189512,
+      "sha256": "ad32319b5ec2b5606b71eac762354b39b0a6754a1206ffc57c1f3059a1d7e6a1"
     },
     {
-      "path": "assets/pixel/kommando-sheets-external.js",
-      "bytes": 1383,
-      "sha256": "c100880511c109625d26cf997ee037c6db39d0bc89dd77352e8ae4ee506ea623"
+      "path": "assets/pixel/kommando-sheets-optimized.js",
+      "bytes": 1396,
+      "sha256": "84c4bbda23887ca895e36278230cac665c14ab5d128f39bca6bad6bf4f78f595"
     },
     {
-      "path": "assets/pixel/terminal-sheet-AuspexTerminalSheet.png",
-      "bytes": 2670513,
-      "sha256": "cb1f6c9f5e388c6eb620643a59aa8f1363cfab34d36609ca44d1f36c66946151"
+      "path": "assets/pixel/terminal-sheet-AuspexTerminalSheet.webp",
+      "bytes": 1587020,
+      "sha256": "9b2e1014e56eff01d9761d45de05853aa38c8241f92bdc5b7fb215d875f462c4"
     },
     {
-      "path": "assets/pixel/terminal-sheet-external.js",
-      "bytes": 82,
-      "sha256": "2fdb26de10c0b96b645fbf9e7e4bb6660e79aae86bc0c3ed6b31f378cd089e35"
+      "path": "assets/pixel/terminal-sheet-optimized.js",
+      "bytes": 84,
+      "sha256": "c76a37ed65581c270f5e2e0197ae1392270f1d17ab7d82984a6a9ccb0fc2d4f9"
     },
     {
       "path": "assets/portraits/kt-aod-asgt.webp",
@@ -688,13 +693,13 @@
     },
     {
       "path": "AUDIT-PROGRESS.md",
-      "bytes": 4323,
-      "sha256": "0d1b88eff1027ec7401c94fc852260843f2605db2ac63fd1bff311059b8511ca"
+      "bytes": 8568,
+      "sha256": "b23ca471d7a165f22888d7ca58b5fe1277cecfe47442c8cfc5e41e78ca022a0e"
     },
     {
       "path": "auspex-rules.js",
-      "bytes": 10870,
-      "sha256": "87d72d22eca08e39fe22bf201bfa8501f9af9b8b873338b3c4466d1551b9115c"
+      "bytes": 11019,
+      "sha256": "8e08510c884245b47941a7350eb586b2c00a69ea4af959d6b43bd8a850f6d395"
     },
     {
       "path": "battlefield.js",
@@ -702,14 +707,19 @@
       "sha256": "3e42d21868b6cf4fac80bdfe4f8ca58cc7d696db99880bf746b89dcc41d5436b"
     },
     {
+      "path": "DATACARD-AUDIT.md",
+      "bytes": 1514,
+      "sha256": "686709da2765e093da43b9636e9cb38e181528c250e3573606ac7d2ed48c1c70"
+    },
+    {
       "path": "index.html",
-      "bytes": 239019,
-      "sha256": "d2eec737b2e72fd9581e0eced265d13bfd9617ec692637bc978600b2e5bd8750"
+      "bytes": 241000,
+      "sha256": "617ff958fda4931efa8188aaae106c38d3199ea511a78bbc5a9066759b53dccc"
     },
     {
       "path": "killteam_data.js",
       "bytes": 133896,
-      "sha256": "5763ba2b5c9d668eb120843b7b79c1429bf29bb5f44219bdedafaa94f441a168"
+      "sha256": "9cd4dae147b1b20c1239be2dc6072f10465c8dc0d4fa935b14ae6f3a5b57000a"
     },
     {
       "path": "modular-floor.png",
@@ -728,8 +738,8 @@
     },
     {
       "path": "pixel-tactics.js",
-      "bytes": 33220,
-      "sha256": "f63071e89836d751ed02a53b0114abeda6830128f7d654d1e7fb2c55ff6b7329"
+      "bytes": 33351,
+      "sha256": "eecd9f0a1f87d13787140ac9b8ce05f3375209671e351c8eea2fe06a9f3e2e01"
     },
     {
       "path": "PUBLICAR.md",
@@ -740,6 +750,11 @@
       "path": "REVIEW-CLAUDE-2026-10-09.txt",
       "bytes": 6853,
       "sha256": "01b1348a51f13a316ab9e178482c46dd43116937cac08f2268c5658240d87306"
+    },
+    {
+      "path": "REVIEW-HANDOFF.md",
+      "bytes": 2153,
+      "sha256": "e55bb780a30f2575a073a9232815dd75cf38d62a8480920d6a599760711a972c"
     },
     {
       "path": "RULES-BASELINE.md",
@@ -753,8 +768,8 @@
     },
     {
       "path": "sprite-assets.js",
-      "bytes": 703,
-      "sha256": "9b3a3795a12f7c5ca206b59b19e4f5795d6d0f9d122140ecc6a46b98fcada031"
+      "bytes": 2182,
+      "sha256": "7fad975be5ab358b8f59a31fe09428535a84b2f82950bb2426107cb3a85093f0"
     },
     {
       "path": "stance-lab.html",

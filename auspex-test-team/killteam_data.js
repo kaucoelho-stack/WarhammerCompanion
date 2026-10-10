@@ -401,21 +401,21 @@ const KT_TEAMS = [
     ploys:{strategy:[{name:"Protocolo de Fogo",desc:"Escolha Montagem de Fuego (+1 Ataque), Retrocesso (melhora PA) ou Perseguição (+alcance) no início do turno."},{name:"Retirada Tática",desc:"Um operativo pode recuar sem gastar AP extra uma vez por turno."}],firefight:[{name:"Disciplina de Fogo",desc:"Contra alvo Marcado, retém 1 falha como sucesso normal."},{name:"Escudo de Drone",desc:"Um Drone próximo pode \"sacrificar-se\" para anular 1 dano recebido."}]},
     operatives: [
       { id:'kt-pathfinder-shas', name:"Shas'ui Pathfinder", unique:true,
-        M:'3"', APL:2, GA:1, DF:3, SV:5, W:10,
+        M:'6"', APL:2, GA:1, DF:3, SV:5, W:8,
         abilities:"Liderança T'au: Pode usar Marcar Alvo como ação de 0 APL uma vez por ativação.",
         weapons:[
           { name:'Pulse Rifle',    A:4, skill:3, D:4, CD:6, range:'long', tags:['Assault'] },
           { name:'Lança Carbono',  A:3, skill:3, D:3, CD:4, range:'melee' },
         ]},
       { id:'kt-pathfinder', name:'Pathfinder', unique:false, count:9,
-        M:'3"', APL:2, GA:2, DF:3, SV:5, W:8,
+        M:'6"', APL:2, GA:2, DF:3, SV:5, W:7,
         abilities:"Marcar Alvo: Ação (1 APL): alvo a até 9\" fica Marcado — todos os T'au ganham re-rolar 1 Hit contra ele.",
         weapons:[
           { name:'Pulse Carbine',  A:4, skill:4, D:3, CD:5, range:'short', tags:['Assault'] },
           { name:'Lança Carbono',  A:3, skill:4, D:3, CD:4, range:'melee' },
         ]},
       { id:'kt-pathfinder-drone', name:'Recon Drone', unique:true,
-        M:'4"', APL:2, GA:1, DF:3, SV:5, W:8,
+        M:'6"', APL:3, GA:1, DF:3, SV:4, W:12,
         abilities:'Voo: Ignora terreno ao mover. Sensor: Inimigos a 9" não podem ficar Hidden.',
         weapons:[
           { name:'Pulse Carbine',  A:4, skill:4, D:3, CD:5, range:'short', tags:['Assault'] },

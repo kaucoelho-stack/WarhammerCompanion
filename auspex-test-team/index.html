@@ -488,6 +488,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .movement-summary{width:100%;padding:10px;color:#bdebdc;font-size:13px;line-height:1.5;background:#10272a;border-radius:6px}
 #operative-rail{position:absolute;left:8px;top:58px;bottom:32px;z-index:24;width:76px;overflow-y:auto;overscroll-behavior:contain;padding:4px;background:#08131bd9;border:1px solid #496172;border-radius:8px;scrollbar-width:thin}
 #operative-rail[hidden],#operative-rail [hidden]{display:none}
+#rail-toggle{display:none}
 .rail-team{font-size:10px;text-align:center;color:var(--p1);padding:8px 0 4px}.rail-team.enemy{color:var(--p2)}
 .rail-op{position:relative;display:block;width:100%;min-height:66px;margin:4px 0;padding:3px;background:#142535;border:2px solid transparent;border-radius:5px;color:#fff;cursor:pointer}
 .rail-op img{display:block;width:100%;height:48px;object-fit:contain}.rail-op.spent img{filter:grayscale(1);opacity:.55}.rail-op.casualty img{filter:grayscale(1);opacity:.25}
@@ -573,6 +574,12 @@ button:disabled{opacity:.45;cursor:not-allowed}
   .tactics-hud #acts>.tactics-controls{max-height:calc(100dvh - 180px)}
 }
 @media(max-width:600px){
+  #rail-toggle{display:block;position:absolute;top:60px;left:4px;z-index:25;min-height:44px;min-width:44px;padding:6px;background:#201b18;color:#dac9b0;border:1px solid #807060}
+  #rail-toggle[hidden]{display:none}
+  #operative-rail:not(.mobile-open){display:none}
+  #operative-rail.mobile-open{top:108px}
+  #panel:not(.tactics-hud) #acts{display:flex;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain}
+  #panel:not(.tactics-hud) #acts>.btn{flex:0 0 auto;max-width:190px}
   #top{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 36px;gap:4px;padding:4px;align-items:stretch}
   #tp{font-size:10px;align-self:center;letter-spacing:0;padding:4px}
   #tp b{font-size:13px}.pchip{padding:5px;min-width:0}
@@ -643,6 +650,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
   <button type="button" onclick="zoomBoard(4)" aria-label="Aumentar mapa">+</button>
 </div>
 <div id="boardwrap">
+  <button id="rail-toggle" type="button" hidden aria-controls="operative-rail" aria-expanded="false" onclick="toggleOperativeRail()">EQUIPES</button>
   <nav id="operative-rail" aria-label="Operativos por equipe — não representa ordem de ativação" hidden></nav>
   <div id="kzname">▦ Distrito Volkus</div>
   <div class="maplegend" aria-label="Legenda do mapa">
@@ -1691,9 +1699,18 @@ function confirmRoster(){
   }else if(pi===0)setTimeout(()=>showTeamPicker(1),200);else startDeploy();
 }
 function startDeploy(){
-  if(window.AuspexAssets&&!G.assetsReady){
-    G.assetsReady=true;msg('Carregando os sprites dos esquadrões…');
-    window.AuspexAssets.loadTeams([P(0).team,P(1).team]).then(()=>{window.IsoTactics?.loadSprites();startDeploy();}).catch(error=>{console.warn(error);startDeploy();});return;
+  const assetTeams=[P(0).team,P(1).team],assetKey=JSON.stringify(assetTeams);
+  if(window.AuspexAssets&&G.loadedAssetTeams!==assetKey){
+    if(G.assetsLoading)return;
+    G.assetsLoading=true;msg('Carregando os sprites dos esquadrões…');
+    openOv('PREPARANDO ESQUADRÕES','<p>Carregando as artes dos times selecionados…</p>',true);
+    window.AuspexAssets.loadTeams(assetTeams).then(()=>{
+      window.IsoTactics?.loadSprites();G.loadedAssetTeams=assetKey;G.assetsLoading=false;closeOv();startDeploy();
+    }).catch(error=>{
+      G.assetsLoading=false;console.warn(error);
+      msg('Não foi possível carregar as artes. Tente novamente para iniciar o posicionamento.');
+      openOv('FALHA NO CARREGAMENTO','<p>As artes dos esquadrões não puderam ser carregadas. Confira a conexão ou os arquivos do jogo e tente novamente. Sua formação foi preservada.</p><button class="btn pri" onclick="startDeploy()">TENTAR DE NOVO</button>',true);
+    });return;
   }
   applyKillzone(G.killzone||'modular');document.body.classList.remove('setup-screen');
   G.phase='deploy';G.cur=0;G.ops=[...P(0).ops,...P(1).ops];
@@ -1893,6 +1910,13 @@ function aiTryCharge(op,step){
   setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(650,(window.IsoTactics?.walkRemaining?.()||0)+150));
   return true;
 }
+function aiMovementKinds(op){
+  if(actionUsed(op,'charge'))return [];
+  const kinds=[];
+  if(!actionUsed(op,'reposition')&&!actionUsed(op,'fallback')&&!op.chargedThis)kinds.push('reposition');
+  if(!actionUsed(op,'dash'))kinds.push('dash');
+  return kinds;
+}
 function aiActImpl(op,step){
   if(G.phase!=='firefight'||G.cur!==op.pi||!isAI(op.pi)){G.aiBusy=false;return;}
   if(op.dead||op.hp<=0){G.aiBusy=false;if(!checkElimination())finishOp(op);return;}
@@ -1925,17 +1949,21 @@ function aiActImpl(op,step){
       log(`${op.n}: tiro da IA bloqueado por parede física`);G.mode=null;G.targets=[];G.weapon=null;render();setTimeout(()=>aiAct(op,step+1),180);return;}
   }
   if(aiTryCharge(op,step))return;
-  const kind=!actionUsed(op,'reposition')?'reposition':(!actionUsed(op,'dash')?'dash':null);
-  if(kind&&op.ap>=1&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))){actMove(kind);
-    if(G.moveCells.length){const oi=aiObjectiveFor(op),target=OBJS[oi],enemy=enemiesOf(op.pi);const cellScore=c=>{
+  for(const kind of aiMovementKinds(op)){
+   if(op.ap>=1&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))){G.mode=null;G.moveCells=[];actMove(kind);
+    if(G.mode===kind&&G.moveCells.length){const oi=aiObjectiveFor(op),target=OBJS[oi],enemy=enemiesOf(op.pi);const cellScore=c=>{
       const od=Math.hypot(c.x-target.x,c.y-target.y),ed=Math.min(...enemy.map(e=>Math.hypot(c.x-e.x,c.y-e.y))),
         crowd=alive(op.pi).filter(a=>a!==op&&Math.hypot(c.x-a.x,c.y-a.y)<3).length,
         cover=TERRAIN.some(t=>Math.hypot(c.x-(t.x+t.w/2),c.y-(t.y+t.h/2))<2),onTarget=od<=1;
       const probe={...op,x:c.x,y:c.y,z:c.z||0,moved:true,movedFar:op.movedFar||c.d>3};
       const shots=op.ap>=2&&!aiPrefersMelee(op)?aiPotentialTargets(probe).length:0;
       return od*1.3+crowd*4+ed*.08-(cover?1.1:0)-(onTarget?4:0)-Math.min(shots,3)*3-((c.z||0)>0&&weaponsOf(op,'r').length?0.6:0);};
-      const cell=G.moveCells.map(c=>({cell:c,score:cellScore(c)})).sort((a,b)=>a.score-b.score)[0].cell;doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(800,(window.IsoTactics?.walkRemaining?.()||0)+150));return;}
+      const current=cellScore({...op,d:0});
+      const cell=G.moveCells.map(c=>({cell:c,score:cellScore(c)})).filter(c=>c.score<current-.1).sort((a,b)=>a.score-b.score)[0]?.cell;
+      if(cell){doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(800,(window.IsoTactics?.walkRemaining?.()||0)+150));return;}}
+   }
   }
+  G.mode=null;G.moveCells=[];
   G.aiBusy=false;finishOp(op);
 }
 function afterAICombat(op,step,casualties=[]){
@@ -2375,6 +2403,9 @@ function operativePanel(op){
 function renderOperativeRail(){
   const rail=document.getElementById('operative-rail');
   rail.hidden=!['strategy','firefight'].includes(G.phase);
+  const toggle=document.getElementById('rail-toggle');toggle.hidden=rail.hidden;
+  rail.classList.toggle('mobile-open',!!G.railOpen);
+  toggle.setAttribute('aria-expanded',String(!!G.railOpen));
   if(rail.hidden){rail.innerHTML='';return;}
   rail.innerHTML=[0,1].map(pi=>`<div class="rail-team ${pi?'enemy':''}">EQUIPE ${pi+1}</div>`+G.ops.filter(o=>o.pi===pi).map(o=>{
     const state=o.dead?'Incapacitado':o.activated?'Já ativado':G.sel===o&&activationCommitted(o)?'Em ativação':'Disponível';
@@ -2382,6 +2413,7 @@ function renderOperativeRail(){
     return `<button type="button" class="rail-op ${o.activated?'spent':''} ${o.dead?'casualty':''} ${G.sel===o?'selected':''}" aria-label="${o.n} — ${state} — ${o.hp}/${o.maxhp} PV" aria-pressed="${G.sel===o}" title="${o.n} · ${state}" onclick="inspectRailOperative('${o.id}')"><img src="${portraitSource(portraitId)}" ${missing?'hidden':''} alt="" onerror="portraitFailed(this,'${portraitId}')"><span class="rail-fallback" ${missing?'':'hidden'}>${o.ico||'?'}</span><span class="rail-state">${o.dead?'✕':o.activated?'✓':G.sel===o?'◆':''}</span><span class="rail-hp">${o.hp}/${o.maxhp}</span></button>`;
   }).join('')).join('');
 }
+function toggleOperativeRail(){G.railOpen=!G.railOpen;renderOperativeRail();}
 function inspectRailOperative(id){
   const op=opById(id);if(!op)return;
   if(G.fightResolving||humanInputLocked()||G.pendingReposition||G.mode){msg('Conclua ou cancele a ação atual antes de usar a lista de operativos.');return;}

@@ -1,0 +1,134 @@
+[
+  {
+    "file": "aod-sheets-AuspexAodSheets-asgt.png",
+    "before": 3078774,
+    "after": 2146646,
+    "exactRGBA": true
+  },
+  {
+    "file": "aod-sheets-AuspexAodSheets-awarrior.png",
+    "before": 3001383,
+    "after": 2039872,
+    "exactRGBA": true
+  },
+  {
+    "file": "aod-sheets-AuspexAodSheets-grenadier.png",
+    "before": 3131635,
+    "after": 2186256,
+    "exactRGBA": true
+  },
+  {
+    "file": "aod-sheets-AuspexAodSheets-gunner.png",
+    "before": 3286185,
+    "after": 2306872,
+    "exactRGBA": true
+  },
+  {
+    "file": "aod-sheets-AuspexAodSheets-heavygunner.png",
+    "before": 3176135,
+    "after": 2212142,
+    "exactRGBA": true
+  },
+  {
+    "file": "aod-sheets-AuspexAodSheets-isgt.png",
+    "before": 3174958,
+    "after": 2145144,
+    "exactRGBA": true
+  },
+  {
+    "file": "aod-sheets-AuspexAodSheets-iwarrior.png",
+    "before": 3187528,
+    "after": 2181932,
+    "exactRGBA": true
+  },
+  {
+    "file": "captain-sheet-AuspexCaptainSheet.png",
+    "before": 3425924,
+    "after": 2401546,
+    "exactRGBA": true
+  },
+  {
+    "file": "eliminator-sheet-AuspexEliminatorSheet.png",
+    "before": 2967041,
+    "after": 1804498,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-bombsquig-src.png",
+    "before": 1725035,
+    "after": 1077936,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-boss-src.png",
+    "before": 3137011,
+    "after": 2001962,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-boy1-src.png",
+    "before": 1844166,
+    "after": 1136832,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-boy2-src.png",
+    "before": 1928864,
+    "after": 1195110,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-breacha-src.png",
+    "before": 2246224,
+    "after": 1449930,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-burna-src.png",
+    "before": 2073243,
+    "after": 1364600,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-comms-src.png",
+    "before": 2285588,
+    "after": 1533086,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-dakka-src.png",
+    "before": 2119454,
+    "after": 1366554,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-grot-src.png",
+    "before": 1498627,
+    "after": 925974,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-rokkit-src.png",
+    "before": 2069617,
+    "after": 1316782,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-slasha-src.png",
+    "before": 2139021,
+    "after": 1365950,
+    "exactRGBA": true
+  },
+  {
+    "file": "kommando-sheets-AuspexKommandoSheets-snipa-src.png",
+    "before": 1909976,
+    "after": 1189512,
+    "exactRGBA": true
+  },
+  {
+    "file": "terminal-sheet-AuspexTerminalSheet.png",
+    "before": 2670513,
+    "after": 1587020,
+    "exactRGBA": true
+  }
+]
