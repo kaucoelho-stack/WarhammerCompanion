@@ -1904,9 +1904,25 @@ function aiTurnImpl(){
   const enemies=alive(1-G.cur),score=o=>{const oi=aiObjectiveFor(o),obj=OBJS[oi],onObj=OBJS.some(x=>dist(o,x)<=1),shots=aiPotentialTargets(o).length;
     return dist(o,obj)*.55+(onObj?-5:0)+(shots?-2.5:0)+Math.min(...enemies.map(e=>dist(o,e)))*.08-o.hp*.02;};
   pool.sort((a,b)=>score(a)-score(b));const op=pool[0];
-  if(!op.orderLocked){const threat=aiPotentialTargets(op).length||enemies.some(e=>dist(op,e)<=op.mv+2);op.order=threat?'engage':'conceal';}
+  // Counteract uses the existing order; changing it here can invalidate the
+  // operative that was just admitted to the counteraction pool.
+  if(!op.orderLocked&&!G.counterMode){const threat=aiPotentialTargets(op).length||enemies.some(e=>dist(op,e)<=op.mv+2);op.order=threat?'engage':'conceal';}
   selectOp(op,true);render();
-  msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativando ${op.n}…</b>`);setTimeout(()=>aiAct(op,0),520);
+  if(G.sel!==op||!activationCommitted(op)){
+    G.aiBusy=false;
+    if(G.counterMode){
+      // Decline this counteraction rather than consume an unaccepted operative
+      // or leave the current side with no continuation scheduled.
+      log('IA: seleção de Counteract recusada; oportunidade de contra-ataque dispensada.');
+      closeOv();G.counterMode=false;G.sel=null;G.mode=null;G.cur=1-G.cur;
+      setTimeout(()=>{if(G.phase==='firefight')nextActivation();},260);return;
+    }
+    recoverAI(new Error('Não foi possível confirmar a seleção do operativo da IA.'));return;
+  }
+  msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativando ${op.n}…</b>`);setTimeout(()=>{
+    if(G.phase!=='firefight'||G.sel!==op||G.cur!==op.pi||!isAI(op.pi))return;
+    aiAct(op,0);
+  },520);
 }
 function aiAct(op,step){
   try{return aiActImpl(op,step);}catch(error){recoverAI(error);}

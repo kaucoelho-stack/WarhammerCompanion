@@ -3,7 +3,7 @@
   "version": "5",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-10T01:32:41.205Z",
+  "createdAt": "2026-10-10T01:36:03.335Z",
   "validation": "Partial audit in progress; see AUDIT-PROGRESS.md and RULES-BASELINE.md. Not a complete official rules implementation.",
   "files": [
     {
@@ -693,8 +693,8 @@
     },
     {
       "path": "AUDIT-PROGRESS.md",
-      "bytes": 10226,
-      "sha256": "baddba7db4831f8081cf18627edfaae65801470ab27bd780e7fe81c5d1716110"
+      "bytes": 10927,
+      "sha256": "f2793bf07a53e394b22e3dc5f6963315fa867697e736defc298927a0ee3b9422"
     },
     {
       "path": "auspex-rules.js",
@@ -713,8 +713,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 243556,
-      "sha256": "4753d2da45d6c51d70e153b91c0d89542967d524e237ed26533b246f9dba6cca"
+      "bytes": 244391,
+      "sha256": "9210fc2388178cd47d8f5636d1ea1bf68237a130847d5a250a237d92443a2600"
     },
     {
       "path": "killteam_data.js",
