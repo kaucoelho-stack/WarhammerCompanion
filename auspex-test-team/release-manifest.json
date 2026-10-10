@@ -3,7 +3,7 @@
   "version": "5",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-10T15:50:52.484Z",
+  "createdAt": "2026-10-10T18:11:15.338Z",
   "validation": "Partial audit in progress; see AUDIT-PROGRESS.md and RULES-BASELINE.md. Not a complete official rules implementation.",
   "files": [
     {
@@ -693,13 +693,13 @@
     },
     {
       "path": "AUDIT-PROGRESS.md",
-      "bytes": 18102,
-      "sha256": "25faca96867333047c949a414870a524296514259fbc6f42a65577612d4a0003"
+      "bytes": 22279,
+      "sha256": "adf43ec8d691f07b1c5aed74747d3a7d452f50f1d081daf1e93adc388749c72e"
     },
     {
       "path": "auspex-rules.js",
-      "bytes": 14825,
-      "sha256": "aabeb4b998aa1ad9974e2b6d56686866e41b009a9972c3fe164009ffb813dba6"
+      "bytes": 15921,
+      "sha256": "3664099f658ebb4b00c5564354910771e3d87d6798208afb55e0d9110b2e7db6"
     },
     {
       "path": "battlefield.js",
@@ -708,18 +708,23 @@
     },
     {
       "path": "DATACARD-AUDIT.md",
-      "bytes": 6490,
-      "sha256": "c190d26d2390f1052ea58b614439b1c124dcc14f00664667edaf58ebed3fd2bd"
+      "bytes": 8112,
+      "sha256": "b21516da2f21d1d951a45f2c3f94671f94cf75e2de6b7645a97b99ebe22ca216"
     },
     {
       "path": "index.html",
-      "bytes": 271421,
-      "sha256": "85e52f9ca73ce3b5c96c63e6dac04089f226e90ebe93851fdcc1a6b774e1cce2"
+      "bytes": 317481,
+      "sha256": "4fd9c87d971693e1f26f2c26b065a7fca4e27563655ae20e8561050e3b6dd755"
     },
     {
       "path": "killteam_data.js",
-      "bytes": 134046,
-      "sha256": "1a7aaae0d10c4ea71962427130c22490b0d752ad28dccf2a94c1c79c7a47d274"
+      "bytes": 134221,
+      "sha256": "8ec0a369be296ab85b1ab5092897f7c22e3e83e85397d4fed02a14086e46fbd0"
+    },
+    {
+      "path": "KOMMANDOS-VALIDATION.md",
+      "bytes": 2810,
+      "sha256": "83da20a82c3dd6157b2b5427553fa35d59a356cd9ee00dd5f771bf61f25c46e1"
     },
     {
       "path": "modular-floor.png",
@@ -738,8 +743,8 @@
     },
     {
       "path": "pixel-tactics.js",
-      "bytes": 37980,
-      "sha256": "924934397d79113bdc2e64aee8a489657b831947634926f3363410e20ee84b4d"
+      "bytes": 38652,
+      "sha256": "1e9a15e4b39a193ca24a41ccc453cd00ea9c7c79a3ea3a4d65f29bf70333d07a"
     },
     {
       "path": "PUBLICAR.md",
@@ -753,18 +758,18 @@
     },
     {
       "path": "REVIEW-HANDOFF.md",
-      "bytes": 4168,
-      "sha256": "47f895d7972c25e4bd6bebea5dc307db2ce81acff244dcc0ff68ed8963e5a443"
+      "bytes": 6368,
+      "sha256": "12dd38dbd0f0b02decc6915a6236981922fba2ecc585263219635402bca5e09f"
     },
     {
       "path": "RULES-BASELINE.md",
-      "bytes": 3027,
-      "sha256": "600880ed06b8b5276e0fc413ad853c0d8ded734fec4aea57d0f16f9a8baef49e"
+      "bytes": 5032,
+      "sha256": "cb6b8271e7a07a5301aa4ce792b21ac27f83f63bb38dffca55ab28ec188163c1"
     },
     {
       "path": "RULES-COVERAGE.md",
-      "bytes": 1785,
-      "sha256": "b81e367f7e24dd7cdd5a9cf56533d3643b1089fb436a6ad3640769557fbde820"
+      "bytes": 3640,
+      "sha256": "463d6e4031aaa050045f369e4fd35380fde189fee5ff9138d9799c6d0033af5b"
     },
     {
       "path": "sprite-assets.js",

@@ -1,5 +1,22 @@
 # AUSPEX Test Team — cobertura do motor de regras
 
+## Estado atual de fidelidade — 2026-10-10
+
+**Não é 100% fiel ao jogo de mesa.** A lista histórica de efeitos abaixo descreve implementação básica, não validação integral de ordem, escolhas, geometria e exceções. O laboratório visual permanece preservado.
+
+Nesta rodada há seleção e efeitos dos quatro equipamentos de facção de Angels of Death e dos quatro de Kommandos, além de Explosive Grenades. Há testes específicos de reservas compartilhadas, repetição humana, timing de Tilting Shields e Obscured. Optics, Get It Dun!, Listen In, Concealed Position e Slasha têm handlers básicos; isso não significa que todas as habilidades estejam concluídas.
+
+Pendências impeditivas de equivalência integral:
+
+- As ações especiais de Kommandos receberam handlers nesta rodada; continuam necessárias conferências de interação com as lacunas gerais abaixo e QA externo. Breach/Hook/Smoke usam a geometria aproximada do tabuleiro, não medidas físicas exatas pelas bases.
+- Equipamentos universais de terreno e utilidade, posicionamento e ações correspondentes.
+- Alternância/passagem de gambits; escolha da iniciativa e desempate após TP1.
+- Alternância de repetições entre jogadores no combate; escolha da arma de retaliação e alocação humana de defesas; escolhas de Torrent/ordem de ataques secundários.
+- Consolidação de alterações de APL e duração de Stun; timing de dano de Devastating e mudanças de estatística durante ações.
+- Medidas por bordas das bases, seleção de cobertura/Obscured e trajetórias de Charge conforme o Core Book. O tabuleiro usa aproximações de grade/visibilidade.
+- Setup e missão oficiais completos/Tac Ops. A missão Transmission atual é uma adaptação documentada.
+- Aceite visual e partidas completas em navegador/aparelho real. Testes locais não substituem isso.
+
 Fonte de dados: `killteam_data.js`. O simulador importa 15 equipes. Os testes de composição conferem o cadastro local, não equivalência integral às regras oficiais. Há fichas resumidas e efeitos por interpretação de texto; consultar `TEAM-AUDIT.md` para as lacunas conhecidas.
 
 ## Automatizado

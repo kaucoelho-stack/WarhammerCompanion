@@ -246,6 +246,12 @@
       if(G.sel){ctx.strokeStyle=color+'70';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.beginPath();ctx.ellipse(p.x,p.y,unit*3,unit*1.5,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
       label('OBJ '+(i+1)+' · '+scores.join(':'),{x:p.x,y:p.y+20},color);
     }}));
+    for(const breach of G.breaches||[])jobs.push({depth:project(breach.x+.5,breach.y+.5).y+1,draw:()=>{const p=project(breach.x+.5,breach.y+.5);ctx.fillStyle='#db956d';ctx.fillRect(p.x-4,p.y-10,8,8);label('BREACH',{x:p.x,y:p.y+8},'#ffd0a0');}});
+    for(const smoke of G.smoke||[])jobs.push({depth:project(smoke.x+.5,smoke.y+.5,smoke.z).y+1,draw:()=>{
+      const p=project(smoke.x+.5,smoke.y+.5,smoke.z);ctx.save();ctx.globalAlpha=.42;ctx.fillStyle='#b8b7ad';
+      for(const [x,y,w,h]of[[-20,-12,40,16],[-12,-23,25,20],[-25,-4,48,10]])ctx.fillRect(p.x+x*unit/15,p.y+y*unit/15,w*unit/15,h*unit/15);
+      ctx.restore();label('SMOKE',{x:p.x,y:p.y+12},'#dedbd1');
+    }});
     jobs.sort((a,b)=>a.depth-b.depth).forEach(j=>j.draw());
     const destinations=G.moveCells.filter(visibleDestination).sort((a,b)=>project(a.x+.5,a.y+.5).y-project(b.x+.5,b.y+.5).y||(a.z||0)-(b.z||0));
     destinations.forEach(c=>{const pts=tile(c.x,c.y,c.z||0,c.z>0?'#56dce18a':'#77dca85a',c.z>0?'#bdffff':'#b8ffd7');hits.push({type:'move',cell:c,points:pts});});

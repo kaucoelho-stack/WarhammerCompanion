@@ -134,7 +134,17 @@
         key==='kom'&&ty==='s'&&name==='Skulk About'?{id:'ko_skulk',fx:{concealRetain:true}}:
         key==='aod'&&ty==='s'&&name==='Eles Não Temem'?{id:'aod_fearless',fx:{ignoreInjury:true}}:
         key==='aod'&&ty==='s'&&name==='Doutrina de Combate'?{id:'aod_doc',fx:{combatDoctrine:true}}:
-        key==='aod'&&ty==='f'&&name==='Ajustar Doutrina'?{id:'aod_adjust',fx:{adjustDoctrine:true}}:null;
+        key==='aod'&&ty==='f'&&name==='Ajustar Doutrina'?{id:'aod_adjust',fx:{adjustDoctrine:true}}:
+        key==='aod'&&ty==='s'&&name==='Indomitus'?{id:'aod_indomitus',fx:{indomitus:true}}:
+        key==='aod'&&ty==='s'&&name==='Táticas Adaptativas'?{id:'aod_adaptive',fx:{adaptive:true}}:
+        key==='aod'&&ty==='f'&&name==='Fisiologia Transumana'?{id:'aod_transhuman',fx:{event:true}}:
+        key==='aod'&&ty==='f'&&name==='Assalto de Choque'?{id:'aod_shock',fx:{event:true}}:
+        key==='aod'&&ty==='f'&&name==='Ira da Vingança'?{id:'aod_wrath',fx:{event:true}}:
+        key==='kom'&&ty==='s'&&name==='SSSSHHHH!'?{id:'ko_sssh',fx:{sssh:true}}:
+        key==='kom'&&ty==='f'&&name==='Só um Arranhão'?{id:'ko_scratch',fx:{event:true}}:
+        key==='kom'&&ty==='f'&&name==="Kunnin' Mas Brutal"?{id:'ko_kunnin',fx:{event:true}}:
+        key==='kom'&&ty==='f'&&name==="Krump 'Em"?{id:'ko_krump',fx:{event:true}}:
+        key==='kom'&&ty==='f'&&name==='Aguenta Firme'?{id:'ko_shake',fx:{event:true}}:null;
       out.push({id:implemented?.id||`${key}_${ty}_${i}`,n:name,d,cp:p.cp??1,ty,fx:implemented?.fx||{reference:true}});
     }return out;
   }
@@ -174,6 +184,7 @@
   const weaponFamily=w=>String(w?.n||w||'').split(' · ')[0].trim().toLowerCase();
   function shootPermission(op,w,teams){
     let cost=1,reason='';
+    if((w.tags||[]).includes('Concealed Position')&&(op.battleShots||0)>0)reason='Concealed Position só pode ser usado no primeiro Shoot da batalha.';
     if((op.shotThis||0)>=maxAction(op,'shoot',teams))reason='Limite de tiros atingido nesta ativação.';
     if(!reason&&team(op,teams)?.sourceId==='kt-angelsofdeath'&&(op.shotThis||0)>=1){
       const previous=weaponFamily(op.shotWeapons?.[0]),current=weaponFamily(w);
@@ -193,7 +204,7 @@
   const limitedBlocked=(op,w)=>{const m=String((w.tags||[]).find(t=>String(t).startsWith('Limited'))||'');if(!m)return false;const n=number(m.slice(7))||1;return (op.weaponUses?.[w.n]||0)>=n;};
   const useWeapon=(op,w)=>{op.weaponUses=op.weaponUses||{};op.weaponUses[w.n]=(op.weaponUses[w.n]||0)+1;};
   const hasAbility=(op,re)=>text(op.abl).match(re);
-  const objectiveAPL=op=>op.apl+(op.abl?.some(a=>a.oc)?1:0);
+  const objectiveAPL=op=>Math.max(1,op.apl-(op.aplPenalty||0))+(op.abl?.some(a=>a.oc)?1:0);
   const countsForElimination=op=>!op.expendable;
   const rangeOf=w=>{const t=(w.tags||[]).find(x=>String(x).startsWith('Range '));return t?(number(String(t).slice(6))||99):99;};
 

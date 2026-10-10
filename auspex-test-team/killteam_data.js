@@ -82,12 +82,12 @@ const KT_TEAMS = [
       strategy: [
         {name:"DAKKA! DAKKA! DAKKA!", desc:"Armas de tiro ganham Punishing — retém uma falha como sucesso normal se já reteve algum crítico."},
         {name:"Skulk About", desc:"Operativo com ordem Ocultar retém 1 sucesso de defesa sem rolar dado."},
-        {name:"SSSSHHHH!", desc:"Operativos ocultos e fora de alcance de visão podem fazer um Dash grátis (não no 1º turno)."},
+        {name:"SSSSHHHH!", desc:"Cada operativo que não seja alvo válido inimigo, ou esteja em Conceal e além de 6″ dos inimigos, pode fazer um Dash gratuito imediato. Não no primeiro turno."},
         {name:"WAAAGH!", desc:"Armas corpo a corpo ganham Balanced — pode re-rolar 1 dado de ataque."},
       ],
       firefight: [
         {name:"Só um Arranhão", desc:"Ignora um dano normal recebido (exceto Bomb Squig e Grot)."},
-        {name:"Kunnin' Mas Brutal", desc:"Ao Cargar oculto, o primeiro golpe normal em CaC vira crítico."},
+        {name:"Kunnin' Mas Brutal", desc:"Após Charge em Conceal, se o primeiro dado resolvido na luta for um golpe normal, tratá-lo como crítico."},
         {name:"Krump 'Em", desc:"No fim da Firefight Phase, um Kommando faz uma ação de Luta grátis."},
         {name:"Aguenta Firme", desc:"Ignora mudanças no APL até o início do próximo turno."},
       ],
@@ -123,7 +123,7 @@ const KT_TEAMS = [
           {name:'Expendable', desc:'Ignorado para as condições de vitória do oponente e para a contagem inicial de operativos, inclusive se for incapacitado.'},
         ],
         weapons:[
-          { name:'Explosivos', A:6, skill:4, D:4, CD:5, range:'short', tags:['Blast 1"','Limited 1'] },
+          { name:'Explosivos', A:6, skill:4, D:4, CD:5, range:'short', tags:['Blast 1"','Limited 1','Explosive'] },
           { name:'Mordida',    A:3, skill:4, D:4, CD:5, range:'melee' },
         ]},
       { id:'kt-kommando-breacha', name:'Breacha Boy', unique:true,
@@ -158,7 +158,7 @@ const KT_TEAMS = [
       { id:'kt-kommando-dakka', name:'Dakka Boy', unique:true,
         M:'6"', APL:2, GA:1, DF:4, SV:5, W:10,
         abilities:[
-          {name:'Dakka Dash', ap:'1AP', desc:'Faz uma ação Dash grátis e uma ação Atirar grátis nesta ordem, mas o Tiro só pode ser com a Dakka Shoota. Não pode ser feito com ordem Conceal nem perto de inimigo.'},
+          {name:'Dakka Dash', ap:'1AP', desc:'Faz uma ação Dash grátis e uma ação Atirar grátis em qualquer ordem, mas o Tiro só pode ser com a Dakka Shoota. Não pode ser feito com ordem Conceal nem perto de inimigo.'},
         ],
         weapons:[
           { name:'Dakka Shoota (Curto)', A:5, skill:4, D:3, CD:4, range:'short', tags:['Range 9"','Ceaseless'] },
@@ -197,7 +197,7 @@ const KT_TEAMS = [
           {name:'Três Configurações', desc:'A Big Shoota com Mira tem modo Oculta (só pode ser usado na primeira vez que este operativo Atirar na batalha), Estacionária, ou Varredura.'},
         ],
         weapons:[
-          { name:'Big Shoota c/ Mira (Oculta)',      A:5, skill:3, D:3, CD:3, range:'long', tags:['Devastating 2','Heavy','Silent'] },
+          { name:'Big Shoota c/ Mira (Oculta)',      A:5, skill:3, D:3, CD:3, range:'long', tags:['Devastating 2','Heavy','Silent','Concealed Position'] },
           { name:'Big Shoota c/ Mira (Estacionária)',A:5, skill:3, D:3, CD:3, range:'long', tags:['Devastating 2','Heavy'] },
           { name:'Big Shoota c/ Mira (Varredura)',   A:5, skill:3, D:3, CD:4, range:'long', tags:['Heavy (Dash only)','Torrent 1"'] },
           { name:'Punhos',                           A:3, skill:3, D:3, CD:4, range:'melee' },
@@ -437,7 +437,7 @@ const KT_TEAMS = [
         {name:"Doutrina de Combate", desc:"Escolha Devastador (tiro além de 6″), Tático (tiro até 6″) ou Assalto (lutar/retaliar). Armas ganham Balanced apenas na situação escolhida neste turno. Custa 1 CP; Doctrine Warfare pode conceder usos gratuitos específicos."},
         {name:"Eles Não Temem", desc:"Ignora mudanças de status (inclusive de armas) por estar ferido."},
         {name:"Táticas Adaptativas", desc:"Troca a Chapter Tactic secundária até o fim do turno."},
-        {name:"Indomitus", desc:"Se o inimigo errar 2+ dados ao te atirar, descarta uma falha e transforma outra em sucesso."},
+        {name:"Indomitus", desc:"Ao rolar defesa contra tiro, se você rolar duas ou mais falhas, descarte uma para reter outra como sucesso normal."},
       ],
       firefight: [
         {name:"Ajustar Doutrina", desc:"Muda a Doutrina de Combate escolhida antes, durante a ativação de uma unidade."},

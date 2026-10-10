@@ -1,5 +1,15 @@
 # Referências escolhidas pelo usuário — 2026-10-09
 
+## Complemento de fontes — 2026-10-10
+
+O usuário forneceu a transcrição das Core Rules da terceira edição em https://wahapedia.ru/kill-team3/the-rules/core-rules/. É uma fonte secundária, usada para preencher as regras-base ausentes das Lite Rules; o update log oficial e os PDFs dos times prevalecem em divergências. A tabela da página indica terceira edição e atualização June 2026; isso não certifica, por si só, que todo o simulador está atualizado.
+
+Também forneceu Universal Equipment: https://assets.warhammer-community.com/eng_17-06_kill_team_key_downloads_universal_equipment-prsd0j8pih-ikfmigl0za.pdf, Approved Ops Update Log: https://assets.warhammer-community.com/eng_kt_approved_ops_update_log-c46bfdlsms-senqgrexsi.pdf e Tournament Companion: https://assets.warhammer-community.com/eng_kt_approved_ops_2025_tournament_companion-fpsaag6ryp-uwnxgflxow.pdf. Os dois últimos não substituem Core Rules nem transformam a missão adaptada em Approved Ops completo.
+
+Implementação desta rodada: Obscured deixa de invalidar o alvo e passa a modificar os dados de ataque; assistência de combate melhora Hit, impedida por Siege Specialist; Hot usa rolagem separada, com Hit congelado antes da resolução do disparo; Shock pode remover crítico quando não há normal. Repetições gratuitas de ataque têm escolha humana antes de retenção/conversões. A sequência de repetições dos dois jogadores no corpo a corpo ainda precisa de alternância completa; a implementação atual processa um jogador de cada vez.
+
+Equipamento: até quatro opções distintas selecionadas na montagem; quatro opções de facção AoD, quatro Kommandos e Explosive Grenades. Usos compartilhados por equipe: Purity/Auspex/Shields por TP, Dynamite por batalha, Harpoon por TP, frag/krak por batalha. Grenadier mantém granadas próprias, não consome as reservas universais. Não há equipamentos universais de terreno/utilidade implementados nesta rodada. Não é uma certificação integral.
+
 - Lite Rules: https://assets.warhammer-community.com/eng_jul25_kt_lite_rules-jmjv4hdamy-qlsqxdf83p.pdf
 - Core Rules Update Log: https://assets.warhammer-community.com/eng_17-06_kill_team_key_downloads_core_rules_update_log-9dzdz0ewle-wutcyhpgzf.pdf
 

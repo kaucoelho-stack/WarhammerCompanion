@@ -16,6 +16,16 @@ IA tenta Reposition e Dash legais e só se move quando melhora a avaliação tá
 
 ## Pedido de review
 
+### Candidato de ploys AoD / Kommandos — 2026-10-10
+
+Esta atualização substitui as pendências de ploys citadas em registros anteriores, mas NÃO declara os times integralmente validados. Os oito ploys de cada equipe agora têm handlers: AoD Combat Doctrine, And They Shall Know No Fear, Adaptive Tactics, Indomitus, Adjust Doctrine, Transhuman Physiology, Shock Assault e Wrath of Vengeance; Kommandos Dakka! Dakka! Dakka!, Skulk About, SSSSHHHH!, WAAAGH!, Just a Scratch, Kunnin' but Brutal, Krump 'Em e Shake It Off.
+
+Janelas de defesa/ataque/ativação/counteraction/fim de fase oferecem escolha humana, custos legais e bloqueio de repetição por TP. Heroic Leader compartilha o uso gratuito entre opções; Iron Halo não gasta CP. Chapter Tactics tem escolha primária/secundária/veterano e Adaptive restaura a secundária original no próximo TP. Krump exige proximidade e visibilidade mútua; não gasta AP nem reativa. Dash de SSSSHHHH! não gasta AP nem ativação e está bloqueado no TP1. Severe não dispara Rending/Punishing. Blast resolve o alvo primário primeiro e usa suas condições de cobertura nos secundários.
+
+Pendências impeditivas de aceite integral: alternância formal de strategic gambits/passagens; auditoria da elegibilidade de alvo de SSSSHHHH!; assistência de combate (incluindo exceção Siege Specialist); habilidades específicas ainda não implementadas de operativos Kommandos e AoD, equipamentos e respectivos efeitos combinados. A automação da IA privilegia a primeira opção legal, não valida balanceamento ou decisões táticas ótimas. Não afirmar “dois times 100% oficiais”.
+
+Novos testes: test-team-ploy-events.cjs, test-team-phase-ploys.cjs, test-chapter-tactics.cjs. Cobrem CP/gratuidade/recusa/callback obsoleto, conversões e primeiro dado/primeiro golpe, cobertura, troca/reset de Chapter Tactics, Dash sem AP, luta fora da ativação e parede. São testes de controller em VM, NÃO partidas reais ou screenshots. Prioridade do review: partida completa nos dois lados com todos os ploys, counteraction de duas ações distintas com movimento total até 2″, decisões humanas e interações com operadores/equipamentos pendentes.
+
 1. Partidas completas AoD x Kommandos em ambos os lados: erros, travamentos, AP restante com/sem ação útil, segundo tiro.
 2. Capturas 390x844 e 1280x800: mapa, ferramentas, barra recolhível, painel inferior e rotação.
 3. Pinça, arraste, cancelamento de toque e zoom da página fora do canvas.
