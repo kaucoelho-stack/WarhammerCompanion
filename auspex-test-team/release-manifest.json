@@ -3,7 +3,7 @@
   "version": "5",
   "map": "modular",
   "objectives": 3,
-  "createdAt": "2026-10-10T23:48:18.939Z",
+  "createdAt": "2026-10-11T00:33:40.148Z",
   "validation": "Partial audit in progress; see AUDIT-PROGRESS.md and RULES-BASELINE.md. Not a complete official rules implementation.",
   "files": [
     {
@@ -55,11 +55,6 @@
       "path": "assets/grimdark-title-v2.png",
       "bytes": 2262265,
       "sha256": "d608ebdfeb646b77e82ef06feb6345cd6193aac56caf6419fd30a917d8d86796"
-    },
-    {
-      "path": "assets/marine-stance-v2.png",
-      "bytes": 1162608,
-      "sha256": "7354805cd7f8e2a4c4ed69bca223d0338683ccddbccd95820ccb96b921225f67"
     },
     {
       "path": "assets/mini-aod.png",
@@ -693,8 +688,8 @@
     },
     {
       "path": "AUDIT-PROGRESS.md",
-      "bytes": 24733,
-      "sha256": "2594f85a37757488b6dde91dee87cb3ac323387a9f823d16e1af3114d40151df"
+      "bytes": 28401,
+      "sha256": "546f2326135d7f902d5494dd1010b41e9639135853c8e784ff08aaf67623999e"
     },
     {
       "path": "auspex-rules.js",
@@ -713,8 +708,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 326659,
-      "sha256": "4e96d279ee65773b948572001d1061e286b2b6c3fa796e59fa25f679fe062ea3"
+      "bytes": 330489,
+      "sha256": "4a4a99316ddb80220b36111a452d2314f57c64ef2a327d5708e09e9bcf3904df"
     },
     {
       "path": "killteam_data.js",
@@ -743,8 +738,8 @@
     },
     {
       "path": "pixel-tactics.js",
-      "bytes": 38740,
-      "sha256": "5d5afd228096599cd18f01eb5257b0b77f659da69a302026373029daca4ab920"
+      "bytes": 39208,
+      "sha256": "b4e11711b5fe95b35362f4b00f58d9ed4d7ab0b94fbdf21e220b6a7eff4a5866"
     },
     {
       "path": "PUBLICAR.md",
@@ -775,11 +770,6 @@
       "path": "sprite-assets.js",
       "bytes": 2182,
       "sha256": "7fad975be5ab358b8f59a31fe09428535a84b2f82950bb2426107cb3a85093f0"
-    },
-    {
-      "path": "stance-lab.html",
-      "bytes": 7616,
-      "sha256": "29d9d399a3922fa00d577cc39b3b863a6221a54e8c3270c1109db43898835f0d"
     },
     {
       "path": "TEAM-AUDIT.md",

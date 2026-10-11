@@ -114,6 +114,15 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:n
 .x{width:30px;height:30px;border-radius:50%;background:var(--panel2);border:1px solid var(--line2);
   display:flex;align-items:center;justify-content:center;font-size:15px}
 .shb{padding:12px 13px}
+.roster-settings{margin:8px 0;border:1px solid #796452;background:#211c19}
+.roster-settings>summary{padding:12px;min-height:44px;box-sizing:border-box;cursor:pointer;font-weight:bold}
+.roster-settings select{color-scheme:dark;background:#211c19;color:#e6dfcd;border:1px solid #796452;min-height:44px;font:inherit}
+#ov.strategy-overlay .sheet{display:flex;flex-direction:column;overflow:hidden}
+#ov.strategy-overlay .shd{flex:none}
+#ov.strategy-overlay .shb{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+#ov.strategy-overlay .strategy-scroll{overflow:auto;min-height:0;flex:1}
+#ov.strategy-overlay .strategy-footer{flex:none;background:#211c19;border-top:1px solid #796452;padding-top:8px}
+.opponent-ploys>summary{cursor:pointer;padding:12px;min-height:44px;box-sizing:border-box}
 .stg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
 .stat{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:6px;text-align:center}
 .stat .l{font-size:9px;color:var(--mut);font-family:var(--fd);letter-spacing:1px}
@@ -666,6 +675,12 @@ button:disabled{opacity:.45;cursor:not-allowed}
  #panel .mobile-ap{color:var(--p1);white-space:nowrap}
  #panel .mobile-active b{max-width:52%;line-height:1.2}
  #panel .mobile-active{touch-action:none;cursor:ns-resize}
+ #panel.mobile-quiet #msg{display:none!important}
+ #panel .mobile-inspection{display:grid;gap:6px}
+ #panel .mobile-inspection>.btn.pri{min-height:52px}
+ #panel .mobile-inspection-details{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+ #mobile-roster .rail-fallback{width:100%;height:100%;display:grid;place-items:center;font-size:18px;font-weight:bold;color:var(--txt)}
+ #mobile-roster .rail-fallback[hidden]{display:none}
  #panel.mobile-expanded{flex-basis:min(55dvh,420px)!important;max-height:min(55dvh,420px)!important}
  #panel p{font-size:12px}
  #panel .mobile-move-confirm{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -684,8 +699,9 @@ button:disabled{opacity:.45;cursor:not-allowed}
 }
 /* Landscape mobile: three real columns, never floating over the board. */
 @media(max-width:900px) and (orientation:landscape){
- body:not(.setup-screen){display:grid;grid-template-columns:64px minmax(0,1fr) 168px;grid-template-rows:44px minmax(0,1fr)}
+ body:not(.setup-screen){display:grid;grid-template-columns:56px minmax(0,1fr) 200px;grid-template-rows:44px minmax(0,1fr)}
  body:not(.setup-screen) #mobile-bar{grid-column:1/-1;grid-row:1;min-width:0;min-height:0}
+ #mobile-summary{justify-content:flex-start;gap:18px;min-width:0}
  body:not(.setup-screen) #boardwrap{grid-column:2;grid-row:2;min-width:0}
  body:not(.setup-screen) #mobile-roster:not([hidden]){grid-column:1;grid-row:2;min-height:0;min-width:0;flex-direction:column;justify-content:flex-start;padding:8px 10px;overflow-x:hidden;overflow-y:auto;border-right:1px solid var(--line2)}
  body:not(.setup-screen) #panel,body:not(.setup-screen) #panel.tactics-hud,body:not(.setup-screen) #panel.mobile-expanded{grid-column:3;grid-row:2;min-height:0;max-height:100%!important;flex-basis:auto!important;border-top:0;border-left:1px solid var(--line2)}
@@ -695,6 +711,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
  #panel .mobile-active>button{grid-column:2;grid-row:1/3}
  #panel .mobile-ap{display:block}
  #panel .mobile-actions,#panel .mobile-submenu,#panel .mobile-move-confirm{grid-template-columns:minmax(0,1fr)}
+ #panel .mobile-inspection-details{grid-template-columns:minmax(0,1fr)}
  #panel .mobile-actions .mobile-end{grid-column:1}
  #panel .mobile-actions .ap{display:inline;margin-left:5px}
  #panel .mobile-move-confirm .btn{min-height:56px}
@@ -2197,7 +2214,7 @@ function showRosterBuilder(pi,k,reset=false){
   const t=TEAMS[k];if(reset||!G.rosterDraft||G.rosterDraft.pi!==pi||G.rosterDraft.k!==k)G.rosterDraft={pi,k,counts:RULES.defaultSelection(t)};
   const counts=G.rosterDraft.counts,check=RULES.validateRoster(t,counts),errorText=check.valid?'FORMAÇÃO ACEITA PELO CADASTRO · REGRAS ESPECIAIS PARCIAIS':check.errors.join(' · ');
   openOv(`${P(pi).n} — montar ${t.name}`,`<div class="roster-head" style="--team:${t.col}"><div><strong>${t.ico} ${t.name}</strong><small>${t.fac} · ${k==='wlf'?'1 lobo obrigatório + 5 scouts':k==='kom'?'Grot + Bomb Squig ocupam uma escolha juntos':'escolha os operativos antes da batalha'}</small></div><div class="roster-total ${check.valid?'':'bad'}">${check.selections}/${t.limit}<span>ESCOLHAS · ${check.total} OPERATIVOS · ${check.leaders}/1 LÍDER${k==='wlf'?' OPCIONAL':''}</span></div></div>
-    ${chapterControls()}${equipmentControls()}<div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,full=check.selections+(o.selectionCost||1)>t.limit,canPlus=n<o.max&&(o.leader||!full),weapon=o.wpn?.find(w=>w.t==='r'&&!/pistol|pistola/i.test(w.n))||o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
+    ${k==='aod'?`<details class="roster-settings"><summary>CHAPTER TACTICS · configurar</summary>${chapterControls()}</details>`:''}${FACTION_EQUIPMENT[k]?`<details class="roster-settings"><summary>EQUIPAMENTO · ${(G.rosterDraft.equipment||[]).length}/4 selecionados</summary>${equipmentControls()}</details>`:''}<div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,full=check.selections+(o.selectionCost||1)>t.limit,canPlus=n<o.max&&(o.leader||!full),weapon=o.wpn?.find(w=>w.t==='r'&&!/pistol|pistola/i.test(w.n))||o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
       <img class="recruit-portrait" src="${portraitSource(o.sourceId)}" alt="${o.n}" onerror="portraitFailed(this,'${o.sourceId}')"><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.min?'<i>OBRIGATÓRIO</i>':''}${o.leader?`<i class="leader">LÍDER · ${k==='wlf'?'OPCIONAL':'ESCOLHA 1'}</i>`:''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
       ${rosterLoadoutControls(o,n)}<div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n>(o.min||0)?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
     <div class="roster-errors ${check.valid?'ok':''}">${errorText}</div><div class="roster-actions"><button class="btn" onclick="showTeamPicker(${pi})">← TROCAR TIME</button><button class="btn" onclick="recommendedRoster()">FORMAÇÃO RECOMENDADA</button><button class="btn pri confirm" onclick="confirmRoster()" ${check.valid?'':'disabled'}>${pi===0?'CONFIRMAR EQUIPE → ADVERSÁRIO':'INICIAR POSICIONAMENTO'}</button></div>`,true);
@@ -2227,7 +2244,7 @@ function confirmRoster(){
   if(k==='aod'&&d.chapter){for(const key of ['primary','secondary','veteran'])if(!Object.hasOwn(CHAPTER_TACTICS,d.chapter[key]))return;P(pi).chapter={primary:d.chapter.primary,secondary:d.chapter.secondary,originalSecondary:d.chapter.secondary};P(pi).ops.filter(o=>['kt-aod-asgt','kt-aod-isgt'].includes(o.templateId)).forEach(o=>o.chapterVeteran=d.chapter.veteran);}
   G.rosterDraft=null;closeOv();
   if(pi===0&&G.gameMode==='ai'){
-    const candidates=Object.entries(TEAMS).filter(([,team])=>RULES.validateRoster(team,RULES.defaultSelection(team)).valid);
+    const candidates=Object.entries(TEAMS).filter(([key,team])=>['aod','kom'].includes(key)&&RULES.validateRoster(team,RULES.defaultSelection(team)).valid);
     const [enemyKey,enemy]=candidates[Math.floor(Math.random()*candidates.length)];
     setPlayerRoster(1,enemyKey,RULES.defaultSelection(enemy));
     startDeploy();
@@ -2340,7 +2357,7 @@ function chooseInitiative(chooser,pi){
 function showStrategy(){
   const [r0,r1]=G.strategyState?.rolls||[0,0];
   openOv('Fase de Estratégia',`
-    <div style="text-align:center;padding:6px 0 14px">
+    <div class="strategy-scroll"><div style="text-align:center;padding:6px 0 14px">
       <div class="rowlbl">ROLL-OFF DE INICIATIVA</div>
       <div class="dice" style="justify-content:center">
         <div class="d ${r0>r1?'suc':'fail'}">${r0}</div>
@@ -2352,9 +2369,10 @@ function showStrategy(){
         CP: ${P(0).n} ${P(0).cp} · ${P(1).n} ${P(1).cp}</div>
     </div>
     <div class="rowlbl">PLOYS DE ESTRATÉGIA — confira custos e exceções nas opções</div>
-    <div id="ploylist"></div>
-    <div id="gambit-status"></div>
-    <button class="btn pri" id="gambit-pass" style="width:100%;margin-top:10px" onclick="passGambit(G.strategyState.turn)">PASSAR GAMBIT</button>`,true);
+    <div id="ploylist"></div></div>
+    <div class="strategy-footer"><div id="gambit-status"></div>
+    <button class="btn pri" id="gambit-pass" style="width:100%;margin-top:10px" onclick="passGambit(G.strategyState.turn)">PASSAR GAMBIT</button></div>`,true);
+  document.getElementById('ov').classList.add('strategy-overlay');
   renderPloys('s');
   scheduleStrategyAI();
 }
@@ -2377,7 +2395,8 @@ function aiStrategy(){
   if(G.phase!=='strategy'||G.strategyMoving||G.ployChoice)return;
   const pi=G.strategyState?.turn??G.ai;
   if(G.strategyState&&(G.strategyState.stage!=='gambits'||!isAI(pi)))return;
-  const t=TEAMS[P(pi).team],opts=t.ploys.filter(p=>p.ty==='s'&&!p.fx?.reference&&!p.fx?.event&&!p.fx?.adjustDoctrine&&!(p.fx?.sssh&&G.tp===1)&&P(pi).cp>=(p.fx?.combatDoctrine?Math.min(...Object.keys(COMBAT_DOCTRINES).map(name=>combatDoctrineCost(pi,name).cp)):p.cp)&&!G.ploys[pi].includes(p.id));
+  const budget=Math.max(0,P(pi).cp-(G.tp<4?1:0));
+  const t=TEAMS[P(pi).team],opts=t.ploys.filter(p=>p.ty==='s'&&!p.fx?.reference&&!p.fx?.event&&!p.fx?.adjustDoctrine&&!(p.fx?.sssh&&G.tp===1)&&budget>=(p.fx?.combatDoctrine?Math.min(...Object.keys(COMBAT_DOCTRINES).map(name=>combatDoctrineCost(pi,name).cp)):p.cp)&&!G.ploys[pi].includes(p.id));
   if(opts.length){const p=opts[(G.tp-1)%opts.length];if(usePloy(pi,p.id)){msg(`<b class="ai-pulse" style="color:var(--p2)">IA AUSPEX ativou ${p.n}</b>`);return;}}
   if(G.strategyState)passGambit(pi);
 }
@@ -2400,13 +2419,15 @@ function renderPloys(ty){
   const el=document.getElementById('ploylist');if(!el)return;
   el.innerHTML=[0,1].map(pi=>{
     const t=TEAMS[P(pi).team];
-    return `<div class="rowlbl" style="color:${pi===0?'var(--p1)':'var(--p2)'}">${P(pi).n} — ${P(pi).cp} CP</div>`+
+    const collapsed=ty==='s'&&G.strategyState&&pi!==G.strategyState.turn;
+    const content=(collapsed?`<details class="opponent-ploys"><summary>${P(pi).n} · consultar ploys</summary>`:'')+`<div class="rowlbl" style="color:${pi===0?'var(--p1)':'var(--p2)'}">${P(pi).n} — ${P(pi).cp} CP</div>`+
     t.ploys.filter(p=>p.ty===ty).map(p=>{
       const used=G.ploys[pi].includes(p.id),cost=p.fx?.combatDoctrine?Math.min(...Object.keys(COMBAT_DOCTRINES).map(name=>combatDoctrineCost(pi,name).cp)):p.cp;
       const can=P(pi).cp>=cost&&!used&&!isAI(pi)&&!p.fx?.reference&&!p.fx?.adjustDoctrine&&!p.fx?.event&&!(p.fx?.sssh&&G.tp===1)&&!G.strategyMoving&&!G.ployChoice&&(!G.strategyState||ty!=='s'||G.strategyState.stage==='gambits'&&G.strategyState.turn===pi);
       return `<div class="plc ${can?'':'dis'}" ${can?`onclick="usePloy(${pi},'${p.id}')"`:''}>
         <div class="pn"><span>${used?'✓ ':''}${p.n}${p.fx?.reference?' · SOMENTE CONSULTA':''}</span><span class="cpb">${p.cp} CP</span></div>
         <div class="pd">${p.d}${p.fx?.reference?'<br><em>Efeito ainda não implementado. Não pode ser ativado e não gasta CP.</em>':p.fx?.event||p.fx?.adjustDoctrine?'<br><em>Oferecido no momento legal durante a batalha.</em>':''}</div>${p.fx?.combatDoctrine&&G.doctrinePicker===pi&&can?doctrineOptionsHTML(pi,p.id):''}${p.fx?.adaptive&&G.adaptivePicker===pi&&can?`<div style="display:grid;gap:6px">${Object.entries(CHAPTER_TACTICS).filter(([name])=>name!==P(pi).chapter?.secondary).map(([name,label])=>`<button class="btn" onclick="event.stopPropagation();usePloy(${pi},'${p.id}','${name}')">${label} · 1 CP</button>`).join('')}<button class="btn" onclick="event.stopPropagation();G.adaptivePicker=null;renderPloys('s')">CANCELAR · 0 CP</button></div>`:''}</div>`;}).join('');
+    return content+(collapsed?'</details>':'');
   }).join('');
   if(ty==='s'&&G.strategyState){const s=G.strategyState;document.getElementById('gambit-status').textContent=s.stage==='gambits'?`Vez de ${P(s.turn).n} · ${s.passes} passe consecutivo. Dois passes consecutivos encerram a estratégia.`:'';document.getElementById('gambit-pass').disabled=s.stage!=='gambits'||isAI(s.turn)||G.strategyMoving||!!G.ployChoice;}
 }
@@ -2426,13 +2447,14 @@ function usePloy(pi,id,doctrineName=null,useFree=true,atActivation=false){
   let cost={cp:p.cp,provider:null};
   if(p.fx?.combatDoctrine){
     if(doctrineName===null){
-      if(isAI(pi)){const close=alive(pi).some(op=>enemiesOf(pi).some(enemy=>dist(op,enemy)<=6));doctrineName=alive(pi).some(op=>inEnemyCR(op.x,op.y,pi,zOf(op)))?'assault':close?'tactical':'devastator';if(P(pi).cp<combatDoctrineCost(pi,doctrineName).cp)doctrineName=Object.keys(COMBAT_DOCTRINES).find(name=>P(pi).cp>=combatDoctrineCost(pi,name).cp);}
+      if(isAI(pi)){const budget=Math.max(0,P(pi).cp-(G.phase==='strategy'&&G.tp<4?1:0)),close=alive(pi).some(op=>enemiesOf(pi).some(enemy=>dist(op,enemy)<=6));doctrineName=alive(pi).some(op=>inEnemyCR(op.x,op.y,pi,zOf(op)))?'assault':close?'tactical':'devastator';if(budget<combatDoctrineCost(pi,doctrineName).cp)doctrineName=Object.keys(COMBAT_DOCTRINES).find(name=>budget>=combatDoctrineCost(pi,name).cp);}
       else{if(!Object.keys(COMBAT_DOCTRINES).some(name=>P(pi).cp>=combatDoctrineCost(pi,name).cp))return false;G.doctrinePicker=pi;renderPloys('s');return false;}
     }
     if(!Object.hasOwn(COMBAT_DOCTRINES,doctrineName)||typeof useFree!=='boolean')return false;
     cost=combatDoctrineCost(pi,doctrineName,heroic?false:useFree);
   }
   if(P(pi).cp<cost.cp)return false;
+  if(p.ty==='s'&&!heroic&&isAI(pi)&&G.phase==='strategy'&&G.tp<4&&cost.cp>0&&P(pi).cp-cost.cp<1)return false;
   P(pi).cp-=cost.cp;G.ploys[pi].push(id);
   if(p.fx?.adaptive){P(pi).chapter.secondary=doctrineName;G.adaptivePicker=null;}
   if(p.fx?.combatDoctrine){
@@ -2462,7 +2484,7 @@ async function queueQuietDashes(pi){
     if(index>=0&&G.phase==='strategy'&&G.tp===tp&&!op.dead){const c=cells[index];if(reachable(op,3,{allowClimb:false}).some(x=>x.x===c.x&&x.y===c.y&&x.z===c.z)){window.IsoTactics?.walk?.(op,movementPath(c));op.x=c.x;op.y=c.y;op.z=c.z||0;log(`${op.n}: SSSSHHHH! · Dash grátis ${c.d.toFixed(1)}″`);render();}}
   }
   G.strategyMoving=false;
-  if(G.phase==='strategy'&&G.tp===tp){openOv('Fase de Estratégia',body,true);finishGambit(pi);renderPloys('s');}
+  if(G.phase==='strategy'&&G.tp===tp){openOv('Fase de Estratégia',body,true);document.getElementById('ov').classList.add('strategy-overlay');finishGambit(pi);renderPloys('s');}
 }
 async function activationPloys(op){
   if(op._countering){if(await offerEventPloy(op,'aod_wrath','Esta counteraction permite duas ações de 1 AP diferentes, em vez de uma.')){op.wrathCounter=true;op.ap=2;}}
@@ -2631,6 +2653,15 @@ function aiTurnImpl(){
 function aiAct(op,step){
   try{return aiActImpl(op,step);}catch(error){recoverAI(error);}
 }
+function continueAIAction(op,step){
+  if(G.phase!=='firefight'||G.cur!==op.pi||!isAI(op.pi))return;
+  if(op._finishing){G.aiBusy=false;return;}
+  if(op.dead||op.hp<=0){G.aiBusy=false;if(!checkElimination())finishOp(op);return;}
+  // Counteract starts on an already-expended operative. It can still have a
+  // second, different action from Wrath of Vengeance after the first action.
+  if(op.activated&&!op._countering){G.aiBusy=false;return;}
+  aiAct(op,step+1);
+}
 function aiPrefersMelee(op){
   const power=w=>w?w.a*Math.max(0,7-w.h)*(w.d+w.c):0;
   return power(bestWeapon(op,'m'))>power(bestWeapon(op,'r'))*1.15;
@@ -2644,7 +2675,7 @@ function aiTryCharge(op,step){
     return target(a)-target(b)||a.d-b.d;
   })[0];
   doMove(cell.x,cell.y,cell.z||0,true);
-  setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(650,(window.IsoTactics?.walkRemaining?.()||0)+150));
+  setTimeout(()=>continueAIAction(op,step),Math.max(650,(window.IsoTactics?.walkRemaining?.()||0)+150));
   return true;
 }
 function aiMovementKinds(op){
@@ -2654,6 +2685,14 @@ function aiMovementKinds(op){
   if(!actionUsed(op,'dash'))kinds.push('dash');
   return kinds;
 }
+function aiFallbackObjectiveCell(op,target,cells){
+  // Only rescue an otherwise idle activation; do not leave an objective or
+  // stretch Counteract's restricted movement just to spend remaining AP.
+  if(op._countering||op.usedActs.length||!target||OBJS.some(o=>Math.hypot(op.x-o.x,op.y-o.y)<=1))return null;
+  const current=Math.hypot(op.x-target.x,op.y-target.y);
+  return cells.filter(c=>Math.hypot(c.x-target.x,c.y-target.y)<current-.1)
+    .sort((a,b)=>Math.hypot(a.x-target.x,a.y-target.y)-Math.hypot(b.x-target.x,b.y-target.y)||a.d-b.d)[0]||null;
+}
 function aiActImpl(op,step){
   if(G.phase!=='firefight'||G.cur!==op.pi||!isAI(op.pi)){G.aiBusy=false;return;}
   if(op.dead||op.hp<=0){G.aiBusy=false;if(!checkElimination())finishOp(op);return;}
@@ -2661,7 +2700,7 @@ function aiActImpl(op,step){
   if(step>=5||op.ap<=0){G.aiBusy=false;finishOp(op);return;}
   G.sel=op;
   if(op.templateId==='kt-kommando-bombsquig'&&!op.explosivesUsed&&G.ops.some(t=>t.pi!==op.pi&&!t.dead&&dist(op,t)<=1&&checkLoS(op,t).vis)){
-    useBombExplosives(op).then(()=>{if(!op.activated&&!op.dead)aiAct(op,step+1);else G.aiBusy=false;}).catch(recoverAI);return;
+    useBombExplosives(op).then(()=>continueAIAction(op,step)).catch(recoverAI);return;
   }
   if(op.ap>=1&&operativeActionAllowed(op,'optics')&&enemiesOf(op.pi).some(t=>checkLoS(op,t).vis&&checkLoS(op,t).obscured)){
     actOperativeAbility('optics');setTimeout(()=>aiAct(op,step+1),260);return;
@@ -2674,11 +2713,11 @@ function aiActImpl(op,step){
   if(aiPrefersMelee(op)&&aiTryCharge(op,step))return;
   const markerChoice=markerTargets(op).map(target=>({target,support:alive(op.pi).filter(ally=>ally!==op&&!ally.activated&&aiPotentialTargets(ally).includes(target)).length})).sort((a,b)=>b.support-a.support)[0];
   if(markerChoice&&op.ap>=1&&(markerChoice.support>=2||op.ap>=2&&aiShotChoice(op)?.target===markerChoice.target)){
-    actMarkerlight(markerChoice.target.id);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},500);return;
+    actMarkerlight(markerChoice.target.id);setTimeout(()=>continueAIAction(op,step),500);return;
   }
   const assignedObjective=OBJS[aiObjectiveFor(op)];
   if(op.ap>=1&&!actionUsed(op,'objective')&&assignedObjective&&securableObjective(op)){
-    actPickUp();setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},800);return;
+    actPickUp();setTimeout(()=>continueAIAction(op,step),800);return;
   }
   if(op.templateId!=='kt-kommando-bombsquig'&&op.ap>=1&&op.shotThis<RULES.maxAction(op,'shoot',TEAMS)&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))&&weaponsOf(op,'r').some(w=>!RULES.heavyBlocked(op,w)&&!RULES.limitedBlocked(op,w))){
     const choice=aiShotChoice(op);
@@ -2702,8 +2741,8 @@ function aiActImpl(op,step){
       const shots=op.ap>=2&&!aiPrefersMelee(op)?aiPotentialTargets(probe).length:0;
       return od*1.3+crowd*4+ed*.08-(cover?1.1:0)-(onTarget?4:0)-Math.min(shots,3)*3-((c.z||0)>0&&weaponsOf(op,'r').length?0.6:0);};
       const current=cellScore({...op,d:0});
-      const cell=G.moveCells.map(c=>({cell:c,score:cellScore(c)})).filter(c=>c.score<current-.1).sort((a,b)=>a.score-b.score)[0]?.cell;
-      if(cell){doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>{if(!op.activated)aiAct(op,step+1);else G.aiBusy=false;},Math.max(800,(window.IsoTactics?.walkRemaining?.()||0)+150));return;}}
+      const cell=G.moveCells.map(c=>({cell:c,score:cellScore(c)})).filter(c=>c.score<current-.1).sort((a,b)=>a.score-b.score)[0]?.cell||aiFallbackObjectiveCell(op,target,[...G.moveCells]);
+      if(cell){doMove(cell.x,cell.y,cell.z||0,true);setTimeout(()=>continueAIAction(op,step),Math.max(800,(window.IsoTactics?.walkRemaining?.()||0)+150));return;}}
    }
   }
   G.mode=null;G.moveCells=[];
@@ -3238,8 +3277,9 @@ function renderMobileBattle(){
     return `<button class="rail-op ${o.activated?'spent':''} ${G.sel===o?'selected':''}" ${o.dead?'disabled':''} onclick="inspectRailOperative('${o.id}')" aria-pressed="${G.sel===o}" aria-label="${o.n} · ${o.hp}/${o.maxhp} PV · ${o.dead?'Incapacitado':o.activated?'Já ativado':'Disponível'}"><img src="${portraitSource(id)}" ${failedPortraits.has(id)?'hidden':''} alt="" onerror="portraitFailed(this,'${id}')"><span class="rail-fallback" ${failedPortraits.has(id)?'':'hidden'}>${o.ico||'?'}</span><span class="rail-state">${o.dead?'✕':o.activated?'✓':''}</span></button>`;
   }).join('');
   const el=document.getElementById('acts'),op=G.sel;
+  mobileSheet.classList.toggle('mobile-quiet',G.phase==='firefight'&&!humanInputLocked()&&!G.mode&&!G.pendingReposition&&(!op||!activationCommitted(op)));
   if(G.phase!=='firefight')return;
-  if(!op&&!humanInputLocked()){el.innerHTML='<p>Toque em um retrato ou no mapa para escolher seu operativo.</p>'+(window.innerHeight>window.innerWidth?'<p>Mais espaço para jogar? Experimente girar o aparelho.</p>':'')+'<button class="btn" onclick="showLog()">Registro da batalha</button>';return;}
+  if(!op&&!humanInputLocked()){el.innerHTML='<p>Toque em um retrato ou no mapa para escolher seu operativo.</p><button class="btn" onclick="showLog()">Registro da batalha</button>';return;}
   if(humanInputLocked())return;
   const raw=el.innerHTML,buttons=raw.match(/<button\b[\s\S]*?<\/button>/g)||[];
   const active=`<div class="mobile-active"><b>${op.n}</b><span>${op.hp}/${op.maxhp} PV <span class="mobile-ap">${'●'.repeat(Math.max(0,op.ap||0))} ${op.ap||0} AP</span></span><button onclick="openTacticsMenu('status')" aria-label="Armas, status e outras ações">⋯</button></div>`;
@@ -3248,7 +3288,12 @@ function renderMobileBattle(){
     const p=G.pendingReposition;
     el.innerHTML=`<div class="mobile-move-confirm"><h3>MOVER · REPOSICIONAR</h3><p>Destino a ${p.cell.d.toFixed(1)}″ · custa 1 AP · restarão ${Math.max(0,op.ap-1)} AP<br>Altura ${p.cell.z||0}″ · percurso já inclui a escalada</p><button class="btn" onclick="undoReposition()">DESFAZER</button><button class="btn pri" onclick="confirmReposition()">CONFIRMAR · 1 AP</button></div>`;return;
   }
-  if(G.mode||!activationCommitted(op)){el.innerHTML=active+`<div class="mobile-submenu">${raw}</div>`;return;}
+  if(!activationCommitted(op)&&!G.mode){
+    const primary=buttons.find(b=>b.includes('onclick="beginActivation()"'))||'';
+    const extra=buttons.filter(b=>b!==primary);
+    el.innerHTML=active+`<div class="mobile-inspection">${primary}<button class="btn" aria-expanded="${tacticsMenu==='status'}" onclick="openTacticsMenu('${tacticsMenu==='status'?'main':'status'}')">${tacticsMenu==='status'?'RECOLHER DETALHES':'ARMAS, ORDEM E OUTRAS OPÇÕES'}</button>${tacticsMenu==='status'?`<div class="mobile-inspection-details">${extra.join('')}</div>`:''}</div>`;return;
+  }
+  if(G.mode){el.innerHTML=active+`<div class="mobile-submenu">${raw}</div>`;return;}
   const find=pattern=>buttons.find(b=>pattern.test(b))||'';
   const move=buttons.filter(b=>b.includes('actMove('));
   const status=buttons.filter(b=>!(/actMove\(|actShoot\(|actFight\(|actPickUp\(|endActivation\(/.test(b)));
@@ -3270,7 +3315,7 @@ mobileSheet.addEventListener('pointerdown',event=>{
 });
 mobileSheet.addEventListener('pointerup',event=>{
   const drag=mobileSheetDrag;mobileSheetDrag=null;
-  if(!drag||drag.id!==event.pointerId||G.mode||G.pendingReposition||humanInputLocked()||!activationCommitted(G.sel))return;
+  if(!drag||drag.id!==event.pointerId||G.mode||G.pendingReposition||humanInputLocked()||!G.sel)return;
   const delta=event.clientY-drag.y;
   if(Math.abs(delta)>32)openTacticsMenu(delta<0?'status':'main');
 });
@@ -3290,9 +3335,10 @@ function renderActs(){
   renderActsBody();
   if(mobileBattleLayout()){
     mobileSheet.classList.remove('tactics-hud');renderMobileBattle();
-    mobileSheet.classList.toggle('mobile-expanded',!!G.sel&&activationCommitted(G.sel)&&!G.mode&&!G.pendingReposition&&!humanInputLocked()&&tacticsMenu!=='main');return;
+    mobileSheet.classList.toggle('mobile-expanded',!!G.sel&&!G.mode&&!G.pendingReposition&&!humanInputLocked()&&tacticsMenu!=='main');return;
   }
   mobileSheet.classList.remove('mobile-expanded');
+  mobileSheet.classList.remove('mobile-quiet');
   const focused=!!G.sel&&G.phase==='firefight'&&!humanInputLocked();
   document.getElementById('panel').classList.toggle('tactics-hud',focused);
   if(tacticsMenuOp!==G.sel?.id||G.mode||G.pendingReposition){tacticsMenu='main';tacticsMenuOp=G.sel?.id;}
@@ -3376,7 +3422,7 @@ function renderActsBody(){
 function openOv(t,b,noClose,variant=''){
   document.getElementById('ovt').textContent=t;
   document.getElementById('ovb').innerHTML=b;
-  const ov=document.getElementById('ov');ov.classList.remove('targeting','mobile-battle-sheet');
+  const ov=document.getElementById('ov');ov.classList.remove('targeting','mobile-battle-sheet','strategy-overlay');
   if(mobileBattleLayout()&&G.phase==='firefight'&&!['Fim da batalha','Encerrar partida','IA INTERROMPIDA'].includes(t))ov.classList.add('mobile-battle-sheet');
   if(variant)ov.classList.add(variant);ov.classList.add('on');
   document.querySelector('#ov .x').style.display=noClose?'none':'flex';

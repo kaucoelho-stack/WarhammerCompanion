@@ -92,7 +92,7 @@
     return pending?{...o,x:pending.x,y:pending.y,z:pending.z||0}:o;
   }
   const rotate=(x,y)=>angle===0?[x,y]:angle===1?[H-y,x]:angle===2?[W-x,H-y]:[y,W-x];
-  function project(x,y,z=0){const [a,b]=rotate(x,y),[ca,cb]=rotate(W/2,H/2);return{x:cw/2+panX+(a-b-ca+cb)*unit,y:ch*.48+panY+(a+b-ca-cb)*unit*.5-z*unit*.85};}
+  function project(x,y,z=0){const [a,b]=rotate(x,y),[ca,cb]=rotate(W/2,H/2);return{x:cw/2+panX+(a-b-ca+cb)*unit,y:boardCenterY(ch,unit)+panY+(a+b-ca-cb)*unit*.5-z*unit*.85};}
   function poly(points,fill,stroke='#26303f'){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}}
   function tile(x,y,z,fill,stroke){const pts=[[x,y],[x+1,y],[x+1,y+1],[x,y+1]].map(p=>project(...p,z));poly(pts,fill,stroke);return pts;}
   function box(x,y,w,h,z,height,palette){const p=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]].map(v=>project(...v,z)),q=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]].map(v=>project(...v,z+height));
@@ -264,8 +264,16 @@
   function boardUnit(width,height,zoom){
     // Keep the usual framing, but permit smaller tiles when browser chrome and
     // the host header leave less than 220px for the actual canvas.
-    const minimum=height<220?1:5;
+    const minimum=1;
     return Math.max(minimum,Math.min((width-36)/(W+H),(height-100)/((W+H)*.5+7)))*zoom;
+  }
+  function boardCenterY(height,tileUnit){
+    // Fit includes room above the floor for walls, sprites and labels. Place
+    // that asymmetric envelope below the toolbar, rather than centering only
+    // the ground diamond and clipping the northern squad behind controls.
+    const top=height<220?12:64,bottom=height<220?12:36;
+    const upper=(W+H)*.25+7,lower=(W+H)*.25;
+    return top+Math.max(0,(height-top-bottom-(upper+lower)*tileUnit)/2)+upper*tileUnit;
   }
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;draw();});}
   function fit(){scale=1;panX=0;panY=0;if(mobileView())mobileFocus=G.sel?.id||null;schedule();}
