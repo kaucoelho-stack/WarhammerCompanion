@@ -2212,9 +2212,10 @@ function changeRosterLoadout(id,copy,value){
 }
 function showRosterBuilder(pi,k,reset=false){
   const t=TEAMS[k];if(reset||!G.rosterDraft||G.rosterDraft.pi!==pi||G.rosterDraft.k!==k)G.rosterDraft={pi,k,counts:RULES.defaultSelection(t)};
+  if(!reset)for(const key of ['chapter','equipment']){const section=document.getElementById('roster-'+key+'-settings');if(typeof section?.open==='boolean')G.rosterDraft[key+'Open']=section.open;}
   const counts=G.rosterDraft.counts,check=RULES.validateRoster(t,counts),errorText=check.valid?'FORMAÇÃO ACEITA PELO CADASTRO · REGRAS ESPECIAIS PARCIAIS':check.errors.join(' · ');
   openOv(`${P(pi).n} — montar ${t.name}`,`<div class="roster-head" style="--team:${t.col}"><div><strong>${t.ico} ${t.name}</strong><small>${t.fac} · ${k==='wlf'?'1 lobo obrigatório + 5 scouts':k==='kom'?'Grot + Bomb Squig ocupam uma escolha juntos':'escolha os operativos antes da batalha'}</small></div><div class="roster-total ${check.valid?'':'bad'}">${check.selections}/${t.limit}<span>ESCOLHAS · ${check.total} OPERATIVOS · ${check.leaders}/1 LÍDER${k==='wlf'?' OPCIONAL':''}</span></div></div>
-    ${k==='aod'?`<details class="roster-settings"><summary>CHAPTER TACTICS · configurar</summary>${chapterControls()}</details>`:''}${FACTION_EQUIPMENT[k]?`<details class="roster-settings"><summary>EQUIPAMENTO · ${(G.rosterDraft.equipment||[]).length}/4 selecionados</summary>${equipmentControls()}</details>`:''}<div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,full=check.selections+(o.selectionCost||1)>t.limit,canPlus=n<o.max&&(o.leader||!full),weapon=o.wpn?.find(w=>w.t==='r'&&!/pistol|pistola/i.test(w.n))||o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
+    ${k==='aod'?`<details class="roster-settings" id="roster-chapter-settings" ${G.rosterDraft.chapterOpen?'open':''}><summary>CHAPTER TACTICS · configurar</summary>${chapterControls()}</details>`:''}${FACTION_EQUIPMENT[k]?`<details class="roster-settings" id="roster-equipment-settings" ${G.rosterDraft.equipmentOpen?'open':''}><summary>EQUIPAMENTO · ${(G.rosterDraft.equipment||[]).length}/4 selecionados</summary>${equipmentControls()}</details>`:''}<div class="roster-grid" style="--team:${t.col}">${(t.catalog||[]).map(o=>{const n=counts[o.id]||0,full=check.selections+(o.selectionCost||1)>t.limit,canPlus=n<o.max&&(o.leader||!full),weapon=o.wpn?.find(w=>w.t==='r'&&!/pistol|pistola/i.test(w.n))||o.wpn?.[0];return`<div class="roster-op ${n?'chosen':''}">
       <img class="recruit-portrait" src="${portraitSource(o.sourceId)}" alt="${o.n}" onerror="portraitFailed(this,'${o.sourceId}')"><div class="roster-info"><b>${o.n}</b><small>${o.w} PV · APL ${o.apl} · Save ${o.sv}+${weapon?` · ${weapon.n}`:''}</small><div class="roster-tags">${o.min?'<i>OBRIGATÓRIO</i>':''}${o.leader?`<i class="leader">LÍDER · ${k==='wlf'?'OPCIONAL':'ESCOLHA 1'}</i>`:''}<i>${o.unique?'ÚNICO':`MÁX. ${o.max}`}</i></div></div>
       ${rosterLoadoutControls(o,n)}<div class="roster-step"><button onclick="changeRoster('${o.id}',-1)" ${n>(o.min||0)?'':'disabled'} aria-label="Remover ${o.n}">−</button><b>${n}</b><button onclick="changeRoster('${o.id}',1)" ${canPlus?'':'disabled'} aria-label="Adicionar ${o.n}">+</button></div></div>`;}).join('')}</div>
     <div class="roster-errors ${check.valid?'ok':''}">${errorText}</div><div class="roster-actions"><button class="btn" onclick="showTeamPicker(${pi})">← TROCAR TIME</button><button class="btn" onclick="recommendedRoster()">FORMAÇÃO RECOMENDADA</button><button class="btn pri confirm" onclick="confirmRoster()" ${check.valid?'':'disabled'}>${pi===0?'CONFIRMAR EQUIPE → ADVERSÁRIO':'INICIAR POSICIONAMENTO'}</button></div>`,true);
@@ -2621,6 +2622,16 @@ function recoverAI(error){
   console.error('AUSPEX AI failure',error);G.aiBusy=false;
   log('IA interrompida por erro: '+String(error.message||error));
   openOv('IA INTERROMPIDA',`<p>A IA encontrou um erro. A partida foi preservada.</p><button class="btn pri" onclick="closeOv();if(G.sel&&!G.sel.dead)aiAct(G.sel,0);else aiTurn();">TENTAR NOVAMENTE</button><button class="btn" onclick="closeOv();if(G.sel)finishOp(G.sel);else nextActivation();">ENCERRAR ATIVAÇÃO DA IA</button>`,true);
+}
+function aiWatchdogTick(now=Date.now()){
+  const blocked=G.phase!=='firefight'||!isAI(G.cur)||G.aiBusy||G.endingTP||G.fightResolving||G.boomResolving||G.ployChoice||G.ironHaloChoice||G.heroicDoctrineOp||G.rerollChoice||G.pendingReposition||G.dakkaCombo||G.breachMove||document.hidden||document.getElementById('ov').classList.contains('on');
+  if(blocked){G.aiWatchdog=null;return false;}
+  const signature=JSON.stringify([G.tp,G.cur,G.counterMode,G.sel?.id,G.mode,G.log.length,G.ops.map(o=>[o.id,o.x,o.y,o.z,o.hp,o.ap,o.activated,o._countering,o._finishing,o.usedActs])]);
+  const previous=G.aiWatchdog;
+  if(!previous||previous.signature!==signature||now<previous.since){G.aiWatchdog={signature,since:now};return false;}
+  if(now-previous.since<8000)return false;
+  G.aiWatchdog=null;
+  recoverAI(new Error('Sem progresso da IA por 8 segundos. Você pode tentar novamente ou encerrar a ativação.'));return true;
 }
 function aiTurnImpl(){
   if(G.phase!=='firefight'||!isAI(G.cur)||G.aiBusy)return;G.aiBusy=true;
@@ -3692,4 +3703,5 @@ function showLog(){
 /* início */
 window.addEventListener('message',e=>{if(e.data?.type==='auspex-suspend'&&document.getElementById('fpv').classList.contains('on'))closeFPV();});
 initMiniatures();showTitle();
+setInterval(()=>aiWatchdogTick(),1000);
 </script><script src="sprite-assets.js"></script><script src="terrain-painter.js"></script><script src="movement-visual.js"></script><script src="pixel-tactics.js?v=kommandos-2"></script></body></html>

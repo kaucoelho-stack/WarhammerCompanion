@@ -172,9 +172,11 @@
   }
   function draw(){if(!active||['killzone','select'].includes(G.phase)||document.body?.classList.contains('setup-screen'))return;cw=Math.max(1,stage.clientWidth);ch=Math.max(1,stage.clientHeight);canvas.width=cw;canvas.height=ch;ctx.imageSmoothingEnabled=false;
     if(!battleFramed&&G.tp===1&&['strategy','firefight'].includes(G.phase)){scale=mobileView()?1.65:1;panX=0;panY=0;battleFramed=true;}
+    const newMobileFocus=mobileView()&&G.sel&&G.sel.id!==mobileFocus;
+    if(newMobileFocus)scale=mobileSelectionScale(cw,ch,scale);
     zoomReadout.textContent=Math.round(scale*100)+'%';
     unit=boardUnit(cw,ch,scale);hits=[];ctx.clearRect(0,0,cw,ch);const jobs=[];
-    if(mobileView()&&G.sel&&G.sel.id!==mobileFocus){mobileFocus=G.sel.id;const [a,b]=rotate(G.sel.x+.5,G.sel.y+.5),[ca,cb]=rotate(W/2,H/2);panX=-(a-b-ca+cb)*unit;panY=-(a+b-ca-cb)*unit*.5;}
+    if(newMobileFocus){mobileFocus=G.sel.id;const [a,b]=rotate(G.sel.x+.5,G.sel.y+.5),[ca,cb]=rotate(W/2,H/2);panX=-(a-b-ca+cb)*unit;panY=ch*.5-boardCenterY(ch,unit)-(a+b-ca-cb)*unit*.5+zOf(G.sel)*unit*.85;}
     if(!G.sel)mobileFocus=null;
     if(mobileView()){
       const overview=stage.querySelector('[data-action="fit"]');
@@ -275,6 +277,10 @@
     const upper=(W+H)*.25+7,lower=(W+H)*.25;
     return top+Math.max(0,(height-top-bottom-(upper+lower)*tileUnit)/2)+upper*tileUnit;
   }
+  function mobileSelectionScale(width,height,current){
+    const desired=Math.min(width/18,height/16)/boardUnit(width,height,1);
+    return Math.max(current,Math.min(3.25,Math.max(1.65,desired)));
+  }
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;draw();});}
   function fit(){scale=1;panX=0;panY=0;if(mobileView())mobileFocus=G.sel?.id||null;schedule();}
   stage.querySelector('#iso-tools').onclick=e=>{const a=e.target.dataset.action;if(a==='rotate'||a==='rotate-left'){angle=(angle+(a==='rotate'?1:3))%4;hoverCell=null;api.center(G.sel?.x??(W-1)/2,G.sel?.y??(H-1)/2);}if(a==='cut'){cut=!cut;e.target.textContent='RECORTE: '+(cut?'ON':'OFF');e.target.setAttribute('aria-pressed',String(cut));schedule();}if(a==='grid'){grid=!grid;gridButton.textContent='GRADE: '+(grid?'ON':'OFF');gridButton.setAttribute('aria-pressed',String(grid));schedule();}if(a==='fit')fit();if(a==='plus')api.zoom(1.2);if(a==='minus')api.zoom(1/1.2);};
@@ -333,7 +339,7 @@
     schedule();
   }
   canvas.addEventListener('wheel',e=>{e.preventDefault();api.zoom(e.deltaY<0?1.1:1/1.1);},{passive:false});new ResizeObserver(resizeBoard).observe(bw);
-  const api=window.IsoTactics={get active(){return active;},render:draw,zoom(f){scale=Math.max(.7,Math.min(5,scale*f));schedule();},center(x,y){const [a,b]=rotate(x+.5,y+.5),[ca,cb]=rotate(W/2,H/2);panX=-(a-b-ca+cb)*unit;panY=-(a+b-ca-cb)*unit*.5;schedule();}};
+  const api=window.IsoTactics={get active(){return active;},render:draw,zoom(f){scale=Math.max(.7,Math.min(5,scale*f));schedule();},center(x,y){const [a,b]=rotate(x+.5,y+.5),[ca,cb]=rotate(W/2,H/2);panX=-(a-b-ca+cb)*unit;panY=ch*.5-boardCenterY(ch,unit)-(a+b-ca-cb)*unit*.5;schedule();}};
   api.fit=fit;
   api.toggleGrid=()=>{grid=!grid;gridButton.textContent='GRADE: '+(grid?'ON':'OFF');gridButton.setAttribute('aria-pressed',String(grid));schedule();};
   api.toggleCut=()=>{cut=!cut;const button=stage.querySelector('[data-action="cut"]');if(button){button.textContent='RECORTE: '+(cut?'ON':'OFF');button.setAttribute('aria-pressed',String(cut));}schedule();};
