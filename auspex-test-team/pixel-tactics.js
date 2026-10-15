@@ -28,6 +28,8 @@
   const useMetropole=()=>metropole&&TERRAIN.some(t=>t.kind==='stronghold')&&!!window.MetropoleSkin;
   skinButton.style.display='none';
   const gridButton=document.createElement('button');gridButton.textContent='GRADE: ON';gridButton.dataset.action='grid';gridButton.setAttribute('aria-pressed','true');stage.querySelector('#iso-tools').append(gridButton);
+  let terrainNames=true;
+  const terrainButton=document.createElement('button');terrainButton.textContent='TERRENO: ON';terrainButton.dataset.action='terrain';terrainButton.title='Identificar estruturas, alturas e entradas';terrainButton.setAttribute('aria-pressed','true');terrainButton.style.display='none';stage.querySelector('#iso-tools').append(terrainButton);
   const settingsButton=document.createElement('button');settingsButton.textContent='⚙';settingsButton.title='Configurações de áudio';settingsButton.setAttribute('aria-label','Configurações de áudio');settingsButton.setAttribute('aria-haspopup','dialog');settingsButton.onclick=()=>window.AuspexMusic?.settings();stage.querySelector('#iso-tools').append(settingsButton);
   const zoomReadout=document.createElement('span');zoomReadout.style.cssText='padding:10px;color:#e8f6ff;background:#172333ed;font:700 13px monospace';zoomReadout.setAttribute('aria-label','Zoom do mapa');stage.querySelector('#iso-tools').append(zoomReadout);
   const levelControls=document.createElement('div');levelControls.style.cssText='display:none;gap:5px;flex-wrap:wrap;pointer-events:auto';stage.querySelector('#iso-tools').append(levelControls);
@@ -112,7 +114,9 @@
   function sprite(o){const p=project(o.x+.5,o.y+.5,zOf(o)),s=Math.max(.65,unit/13),palette=o.pi===0?['#20376b','#5388bd','#a3c8e0']:['#384726','#829653','#c5cf89'];
     ctx.save();if(G.pendingReposition?.op.id===o.id)ctx.globalAlpha=.55;ctx.translate(Math.round(p.x),Math.round(p.y));ctx.scale(s,s);ctx.fillStyle='#080d18aa';ctx.beginPath();ctx.ellipse(0,0,8,3,0,0,Math.PI*2);ctx.fill();
     const atlas=operativeAtlas(o)||(isCaptain(o)?captainFrames:(isEliminator(o)?eliminatorFrames:null));
-    if(atlas){const row=spriteRow(o),frame=o.walkTick===undefined?(atlas.idleFrames?.[row]||0):1+o.walkTick%(atlas.columns-1),f=atlas.frames[row*atlas.columns+frame],k=(atlas.renderHeight||31)/atlas.maxHeight;
+    if(window.AuspexAssaultPlayer?.draw(ctx,o,spriteRow(o),schedule)||window.AuspexIntercessorGame?.draw(ctx,o,spriteRow(o),schedule)){
+      // Complete new pack only; one missing sheet leaves all views on legacy.
+    }else if(atlas){const row=spriteRow(o),frame=o.walkTick===undefined?(atlas.idleFrames?.[row]||0):1+o.walkTick%(atlas.columns-1),f=atlas.frames[row*atlas.columns+frame],k=(atlas.renderHeight||31)/atlas.maxHeight;
       ctx.drawImage(f.canvas,f.left,f.top,f.width,f.height,(f.left-f.pivot)*k,(f.top-f.bottom)*k,f.width*k,f.height*k);
     }else{
     const rect=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
@@ -191,37 +195,43 @@
     const choosingDestination=!!G.pendingReposition||(['reposition','dash','charge','fallback'].includes(G.mode)&&G.moveCells.length>0);
     const chosenHeight=G.pendingReposition?(G.pendingReposition.cell.z||0):(G.moveLevel||0);
     const allHeights=!G.pendingReposition&&G.showAllMoveLevels;
+    const compoundView=!!window.AuspexCompoundGame&&typeof compoundActive==='function'&&compoundActive();
+    terrainButton.style.display=compoundView?'':'none';
     levelControls.style.display=choosingDestination&&!G.pendingReposition?'flex':'none';
     const levels=[...new Set(G.moveCells.map(c=>c.z||0))].sort((a,b)=>a-b),levelMarkup='<button data-level="all" aria-pressed="'+!!allHeights+'">TODOS OS PISOS</button>'+levels.map(z=>`<button data-level="${z}" aria-pressed="${!allHeights&&chosenHeight===z}">${z?`SUBIR / TOPO ${z}″`:'CHÃO'}</button>`).join('');
     if(levelControls.innerHTML!==levelMarkup)levelControls.innerHTML=levelMarkup;
-    for(let y=0;y<H;y++)for(let x=0;x<W;x++){const n=(x*17+y*31)%9,deploy=G.phase==='deploy'&&G.deploymentState?.stage==='placing'&&((G.dropZones?.[G.cur]||(G.cur===0?'left':'right'))==='left'?x<4:x>=W-4),road=x>=10&&x<=19,pts=tile(x,y,0,deploy?'#586f4c':road?(n<4?'#424b59':'#4b5663'):n<2?'#535a64':n<5?'#616875':'#687080','#444c5b');
-      if(floorReady&&!deploy){const [o,a,,b]=pts;ctx.save();ctx.transform(a.x-o.x,a.y-o.y,b.x-o.x,b.y-o.y,o.x,o.y);ctx.drawImage(floorTexture,x*floorTexture.width/W,y*floorTexture.height/H,floorTexture.width/W,floorTexture.height/H,0,0,1,1);ctx.restore();}
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){const n=(x*17+y*31)%9,deploy=G.phase==='deploy'&&G.deploymentState?.stage==='placing'&&(window.AuspexCompoundGame&&typeof compoundActive==='function'&&compoundActive()?compoundDeployCell(G.cur,x,y):((G.dropZones?.[G.cur]||(G.cur===0?'left':'right'))==='left'?x<4:x>=W-4)),road=x>=10&&x<=19,pts=tile(x,y,0,deploy?'#586f4c':road?(n<4?'#424b59':'#4b5663'):n<2?'#535a64':n<5?'#616875':'#687080','#444c5b');
+      if(window.AuspexCompoundGame&&typeof compoundActive==='function'&&compoundActive()&&!deploy){if(window.AuspexCompoundArt)window.AuspexCompoundArt.ground(ctx,pts,x,y);else poly(pts,'#49483d','#34372f');}
+      else if(floorReady&&!deploy){const [o,a,,b]=pts;ctx.save();ctx.transform(a.x-o.x,a.y-o.y,b.x-o.x,b.y-o.y,o.x,o.y);ctx.drawImage(floorTexture,x*floorTexture.width/W,y*floorTexture.height/H,floorTexture.width/W,floorTexture.height/H,0,0,1,1);ctx.restore();}
       if(grid)poly(pts,'#ffffff00','#bfccd13d');
       if((x*19+y*11)%13===0){const a=project(x+.25,y+.3),b=project(x+.6,y+.5),c=project(x+.45,y+.8);ctx.strokeStyle='#242e3c';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.stroke();ctx.fillStyle='#aaa598';ctx.fillRect(Math.round(a.x)+2,Math.round(a.y),2,1);}
       if(deploy&&terrAt(x,y)!=='h'&&!occupied(x,y))hits.push({type:'deploy',x,y,points:pts});}
-    TERRAIN.forEach(t=>{const pal=t.t==='l'?['#b5a082','#776953','#8d7c62']:['#9ca6b0','#505d6b','#697987'];
+    TERRAIN.forEach(t=>{const compound=window.AuspexCompoundGame&&typeof compoundActive==='function'&&compoundActive(),pal=compound?['#a59a80','#514c43','#777164']:t.t==='l'?['#b5a082','#776953','#8d7c62']:['#9ca6b0','#505d6b','#697987'];
       if(useMetropole()&&['heavy-rubble','light-rubble'].includes(t.kind)){jobs.push({depth:project(t.x+t.w/2,t.y+t.h/2).y,draw:()=>{ctx.save();ctx.globalAlpha=choosingDestination?.3:1;if(!window.MetropoleSkin.rubble(ctx,t,project))box(t.x,t.y,t.w,t.h,0,t.z||.7,pal);ctx.restore();}});return;}
-      const add=(x,y,w,h,z,height,opacity=1)=>jobs.push({depth:project(x+w/2,y+h/2).y,draw:()=>{ctx.save();ctx.globalAlpha=opacity;box(x,y,w,h,z,height,pal);ctx.restore();}});
+      const add=(x,y,w,h,z,height,opacity=1,roofDeck=false)=>{if(compound&&window.AuspexCompoundArt){if(height<=0)return;for(const f of window.AuspexCompoundArt.faces({...t,x,y,w,h,baseZ:z,z:height,roofDeck},project,(x,y)=>project(x,y).y,{opacity}))jobs.push({depth:f.depth,terrain:t,kind:f.kind,draw:()=>f.draw(ctx)});return;}jobs.push({depth:project(x+w/2,y+h/2).y,draw:()=>{ctx.save();ctx.globalAlpha=opacity;box(x,y,w,h,z,height,pal);ctx.restore();}});};
       if(t.building){const step=t.floorStep||t.z;
         if(typeof roofRuins==='function'&&!cut)for(const r of roofRuins(t)){
           const depth=Math.max(...[[t.x,t.y],[t.x+t.w,t.y],[t.x,t.y+t.h],[t.x+t.w,t.y+t.h]].map(p=>project(...p).y))+.2;
-          jobs.push({depth,draw:()=>{ctx.save();ctx.globalAlpha=choosingDestination?.12:1;box(r.x,r.y,r.w,r.h,r.z,r.height,r.t==='l'?['#b9b0a0','#777568','#949080']:pal);ctx.restore();}});
+          if(compound&&window.AuspexCompoundArt){for(const f of window.AuspexCompoundArt.faces({...r,type:'parapet',baseZ:r.z,z:r.height},project,(x,y)=>project(x,y).y,{opacity:choosingDestination?.12:1}))jobs.push({depth:f.depth,terrain:t,kind:'parapet',draw:()=>f.draw(ctx)});}
+          else jobs.push({depth,draw:()=>{ctx.save();ctx.globalAlpha=choosingDestination?.12:1;box(r.x,r.y,r.w,r.h,r.z,r.height,r.t==='l'?['#b9b0a0','#777568','#949080']:pal);ctx.restore();}});
         }
+        const interiorOccupied=compound&&G.ops.some(o=>!o.dead&&o.x>=t.x&&o.x<t.x+t.w&&o.y>=t.y&&o.y<t.y+t.h&&zOf(o)<t.z);
         const hasDestination=choosingDestination&&destinationCells.some(c=>(c.z||0)===chosenHeight&&c.x>=t.x&&c.x<t.x+t.w&&c.y>=t.y&&c.y<t.y+t.h);
         if(!cut||choosingDestination){for(let z=step;z<=t.z+.001;z+=step){
           const selected=hasDestination&&Math.abs(z-chosenHeight)<.001;
-          add(t.x,t.y,t.w,t.h,z-.12,.12,choosingDestination?(selected?.9:.07):1);
+          add(t.x,t.y,t.w,t.h,z-.12,.12,choosingDestination?(selected?.9:.07):interiorOccupied?.14:1,true);
         }}
         for(const side of ['n','s','e','w']){if((t.openSides||[]).includes(side))continue;const length=['n','s'].includes(side)?t.w:t.h;
           for(let i=0;i<length;i++){const door=(t.doors||[]).some(d=>d.side===side&&d.offset===i);if(cut&&door)continue;
             const x=t.x+(side==='e'?t.w-.18:['n','s'].includes(side)?i:0),y=t.y+(side==='s'?t.h-.18:['e','w'].includes(side)?i:0);
-            add(x,y,['n','s'].includes(side)?1:.18,['e','w'].includes(side)?1:.18,door?1.9:0,(cut?.6:t.z)-(door?1.9:0),choosingDestination?.18:1);}
+            add(x,y,['n','s'].includes(side)?1:.18,['e','w'].includes(side)?1:.18,door?1.9:0,(cut?.6:t.z)-(door?1.9:0),choosingDestination?.18:interiorOccupied?.35:1);}
         }
         if(cut&&!choosingDestination){for(let z=step;z<=t.z+.001;z+=step){const pts=[[t.x,t.y],[t.x+t.w,t.y],[t.x+t.w,t.y+t.h],[t.x,t.y+t.h]].map(p=>project(...p,z));ctx.save();ctx.setLineDash([3,3]);poly(pts,'#8bbadc0b','#c3d7e066');ctx.restore();}}
-        if(!choosingDestination||hasDestination){const z=choosingDestination?chosenHeight:t.z,p=project(t.x+t.w/2,t.y+t.h/2,z);jobs.push({depth:1e5,draw:()=>label(choosingDestination?`DESTINO ${z}″`:`${z}″`,p,choosingDestination?'#b8ffd7':'#fff1c9')});}
+        if((!compound||choosingDestination)&&(!choosingDestination||hasDestination)){const z=choosingDestination?chosenHeight:t.z,p=project(t.x+t.w/2,t.y+t.h/2,z);jobs.push({depth:1e5,draw:()=>label(choosingDestination?`DESTINO ${z}″`:`${z}″`,p,choosingDestination?'#b8ffd7':'#fff1c9')});}
       }else{
         const showTop=choosingDestination&&t.t==='h'&&!t.noClimb&&(allHeights||Math.abs(chosenHeight-t.z)<.001)&&destinationCells.some(c=>Math.abs((c.z||0)-t.z)<.001&&c.x>=t.x&&c.x<t.x+t.w&&c.y>=t.y&&c.y<t.y+t.h);
-        if(typeof AuspexTerrainArt!=='undefined')for(const face of AuspexTerrainArt.faces(t,project,(x,y)=>project(x,y).y,{cut:cut&&!showTop,opacity:choosingDestination&&t.t==='h'?.2:1,topOpacity:showTop?.92:choosingDestination&&t.t==='h'?.2:1,texture:floorReady?floorTexture:null,materials:materialsReady?materials:null}))jobs.push({depth:face.depth,terrain:t,kind:face.kind,draw:()=>face.draw(ctx)});
+        if(compound&&window.AuspexCompoundArt)for(const face of window.AuspexCompoundArt.faces({...t,z:cut&&!showTop?.65:t.z},project))jobs.push({depth:face.depth,terrain:t,kind:face.kind,draw:()=>{ctx.save();ctx.globalAlpha=choosingDestination&&!showTop?.2:1;face.draw(ctx);ctx.restore();}});
+        else if(typeof AuspexTerrainArt!=='undefined')for(const face of AuspexTerrainArt.faces(t,project,(x,y)=>project(x,y).y,{cut:cut&&!showTop,opacity:choosingDestination&&t.t==='h'?.2:1,topOpacity:showTop?.92:choosingDestination&&t.t==='h'?.2:1,texture:floorReady?floorTexture:null,materials:materialsReady?materials:null}))jobs.push({depth:face.depth,terrain:t,kind:face.kind,draw:()=>face.draw(ctx)});
         else add(t.x,t.y,t.w,t.h,0,cut&&t.t==='h'?.65:t.z||.7,choosingDestination&&t.t==='h'?.2:1);
         if(showTop&&typeof AuspexTerrainArt==='undefined')add(t.x,t.y,t.w,t.h,t.z-.12,.12,.9);
       }
@@ -254,13 +264,39 @@
       for(const [x,y,w,h]of[[-20,-12,40,16],[-12,-23,25,20],[-25,-4,48,10]])ctx.fillRect(p.x+x*unit/15,p.y+y*unit/15,w*unit/15,h*unit/15);
       ctx.restore();label('SMOKE',{x:p.x,y:p.y+12},'#dedbd1');
     }});
-    jobs.sort((a,b)=>a.depth-b.depth).forEach(j=>j.draw());
+    (compoundView&&window.AuspexCompoundArt?.sortJobs?window.AuspexCompoundArt.sortJobs(jobs):jobs.sort((a,b)=>a.depth-b.depth)).forEach(j=>j.draw());
+    if(compoundView&&terrainNames&&!choosingDestination){
+      const reserved=visibleOps.map(o=>{const p=project(o.x+.5,o.y+.5,zOf(o)),s=Math.max(.65,unit/13),height=(operativeAtlas(o)?.renderHeight||31)+5;return{x:p.x-Math.max(55,14*s),y:p.y-height*s-17,w:Math.max(110,28*s),h:height*s+20};});
+      for(const o of OBJS){const p=project(o.x+.5,o.y+.5);reserved.push({x:p.x-55,y:p.y-32,w:110,h:58});}
+      const overlaps=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
+      const place=(text,anchor,color)=>{
+        ctx.font='bold '+Math.max(9,Math.min(13,unit*.48))+'px monospace';const w=ctx.measureText(text).width+8;
+        let p=null,rect;
+        for(let ring=0;ring<=8&&!p;ring++)for(const [dx,dy]of ring?[[0,-ring*20],[0,ring*20],[-ring*30,0],[ring*30,0],[-ring*25,-ring*20],[ring*25,ring*20]]:[[0,0]]){
+          const candidate={x:anchor.x+dx,y:anchor.y+dy},r={x:candidate.x-w/2,y:candidate.y-13,w,h:18};
+          if(r.x>=5&&r.x+w<cw-5&&r.y>=50&&r.y+18<ch-25&&!reserved.some(b=>overlaps(r,b))){p=candidate;rect=r;break;}
+        }
+        if(!p)return;reserved.push(rect);
+        if(Math.hypot(p.x-anchor.x,p.y-anchor.y)>5){ctx.strokeStyle=color+'90';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(anchor.x,anchor.y);ctx.lineTo(p.x,p.y-4);ctx.stroke();ctx.fillStyle=color;ctx.fillRect(anchor.x-1,anchor.y-1,3,3);}
+        label(text,p,color);
+      };
+      // Four concise anchors, not a label on every wall tile. All heights are real.
+      for(const t of TERRAIN.filter(t=>['stronghold','bunker'].includes(t.type))){
+        const inside=G.ops.some(o=>!o.dead&&o.x>=t.x&&o.x<t.x+t.w&&o.y>=t.y&&o.y<t.y+t.h&&zOf(o)<t.z);
+        if(mobileView()&&(!G.sel||G.sel.x<t.x-1||G.sel.x>t.x+t.w||G.sel.y<t.y-1||G.sel.y>t.y+t.h))continue;
+        const name=t.type==='stronghold'?'FORTALEZA '+(t.id.endsWith('west')?'OESTE':'LESTE'):'BUNKER '+(t.id.endsWith('north')?'NORTE':'SUL');
+        const p=project(t.x+t.w/2,t.y+t.h/2,cut?.65:t.z);
+        place(name+' · TOPO '+t.z+'″',p,t.type==='stronghold'?'#c2efed':'#ffdc99');
+        if(inside)place('INTERIOR · CHÃO 0″',{x:p.x,y:p.y+17},'#b8ffd7');
+        for(const d of t.doors||[]){const x=t.x+d.offset+.5,y=d.side==='s'?t.y+t.h+.4:t.y-.4,q=project(x,y,0);place('ENTRADA · CHÃO',q,'#b8ffd7');}
+      }
+    }
     const destinations=G.moveCells.filter(visibleDestination).sort((a,b)=>project(a.x+.5,a.y+.5).y-project(b.x+.5,b.y+.5).y||(a.z||0)-(b.z||0));
     destinations.forEach(c=>{const pts=tile(c.x,c.y,c.z||0,c.z>0?'#56dce18a':'#77dca85a',c.z>0?'#bdffff':'#b8ffd7');hits.push({type:'move',cell:c,points:pts});});
     if(choosingDestination)TERRAIN.filter(t=>t.t==='h'&&!t.noClimb&&destinations.some(c=>c.z===t.z&&c.x>=t.x&&c.x<t.x+t.w&&c.y>=t.y&&c.y<t.y+t.h)).forEach(t=>label(`TOPO ${t.z}″`,project(t.x+t.w/2,t.y+t.h/2,t.z), '#baffe4'));
     drawPath();visibleOps.forEach(vitals);drawFeedback();
     if(G.sel&&G.mode==='shoot'){(G.aimTarget?[G.aimTarget]:G.targets).forEach(o=>{const a=project(G.sel.x+.5,G.sel.y+.5,zOf(G.sel)+1),b=project(o.x+.5,o.y+.5,zOf(o)+1);ctx.strokeStyle='#ffd37c';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);});}
-    info.textContent=choosingDestination?`DESTINO: ${allHeights?'CHÃO + TOPOS':chosenHeight===0?'CHÃO / INTERIOR':chosenHeight+'″'} · Suba pelas aberturas entre as muretas · Prévia mostra o custo total`:`PÁTIO DE FERRO · 30 × 22 | ${cut?'Recorte apenas visual':'28 estruturas · 4 topos com cobertura · 3 objetivos'} | Arraste / pinça · C: Conceal · E: Engage`;
+    info.textContent=choosingDestination?`DESTINO: ${allHeights?'CHÃO + TOPOS':chosenHeight===0?'CHÃO / INTERIOR':chosenHeight+'″'} · Suba pelas aberturas entre as muretas · Prévia mostra o custo total`:compoundView?`BASTIÃO DE VOLKUS · EXPERIMENTAL | Azul: fortalezas 4″ · Areia: bunkers 2″ · Vermelho: paliçadas 2″ · Piso zebrado: plataformas 2″ | ${cut?'Recorte apenas visual':'1 objetivo central'}`:`PÁTIO DE FERRO · 30 × 22 | ${cut?'Recorte apenas visual':'28 estruturas · 4 topos com cobertura · 3 objetivos'} | Arraste / pinça · C: Conceal · E: Engage`;
     if(G.ops.some(o=>o.teamId==='kom'))info.textContent+=` | Artes Kommandos: ${Object.keys(kommandoFrames).length}/12${!window.AuspexKommandoSheets?' — arquivo não carregado; atualize a página':''}`;
   }
   function boardUnit(width,height,zoom){
@@ -282,6 +318,8 @@
     return Math.max(current,Math.min(3.25,Math.max(1.65,desired)));
   }
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;draw();});}
+  window.AuspexAssaultPlayer?.setScheduler(schedule);
+  window.AuspexIntercessorGame?.setScheduler(schedule);
   function fit(){scale=1;panX=0;panY=0;if(mobileView())mobileFocus=G.sel?.id||null;schedule();}
   stage.querySelector('#iso-tools').onclick=e=>{const a=e.target.dataset.action;if(a==='rotate'||a==='rotate-left'){angle=(angle+(a==='rotate'?1:3))%4;hoverCell=null;api.center(G.sel?.x??(W-1)/2,G.sel?.y??(H-1)/2);}if(a==='cut'){cut=!cut;e.target.textContent='RECORTE: '+(cut?'ON':'OFF');e.target.setAttribute('aria-pressed',String(cut));schedule();}if(a==='grid'){grid=!grid;gridButton.textContent='GRADE: '+(grid?'ON':'OFF');gridButton.setAttribute('aria-pressed',String(grid));schedule();}if(a==='fit')fit();if(a==='plus')api.zoom(1.2);if(a==='minus')api.zoom(1/1.2);};
   function contains(p,points){let inside=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)inside=!inside;}return inside;}
@@ -342,6 +380,8 @@
   const api=window.IsoTactics={get active(){return active;},render:draw,zoom(f){scale=Math.max(.7,Math.min(5,scale*f));schedule();},center(x,y){const [a,b]=rotate(x+.5,y+.5),[ca,cb]=rotate(W/2,H/2);panX=-(a-b-ca+cb)*unit;panY=ch*.5-boardCenterY(ch,unit)-(a+b-ca-cb)*unit*.5;schedule();}};
   api.fit=fit;
   api.toggleGrid=()=>{grid=!grid;gridButton.textContent='GRADE: '+(grid?'ON':'OFF');gridButton.setAttribute('aria-pressed',String(grid));schedule();};
+  api.toggleTerrain=()=>{terrainNames=!terrainNames;terrainButton.textContent='TERRENO: '+(terrainNames?'ON':'OFF');terrainButton.setAttribute('aria-pressed',String(terrainNames));schedule();};
+  terrainButton.onclick=()=>api.toggleTerrain();
   api.toggleCut=()=>{cut=!cut;const button=stage.querySelector('[data-action="cut"]');if(button){button.textContent='RECORTE: '+(cut?'ON':'OFF');button.setAttribute('aria-pressed',String(cut));}schedule();};
   api.walk=(op,path)=>{if(path.length<2)path=[{x:op.x,y:op.y,z:op.z||0},...path];path=motionPath(path);if(path.length<2)return;const lengths=[0];for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i];lengths.push(lengths[i-1]+Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z));}const distance=lengths.at(-1);walking={id:op.id,path,lengths,distance,start:performance.now(),duration:Math.min(6500,Math.max(900,distance*450))};schedule();};
   api.walkRemaining=()=>walking?Math.max(0,walking.duration-(performance.now()-walking.start)):0;

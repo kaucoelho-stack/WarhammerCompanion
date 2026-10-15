@@ -1,0 +1,1 @@
+window.AuspexRearLeftStepsAtlas={"width":1774,"height":887,"columns":2,"rows":1,"referenceHeight":733.2171189979124,"clearFraction":0.6404548221905032,"frames":[{"sx":0,"sy":0,"w":887,"h":887,"left":224,"right":882,"top":61,"bottom":826,"footY":827,"pivotX":498},{"sx":887,"sy":0,"w":887,"h":887,"left":114,"right":772,"top":61,"bottom":826,"footY":827,"pivotX":498}]};

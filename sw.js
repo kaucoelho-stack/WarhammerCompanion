@@ -1,9 +1,14 @@
-const CACHE = 'auspex-v41-partial-team-rules-audit';
+const CACHE = 'auspex-v42-compound-test-doors-combat';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',
   './auspex-test-team/','./auspex-test-team/index.html','./auspex-test-team/auspex-rules.js',
   './auspex-test-team/killteam_data.js',
+  './auspex-test-team/team-availability.js',
+  './auspex-test-team/compound-game.html',
+  './auspex-test-team/compound-map.js',
+  './auspex-test-team/compound-mission.js',
+  './auspex-test-team/compound-art-v2.js?v=roof-4',
   './auspex-test-team/battlefield.js',
   './auspex-test-team/terrain-painter.js',
   './auspex-test-team/movement-visual.js',

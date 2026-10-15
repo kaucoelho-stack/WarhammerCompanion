@@ -1,7 +1,7 @@
 /* Music only. Future effects must use a separate audio channel. */
 (()=>{
- const tracks={menu:new Audio('assets/music/menu-loop.ogg'),battle:new Audio('assets/music/battle-loop.ogg')};
- let volume=.25,muted=false,unlocked=false,current='menu';
+ const tracks={menu:new Audio('assets/music/menu-loop.ogg'),battle:new Audio(window.AuspexCompoundGame?'assets/music/compound-loop-v3.ogg':'assets/music/battle-loop.ogg')};
+ let volume=window.AuspexCompoundGame ? .18 : .25,muted=false,unlocked=false,current='menu';
  try{const s=JSON.parse(localStorage.getItem('auspex-music')||'null');if(s){volume=Number.isFinite(s.volume)?Math.max(0,Math.min(1,s.volume)):.25;muted=!!s.muted;}}catch{}
  const levels={menu:0,battle:0};
  for(const a of Object.values(tracks)){a.loop=true;a.preload='metadata';a.volume=0;}
@@ -11,10 +11,11 @@
   const button=document.getElementById('music-toggle'),slider=document.getElementById('music-volume');
   if(button){button.textContent=muted?'MÚSICA: OFF':'MÚSICA: ON';button.setAttribute('aria-pressed',String(muted));}
   if(slider)slider.value=Math.round(volume*100);
+  const name=document.getElementById('music-track');if(name)name.textContent='Faixa: '+(current==='menu'?'Cathedral Drones':window.AuspexCompoundGame?'Front Line Assault':'Protocol 16');
  }
  window.AuspexMusic={
   settings(){document.getElementById('audio-settings').showModal();},
-  scene(name){if(!tracks[name]||name===current)return;current=name;play();},
+  scene(name){if(!tracks[name]||name===current)return;current=name;sync();play();},
   toggle(){muted=!muted;unlocked=true;save();sync();play();},
   volume(value){volume=Math.max(0,Math.min(1,Number(value)/100));save();sync();play();}
  };
