@@ -1,6 +1,6 @@
 # Auspex — candidato experimental para testes
 
-Atualização 2026-10-15: pacote inclui Pátio de ferro e entrada separada `compound-game.html` para o Volkus adaptado. AoD e Kommandos só ficam disponíveis após ativar explicitamente o modo de testes; os demais times ficam bloqueados. Inclui a música Compound v3 aprovada, os jogadores de animação integrados e suas dependências. Não é versão integralmente validada: ler TEAM-VALIDATION-REMAINING.md e VOLKUS-VALIDATION.md. As descrições antigas abaixo referem-se ao Pátio.
+Atualização 2026-10-15: pacote inclui Pátio de ferro e entrada separada `compound-game.html` para o Volkus adaptado. AoD e Kommandos disponíveis normalmente, demais times escurecidos e bloqueados. Inclui a música Compound v3 aprovada, animações integradas e suas dependências. Não é versão integralmente validada: ler UPDATE-2026-10-15.md, TEAM-VALIDATION-REMAINING.md e VOLKUS-VALIDATION.md. As descrições antigas abaixo referem-se ao Pátio.
 
 Pacote estático independente. O único mapa selecionável é o Pátio de ferro, de 30 × 22 casas, com três objetivos: um no corredor central e um dentro de cada ruína. Nenhum envio ao Git ou substituição do jogo publicado é feito pela preparação deste pacote.
 

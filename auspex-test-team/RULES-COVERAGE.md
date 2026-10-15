@@ -1,5 +1,7 @@
 # AUSPEX Test Team — cobertura do motor de regras
 
+Atualização 15/10: seleção simplificada, AoD/Kommandos disponíveis normalmente, demais times bloqueados. Granadas explosivas permitem 2 frag / 2 krak / mista. Portas, ataques primários a paliçadas, regras fortificadas e interações do Breacha/Comms receberam integração. Evidências e pendências atuais em UPDATE-2026-10-15.md e validation-report.json; o inventário abaixo é histórico e não substitui esse registro.
+
 ## Estado atual de fidelidade — 2026-10-10
 
 **Não é 100% fiel ao jogo de mesa.** A lista histórica de efeitos abaixo descreve implementação básica, não validação integral de ordem, escolhas, geometria e exceções. O laboratório visual permanece preservado.

@@ -1,4 +1,4 @@
-const CACHE = 'auspex-v42-compound-test-doors-combat';
+const CACHE = 'auspex-v43-team-logos-compound-breaches';
 // Caminhos RELATIVOS: funcionam em subpasta (GitHub Pages de projeto) e na raiz.
 const ASSETS = [
   './','./index.html','./manifest.json','./killteam_data.js',

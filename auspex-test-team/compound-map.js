@@ -22,9 +22,15 @@ const AuspexCompound=(()=>{
   if(t.type==='stockade'){t.hasDoor=['stockade-nw','stockade-se'].includes(t.id);t.open=false;const horizontal=t.w>t.h;t.breach={x:t.x+(horizontal?1:0),y:t.y+(horizontal?0:1),w:1,h:1};t.inside={x:horizontal?t.x+1.5:t.id==='stockade-west'?t.x+1.5:t.x-.5,y:horizontal?t.id.includes('n')?t.y+1.5:t.y-.5:t.y+1.5};}
   if(t.type==='bunker'){t.windows=[{x:t.x+t.w,y:t.y+1.5,z:1},{x:t.x+1.5,y:t.y+t.h,z:1}];t.entrance={x:t.x+1.5,y:t.id==='bunker-north'?t.y+t.h:t.y};}
  }
- const canOpenDoor=(t,op)=>!!t&&t.hasDoor&&!t.open&&op?.ap>=1&&(op.z||0)===0&&(t.id==='stockade-nw'?op.y>=t.y+t.h:op.y<=t.y)&&Math.hypot(op.x-t.inside.x,op.y-t.inside.y)<=1;
+ const canOpenDoor=(t,op,cost=1)=>[0,1].includes(cost)&&!!t&&t.hasDoor&&!t.open&&op?.ap>=cost&&(op.z||0)===0&&(t.id==='stockade-nw'?op.y>=t.y+t.h:op.y<=t.y)&&Math.hypot(op.x-t.inside.x,op.y-t.inside.y)<=1;
  const blockedAt=(x,y)=>terrain.some(t=>{if(x<t.x||x>=t.x+t.w||y<t.y||y>=t.y+t.h)return false;return !(t.type==='stockade'&&t.open&&x>=t.breach.x&&x<t.breach.x+1&&y>=t.breach.y&&y<t.breach.y+1);});
- const openDoor=(id,op)=>{const t=terrain.find(t=>t.id===id);if(!canOpenDoor(t,op))return false;t.open=true;op.ap--;return true;};
+ const openDoor=(id,op,cost=1)=>{const t=terrain.find(t=>t.id===id);if(!canOpenDoor(t,op,cost))return false;t.open=true;op.ap-=cost;return true;};
+ const damageStockade=(id,instances,melee=false)=>{
+  const t=terrain.find(t=>t.id===id&&t.type==='stockade');if(!t||t.open)return 0;
+  const damage=instances.filter(d=>Number.isFinite(d)&&d>(melee?5:3)).reduce((n,d)=>n+d,0);
+  const before=t.wounds??8;t.wounds=Math.max(0,before-damage);if(!t.wounds)t.open=true;return before-t.wounds;
+ };
+ const reset=()=>terrain.filter(t=>t.type==='stockade').forEach(t=>{t.open=false;t.wounds=8;});
  const windowEligible=(a,b,window)=>Math.min(Math.hypot(a.x-window.x,a.y-window.y),Math.hypot(b.x-window.x,b.y-window.y))<=1;
  const segmentBox=(a,b,t)=>{
   let enter=0,exit=1;
@@ -49,7 +55,26 @@ const AuspexCompound=(()=>{
   }
   return {visible:true,reason:'Linha livre no modelo geométrico do laboratório.'};
  };
- return {traceVisibility,blockedAt,canOpenDoor,openDoor,windowEligible,name:'Bastião de Volkus · estudo de cerco',width:30,height:22,terrain,objective:{x:14.5,y:10.5},
+ // Endpoints use world coordinates (cell centres), never screen pixels.
+ const fortifiedBetween=(a,b)=>terrain.filter(t=>{
+  if(!['bunker','stockade'].includes(t.type))return false;
+  const hit=segmentBox(a,b,t);if(!hit||hit.exit-hit.enter<1e-6)return false;
+  if(t.type==='stockade'){
+   const axis=t.w>t.h?'y':'x',middle=t[axis]+.5;
+   if((a[axis]-middle)*(b[axis]-middle)>=0)return false;
+   const breach=t.open&&segmentBox(a,b,t.breach);
+   return !(breach&&breach.enter<=hit.enter+1e-6&&breach.exit>=hit.exit-1e-6);
+  }
+  const inside=p=>p.x>t.x&&p.x<t.x+t.w&&p.y>t.y&&p.y<t.y+t.h;
+  if(inside(a)&&inside(b))return false;
+  if(inside(a)!==inside(b)){
+   const q=inside(a)?hit.exit:hit.enter,p={x:a.x+(b.x-a.x)*q,y:a.y+(b.y-a.y)*q};
+   if(Math.abs(p.x-t.entrance.x)<.5&&Math.abs(p.y-t.entrance.y)<1e-6)return false;
+  }
+  return true;
+ });
+ const defenderFirst=(a,b)=>Math.max(a.z||0,b.z||0)<2&&fortifiedBetween(a,b).some(t=>t.windows&&traceVisibility(a,b,{fortificationsOnly:true}).visible);
+ return {traceVisibility,fortifiedBetween,defenderFirst,damageStockade,reset,blockedAt,canOpenDoor,openDoor,windowEligible,name:'Bastião de Volkus · estudo de cerco',width:30,height:22,terrain,objective:{x:14.5,y:10.5},
   zones:{defence:{x:10,y:7,w:10,h:8},offence:[{x:0,y:0,w:4,h:22},{x:26,y:0,w:4,h:22}]},
   source:'https://assets.warhammer-community.com/eng_kt_volkus_compound_mission_pack-oai8j5hmhd-a6ugpgdgkj.pdf',
   status:'Protótipo geométrico; layout adaptado, sem missão ou regras especiais integradas.'};

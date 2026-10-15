@@ -9,7 +9,8 @@ const AuspexCompoundMission=(()=>{
   if(!alive[0]||!alive[1])return {over:true,winner:alive[0]?0:alive[1]?1:null,reason:'incapacitation'};
   if(tp<4)return {over:false,winner:null,reason:'ongoing'};
   const c=control(ops,objective);if(c[0]!==c[1])return {over:true,winner:c[0]>c[1]?0:1,reason:'central-control',control:c};
-  const grades=[killGrade(rosters[1].length,rosters[1].filter(op=>(op.dead||op.hp<=0)&&op.countsForElimination!==false).length),killGrade(rosters[0].length,rosters[0].filter(op=>(op.dead||op.hp<=0)&&op.countsForElimination!==false).length)];
+  const counted=rosters.map(team=>team.filter(op=>op.countsForElimination!==false));
+  const grades=[killGrade(counted[1].length,counted[1].filter(op=>op.dead||op.hp<=0).length),killGrade(counted[0].length,counted[0].filter(op=>op.dead||op.hp<=0).length)];
   return {over:true,winner:grades[0]===grades[1]?null:grades[0]>grades[1]?0:1,reason:'kill-grade',grades};
  }
  return {killGrade,control,result,deployFirst:defender=>defender,firstInitiativeChooser:attacker=>attacker};

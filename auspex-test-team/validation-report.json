@@ -1,0 +1,722 @@
+{
+  "date": "2026-10-15T19:41:45.294Z",
+  "scope": "Local headless controller/geometry/assets. Not browser, mobile, official-layout certification or all rule combinations.",
+  "passed": 102,
+  "failed": 0,
+  "results": [
+    {
+      "name": "test-adjust-doctrine.cjs",
+      "passed": true,
+      "milliseconds": 75,
+      "exitCode": 0,
+      "completion": "PASS: Adjust Doctrine timing, CP/AP, Captain free use, per-TP guard, paid preservation, stale/cancelled chooser and AI lock"
+    },
+    {
+      "name": "test-ai-counter-continuation.cjs",
+      "passed": true,
+      "milliseconds": 72,
+      "exitCode": 0,
+      "completion": "PASS: Wrath counter continuation despite expended flag, no valid second action ends and hands off, stale continuation ignored"
+    },
+    {
+      "name": "test-ai-counteract.cjs",
+      "passed": true,
+      "milliseconds": 79,
+      "exitCode": 0,
+      "completion": "    at Module._load (node:internal/modules/cjs/loader:1396:12)"
+    },
+    {
+      "name": "test-ai-idle-fallback.cjs",
+      "passed": true,
+      "milliseconds": 67,
+      "exitCode": 0,
+      "completion": "PASS: idle fallback makes legal objective progress, preserves holding positions and Counteract, never forces regressive movement"
+    },
+    {
+      "name": "test-ai-movement-options.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: AI considers remaining legal movement actions and respects charge incompatibility"
+    },
+    {
+      "name": "test-ai-recovery.cjs",
+      "passed": true,
+      "milliseconds": 40,
+      "exitCode": 0,
+      "completion": "PASS: dead AI advances, planner exception releases busy flag and offers recovery"
+    },
+    {
+      "name": "test-ai-role.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: weapon-based melee/ranged roles, AP reservation for fight and counteraction guard"
+    },
+    {
+      "name": "test-ai-second-shot.cjs",
+      "passed": true,
+      "milliseconds": 41,
+      "exitCode": 0,
+      "completion": "PASS: AI uses remaining AP for permitted second shot and respects action limit"
+    },
+    {
+      "name": "test-ai-shot-choice.cjs",
+      "passed": true,
+      "milliseconds": 40,
+      "exitCode": 0,
+      "completion": "PASS: reachable weapon, Limited exclusions, locked Conceal and Silent weapon selection"
+    },
+    {
+      "name": "test-ai-strategy-reserve.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: TP1–3 strategy reserve, surplus spending, TP4 release and free doctrine preservation"
+    },
+    {
+      "name": "test-ai-watchdog.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "    at Module._load (node:internal/modules/cjs/loader:1396:12)"
+    },
+    {
+      "name": "test-angels-art-pack.cjs",
+      "passed": true,
+      "milliseconds": 114,
+      "exitCode": 0,
+      "completion": "PASS: roster/loadout manifest, saved package, transparent alpha and lab-only boundary. Anatomy, cropped sword and animation quality not validated."
+    },
+    {
+      "name": "test-art-defensive-ploys.cjs",
+      "passed": true,
+      "milliseconds": 68,
+      "exitCode": 0,
+      "completion": "PASS: defensive strategy ploy CP/duplicate guards, injury stats, retained dice with cover/Piercing, no retained-die reroll and expiry"
+    },
+    {
+      "name": "test-art-loadouts-astartes.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "PASS: legal per-copy loadouts, profile preservation, invalid equipment guard, Astartes weapon/cost/either limits, Counteract and Limited 2"
+    },
+    {
+      "name": "test-art-team-ranges.cjs",
+      "passed": true,
+      "milliseconds": 69,
+      "exitCode": 0,
+      "completion": "PASS: AoD/Kom explicit datacard ranges and Boss Nob two Fight actions"
+    },
+    {
+      "name": "test-assault-anchor.cjs",
+      "passed": true,
+      "milliseconds": 118,
+      "exitCode": 0,
+      "completion": "PASS: two-foot crouch anchor, preserved scale and incomplete pack removed from game"
+    },
+    {
+      "name": "test-assault-complete.cjs",
+      "passed": true,
+      "milliseconds": 48,
+      "exitCode": 0,
+      "completion": "PASS: game loads mirrored full-direction pack, without redundant direction sheets"
+    },
+    {
+      "name": "test-assault-game-art.cjs",
+      "passed": true,
+      "milliseconds": 39,
+      "exitCode": 0,
+      "completion": "PASS: exact operative/view, conceal, walking, pistol/sword timing, no rule mutation and legacy fallback"
+    },
+    {
+      "name": "test-assault-mirror.cjs",
+      "passed": true,
+      "milliseconds": 45,
+      "exitCode": 0,
+      "completion": "PASS: three image sources, shared actions for mirrored directions, root-centered flip and unchanged order"
+    },
+    {
+      "name": "test-asset-recovery.cjs",
+      "passed": true,
+      "milliseconds": 68,
+      "exitCode": 0,
+      "completion": "    at Object..js (node:internal/modules/cjs/loader:2003:10)"
+    },
+    {
+      "name": "test-board-framing.cjs",
+      "passed": true,
+      "milliseconds": 38,
+      "exitCode": 0,
+      "completion": "PASS: fit framing accounts for asymmetric wall/sprite envelope and top/bottom reserved space; visual browser QA pending"
+    },
+    {
+      "name": "test-chapter-tactics.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: Hardy, Stealthy retained cover, Adaptive CP/once/reset, stationary Sharpshooter, Siege Saturate, Severe does not trigger Rending/Punishing"
+    },
+    {
+      "name": "test-climbing.cjs",
+      "passed": true,
+      "milliseconds": 163,
+      "exitCode": 0,
+      "completion": "PASS: 16 platform sides, climb/descent 3 inches, insufficient budget, Dash, all-floor controls, AP/undo, vault without surcharge, 300 samples per animation without solid intersection"
+    },
+    {
+      "name": "test-combat-choices.cjs",
+      "passed": true,
+      "milliseconds": 69,
+      "exitCode": 0,
+      "completion": "PASS: human defence allocation, two-normal critical cancellation, decline, retained display dice and retaliation profile selection"
+    },
+    {
+      "name": "test-combat-doctrine.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: doctrine scopes/6-inch boundary, chooser, CP, per-battle free uses, expiry, AI zero-CP choice and phase guard"
+    },
+    {
+      "name": "test-combat-lifecycle.cjs",
+      "passed": true,
+      "milliseconds": 43,
+      "exitCode": 0,
+      "completion": "PASS: lethal first strike, lethal retaliation, per-strike resilience, human block, dead action guard, script syntax"
+    },
+    {
+      "name": "test-command-reroll.cjs",
+      "passed": true,
+      "milliseconds": 67,
+      "exitCode": 0,
+      "completion": "PASS: Command Re-roll spends CP, changes result, excludes retained/repeated dice, AI spends CP"
+    },
+    {
+      "name": "test-compound-art.cjs",
+      "passed": true,
+      "milliseconds": 136,
+      "exitCode": 0,
+      "completion": "PASS: independent compound material skin, finite depths and native Canvas rendering; browser visual QA pending"
+    },
+    {
+      "name": "test-compound-destruction.cjs",
+      "passed": true,
+      "milliseconds": 84,
+      "exitCode": 0,
+      "completion": "PASS: per-instance thresholds, 8 wounds, permanent opening/reset, live shooting Hit 2+, AP/limits/lock and collision update"
+    },
+    {
+      "name": "test-compound-door-game.cjs",
+      "passed": true,
+      "milliseconds": 85,
+      "exitCode": 0,
+      "completion": "PASS: live door action, UI, AP, locks, elevation, collision refresh and duplicate callback"
+    },
+    {
+      "name": "test-compound-doors.cjs",
+      "passed": true,
+      "milliseconds": 39,
+      "exitCode": 0,
+      "completion": "PASS: door interior/range/AP/one-way guards and window proximity eligibility; full LOS integration pending"
+    },
+    {
+      "name": "test-compound-fortified.cjs",
+      "passed": true,
+      "milliseconds": 82,
+      "exitCode": 0,
+      "completion": "PASS: fortified side tests, open-breach exception, window defender-first and live 4-inch climb routes"
+    },
+    {
+      "name": "test-compound-integration.cjs",
+      "passed": true,
+      "milliseconds": 77,
+      "exitCode": 0,
+      "completion": "PASS: real AoD/Kommandos deploy in role zones, attacker chooses TP1, firefight starts, no Transmission VP; special terrain rules pending"
+    },
+    {
+      "name": "test-compound-map.cjs",
+      "passed": true,
+      "milliseconds": 39,
+      "exitCode": 0,
+      "completion": "PASS: compound prototype bounds, unique IDs, two bunkers, six stockades, six fire steps and central objective"
+    },
+    {
+      "name": "test-compound-mission.cjs",
+      "passed": true,
+      "milliseconds": 38,
+      "exitCode": 0,
+      "completion": "PASS: Compound final control, APL/tie/kill-grade, early elimination and role order; integration pending"
+    },
+    {
+      "name": "test-compound-music.cjs",
+      "passed": true,
+      "milliseconds": 43,
+      "exitCode": 0,
+      "completion": "PASS: Front Line Assault pre-outro loop v3, 120ms internal join, 18% default, seam preview; musical acceptance requires listening"
+    },
+    {
+      "name": "test-compound-preview.cjs",
+      "passed": true,
+      "milliseconds": 125,
+      "exitCode": 0,
+      "completion": "PASS: both compound views and breach preview render; audio loops at 18%, no fade handler; boundary listening still required"
+    },
+    {
+      "name": "test-compound-roof.cjs",
+      "passed": true,
+      "milliseconds": 74,
+      "exitCode": 0,
+      "completion": "PASS: distinct map cards, real bunker rails, atomic caps, wall/deck/rail painter dependencies in four rotations; geometry unchanged"
+    },
+    {
+      "name": "test-compound-team-interactions.cjs",
+      "passed": true,
+      "milliseconds": 89,
+      "exitCode": 0,
+      "completion": "PASS: Breacha crosses stockade without opening LOS, Comms door discount/once, Squig restrictions and fortified Piercing exception"
+    },
+    {
+      "name": "test-compound-visibility.cjs",
+      "passed": true,
+      "milliseconds": 39,
+      "exitCode": 0,
+      "completion": "PASS: closed/open breach, solid remaining wall, near/far window and reciprocal visibility; grid geometry only"
+    },
+    {
+      "name": "test-datacard-baseline.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "PASS: official numeric baseline of all 20 operatives, legal sergeant combinations and Boss weapon options"
+    },
+    {
+      "name": "test-deployment-sequence.cjs",
+      "passed": true,
+      "milliseconds": 75,
+      "exitCode": 0,
+      "completion": "PASS: setup initiative, zone selection and swapping, arbitrary operative selection, unequal batches, Conceal, bounds and TP1 tie"
+    },
+    {
+      "name": "test-direction-lab.cjs",
+      "passed": true,
+      "milliseconds": 633,
+      "exitCode": 0,
+      "completion": "PASS: rear attacks and shared incoming-hit poses, clocks, pause/slow mode, feet, full crops, effect-only source switch, no reaction shooting and isolated failure; visual approval pending"
+    },
+    {
+      "name": "test-equipment-and-core.cjs",
+      "passed": true,
+      "milliseconds": 68,
+      "exitCode": 0,
+      "completion": "PASS: equipment selection effects, shared Purity/Auspex/Shields limits, decline, relic cost, grenades, Harpoon/Dynamite exhaustion, shield retention timing, human free reroll choice"
+    },
+    {
+      "name": "test-equipment-help.cjs",
+      "passed": true,
+      "milliseconds": 67,
+      "exitCode": 0,
+      "completion": "PASS: all equipment help entries, accessible touch buttons, isolated dialog and unchanged roster/combat state"
+    },
+    {
+      "name": "test-grenade-selection.cjs",
+      "passed": true,
+      "milliseconds": 67,
+      "exitCode": 0,
+      "completion": "PASS: 2 frag / 2 krak / mixed shared inventory, exhaustion, Grenadier independence and setup selection"
+    },
+    {
+      "name": "test-group-activation.cjs",
+      "passed": true,
+      "milliseconds": 68,
+      "exitCode": 0,
+      "completion": "PASS: group activation uses two distinct operatives, rejects duplicate completion and returns control before a third"
+    },
+    {
+      "name": "test-heroic-doctrine.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "PASS: activation-only Combat Doctrine, normal CP, shared Heroic Leader limit, choice/cancel locks, stale/provider guards and no counteraction"
+    },
+    {
+      "name": "test-intercessor-game.cjs",
+      "passed": true,
+      "milliseconds": 41,
+      "exitCode": 0,
+      "completion": "PASS: four views, mirror, fists timing, bolter, walking, received-hit, lazy load once, Stalker exclusion, fallback and both maps"
+    },
+    {
+      "name": "test-intercessor-pack.cjs",
+      "passed": true,
+      "milliseconds": 224,
+      "exitCode": 0,
+      "completion": "PASS: reused full-action recipe, front/rear with mirror, fists instead of rifle-butt, native montage and no partial game integration"
+    },
+    {
+      "name": "test-iron-halo.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: Iron Halo optional human choice, AI, normal-only single die, melee integration, no AP/CP, battle limit, stale callbacks and action lock"
+    },
+    {
+      "name": "test-kommando-ploys.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "PASS: CP, duplicate guard, melee/ranged scopes, Punishing critical condition"
+    },
+    {
+      "name": "test-kommando-roster.cjs",
+      "passed": true,
+      "milliseconds": 139,
+      "exitCode": 0,
+      "completion": "PASS: every real default Kommando roster operative resolves an artwork."
+    },
+    {
+      "name": "test-kommando-special-actions.cjs",
+      "passed": true,
+      "milliseconds": 94,
+      "exitCode": 0,
+      "completion": "PASS: Boy shared smoke/stun pools, APL objective effect, Comms discount, Grot reposition restrictions, Breach movement, Dakka Dash both orders/one AP, Explosives and queued Boom"
+    },
+    {
+      "name": "test-landscape-layout.cjs",
+      "passed": true,
+      "milliseconds": 39,
+      "exitCode": 0,
+      "completion": "PASS: mobile landscape grid, scrollable side columns and 44px toolbar contract; structural assertions only, not screenshots"
+    },
+    {
+      "name": "test-manual-walk-frame.cjs",
+      "passed": true,
+      "milliseconds": 112,
+      "exitCode": 0,
+      "completion": "PASS: exact upper-body preservation, planted sole, forward boot pixels, real alpha and original anchors (not a visual acceptance test)"
+    },
+    {
+      "name": "test-markerlight.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "PASS: Markerlight AP, once-per-activation, cumulative bonuses, team ownership, four-token cap, faction guard"
+    },
+    {
+      "name": "test-mobile-battle-flow.cjs",
+      "passed": true,
+      "milliseconds": 72,
+      "exitCode": 0,
+      "completion": "PASS: automatic-mode changes respected and human Command Re-roll remains interactive with correct CP"
+    },
+    {
+      "name": "test-mobile-camera-scale.cjs",
+      "passed": true,
+      "milliseconds": 39,
+      "exitCode": 0,
+      "completion": "PASS: mobile action zoom bounds, preserved manual zoom, elevated focus and overview protection; browser QA pending"
+    },
+    {
+      "name": "test-mobile-inspection-priority.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "PASS: portrait/landscape primary activation before expandable details, no duplicate selection text, no AP/activation spent; visual browser QA pending"
+    },
+    {
+      "name": "test-mobile-interactions.cjs",
+      "passed": true,
+      "milliseconds": 40,
+      "exitCode": 0,
+      "completion": "PASS: mobile 8px drag threshold, pinch zoom and discrete two-finger rotation"
+    },
+    {
+      "name": "test-mobile-rail.cjs",
+      "passed": true,
+      "milliseconds": 65,
+      "exitCode": 0,
+      "completion": "PASS: mobile rail toggle, persisted choice and deployment visibility"
+    },
+    {
+      "name": "test-mobile-shell.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: mobile command accessibility, AP invariants, compact score, roster and desktop isolation; not browser layout QA"
+    },
+    {
+      "name": "test-music.cjs",
+      "passed": true,
+      "milliseconds": 39,
+      "exitCode": 0,
+      "completion": "PASS: gesture unlock, quiet default, scene transition, mute, background pause, loop assets"
+    },
+    {
+      "name": "test-operative-ux.cjs",
+      "passed": true,
+      "milliseconds": 69,
+      "exitCode": 0,
+      "completion": "PASS: sidebar activated/dead states and visibility by phase"
+    },
+    {
+      "name": "test-pathfinder-stats.cjs",
+      "passed": true,
+      "milliseconds": 68,
+      "exitCode": 0,
+      "completion": "PASS: imported Pathfinder profile stats match documented PDF baseline"
+    },
+    {
+      "name": "test-portrait-fallback.cjs",
+      "passed": true,
+      "milliseconds": 65,
+      "exitCode": 0,
+      "completion": "PASS: failed portraits cached, handler removed, fallback visible, repeated renders avoid failed URL"
+    },
+    {
+      "name": "test-rear-walk-lab.cjs",
+      "passed": true,
+      "milliseconds": 261,
+      "exitCode": 0,
+      "completion": "PASS: rear walk frames, loop, slow/manual clocks, shared scale/root, floor, cancellation and safe loading failure; visual gait pending approval"
+    },
+    {
+      "name": "test-retired-teams.cjs",
+      "passed": true,
+      "milliseconds": 66,
+      "exitCode": 0,
+      "completion": "PASS: Tyranid Warriors prototype excluded from playable and AI team registry"
+    },
+    {
+      "name": "test-roof-cover.cjs",
+      "passed": true,
+      "milliseconds": 87,
+      "exitCode": 0,
+      "completion": "PASS: 4 roofs / 32 parapets, 52 sight lines, directional light cover, gaps, Engage/Conceal/Seek Light, mirrored access and matching visual volumes in all 4 views"
+    },
+    {
+      "name": "test-score-availability.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "PASS: unavailable Tac Ops disclosed without changing transmission scoring"
+    },
+    {
+      "name": "test-setup-cancel.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: isolated setup, portrait grids, safe activation cancellation and no rollback after action/status"
+    },
+    {
+      "name": "test-setup-disclosure.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "PASS: collapsed roster settings, separate strategy footer, balanced opponent disclosure and overlay style isolation; browser layout QA pending"
+    },
+    {
+      "name": "test-sprite-assets.cjs",
+      "passed": true,
+      "milliseconds": 231,
+      "exitCode": 0,
+      "completion": "PASS: PNG byte equivalence, sheet metadata, team-specific loading, cache, no eager sheet scripts"
+    },
+    {
+      "name": "test-sprite-image-recovery.cjs",
+      "passed": true,
+      "milliseconds": 38,
+      "exitCode": 0,
+      "completion": "PASS: PNG failure, retry, decode readiness and image cache"
+    },
+    {
+      "name": "test-sprite-timeout.cjs",
+      "passed": true,
+      "milliseconds": 38,
+      "exitCode": 0,
+      "completion": "PASS: stalled asset times out and retry succeeds without waiting in real time"
+    },
+    {
+      "name": "test-stance-lab.cjs",
+      "passed": true,
+      "milliseconds": 500,
+      "exitCode": 0,
+      "completion": "PASS: image decoding, forward/reverse transitions, frame stepping, scale control, native canvas preview"
+    },
+    {
+      "name": "test-startup.cjs",
+      "passed": true,
+      "milliseconds": 66,
+      "exitCode": 0,
+      "completion": "PASS: full controller startup, real rosters, custom-art AI opponent, all 12 deployments, strategy/initiative, activation, preview/undo/confirmed movement"
+    },
+    {
+      "name": "test-strategy-sequence.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: initiative choice and tie, CP once, alternating gambits, interrupted passes, picker cancellation, stale choice rejection and guarded transition"
+    },
+    {
+      "name": "test-support-depth.cjs",
+      "passed": true,
+      "milliseconds": 111,
+      "exitCode": 0,
+      "completion": "PASS: 168 rooftop cells/views: support behind, near rails in front, rail depths unchanged"
+    },
+    {
+      "name": "test-tactics-menu.cjs",
+      "passed": true,
+      "milliseconds": 66,
+      "exitCode": 0,
+      "completion": "PASS: all commands retained in categories, submenus do not spend AP"
+    },
+    {
+      "name": "test-target-feedback.cjs",
+      "passed": true,
+      "milliseconds": 71,
+      "exitCode": 0,
+      "completion": "PASS: valid/blocked target explanations including ally engagement, no-target diagnostics without AP, score help and single/multiple fight target flows"
+    },
+    {
+      "name": "test-team-audit.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: playable registry, Wolf compulsory, optional Pack Leader, AoD updated composition, no synthetic weapons"
+    },
+    {
+      "name": "test-team-availability.cjs",
+      "passed": true,
+      "milliseconds": 41,
+      "exitCode": 0,
+      "completion": "PASS: AoD/Kom available normally; others blocked; human roster and AI gates on both maps"
+    },
+    {
+      "name": "test-team-phase-ploys.cjs",
+      "passed": true,
+      "milliseconds": 72,
+      "exitCode": 0,
+      "completion": "PASS: quiet Dash TP/window/lock/AP, Krump outside activation/CP/once per TP/visible Control Range"
+    },
+    {
+      "name": "test-team-picker.cjs",
+      "passed": true,
+      "milliseconds": 69,
+      "exitCode": 0,
+      "completion": "PASS: compact logo/name/help cards, 2 enabled teams, all local logos, details in dossier"
+    },
+    {
+      "name": "test-team-ploy-events.cjs",
+      "passed": true,
+      "milliseconds": 75,
+      "exitCode": 0,
+      "completion": "PASS: all 16 ploys imported, event costs/Captain sharing, Wrath, Shake, Scratch exclusions, Indomitus, Transhuman, Shock first strike, Kunnin first resolved die, human/stale guards"
+    },
+    {
+      "name": "test-team-selection.cjs",
+      "passed": true,
+      "milliseconds": 70,
+      "exitCode": 0,
+      "completion": "PASS: descriptions, dossiers, AoD alternating activation, random AI squads, manual PvP"
+    },
+    {
+      "name": "test-three-objectives.cjs",
+      "passed": true,
+      "milliseconds": 68,
+      "exitCode": 0,
+      "completion": "PASS: three markers, TP1 blocked, transmission costs AP, maximum two VP per TP, capture/tie/no-transmission scoring, duplicate scoring guard, AI objective indices"
+    },
+    {
+      "name": "test-walk-animation.cjs",
+      "passed": true,
+      "milliseconds": 40,
+      "exitCode": 0,
+      "completion": "PASS: lab walk cycle, phase wrap, manual pause, shared track clock and reduced motion; physical footplant acceptance pending"
+    },
+    {
+      "name": "match modular aod variant 0",
+      "passed": true,
+      "milliseconds": 2558,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"modular\",\"first\":\"aod\",\"second\":\"kom\",\"seed\":130,\"variant\":0,\"ticks\":582,\"tp\":4,\"alive\":[5,0],\"kills\":[10,1]}"
+    },
+    {
+      "name": "match modular aod variant 1",
+      "passed": true,
+      "milliseconds": 2449,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"modular\",\"first\":\"aod\",\"second\":\"kom\",\"seed\":131,\"variant\":1,\"ticks\":563,\"tp\":4,\"alive\":[2,1],\"kills\":[9,4]}"
+    },
+    {
+      "name": "match modular aod variant 2",
+      "passed": true,
+      "milliseconds": 2140,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"modular\",\"first\":\"aod\",\"second\":\"kom\",\"seed\":132,\"variant\":2,\"ticks\":420,\"tp\":3,\"alive\":[5,0],\"kills\":[9,1]}"
+    },
+    {
+      "name": "match modular kom variant 0",
+      "passed": true,
+      "milliseconds": 2064,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"modular\",\"first\":\"kom\",\"second\":\"aod\",\"seed\":130,\"variant\":0,\"ticks\":556,\"tp\":4,\"alive\":[2,4],\"kills\":[2,8]}"
+    },
+    {
+      "name": "match modular kom variant 1",
+      "passed": true,
+      "milliseconds": 1682,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"modular\",\"first\":\"kom\",\"second\":\"aod\",\"seed\":131,\"variant\":1,\"ticks\":558,\"tp\":4,\"alive\":[3,0],\"kills\":[6,7]}"
+    },
+    {
+      "name": "match modular kom variant 2",
+      "passed": true,
+      "milliseconds": 1762,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"modular\",\"first\":\"kom\",\"second\":\"aod\",\"seed\":132,\"variant\":2,\"ticks\":495,\"tp\":4,\"alive\":[1,3],\"kills\":[3,9]}"
+    },
+    {
+      "name": "match compound aod variant 0",
+      "passed": true,
+      "milliseconds": 1435,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"compound\",\"first\":\"aod\",\"second\":\"kom\",\"seed\":130,\"variant\":0,\"ticks\":644,\"tp\":4,\"alive\":[1,1],\"kills\":[9,5]}"
+    },
+    {
+      "name": "match compound aod variant 1",
+      "passed": true,
+      "milliseconds": 1600,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"compound\",\"first\":\"aod\",\"second\":\"kom\",\"seed\":131,\"variant\":1,\"ticks\":603,\"tp\":4,\"alive\":[2,1],\"kills\":[9,4]}"
+    },
+    {
+      "name": "match compound aod variant 2",
+      "passed": true,
+      "milliseconds": 1406,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"compound\",\"first\":\"aod\",\"second\":\"kom\",\"seed\":132,\"variant\":2,\"ticks\":560,\"tp\":4,\"alive\":[4,0],\"kills\":[10,2]}"
+    },
+    {
+      "name": "match compound kom variant 0",
+      "passed": true,
+      "milliseconds": 1674,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"compound\",\"first\":\"kom\",\"second\":\"aod\",\"seed\":130,\"variant\":0,\"ticks\":511,\"tp\":4,\"alive\":[0,2],\"kills\":[4,10]}"
+    },
+    {
+      "name": "match compound kom variant 1",
+      "passed": true,
+      "milliseconds": 2325,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"compound\",\"first\":\"kom\",\"second\":\"aod\",\"seed\":131,\"variant\":1,\"ticks\":599,\"tp\":4,\"alive\":[0,3],\"kills\":[3,10]}"
+    },
+    {
+      "name": "match compound kom variant 2",
+      "passed": true,
+      "milliseconds": 2695,
+      "exitCode": 0,
+      "completion": "PASS: complete headless controller match {\"map\":\"compound\",\"first\":\"kom\",\"second\":\"aod\",\"seed\":132,\"variant\":2,\"ticks\":674,\"tp\":4,\"alive\":[0,2],\"kills\":[4,10]}"
+    }
+  ]
+}

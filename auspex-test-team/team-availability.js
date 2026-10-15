@@ -1,2 +1,2 @@
-/* Release gate: test coverage alone does not certify official team completeness. */
-(()=>{const validated=new Set(),candidates=new Set(['aod','kom']);let testing=false;window.AuspexTeamAvailability={isAvailable:id=>validated.has(id)||testing&&candidates.has(id),isTesting:()=>testing,setTesting(value){testing=value===true;},label:id=>testing&&candidates.has(id)?'TESTES · validação pendente':'INDISPONÍVEL · validação pendente',reason:()=> 'Time ainda sem validação integral. Apenas Angels of Death e Kommandos podem ser usados no modo de testes.'};})();
+/* Availability is a product choice, not a certification of official rules. */
+(()=>{const available=new Set(['aod','kom']);window.AuspexTeamAvailability={isAvailable:id=>available.has(id),label:id=>available.has(id)?'Disponível':'Em breve',reason:()=> 'Este time ainda não está disponível. Escolha Angels of Death ou Kommandos.'};})();

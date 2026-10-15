@@ -562,6 +562,12 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .setup-screen .trow{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:12px;background:#29211d;border:2px solid #665548;border-radius:0;text-align:left;transition:none}
 .setup-screen .trow:hover,.setup-screen .trow:focus-visible{border-color:#e4cdb0;background:#482a25;outline:2px solid #b57363;outline-offset:2px}
 .army-portrait{width:100%;height:180px;object-fit:contain;background:#120f0e;image-rendering:auto}.tn{color:#ead9c0;font-size:16px}.td{font-size:12px;color:#c2b1a2}
+.team-picker .army-card{position:relative;min-width:0}
+.setup-screen .team-picker .trow{width:100%;height:100%;align-items:center;text-align:center;padding:20px 12px;gap:12px}
+.team-logo{width:100%;height:100px;object-fit:contain}
+.team-picker .unavailable .trow{filter:grayscale(1);opacity:.3;cursor:not-allowed}
+.team-picker .army-help{position:absolute;right:6px;top:6px;width:32px;height:32px;min-height:32px;padding:0;border-radius:50%}
+.team-picker .tn{font-size:15px}
 .setup-screen .roster-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));max-height:none;overflow:visible;gap:12px}
 .setup-screen .roster-op{display:flex;flex-direction:column;background:#28211c;border:2px solid #5c4e43;padding:12px;align-items:stretch}.setup-screen .roster-op.chosen{border-color:#bc8d77;background:#392823;box-shadow:inset 0 0 0 2px #170f0b}
 .recruit-portrait{height:160px;width:100%;object-fit:contain;background:#100e0c}.setup-screen .roster-info b{white-space:normal;font-size:14px}.setup-screen .roster-info small{font-size:12px}.setup-screen .roster-step{justify-content:space-between;margin-top:auto;padding-top:12px}.roster-step button{min-width:44px;min-height:44px;background:#4d3029;border-color:#977460;color:#f1dec8}.roster-tags i{color:#cfbba1;border-color:#735c49;background:#261d18}
@@ -1006,7 +1012,7 @@ function registerCompoundScenario(){
  refreshCompoundTerrain();
 }
 function refreshCompoundTerrain(){
- const pieces=[];for(const t of AuspexCompound.terrain){if(t.type==='stockade'&&t.open){for(let i=0;i<3;i++)if(i!==1)pieces.push({...t,x:t.x+(t.w>1?i:0),y:t.y+(t.h>1?i:0),w:1,h:1,t:'h',noClimb:true});}else pieces.push({...t,t:t.type==='rubble'?'l':'h',noClimb:['stockade','ruin'].includes(t.type),building:t.type==='bunker',doors:t.type==='bunker'?[{side:t.id==='bunker-north'?'s':'n',offset:1}]:[],openSides:[],floorStep:t.z});}
+ const pieces=[];for(const t of AuspexCompound.terrain){if(t.type==='stockade'&&t.open){for(let i=0;i<3;i++)if(i!==1)pieces.push({...t,x:t.x+(t.w>1?i:0),y:t.y+(t.h>1?i:0),w:1,h:1,t:'h',noClimb:false});}else pieces.push({...t,t:t.type==='rubble'?'l':'h',noClimb:t.type==='ruin',building:t.type==='bunker',doors:t.type==='bunker'?[{side:t.id==='bunker-north'?'s':'n',offset:1}]:[],openSides:[],floorStep:t.z});}
  KILLZONES.compound.terrain=pieces;
 }
 registerCompoundScenario();
@@ -1045,7 +1051,7 @@ function generatedTerrainClimbs(t){
   sides.forEach(([side,len])=>{for(let offset=0;offset<len;offset++){
     if(!climbableWall(t,side,offset))continue;const edge=climbEdge(t,side,offset);
     let fromZ=0,from={x:edge.x,y:edge.y};levels.forEach(toZ=>{
-      routes.push({...from,tx:edge.tx,ty:edge.ty,fromZ,toZ,z:toZ,building:bid,side,kind:'climb',invisible:true,climbCost:Math.ceil(toZ-fromZ)});
+      routes.push({...from,tx:edge.tx,ty:edge.ty,fromZ,toZ,z:toZ,building:bid,side,kind:'climb',invisible:true,climbCost:['bunker','stockade'].includes(t.type)?4:Math.ceil(toZ-fromZ)});
       fromZ=toZ;from={x:edge.tx,y:edge.ty};
     });
   }});
@@ -1071,16 +1077,81 @@ applyKillzone(ACTIVE_KZ);
 /* ---------- MAPA DE TERRENO (lookup rápido) ---------- */
 const terrAt=(x,y)=>(x<0||y<0||x>=W||y>=H)?null:TMAP[y][x];
 const compoundActive=()=>window.AuspexCompoundGame&&ACTIVE_KZ==='compound';
+const compoundPoint=o=>({...o,x:o.x+.5,y:o.y+.5});
+const compoundIntervening=(a,b)=>compoundActive()?AuspexCompound.fortifiedBetween(compoundPoint(a),compoundPoint(b)):[];
+const compoundAreaAllowed=(primary,secondary)=>!compoundIntervening(primary,secondary).length;
+const compoundDefenderFirst=(a,b)=>compoundActive()&&AuspexCompound.defenderFirst(compoundPoint(a),compoundPoint(b));
 function compoundDoorOptions(op){
- return compoundActive()&&canAct(op,1)&&!actionUsed(op,'stockade-door')
-  ?AuspexCompound.terrain.filter(t=>AuspexCompound.canOpenDoor(t,op)):[];
+ return compoundActive()&&op?.templateId!=='kt-kommando-bombsquig'&&canAct(op,missionAPCost(op))&&!actionUsed(op,'stockade-door')
+  ?AuspexCompound.terrain.filter(t=>AuspexCompound.canOpenDoor(t,op,missionAPCost(op))):[];
 }
 function actCompoundDoor(id){
  const op=G.sel;
  if(G.phase!=='firefight'||!op||op.pi!==G.cur||!activationCommitted(op)||G.mode||!compoundDoorOptions(op).some(t=>t.id===id))return false;
- if(!AuspexCompound.openDoor(id,op))return false;
+ const cost=missionAPCost(op);if(!AuspexCompound.openDoor(id,op,cost))return false;if(!cost)op.planDiscountUsed=true;
  recordAction(op,'stockade-door');refreshCompoundTerrain();applyKillzone('compound');
- log(`${op.n} abriu ${id} · 1 AP · abertura permanente`);render();return true;
+ log(`${op.n} abriu ${id} · ${cost} AP · abertura permanente`);if(op.ap<=0&&!isAI(op.pi))finishOp(op);render();return true;
+}
+function stockadeAttackOptions(op){
+ if(!compoundActive()||!op||['kt-kommando-grot','kt-kommando-bombsquig'].includes(op.templateId))return [];
+ const result=[];
+ for(const t of AuspexCompound.terrain.filter(t=>t.type==='stockade'&&!t.open)){
+  const target={x:t.breach.x,y:t.breach.y,z:0,pi:1-op.pi,n:t.id,sv:4,df:4,order:'engage'};
+  // Probe the visible face of the removable part, not the opaque wall behind it.
+  const ax=op.x+.5,ay=op.y+.5,bx=target.x+.5,by=target.y+.5,len=Math.hypot(bx-ax,by-ay)||1;
+  const face={...target,x:target.x-(bx-ax)/len*.51,y:target.y-(by-ay)/len*.51};
+  const silhouette=shotSilhouette(op,face),visible=silhouette.visible;
+  const los={vis:visible,cover:false,obscured:silhouette.distantHeavy||dist(op,target)>2&&(inSmoke(op)||inSmoke(target))};
+  for(const kind of ['r','m'])for(const [index,w]of weaponsOf(op,kind).entries()){
+   if(kind==='m'){
+    if(dist(op,target)>1.001||op.foughtThis>=RULES.maxAction(op,'fight',TEAMS)||!canAct(op,1))continue;
+   }else{
+    if(!visible||inEnemyCR(op.x,op.y,op.pi,zOf(op))||hasTag(w,'Markerlight')||op.order!=='engage'&&!hasTag(w,'Silent')||RULES.heavyBlocked(op,w)||RULES.limitedBlocked(op,w))continue;
+    const range=tagVal(w,'Range');if(range&&dist(op,target)>range)continue;
+    const permission=RULES.shootPermission(op,w,TEAMS);if(!permission.allowed||!canAct(op,permission.cost))continue;
+   }
+   result.push({t,target,w,kind,index,los,cost:kind==='m'?1:RULES.shootPermission(op,w,TEAMS).cost});
+  }
+ }
+ return result;
+}
+function showStockadeAttacks(){
+ const op=G.sel;if(!op||!activationCommitted(op))return;
+ const options=stockadeAttackOptions(op);
+ openOv('ABRIR BRECHA — ATACAR PALIÇADA',`<p>8 PV. Ignora cada dano de até 3 no tiro ou 5 na luta. Abrir é permanente.</p>${options.map(a=>`<button class="btn" onclick="actStockadeAttack('${a.t.id}','${a.kind}',${a.index})">${a.t.id} · ${a.t.wounds??8}/8 PV<br>${a.w.n} · ${a.kind==='m'?'Lutar':'Atirar'} · ${a.cost} AP</button>`).join('')||'<p>Nenhuma paliçada elegível.</p>'}<button class="btn" onclick="closeOv()">VOLTAR · SEM GASTAR AP</button>`);
+}
+async function actStockadeAttack(id,kind,index){
+ const op=G.sel;if(!op||op.pi!==G.cur||!activationCommitted(op)||G.mode||G.terrainAttackResolving)return false;
+ const choice=stockadeAttackOptions(op).find(a=>a.t.id===id&&a.kind===kind&&a.index===index);if(!choice)return false;
+ const {t,target,w,cost}=choice,tp=G.tp;let committed=false;G.terrainAttackResolving=true;closeOv();
+ try{
+  const weapon={...w,h:2},mo=mods(op,null,weapon,kind==='r');
+  const atk=rollAtk(weapon,{...mo,deferRerolls:true,deferRetention:true},weapon.a);
+  await offerWeaponRerolls(op,atk,mo);await offerCommandReroll(op.pi,atk,'Ataque à paliçada',weapon);retainAttackDice(atk,weapon,mo);await offerPuritySeals(op,atk);
+  if(kind==='r'&&choice.los.obscured&&!op.optics&&!(op.auspex&&dist(op,target)<=8)){
+   for(const die of atk)if(die.k==='crit')die.k='suc';const successes=atk.filter(d=>d.k==='suc');
+   if(successes.length){const selected=await rulesChoice(op.pi,'PALIÇADA OBSCURED — DESCARTAR SUCESSO',successes.map(d=>`${d.v} · normal`),'Críticos viram normais; descarte um sucesso.');atk.splice(atk.indexOf(successes[Math.max(0,selected)]),1);}
+  }
+  if(G.phase!=='firefight'||G.tp!==tp||G.sel!==op||op.dead||t.open)return false;
+  let normals=atk.filter(d=>d.k==='suc').length,criticals=atk.filter(d=>d.k==='crit').length;
+  if(kind==='r'){
+   let pierce=mo.pierce;if(criticals&&hasTag(weapon,'PiercingCrits'))pierce=Math.max(pierce,tagVal(weapon,'PiercingCrits'));
+   const classify=v=>v===6?'crit':v>=4?'suc':'fail';
+   const def=Array.from({length:Math.max(0,4-pierce)},()=>{const v=d6();return{v,k:classify(v)};});
+   const allocation=await chooseShotDefence(target,atk,def);
+   if(allocation){normals=allocation.nNorm;criticals=allocation.nCrit;}
+   else{let dc=def.filter(d=>d.k==='crit').length,dn=def.filter(d=>d.k==='suc').length;while(criticals&&dc){criticals--;dc--;}while(criticals&&dn>=2){criticals--;dn-=2;}while(normals&&(dn||dc)){normals--;if(dn)dn--;else dc--;}}
+  }
+  if(G.phase!=='firefight'||G.tp!==tp||G.sel!==op||op.dead||t.open)return false;
+  const instances=[...Array(normals).fill(w.d),...Array(criticals).fill(w.c),...Array(atk.filter(d=>d.k==='crit').length).fill(mo.devast||0)];
+  const dealt=AuspexCompound.damageStockade(id,instances,kind==='m');
+  if(kind==='r'){op.shotThis++;op.battleShots=(op.battleShots||0)+1;(op.shotWeapons||(op.shotWeapons=[])).push(w.n);(op.shotProfiles||(op.shotProfiles=[])).push(w);RULES.useWeapon(op,w);if(w.equipment){const uses=P(op.pi).equipmentUses||(P(op.pi).equipmentUses={});uses[w.equipment]=w.equipment==='harpoon'?G.tp:(uses[w.equipment]||0)+1;}}
+  else op.foughtThis++;
+  recordAction(op,kind==='m'?'fight':'shoot');op.ap=Math.max(0,op.ap-cost);committed=true;
+  if(kind==='r'&&hasTag(w,'Hot')){const hot=d6();if(hot<Math.max(2,Math.min(6,2+mo.hit)))applyDmg(op,hot*2);}
+  refreshCompoundTerrain();applyKillzone('compound');log(`${op.n}: ${w.n} contra ${id} · ${dealt} dano · ${t.open?'BRECHA ABERTA':t.wounds+'/8 PV'} · ${cost} AP`);
+  render();return true;
+ }finally{G.terrainAttackResolving=false;if(committed&&(op.dead||op.ap<=0)&&!isAI(op.pi)&&G.phase==='firefight')finishOp(op);render();}
 }
 function compoundDeployCell(pi,x,y){const zones=pi===1?[AuspexCompound.zones.defence]:AuspexCompound.zones.offence;return zones.some(z=>x>=z.x&&x<z.x+z.w&&y>=z.y&&y<z.y+z.h);}
 const roofAt=(x,y)=>TERRAIN.find(t=>t.t==='h'&&t.z&&!t.noClimb&&x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h);
@@ -1473,7 +1544,7 @@ const EQUIPMENT_HELP={
  stocks:{name:'Collapsible Stocks',effect:'Remove o limite de alcance das armas Slugga e Shokka. Não afeta a Dakka e não remove as exigências de linha de visão e alvo válido.',limit:'Efeito contínuo enquanto o equipamento estiver selecionado.'},
  dynamite:{name:'Dynamite',effect:'Ataque de alcance 4″: 5 dados, acerta em 4+, dano 4 normal / 5 crítico. Blast 1″ atinge também operativos próximos, inclusive aliados. Saturate impede reter dado de cobertura; Heavy permite somente Reposition junto desse ataque.',limit:'Um uso por batalha, compartilhado pela equipe. Grot e Bomb Squig não podem usar.'},
  harpoon:{name:'Harpoon',effect:'Ataque de alcance 8″: 4 dados, acerta em 4+, dano 4 normal / 5 crítico. Lethal 5+ produz críticos em 5 ou 6; Stun reduz o APL do alvo quando há um crítico retido.',limit:'Um uso por turno, compartilhado pela equipe. Grot e Bomb Squig não podem usar.'},
- explosive:{name:'Explosive Grenades',effect:'Frag: alcance 6″, 4 dados em 4+, dano 2/4 e Blast 2″ (pode atingir aliados). Krak: alcance 6″, 4 dados em 4+, dano 4/5 e Piercing 1 (remove um dado de defesa). Ambas têm Saturate, impedindo reter dado de cobertura.',limit:'No app: uma frag e uma krak por batalha, compartilhadas pela equipe. O estoque próprio do Grenadier é separado. Grot e Bomb Squig não usam. A escolha oficial de duas granadas iguais ainda não está disponível.'}
+ explosive:{name:'Explosive Grenades',effect:'Frag: alcance 6″, 4 dados em 4+, dano 2/4 e Blast 2″ (pode atingir aliados). Krak: alcance 6″, 4 dados em 4+, dano 4/5 e Piercing 1 (remove um dado de defesa). Ambas têm Saturate, impedindo reter dado de cobertura.',limit:'Escolha duas granadas: 2 frag, 2 krak ou uma de cada. Usos compartilhados pela equipe durante a batalha. O Grenadier usa suas granadas sem consumir esse estoque e melhora o Hit para 3+. Grot e Bomb Squig não usam estas armas.'}
 };
 function showEquipmentHelp(id){
   const help=EQUIPMENT_HELP[id];if(!help)return;
@@ -1482,10 +1553,11 @@ function showEquipmentHelp(id){
   document.getElementById('equipment-help').showModal?.();
 }
 function equipmentControls(){
-  const d=G.rosterDraft,options={...(FACTION_EQUIPMENT[d?.k]||{}),explosive:'Explosive Grenades · 1 frag + 1 krak'};
+  const d=G.rosterDraft,options={...(FACTION_EQUIPMENT[d?.k]||{}),explosive:'Explosive Grenades'};
   if(!FACTION_EQUIPMENT[d?.k])return '';
-  return `<div class="abl"><b>EQUIPAMENTO · até 4 opções distintas</b>${Object.entries(options).map(([id,name])=>`<div style="display:flex;align-items:center;gap:8px;margin:6px;min-width:0"><label style="flex:1;min-width:0;overflow-wrap:anywhere"><input type="checkbox" ${(d.equipment||[]).includes(id)?'checked':''} onchange="toggleRosterEquipment('${id}',this.checked)"> ${name}</label><button type="button" class="btn" style="flex:none;min-width:44px;min-height:44px" aria-label="Informações: ${name}" onclick="showEquipmentHelp('${id}')">?</button></div>`).join('')}<small>Esta lista será ampliada com os equipamentos de terreno e utilidade. Nenhum equipamento não selecionado concede bônus.</small></div>`;
+  return `<div class="abl"><b>EQUIPAMENTO · até 4 opções distintas</b>${Object.entries(options).map(([id,name])=>`<div style="display:flex;align-items:center;gap:8px;margin:6px;min-width:0"><label style="flex:1;min-width:0;overflow-wrap:anywhere"><input type="checkbox" ${(d.equipment||[]).includes(id)?'checked':''} onchange="toggleRosterEquipment('${id}',this.checked)"> ${name}</label><button type="button" class="btn" style="flex:none;min-width:44px;min-height:44px" aria-label="Informações: ${name}" onclick="showEquipmentHelp('${id}')">?</button></div>`).join('')}${(d.equipment||[]).includes('explosive')?`<label>Granadas da equipe <select onchange="setGrenadeSelection(this.value)">${[['mixed','1 frag + 1 krak'],['frag','2 frag'],['krak','2 krak']].map(([id,label])=>`<option value="${id}" ${(d.grenadeSelection||'mixed')===id?'selected':''}>${label}</option>`).join('')}</select></label>`:''}<small>Esta lista será ampliada com os equipamentos de terreno e utilidade. Nenhum equipamento não selecionado concede bônus.</small></div>`;
 }
+function setGrenadeSelection(value){if(G.rosterDraft&&['mixed','frag','krak'].includes(value))G.rosterDraft.grenadeSelection=value;}
 function toggleRosterEquipment(id,selected){
   const d=G.rosterDraft;if(!d||![...Object.keys(FACTION_EQUIPMENT[d.k]||{}),'explosive'].includes(id))return;
   const chosen=new Set(d.equipment||[]);if(selected&&chosen.size<4)chosen.add(id);else if(!selected)chosen.delete(id);d.equipment=[...chosen];showRosterBuilder(d.pi,d.k,false);
@@ -1500,7 +1572,8 @@ function equipmentWeapons(op){
   }
   const grenadier=op.templateId==='kt-aod-grenadier';
   if(!excluded&&(grenadier||hasEquipment(op.pi,'explosive')))for(const [id,d,c,tags] of [['frag',2,4,['Blast 2']],['krak',4,5,['Piercing 1']]]){
-    if(grenadier||!(uses[id]>=1))result.push({n:`${id==='frag'?'Frag':'Krak'} grenade`,equipment:grenadier?null:id,t:'r',a:4,h:grenadier?3:4,d,c,tags:['Range 6','Saturate',...tags]});
+    const selection=P(op.pi).grenadeSelection||'mixed',limit=selection==='mixed'?1:selection===id?2:0;
+    if(grenadier||(uses[id]||0)<limit)result.push({n:`${id==='frag'?'Frag':'Krak'} grenade`,equipment:grenadier?null:id,t:'r',a:4,h:grenadier?3:4,d,c,tags:['Range 6','Saturate',...tags]});
   }
   return result;
 }
@@ -1571,7 +1644,7 @@ function actOperativeAbility(id,targetId=null){
 function missionAPCost(op){return op.templateId==='kt-kommando-comms'&&!op._countering&&!op.planDiscountUsed?0:1;}
 function breachCandidates(op){
   if(zOf(op)!==0)return[];
-  const out=[];for(const t of TERRAIN.filter(t=>t.building||t.type==='wall'&&Math.min(t.w,t.h)<=1))for(const side of t.building?['w','e','n','s']:t.w<=1?['w','e']:['n','s']){
+  const out=[];for(const t of TERRAIN.filter(t=>t.building||['wall','stockade'].includes(t.type)&&Math.min(t.w,t.h)<=1))for(const side of t.building?['w','e','n','s']:t.w<=1?['w','e']:['n','s']){
     const vertical=side==='w'||side==='e',edge=vertical?(side==='w'?t.x:t.x+t.w):(side==='n'?t.y:t.y+t.h);
     const coord=vertical?Math.max(t.y,Math.min(t.y+t.h,op.y+.5)):Math.max(t.x,Math.min(t.x+t.w,op.x+.5));
     const x=(vertical?(t.building?edge:t.x+t.w/2):coord)-.5,y=(vertical?coord:(t.building?edge:t.y+t.h/2))-.5;
@@ -1665,7 +1738,7 @@ function cancelDakkaDash(){
 async function explodeBomb(op){
   if(op.explosivesUsed)return false;const weapon=op.wpn.find(w=>w.t==='r');if(!weapon)return false;
   op.explosivesUsed=true;RULES.useWeapon(op,weapon);
-  const targets=[op,...G.ops.filter(t=>t!==op&&!t.dead&&dist(t,op)<=1&&checkLoS(op,t).vis)];
+  const targets=[op,...G.ops.filter(t=>t!==op&&!t.dead&&dist(t,op)<=1&&compoundAreaAllowed(op,t)&&checkLoS(op,t).vis)];
   for(const target of targets){
     const prepared=await prepareShotDice(op,target,weapon,{vis:true,cover:false,obscured:false}),result=resolveShoot(op,target,weapon,prepared);
     await protectShotWithIronHalo(target,weapon,result);const dealt=applyDmg(target,result.dmg,op);log(`${op.n}: Explosives → ${target.n} · ${dealt} dano`);
@@ -2003,8 +2076,9 @@ async function prepareShotDice(att,tgt,wpn,blastLOS=null){
   const camo=tgt.templateId==='kt-aod-eliminator';
   const cover=los.cover&&(camo||!hasTag(wpn,'Saturate')&&!mo.saturate)?(los.vantageReveal&&tgt.order==='conceal'?2:1):0;
   if(cover&&hasChapter(tgt,'stealthy')){const option=await rulesChoice(tgt.pi,'STEALTHY',['Reter cobertura normal adicional','Reter uma cobertura crítica'],'Escolha a proteção; não acumula com cobertura melhorada por Vantage.');tgt.coverMode=option===1?'critical':'extra';}
-  let pierce=RULES.engine(tgt,TEAMS).ignorePiercing?0:mo.pierce;
-  if(!RULES.engine(tgt,TEAMS).ignorePiercing&&hasTag(wpn,'PiercingCrits')&&atk.some(d=>d.k==='crit'))pierce=Math.max(pierce,tagVal(wpn,'PiercingCrits'));
+  const ignorePiercing=RULES.engine(tgt,TEAMS).ignorePiercing||los.cover&&compoundIntervening(att,tgt).length>0;
+  let pierce=ignorePiercing?0:mo.pierce;
+  if(!ignorePiercing&&hasTag(wpn,'PiercingCrits')&&atk.some(d=>d.k==='crit'))pierce=Math.max(pierce,tagVal(wpn,'PiercingCrits'));
   if(dist(att,tgt)>2&&inSmoke(tgt)&&pierce===2)pierce=1;
   const def=rollDef(tgt,tgt.df||3,cover,pierce,(G.ploys[tgt.pi]||[]).includes('tau_shield'),wpn);
   await offerCommandReroll(tgt.pi,def,'Defesa');
@@ -2046,8 +2120,9 @@ function resolveShoot(att,tgt,wpn,prepared=null){
   let cover=(los.cover&&(tgt.templateId==='kt-aod-eliminator'||!hasTag(wpn,'Saturate')&&!mo.saturate))
     ?(los.vantageReveal&&tgt.order==='conceal'?2:1):0;
   const extra=(G.ploys[att.pi===0?1:0]||[]).includes('tau_shield');
-  let pierce=RULES.engine(tgt,TEAMS).ignorePiercing?0:mo.pierce;
-  if(!RULES.engine(tgt,TEAMS).ignorePiercing&&hasTag(wpn,'PiercingCrits')&&atk.some(r=>r.k==='crit'))pierce=Math.max(pierce,tagVal(wpn,'PiercingCrits'));
+  const ignorePiercing=RULES.engine(tgt,TEAMS).ignorePiercing||los.cover&&compoundIntervening(att,tgt).length>0;
+  let pierce=ignorePiercing?0:mo.pierce;
+  if(!ignorePiercing&&hasTag(wpn,'PiercingCrits')&&atk.some(r=>r.k==='crit'))pierce=Math.max(pierce,tagVal(wpn,'PiercingCrits'));
   let def=prepared?.def||rollDef(tgt,tgt.df||3,cover,pierce,extra,wpn);
   // Devastating: críticos causam dano direto, ignoram defesa
   let dmg=0, devastHits=0;
@@ -2121,7 +2196,7 @@ async function resolveFight(att,def,aw,dw,options={}){
   const shock=!options.outsideActivation&&att.chargedThis&&!att._countering&&await offerEventPloy(att,'aod_shock','Ganhar Shock nesta luta e +1 no primeiro golpe (máximo 7 de dano).');
   const pools=[A.filter(r=>r.k!=='fail'),D.filter(r=>r.k!=='fail')],ops=[att,def],weapons=[shock?{...aw,tags:[...aw.tags,'Shock']}:aw,dw];
   const resolved=[0,0],struck=[false,false];
-  const damage=[0,0],stunned=[false,false],shocked=[false,false];let turn=0;
+  const damage=[0,0],stunned=[false,false],shocked=[false,false];let turn=typeof compoundDefenderFirst==='function'&&compoundDefenderFirst(att,def)?1:0;
   G.fightResolving=true;
   try{
     while(ops.every(o=>!o.dead&&o.hp>0)&&pools.some(p=>p.length)){
@@ -2208,7 +2283,7 @@ function chooseGameMode(mode){
   document.getElementById('title-screen').classList.remove('on');startSelect();
 }
 function startSelect(){
-  if(window.AuspexCompoundGame){AuspexCompound.terrain.forEach(t=>{if(t.type==='stockade')t.open=false;});refreshCompoundTerrain();}
+  if(window.AuspexCompoundGame){AuspexCompound.reset();refreshCompoundTerrain();}
   G.deploymentState=null;G.dropZones=null;G.strategyState=null;G.tp=1;
   G.smoke=[];G.boomQueue=[];G.boomResolving=false;G.dakkaCombo=null;G.breachMove=null;G.breaches=[];
   document.body.classList.add('setup-screen');
@@ -2246,17 +2321,16 @@ const TEAM_PITCH={
 };
 function showTeamDetails(pi,k){
  const t=TEAMS[k];if(!t)return;
- openOv(`${t.name} — dossiê`, `<p>${TEAM_PITCH[k]||t.fac}</p><h3>${t.fac} · ${t.limit} escolhas</h3><p>${k==='wlf'?'1 Lobo Fenrisiano obrigatório + 5 scouts. Pack Leader opcional.':k==='kom'?'1 líder. Grot e Bomb Squig ocupam meia escolha cada.':'Inclua 1 líder e respeite os limites de cada operativo.'}</p><h3>${t.rule.n}</h3><p>${t.rule.d}</p><h3>Operativos disponíveis</h3>${t.catalog.map(o=>`<p><b>${o.n}</b> — ${o.w} PV · ${o.apl} APL · proteção ${o.sv}+ · máximo ${o.max}${o.min?' · obrigatório':''}<br>${(o.abl||[]).map(a=>`${a.n}: ${a.d||''}`).join('<br>')}</p>`).join('')}<p>Regras especiais parcialmente implementadas. Este dossiê descreve o cadastro do app, não substitui as regras oficiais. Algumas equipes ainda utilizam sprites substitutos.</p><button class="btn" onclick="showTeamPicker(${pi})">← VOLTAR À SELEÇÃO</button>`,true);
+ openOv(`${t.name} — dossiê`, `<p>${teamAvailable(k)?'Disponível para jogar. Validação de interações ainda em andamento.':'Em breve — este time ainda não pode ser selecionado.'}</p><p>${TEAM_PITCH[k]||t.fac}</p><h3>${t.fac} · ${t.limit} escolhas</h3><p>${k==='wlf'?'1 Lobo Fenrisiano obrigatório + 5 scouts. Pack Leader opcional.':k==='kom'?'1 líder. Grot e Bomb Squig ocupam meia escolha cada.':'Inclua 1 líder e respeite os limites de cada operativo.'}</p><h3>${t.rule.n}</h3><p>${t.rule.d}</p><h3>Operativos disponíveis</h3>${t.catalog.map(o=>`<p><b>${o.n}</b> — ${o.w} PV · ${o.apl} APL · proteção ${o.sv}+ · máximo ${o.max}${o.min?' · obrigatório':''}<br>${(o.abl||[]).map(a=>`${a.n}: ${a.d||''}`).join('<br>')}</p>`).join('')}<p>Regras especiais parcialmente implementadas. Este dossiê descreve o cadastro do app, não substitui as regras oficiais. Algumas equipes ainda utilizam sprites substitutos.</p><button class="btn" onclick="showTeamPicker(${pi})">← VOLTAR À SELEÇÃO</button>`,true);
 }
 const teamAvailable=k=>window.AuspexTeamAvailability?.isAvailable(k)===true;
-function toggleTeamTesting(pi){const policy=window.AuspexTeamAvailability;if(!policy)return;policy.setTesting(!policy.isTesting());showTeamPicker(pi);}
+const teamLogoSource=t=>`assets/team-logos/${t.sourceId==='kt-intercession'?'kt-angelsofdeath':t.sourceId}.jpg`;
 function showTeamPicker(pi){
   openOv(`${P(pi).n} — escolha o kill team`,
-    `<p>${window.AuspexTeamAvailability?.isTesting()?'MODO DE TESTES — Angels of Death e Kommandos liberados para validar o mapa. Nenhum time está certificado como integralmente validado.':'Times sem validação integral estão indisponíveis.'} Use ? para consultar o dossiê.</p><button class="btn" onclick="toggleTeamTesting(${pi})">${window.AuspexTeamAvailability?.isTesting()?'SAIR DO MODO DE TESTES':'ENTRAR NO MODO DE TESTES · AOD / KOMMANDOS'}</button><div class="tlist">${Object.entries(TEAMS).map(([k,t])=>`<article class="army-card">
-      <button class="trow" ${teamAvailable(k)?'':'disabled aria-disabled="true" style="opacity:.45"'} onclick="pickTeam(${pi},'${k}')">
-        <img class="army-portrait" src="${portraitSource(t.catalog.find(o=>o.leader)?.sourceId||t.catalog[0]?.sourceId)}" alt="${t.name}" onerror="portraitFailed(this,'${t.catalog.find(o=>o.leader)?.sourceId||t.catalog[0]?.sourceId}')">
-        <div><div class="tn">${t.name}${['aod','kom'].includes(k)?' <small>· PIXEL ART</small>':''}</div>
-        <div class="td">${teamAvailable(k)?TEAM_PITCH[k]||t.fac:window.AuspexTeamAvailability?.label(k)||'INDISPONÍVEL · não foi possível carregar a validação'}</div></div>
+    `<div class="tlist team-picker">${Object.entries(TEAMS).map(([k,t])=>`<article class="army-card${teamAvailable(k)?'':' unavailable'}">
+      <button class="trow" ${teamAvailable(k)?'':'disabled aria-disabled="true"'} onclick="pickTeam(${pi},'${k}')">
+        <img class="team-logo" src="${teamLogoSource(t)}" alt="" loading="lazy">
+        <span class="tn">${t.name}</span>
       </button><button class="btn army-help" aria-label="Detalhes de ${t.name}" onclick="showTeamDetails(${pi},'${k}')">?</button></article>`).join('')}</div>`,true);
 }
 function pickTeam(pi,k){if(!teamAvailable(k))return msg(window.AuspexTeamAvailability?.reason(k)||'Validação indisponível. Recarregue a página.');showRosterBuilder(pi,k,true);}
@@ -2289,7 +2363,7 @@ function recommendedRoster(){const d=G.rosterDraft;if(!d)return;d.counts=RULES.d
 function setPlayerRoster(pi,k,counts,loadouts={}){
   const t=TEAMS[k],built=RULES.buildRoster(t,counts,loadouts);if(!built.length)return false;P(pi).team=k;
   P(pi).chapter=k==='aod'?{primary:'aggressive',secondary:'hardy',originalSecondary:'hardy'}:null;
-  P(pi).equipment=[];P(pi).equipmentUses={};
+  P(pi).equipment=[];P(pi).equipmentUses={};P(pi).grenadeSelection='mixed';
   P(pi).ops=built.map((o,i)=>({
     ...o, unitId:o.catalogId||o.id, templateId:o.sourceId||o.id, id:`p${pi}_${o.id}_${i}`, pi, teamId:k, n:o.n,
     hp:o.w,maxhp:o.w,x:-1,y:-1,z:0,order:'conceal',ap:o.apl,activated:false,dead:false,marks:0,moved:false,movedFar:false,
@@ -2303,6 +2377,7 @@ function confirmRoster(){
   const d=G.rosterDraft;if(!d)return;const t=TEAMS[d.k],check=RULES.validateRoster(t,d.counts);if(!check.valid)return showRosterBuilder(d.pi,d.k,false);
   const pi=d.pi,k=d.k;if(setPlayerRoster(pi,k,d.counts,d.loadouts)===false)return;
   P(pi).equipment=[...new Set(d.equipment||[])].filter(id=>id==='explosive'||Object.hasOwn(FACTION_EQUIPMENT[k]||{},id)).slice(0,4);
+  P(pi).grenadeSelection=['mixed','frag','krak'].includes(d.grenadeSelection)?d.grenadeSelection:'mixed';
   if(k==='aod'&&d.chapter){for(const key of ['primary','secondary','veteran'])if(!Object.hasOwn(CHAPTER_TACTICS,d.chapter[key]))return;P(pi).chapter={primary:d.chapter.primary,secondary:d.chapter.secondary,originalSecondary:d.chapter.secondary};P(pi).ops.filter(o=>['kt-aod-asgt','kt-aod-isgt'].includes(o.templateId)).forEach(o=>o.chapterVeteran=d.chapter.veteran);}
   G.rosterDraft=null;closeOv();
   if(pi===0&&G.gameMode==='ai'){
@@ -2808,6 +2883,10 @@ function aiActImpl(op,step){
       log(`${op.n}: tiro da IA bloqueado por parede física`);G.mode=null;G.targets=[];G.weapon=null;render();setTimeout(()=>aiAct(op,step+1),180);return;}
   }
   if(aiTryCharge(op,step))return;
+  if(compoundActive()){
+   const breach=stockadeAttackOptions(op).filter(a=>Math.max(a.w.d,a.w.c)>(a.kind==='m'?5:3)&&dist(op,a.target)<=6&&compoundIntervening(op,OBJS[0]).some(t=>t.id===a.t.id)).sort((a,b)=>(b.w.c-b.cost)-(a.w.c-a.cost))[0];
+   if(breach){actStockadeAttack(breach.t.id,breach.kind,breach.index).then(()=>continueAIAction(op,step)).catch(recoverAI);return;}
+  }
   for(const kind of aiMovementKinds(op)){
    if(op.ap>=1&&!inEnemyCR(op.x,op.y,op.pi,zOf(op))){G.mode=null;G.moveCells=[];actMove(kind);
     if(G.mode===kind&&G.moveCells.length){const oi=aiObjectiveFor(op),target=OBJS[oi],enemy=enemiesOf(op.pi);const cellScore=c=>{
@@ -2921,7 +3000,7 @@ function beginActivation(withDoctrine=false){
 }
 function canCancelActivation(op){
   const s=op?.cancelStart;
-  return !!(s&&G.phase==='firefight'&&activationCommitted(op)&&!humanInputLocked()&&!G.fightResolving&&!G.ployChoice&&!G.ironHaloChoice&&!G.heroicDoctrineOp&&!G.pendingReposition&&!G.mode&&!op._countering&&!op.orderLocked&&!op.usedActs.length&&op.ap===s.ap&&op.hp===s.hp&&op.x===s.x&&op.y===s.y&&zOf(op)===s.z);
+  return !!(s&&G.phase==='firefight'&&activationCommitted(op)&&!humanInputLocked()&&!G.terrainAttackResolving&&!G.rerollChoice&&!G.fightResolving&&!G.ployChoice&&!G.ironHaloChoice&&!G.heroicDoctrineOp&&!G.pendingReposition&&!G.mode&&!op._countering&&!op.orderLocked&&!op.usedActs.length&&op.ap===s.ap&&op.hp===s.hp&&op.x===s.x&&op.y===s.y&&zOf(op)===s.z);
 }
 function cancelActivation(){
   const op=G.sel;if(!canCancelActivation(op)){msg('A ativação só pode ser cancelada antes de qualquer ação ou efeito resolvido.');return false;}
@@ -2949,12 +3028,12 @@ function selectOp(op,automated=false){
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
   msg(`<b>Inspecionando ${op.n}.</b> Veja o card ou a visão em primeira pessoa. A ativação só começa quando você tocar em <b class="hl">ATIVAR ESTE OPERATIVO</b>.`);
 }
-function canAct(op,cost){return !!op&&!op.dead&&op.hp>0&&!G.boomResolving&&!G.endingTP&&!G.fightResolving&&!G.ployChoice&&!G.ironHaloChoice&&!G.heroicDoctrineOp&&!G.pendingReposition&&(!op._countering||cost===1||G.dakkaCombo?.op===op&&cost===0)&&op.ap>=cost;}
+function canAct(op,cost){return !!op&&!op.dead&&op.hp>0&&!G.rerollChoice&&!G.terrainAttackResolving&&!G.boomResolving&&!G.endingTP&&!G.fightResolving&&!G.ployChoice&&!G.ironHaloChoice&&!G.heroicDoctrineOp&&!G.pendingReposition&&(!op._countering||cost===1||G.dakkaCombo?.op===op&&cost===0)&&op.ap>=cost;}
 function actionUsed(op,name){return op.usedActs.includes(name);}
 function recordAction(op,name){op.orderLocked=true;op.usedActs.push(name);}
 function spend(op,n,deferFinish=false){op.ap=Math.max(0,op.ap-n);if((op.dead||op.ap<=0)&&!deferFinish)finishOp(op);}
 function finishOp(op){
-  if(G.fightResolving||G.ployChoice||G.ironHaloChoice||G.heroicDoctrineOp||G.dakkaCombo||G.breachMove||G.boomResolving||op._finishing)return;op._finishing=true;
+  if(G.rerollChoice||G.terrainAttackResolving||G.fightResolving||G.ployChoice||G.ironHaloChoice||G.heroicDoctrineOp||G.dakkaCombo||G.breachMove||G.boomResolving||op._finishing)return;op._finishing=true;
   if(!op._countering){G.smoke=(G.smoke||[]).filter(s=>s.remainingActivations===undefined||--s.remainingActivations>0);}
   op.auspex=false;
   if(!op._countering&&op.supportAPL){op.apl-=op.supportAPL;op.supportAPL=0;}
@@ -3111,7 +3190,7 @@ async function doShoot(tgt,opts={}){
   const splash=tagVal(w,'Blast')||tagVal(w,'Torrent');
   if(splash&&!r.marker){
     const blast=hasTag(w,'Blast');
-    for(const e of G.ops.filter(e=>!e.dead&&e.x>=0&&e!==tgt&&dist(e,tgt)<=splash&&checkLoS(tgt,e).vis&&(blast||e.pi!==op.pi&&shotTargetState(op,e,w).valid))){
+    for(const e of G.ops.filter(e=>!e.dead&&e.x>=0&&e!==tgt&&dist(e,tgt)<=splash&&compoundAreaAllowed(tgt,e)&&checkLoS(tgt,e).vis&&(blast||e.pi!==op.pi&&shotTargetState(op,e,w).valid))){
       const secondaryDice=await prepareShotDice(op,e,w,blast?r.los:null);
       const r2=resolveShoot(op,e,w,secondaryDice);await protectShotWithIronHalo(e,w,r2);const d2=applyDmg(e,r2.dmg,op);
       if(d2)extra.push(`${e.n} −${d2}`);
@@ -3199,7 +3278,7 @@ function actPickUp(){
   const cost=missionAPCost(op);if(cost===0)op.planDiscountUsed=true;spend(op,cost);render();
   msg(`<b>${op.n}</b> iniciou a transmissão. No fim do TP: 1 VP por controlar ao menos um transmissor, +1 VP por controlar mais que o adversário.`);
 }
-function endActivation(){if(G.pendingReposition||G.ployChoice||G.ironHaloChoice||G.heroicDoctrineOp)return;const op=G.sel;if(op&&activationCommitted(op))finishOp(op);}
+function endActivation(){if(G.rerollChoice||G.fightResolving||G.terrainAttackResolving||G.pendingReposition||G.ployChoice||G.ironHaloChoice||G.heroicDoctrineOp)return;const op=G.sel;if(op&&activationCommitted(op))finishOp(op);}
 /* ═══════════════ RENDERIZAÇÃO ═══════════════ */
 const bd=document.getElementById('board');
 const bw=document.getElementById('boardwrap');
@@ -3503,7 +3582,8 @@ function renderActsBody(){
    + b(`Atirar${ranged.length>1?' ▾':''}`,"actShoot()",1,op.ap<1||!canShootWeapon||inCR&&op.templateId!=='kt-kommando-bombsquig'||op.shotThis>=maxT,'pri')
    + b(`Lutar${melee.length>1?' ▾':''}`,"actFight()",1,op.ap<1||!inCR||!melee.length||op.foughtThis>=maxF,'pri')
     + (compoundActive()?'':b('Iniciar transmissão',"actPickUp()",missionAPCost(op),op.ap<missionAPCost(op)||actionUsed(op,'objective')||!securableObjective(op)))
-    + compoundDoorOptions(op).map(t=>b(`Abrir porta · ${t.id}`,`actCompoundDoor('${t.id}')`,1,false)).join('')
+    + compoundDoorOptions(op).map(t=>b(`Abrir porta · ${t.id}`,`actCompoundDoor('${t.id}')`,missionAPCost(op),false)).join('')
+    + (stockadeAttackOptions(op).length?'<button class="btn" onclick="showStockadeAttacks()">ATACAR PALIÇADA ▾<small>Escolher arma e brecha</small></button>':'')
     + (markerCapable(op)?b('Marcar alvo',"actMarkerlight()",1,op.ap<1||!markerTargets(op).length):'')
     + operativeActions(op).map(a=>b(a.name,`actOperativeAbility('${a.id}')`,1,!operativeActionAllowed(op,a.id))).join('')
     + (adjustDoctrineContext()?`<button class="btn" ${P(op.pi).cp<adjustDoctrineContext().cp?'disabled':''} onclick="showAdjustDoctrine()">Ajustar Doutrina<small>${adjustDoctrineContext().cp} CP · não gasta AP</small></button>`:'')

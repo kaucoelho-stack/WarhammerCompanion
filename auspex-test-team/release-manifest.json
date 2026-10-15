@@ -1,12 +1,12 @@
 {
-  "name": "Auspex — testes AoD/Kommandos e Volkus",
-  "version": "6-test",
+  "name": "Auspex — AoD, Kommandos e Volkus",
+  "version": "7-playtest",
   "maps": [
     "modular",
     "compound-experimental"
   ],
-  "createdAt": "2026-10-15T12:19:17.003Z",
-  "validation": "Test-only teams; adapted experimental Compound. Remaining rules listed in TEAM-VALIDATION-REMAINING.md and VOLKUS-VALIDATION.md. Not fully validated.",
+  "createdAt": "2026-10-15T19:43:27.829Z",
+  "validation": "AoD/Kommandos available normally; other teams unavailable. Adapted experimental Compound; remaining rules in UPDATE-2026-10-15.md. Local automated evidence in validation-report.json; not full official or browser certification.",
   "files": [
     {
       "path": ".nojekyll",
@@ -44,44 +44,9 @@
       "sha256": "ec939307cb9d28337d80ae93e5815620497e373d8ff016c3946aa72791ada054"
     },
     {
-      "path": "assets/angels-assault-nw-v1.js",
-      "bytes": 88378,
-      "sha256": "cdea4052fb4bda7d7aa863087c0431400e877b7df04211f6153109c6640d0f7f"
-    },
-    {
-      "path": "assets/angels-assault-nw-v1.png",
-      "bytes": 2463000,
-      "sha256": "f2dcdcbf76c3a11bfa501c2dbec4fc430a693626696e9ce8185c178ab2e0c7e5"
-    },
-    {
       "path": "assets/angels-assault-se-v1.js",
       "bytes": 67857,
       "sha256": "af1c5a7987c0dc21e142fdd22eface3e74c221fa19cffbb137fd28adbe9aa9e1"
-    },
-    {
-      "path": "assets/angels-assault-sw-v1.png",
-      "bytes": 2476909,
-      "sha256": "9ab5a1bbbdb0c11a7ef196813437d149137c169e0faf48b3a8739db69924da84"
-    },
-    {
-      "path": "assets/angels-assault-sw-v2.js",
-      "bytes": 83916,
-      "sha256": "b7b78cb3806fcf8247f4736769b3659d5fd4c1c0ea6e2dda1d0c4ddd237042e5"
-    },
-    {
-      "path": "assets/angels-assault-sw-v2.png",
-      "bytes": 2472009,
-      "sha256": "984f3fb08713385163f0e5a7bde9255d29ec025e310169472c180d618083c5d2"
-    },
-    {
-      "path": "assets/angels-assault-swhit-v1.js",
-      "bytes": 38593,
-      "sha256": "5e4ce31abdcba92ff5a97d43489d95f7c077602dd3cac3c43fa3947b5df24c6b"
-    },
-    {
-      "path": "assets/angels-assault-swhit-v1.png",
-      "bytes": 1174653,
-      "sha256": "03e4fd0ed2b9022843f7f1149e539f80ff9d9843db7da67f604af6482563fc0b"
     },
     {
       "path": "assets/angels-assault-warrior-pack-v1.js",
@@ -159,16 +124,6 @@
       "sha256": "768f4ded0b61df0026b9943dcf87c37984382b6b6d2c05bbbbcbfa7f15b871cb"
     },
     {
-      "path": "assets/marine-impact-v1.js",
-      "bytes": 1350,
-      "sha256": "837d351cbb6d5a03eafcb2726d606d74bdcbc067ddb4e3d36ad1eebbdbe5e5ea"
-    },
-    {
-      "path": "assets/marine-impact-v1.png",
-      "bytes": 2230072,
-      "sha256": "1c2c9d4a0d2e43c8754467b41efa4e7c077496a90037d2dc5c742d41e430d169"
-    },
-    {
       "path": "assets/marine-impact-v2.js",
       "bytes": 1351,
       "sha256": "4c6ba5c532d35806c62a4a607afde2faff66faa9b8e2e76556736955a379da21"
@@ -177,26 +132,6 @@
       "path": "assets/marine-impact-v2.png",
       "bytes": 2238928,
       "sha256": "53c75558b99366a0a37355374ebf0e8e0fa91742e3b40fba3fb12c7bb527dd34"
-    },
-    {
-      "path": "assets/marine-melee-v1.js",
-      "bytes": 1200,
-      "sha256": "68626a457caa582a6ce379c077650dd50220cd2a01176c9519aadf9c53a62eba"
-    },
-    {
-      "path": "assets/marine-melee-v1.png",
-      "bytes": 2188153,
-      "sha256": "5ca636e39231445e7637201a65a07002427868bb44535fa814e3fed79d7244d4"
-    },
-    {
-      "path": "assets/marine-melee-v2.js",
-      "bytes": 1200,
-      "sha256": "aa7c667d203a9516389e4b6c36bbde8effc0d4026674f8420aa5c0ec5be95dbe"
-    },
-    {
-      "path": "assets/marine-melee-v2.png",
-      "bytes": 2170163,
-      "sha256": "82a420dab701eeeb08c49ad992494f35cf55772668c18aa1ad209b4375d7dc8b"
     },
     {
       "path": "assets/marine-rear-bolter-v1.js",
@@ -219,16 +154,6 @@
       "sha256": "e8ac0480b24b0145d6300e82ef9c47e06416ba1be54368339d4eea1649702c05"
     },
     {
-      "path": "assets/marine-rear-half-v1.js",
-      "bytes": 387,
-      "sha256": "31a9879fd984a322efe1b8256f47bd73accdd94949f92296f3a50ce4b4e6916f"
-    },
-    {
-      "path": "assets/marine-rear-half-v1.png",
-      "bytes": 808971,
-      "sha256": "dd2a78ee62da034613f973a1cbed089ae4f3b6d08714d2ce331eeaa7e0da87b6"
-    },
-    {
       "path": "assets/marine-rear-impact-v1.js",
       "bytes": 1263,
       "sha256": "be4978c1e7de42396251ce3450696e44d2ae6e4493be68aa16233ae8ea8b99f1"
@@ -239,16 +164,6 @@
       "sha256": "80fdf326d754fa85c66e43d1a5d06f6872c24e4545ca5dfa1c9c40a07d41a506"
     },
     {
-      "path": "assets/marine-rear-left-steps-v1.js",
-      "bytes": 370,
-      "sha256": "dee75844c574ba84d253fa89a30044bae3a043d35bcf3e6d41632a24f60e842e"
-    },
-    {
-      "path": "assets/marine-rear-left-steps-v1.png",
-      "bytes": 999088,
-      "sha256": "57e176bee4c5b1eef3fa73af8bcfdc87263c380d9071a298abb8be1589bc5a95"
-    },
-    {
       "path": "assets/marine-rear-left-steps-v2.js",
       "bytes": 374,
       "sha256": "a173cd93c775878a87f914901169ddd61a3392411b0891bf775d8470a249ee89"
@@ -257,16 +172,6 @@
       "path": "assets/marine-rear-left-steps-v2.png",
       "bytes": 961752,
       "sha256": "b97e83293f724aaa4d1aaf3ae1071130993106bfd6ee5af98f8be0e0a75e9a5c"
-    },
-    {
-      "path": "assets/marine-rear-melee-v1.js",
-      "bytes": 1295,
-      "sha256": "07c1b0642d9c72e3a36309380e50a17295bb9c9ee7686bcb174352b014bdd664"
-    },
-    {
-      "path": "assets/marine-rear-melee-v1.png",
-      "bytes": 2130660,
-      "sha256": "e6317095b30b5e581f1755ce7f8ba25572da650fe6bcc46117b1867032d9fb85"
     },
     {
       "path": "assets/marine-rear-v1.js",
@@ -294,36 +199,6 @@
       "sha256": "7354805cd7f8e2a4c4ed69bca223d0338683ccddbccd95820ccb96b921225f67"
     },
     {
-      "path": "assets/marine-walk-frame6-v4.png",
-      "bytes": 1086671,
-      "sha256": "c0edd0bf9e3a31159e544141fbcc55a36a44fdff37cb506144189bff054ac11b"
-    },
-    {
-      "path": "assets/marine-walk-frame6-v5.js",
-      "bytes": 775,
-      "sha256": "e90b04779bbebc629dca8f613d870c13bea41af3f7f03498ff40441c212800e9"
-    },
-    {
-      "path": "assets/marine-walk-frame6-v5.png",
-      "bytes": 1037025,
-      "sha256": "f54e65ac465ff3e6d1645b5699a5fa739d3d8d2973169687ba318fdfb3f54341"
-    },
-    {
-      "path": "assets/marine-walk-frame6-v6.js",
-      "bytes": 588,
-      "sha256": "4034423727f3e049164ac2f875c74406b94cc75c493a056b0ba1f3f4240d595d"
-    },
-    {
-      "path": "assets/marine-walk-frame6-v6.png",
-      "bytes": 223862,
-      "sha256": "292a7bef32cf2b175e73c558c4aef92ee31ce0c12d6abd50187c16d0cbcf6d55"
-    },
-    {
-      "path": "assets/marine-walk-frame6-v7-last-attempt.png",
-      "bytes": 1082995,
-      "sha256": "0e19e547620488af05a3d27fc9620b66df67f88abb41aa8e847d92689d399cb8"
-    },
-    {
       "path": "assets/marine-walk-v2.js",
       "bytes": 1345,
       "sha256": "4e853094508a4cd778f8f22861e2c8eb27a5f00cce15a3faec5114e65555bb2a"
@@ -332,16 +207,6 @@
       "path": "assets/marine-walk-v2.png",
       "bytes": 2160116,
       "sha256": "1ce78a232a638ccb58e98fa4e7cae76637f46e65c19b3b8bd0ceb536c009c32b"
-    },
-    {
-      "path": "assets/marine-walk-v3-transparent-attempt.png",
-      "bytes": 2161872,
-      "sha256": "f7fc4ea70bc7ac863408fe10d715f9ed9cbd4d53462f10c80cb9d0a5c99bb03e"
-    },
-    {
-      "path": "assets/marine-walk-v3.png",
-      "bytes": 2368566,
-      "sha256": "5623f79be0d1e5e15c5d01773c4b40af319a5373de5cdfa6026cef6d5f2c54c2"
     },
     {
       "path": "assets/mini-aod.png",
@@ -984,6 +849,81 @@
       "sha256": "66331c3a140bcb931b30f097ade225fb4ad3749f0884b871cdc1ef4a51eec999"
     },
     {
+      "path": "assets/team-logos/kt-angelsofdeath.jpg",
+      "bytes": 68461,
+      "sha256": "af57c8a50a87fecaf1ff641614b635ac29553e006a5ca632fa9cba7f7b7085d2"
+    },
+    {
+      "path": "assets/team-logos/kt-battleclade.jpg",
+      "bytes": 141953,
+      "sha256": "97d338934ce3f71ce7e53602114696fa1dce46155701aa0661fe1d94789bfab0"
+    },
+    {
+      "path": "assets/team-logos/kt-blooded.jpg",
+      "bytes": 134015,
+      "sha256": "d566e1a24201430633494ad8a3176fe205ca277aa030af3addd91eb7b55c5782"
+    },
+    {
+      "path": "assets/team-logos/kt-deathwatch.jpg",
+      "bytes": 151519,
+      "sha256": "c18c0eea1661bc82e73373f5e32467ca93113a4fa0b3a4b7e8f70efea1085d20"
+    },
+    {
+      "path": "assets/team-logos/kt-hota.jpg",
+      "bytes": 131332,
+      "sha256": "786549557a2d33a266ca86d5605aa790dd9a8e8546a2c54a1083b878e40ef06f"
+    },
+    {
+      "path": "assets/team-logos/kt-insidiants.jpg",
+      "bytes": 147945,
+      "sha256": "59d531d7d10f3e2f53ad7e13b542d6ed1d54acc23ec10875225aa3940493a3ee"
+    },
+    {
+      "path": "assets/team-logos/kt-kommandos.jpg",
+      "bytes": 125439,
+      "sha256": "170fbeb433264ddd7421632a98c284fab975620eb3e7b8d4a82db4eb0165e8b6"
+    },
+    {
+      "path": "assets/team-logos/kt-krieg.jpg",
+      "bytes": 130188,
+      "sha256": "a914c69cc906b37e2f995b7a1c0f063cc8ccd1855d9b370079373378ed881eff"
+    },
+    {
+      "path": "assets/team-logos/kt-legionaries.jpg",
+      "bytes": 131428,
+      "sha256": "0df5ee44548f261c43a9c40a5a5580348b01a9f766643718475ab8a3f6bda172"
+    },
+    {
+      "path": "assets/team-logos/kt-mandrakes.jpg",
+      "bytes": 101608,
+      "sha256": "eb8403a950c458b6467f3dc9116e49d8b823fdf45ef4f75cd9a4bf9ac0ab393f"
+    },
+    {
+      "path": "assets/team-logos/kt-nemesisclaw.jpg",
+      "bytes": 125302,
+      "sha256": "2b5251b179af5bd6f1363d1508f84fd09f291df80ed34399d620de7651542c42"
+    },
+    {
+      "path": "assets/team-logos/kt-pathfinders.jpg",
+      "bytes": 121067,
+      "sha256": "93717d4baba4ea2818df623d1ad29a5c0acaf17638f44e2d8b4026a10f77597e"
+    },
+    {
+      "path": "assets/team-logos/kt-plaguemarines.jpg",
+      "bytes": 139755,
+      "sha256": "81b775dc34f65e612f99c3c2fb97181c87aa7a4b91b4e8f6429439a02ed48dd2"
+    },
+    {
+      "path": "assets/team-logos/kt-vespid.jpg",
+      "bytes": 145936,
+      "sha256": "154f6237ba9b1dd3b3878a1fc3229c400084eca21a919603755ce3c9c8d2caa3"
+    },
+    {
+      "path": "assets/team-logos/kt-wolfscouts.jpg",
+      "bytes": 130322,
+      "sha256": "a3015cc5df83d165da0ff0691a12f7c40fc45aca37e25dd57fa18e224c9323b7"
+    },
+    {
       "path": "AUDIT-PROGRESS.md",
       "bytes": 30132,
       "sha256": "e3e9326371ecba8830b962344ce7482961c91abc74e65304497a25ca236892db"
@@ -1005,18 +945,18 @@
     },
     {
       "path": "compound-game.html",
-      "bytes": 342369,
-      "sha256": "36e6b42cec105e025ac1b8c59e932dae48f09c6d23bb131e2e8f49ede39cc8c8"
+      "bytes": 349677,
+      "sha256": "f81617c22ee2726161d2ae9932d6873242db0fcda7f5c13a90b289b6381dc218"
     },
     {
       "path": "compound-map.js",
-      "bytes": 5046,
-      "sha256": "0705c91ef548e85294251c9f985a9ebf2422087768f17c0d24826d92b3b449ac"
+      "bytes": 6581,
+      "sha256": "06d8070226c4cfb772bad12b72384361f7a1f4dd2d65567b16619a6b8638c47a"
     },
     {
       "path": "compound-mission.js",
-      "bytes": 1926,
-      "sha256": "292813c68dcdc41715d05f6b7e974d8a551052f579e2d8170120828ae32d8804"
+      "bytes": 1941,
+      "sha256": "df5a56733bed8b2b87cc257251e6569e9c1c8db70f464eca96d8ee94b85d56d2"
     },
     {
       "path": "DATACARD-AUDIT.md",
@@ -1025,8 +965,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 342175,
-      "sha256": "a5ace7ab8cfcb58ca32e2b414b924eb65d7005faae3a539bee55ad7a162ed691"
+      "bytes": 349483,
+      "sha256": "8f64735e71fbdf9457463ec5ebdeae789e952e1ee86b694ccb2e718936205883"
     },
     {
       "path": "intercessor-art.js",
@@ -1070,8 +1010,8 @@
     },
     {
       "path": "PUBLICAR.md",
-      "bytes": 3269,
-      "sha256": "f298af6378be3324f8662e160eea23cb308e8295d273f0a47f1030a91c002de1"
+      "bytes": 3238,
+      "sha256": "ccdbb1dba789009f57b3a98c3a3909ec74709e331fffb5af49c0e971b2f50549"
     },
     {
       "path": "REVIEW-CLAUDE-2026-10-09.txt",
@@ -1090,8 +1030,8 @@
     },
     {
       "path": "RULES-COVERAGE.md",
-      "bytes": 4115,
-      "sha256": "606544ea636528aa70eb5e918fbb4ce95761404f55411aca3dc6e852692b20b8"
+      "bytes": 4547,
+      "sha256": "c0d7ebd2c094f459f9b937ea855d0a1b28ee74e984ec8a5d47b77ec4eef48c94"
     },
     {
       "path": "sprite-assets.js",
@@ -1105,13 +1045,13 @@
     },
     {
       "path": "team-availability.js",
-      "bytes": 566,
-      "sha256": "25b80b57b1ecf2caf92bf882ad67777db410739a977029531c72fb22fdcee3e6"
+      "bytes": 341,
+      "sha256": "e81a9aec047cd4215de1be28dbf447296c31d2bf97b4d9b8359a35a955e794ff"
     },
     {
       "path": "TEAM-VALIDATION-REMAINING.md",
-      "bytes": 3123,
-      "sha256": "2787047d3d21a301e9ff6d2e92cbde87ef9ae8b696e47f6e5ebe062a2b4c4b4a"
+      "bytes": 3423,
+      "sha256": "7790628d93de54a60031d71b46a1548545a5524e6831721499737ff3101da7a8"
     },
     {
       "path": "terrain-painter.js",
@@ -1119,9 +1059,19 @@
       "sha256": "4c72925709f997a1edd761ce95dbc5985471afad2a8dd3fd9228e2b52336747b"
     },
     {
+      "path": "UPDATE-2026-10-15.md",
+      "bytes": 4914,
+      "sha256": "421a8cabb055460d20774eb4f7bcbe70fea5d356c76b72c6d73d2114f45425f7"
+    },
+    {
+      "path": "validation-report.json",
+      "bytes": 27488,
+      "sha256": "1ee57334d84037238e3313f932e02bcd24b2d90c6e9817b6b4ecb77e9ccfaaff"
+    },
+    {
       "path": "VOLKUS-VALIDATION.md",
-      "bytes": 3725,
-      "sha256": "0fd337b979817199383b5d3e715bd3eb26de842ae60e3336d17fb150f55eeec8"
+      "bytes": 4046,
+      "sha256": "8bf743fff13911ca980583290b8691582efc874c7c9e4cebad273e75ac76ee63"
     }
   ]
 }

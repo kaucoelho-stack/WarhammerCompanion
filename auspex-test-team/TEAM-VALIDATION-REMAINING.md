@@ -2,6 +2,8 @@
 
 Conferido no código em 2026-10-15. TEAM-AUDIT, DATACARD-AUDIT e RULES-COVERAGE contêm notas históricas superadas em partes; não usar suas primeiras listas de pendências como inventário atual sem checar o código.
 
+Decisão atual do usuário: AoD e Kommandos disponíveis normalmente; outros times bloqueados. Sem modo de testes. Disponibilidade não é certificação. Ver UPDATE-2026-10-15.md e validation-report.json: baseline dos 20 operativos, 90 testes e 12 partidas headless concluídos nesta bateria.
+
 ## Já existe
 
 Lote de 2026-10-15: defesa humana agora escolhe quais ataques cancelar (incluindo dois normais por um crítico); defensor escolhe seu perfil de retaliação quando há mais de um. A IA mantém a escolha automática. Corrigida a composição Piercing/Piercing Crits para não reduzir Piercing maior nem reativá-lo quando ignorado. Testes novos em `test-combat-choices.cjs`. Isso fecha essas duas escolhas antes automáticas, não a sequência inteira de combate.
@@ -27,4 +29,4 @@ Lote de 2026-10-15: defesa humana agora escolhe quais ataques cancelar (incluind
 - Geometria por bases e cobertura/Obscured/Charge, pois a simulação usa grade aproximada.
 - Testes de jogo completos, vitória/empate/TP4 e QA real em navegador/celular. Não chamar testes de funções de partidas completas.
 
-As duas equipes permanecem somente em MODO DE TESTES. Validação para o Volkus depende também de concluir as regras do próprio cenário em VOLKUS-VALIDATION.md. Não é uma certificação oficial e não há alegação de fidelidade física de 100%.
+As duas equipes estão disponíveis normalmente por decisão do usuário. A validação integral para Volkus ainda depende das pendências do cenário em VOLKUS-VALIDATION.md. Não é uma certificação oficial nem alegação de fidelidade física de 100%.
