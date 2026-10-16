@@ -5,7 +5,7 @@
     "modular",
     "compound-experimental"
   ],
-  "createdAt": "2026-10-15T19:43:27.829Z",
+  "createdAt": "2026-10-16T13:45:43.026Z",
   "validation": "AoD/Kommandos available normally; other teams unavailable. Adapted experimental Compound; remaining rules in UPDATE-2026-10-15.md. Local automated evidence in validation-report.json; not full official or browser certification.",
   "files": [
     {
@@ -945,8 +945,8 @@
     },
     {
       "path": "compound-game.html",
-      "bytes": 349677,
-      "sha256": "f81617c22ee2726161d2ae9932d6873242db0fcda7f5c13a90b289b6381dc218"
+      "bytes": 355591,
+      "sha256": "4c155c45daf28fa54b760438346f41064f6c024a18a2374279090e13433dc1d2"
     },
     {
       "path": "compound-map.js",
@@ -964,9 +964,14 @@
       "sha256": "b21516da2f21d1d951a45f2c3f94671f94cf75e2de6b7645a97b99ebe22ca216"
     },
     {
+      "path": "guard-rules.js",
+      "bytes": 5965,
+      "sha256": "fb53bcca48201584ef6f12ca0d824ec8cb80c7cdc73141e4e6643073a644d947"
+    },
+    {
       "path": "index.html",
-      "bytes": 349483,
-      "sha256": "8f64735e71fbdf9457463ec5ebdeae789e952e1ee86b694ccb2e718936205883"
+      "bytes": 355397,
+      "sha256": "ecdd8a87a7ff9145bb7da2f44a736a9551c7889ff28b5be13212b5764930be5f"
     },
     {
       "path": "intercessor-art.js",
@@ -1005,8 +1010,8 @@
     },
     {
       "path": "pixel-tactics.js",
-      "bytes": 44809,
-      "sha256": "b2c177016dfff3a4561a44685a2d38a9196fddffd56b55d6b656d814d16559c8"
+      "bytes": 44898,
+      "sha256": "30ff98918f36b779fe328ad7b0c163cfdd91c8ed1cae82948bcc8c80135b6277"
     },
     {
       "path": "PUBLICAR.md",
@@ -1050,8 +1055,8 @@
     },
     {
       "path": "TEAM-VALIDATION-REMAINING.md",
-      "bytes": 3423,
-      "sha256": "7790628d93de54a60031d71b46a1548545a5524e6831721499737ff3101da7a8"
+      "bytes": 3638,
+      "sha256": "0b052c33b234e7a10df657611bef89dc0b9b0a743aa68ec255bb5203f563b79a"
     },
     {
       "path": "terrain-painter.js",
@@ -1064,14 +1069,19 @@
       "sha256": "421a8cabb055460d20774eb4f7bcbe70fea5d356c76b72c6d73d2114f45425f7"
     },
     {
+      "path": "UPDATE-2026-10-16.md",
+      "bytes": 1635,
+      "sha256": "5bbc1fc9a5f919b9c71ee4f4a66319c3efbb85e0c4d48442073390f0195ee75b"
+    },
+    {
       "path": "validation-report.json",
-      "bytes": 27488,
-      "sha256": "1ee57334d84037238e3313f932e02bcd24b2d90c6e9817b6b4ecb77e9ccfaaff"
+      "bytes": 28621,
+      "sha256": "f325b16df234586baa9e660691719b50357a3d9354265693d21c48392f8534ed"
     },
     {
       "path": "VOLKUS-VALIDATION.md",
-      "bytes": 4046,
-      "sha256": "8bf743fff13911ca980583290b8691582efc874c7c9e4cebad273e75ac76ee63"
+      "bytes": 4387,
+      "sha256": "8a527ef7ced2dcfd0fd781453eea6850689fb03f40f328048aa72d821cc5d014"
     }
   ]
 }

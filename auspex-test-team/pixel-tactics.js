@@ -155,7 +155,8 @@
     const hp=Math.max(0,o.hp),max=Math.max(1,o.maxhp||hp),ratio=Math.min(1,hp/max);
     ctx.fillStyle='#0c1825';ctx.fillRect(p.x-w/2-1,y-1,w+2,7);
     ctx.fillStyle=ratio<=.3?'#ff7772':o.pi===0?'#7be0b2':'#87cfff';ctx.fillRect(p.x-w/2,y,w*ratio,5);
-    if(!mobileView())label(`${o.ico||''} ${hp}/${max} · ${o.order==='conceal'?'C':'E'}${o.activated?' ✓':''}`,{x:p.x,y:y-5},o.pi===0?'#ffda89':'#a2ddfa');
+    if(!mobileView())label(`${o.ico||''} ${hp}/${max} · ${o.order==='conceal'?'C':'E'}${o.activated?' ✓':''}${o.onGuard?' · GUARD':''}`,{x:p.x,y:y-5},o.pi===0?'#ffda89':'#a2ddfa');
+    else if(o.onGuard)label('GUARD',{x:p.x,y:y-5},'#ffd36a');
     if(walking?.id===o.id){const start=walking.path[0],end=walking.path.at(-1);label(end.z>start.z?'SUBINDO':end.z<start.z?'DESCENDO':'MOVENDO',{x:p.x,y:y-21},'#baffea');}
   }
   function previewPath(){

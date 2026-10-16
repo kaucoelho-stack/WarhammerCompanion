@@ -1,5 +1,7 @@
 # Volkus — validação em andamento, não certificado
 
+Atualização 2026-10-16: Guard de bunker, secundários Blast/Torrent de ataques a paliçadas, área de Devastating e descida com Arrancada agora estão integrados. Ver UPDATE-2026-10-16.md e o relatório atual. Esses itens não devem mais ser lidos como ausentes nas notas históricas abaixo. QA visual no navegador ainda não concluído.
+
 Atualização vigente: ver UPDATE-2026-10-15.md. AoD/Kommandos disponíveis sem modo separado. A seção histórica abaixo registra o início da validação; parte dos bloqueadores já recebeu implementação neste lote. A bateria reproduzível concluiu 90 testes e 12 partidas headless; navegador/aparelho real continuam sem aceite.
 
 Prioridade do usuário em 2026-10-15: pausar arte e expansão de equipes; terminar e validar o Bastião. Equipes sem validação integral indisponíveis. Com autorização explícita, AoD/Kommandos acessíveis somente ao ativar MODO DE TESTES na seleção. Padrão de lançamento: nenhum time certificado. Dossiês preservados. IA respeita a mesma disponibilidade; confirmação de roster bloqueada se o modo for desativado.

@@ -1,5 +1,7 @@
 # AoD e Kommandos — implementação não é validação integral
 
+Atualização 2026-10-16: Guard, área de Devastating, sequência Blast/Torrent e descida com Arrancada receberam implementação e regressões. Ver UPDATE-2026-10-16.md; as notas de 15/10 abaixo são históricas.
+
 Conferido no código em 2026-10-15. TEAM-AUDIT, DATACARD-AUDIT e RULES-COVERAGE contêm notas históricas superadas em partes; não usar suas primeiras listas de pendências como inventário atual sem checar o código.
 
 Decisão atual do usuário: AoD e Kommandos disponíveis normalmente; outros times bloqueados. Sem modo de testes. Disponibilidade não é certificação. Ver UPDATE-2026-10-15.md e validation-report.json: baseline dos 20 operativos, 90 testes e 12 partidas headless concluídos nesta bateria.

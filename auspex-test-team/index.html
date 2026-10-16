@@ -834,7 +834,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
  <h2 id="equipment-help-heading"></h2><div id="equipment-help-body"></div>
  <button class="btn" style="min-height:44px" onclick="document.getElementById('equipment-help').close()">VOLTAR</button>
 </dialog>
-<script src="team-availability.js"></script><script src="music.js"></script>
+<script src="team-availability.js"></script><script src="guard-rules.js"></script><script src="music.js"></script>
 <script src="battlefield.js"></script>
 <script src="killteam_data.js"></script>
 <script src="auspex-rules.js"></script>
@@ -1090,7 +1090,7 @@ function actCompoundDoor(id){
  if(G.phase!=='firefight'||!op||op.pi!==G.cur||!activationCommitted(op)||G.mode||!compoundDoorOptions(op).some(t=>t.id===id))return false;
  const cost=missionAPCost(op);if(!AuspexCompound.openDoor(id,op,cost))return false;if(!cost)op.planDiscountUsed=true;
  recordAction(op,'stockade-door');refreshCompoundTerrain();applyKillzone('compound');
- log(`${op.n} abriu ${id} · ${cost} AP · abertura permanente`);if(op.ap<=0&&!isAI(op.pi))finishOp(op);render();return true;
+ log(`${op.n} abriu ${id} · ${cost} AP · abertura permanente`);spend(op,0,isAI(op.pi));render();return true;
 }
 function stockadeAttackOptions(op){
  if(!compoundActive()||!op||['kt-kommando-grot','kt-kommando-bombsquig'].includes(op.templateId))return [];
@@ -1100,6 +1100,7 @@ function stockadeAttackOptions(op){
   // Probe the visible face of the removable part, not the opaque wall behind it.
   const ax=op.x+.5,ay=op.y+.5,bx=target.x+.5,by=target.y+.5,len=Math.hypot(bx-ax,by-ay)||1;
   const face={...target,x:target.x-(bx-ax)/len*.51,y:target.y-(by-ay)/len*.51};
+  target.areaOrigin=face;
   const silhouette=shotSilhouette(op,face),visible=silhouette.visible;
   const los={vis:visible,cover:false,obscured:silhouette.distantHeavy||dist(op,target)>2&&(inSmoke(op)||inSmoke(target))};
   for(const kind of ['r','m'])for(const [index,w]of weaponsOf(op,kind).entries()){
@@ -1125,6 +1126,17 @@ async function actStockadeAttack(id,kind,index){
  const choice=stockadeAttackOptions(op).find(a=>a.t.id===id&&a.kind===kind&&a.index===index);if(!choice)return false;
  const {t,target,w,cost}=choice,tp=G.tp;let committed=false;G.terrainAttackResolving=true;closeOv();
  try{
+  const stockadeHotHit=Math.max(2,Math.min(6,2+mods(op,null,{...w,h:2},kind==='r').hit));
+  const plan=kind==='r'?await shotAreaPlan(op,target,w):[target];let dealt=0;
+  for(const victim of plan){
+   if(victim!==target){
+    if(victim.dead)continue;
+    const prepared=await prepareShotDice(op,victim,w,hasTag(w,'Blast')?choice.los:null),result=resolveShoot(op,victim,w,prepared);
+    await protectShotWithIronHalo(victim,w,result);const damage=(prepared.retained?.primaryDamage||0)+applyDmg(victim,result.dmg,op);
+    if(damage&&(hasTag(w,'Poison')||hasTag(w,'Toxic')))victim.poisoned=1;
+    if(damage&&result.atk.some(d=>d.k==='crit')&&hasTag(w,'Terrorchem'))victim.terrorchem=1;
+    log(`${op.n}: secundário da paliçada → ${victim.n} · ${damage} dano`);continue;
+   }
   const weapon={...w,h:2},mo=mods(op,null,weapon,kind==='r');
   const atk=rollAtk(weapon,{...mo,deferRerolls:true,deferRetention:true},weapon.a);
   await offerWeaponRerolls(op,atk,mo);await offerCommandReroll(op.pi,atk,'Ataque à paliçada',weapon);retainAttackDice(atk,weapon,mo);await offerPuritySeals(op,atk);
@@ -1134,7 +1146,11 @@ async function actStockadeAttack(id,kind,index){
   }
   if(G.phase!=='firefight'||G.tp!==tp||G.sel!==op||op.dead||t.open)return false;
   let normals=atk.filter(d=>d.k==='suc').length,criticals=atk.filter(d=>d.k==='crit').length;
-  if(kind==='r'){
+  dealt+=AuspexCompound.damageStockade(id,Array(criticals).fill(mo.devast||0),kind==='m');
+  const spec=devastatingSpec(weapon);
+  if(spec.radius&&criticals)for(const other of G.ops.filter(o=>!o.dead&&dist(o,target)<=spec.radius&&compoundAreaAllowed(target.areaOrigin,o)&&checkLoS(target.areaOrigin,o).vis))for(let i=0;i<criticals;i++)applyDmg(other,spec.damage,op);
+  if(t.open){normals=0;criticals=0;}
+  if(kind==='r'&&!t.open){
    let pierce=mo.pierce;if(criticals&&hasTag(weapon,'PiercingCrits'))pierce=Math.max(pierce,tagVal(weapon,'PiercingCrits'));
    const classify=v=>v===6?'crit':v>=4?'suc':'fail';
    const def=Array.from({length:Math.max(0,4-pierce)},()=>{const v=d6();return{v,k:classify(v)};});
@@ -1142,16 +1158,18 @@ async function actStockadeAttack(id,kind,index){
    if(allocation){normals=allocation.nNorm;criticals=allocation.nCrit;}
    else{let dc=def.filter(d=>d.k==='crit').length,dn=def.filter(d=>d.k==='suc').length;while(criticals&&dc){criticals--;dc--;}while(criticals&&dn>=2){criticals--;dn-=2;}while(normals&&(dn||dc)){normals--;if(dn)dn--;else dc--;}}
   }
-  if(G.phase!=='firefight'||G.tp!==tp||G.sel!==op||op.dead||t.open)return false;
-  const instances=[...Array(normals).fill(w.d),...Array(criticals).fill(w.c),...Array(atk.filter(d=>d.k==='crit').length).fill(mo.devast||0)];
-  const dealt=AuspexCompound.damageStockade(id,instances,kind==='m');
+  if(G.phase!=='firefight'||G.tp!==tp||G.sel!==op)return false;
+  const instances=[...Array(normals).fill(w.d),...Array(criticals).fill(w.c)];
+  dealt+=AuspexCompound.damageStockade(id,instances,kind==='m');
+  refreshCompoundTerrain();applyKillzone('compound');
+  }
   if(kind==='r'){op.shotThis++;op.battleShots=(op.battleShots||0)+1;(op.shotWeapons||(op.shotWeapons=[])).push(w.n);(op.shotProfiles||(op.shotProfiles=[])).push(w);RULES.useWeapon(op,w);if(w.equipment){const uses=P(op.pi).equipmentUses||(P(op.pi).equipmentUses={});uses[w.equipment]=w.equipment==='harpoon'?G.tp:(uses[w.equipment]||0)+1;}}
   else op.foughtThis++;
   recordAction(op,kind==='m'?'fight':'shoot');op.ap=Math.max(0,op.ap-cost);committed=true;
-  if(kind==='r'&&hasTag(w,'Hot')){const hot=d6();if(hot<Math.max(2,Math.min(6,2+mo.hit)))applyDmg(op,hot*2);}
+  if(kind==='r'&&hasTag(w,'Hot')){const hot=d6();if(hot<stockadeHotHit)applyDmg(op,hot*2);}
   refreshCompoundTerrain();applyKillzone('compound');log(`${op.n}: ${w.n} contra ${id} · ${dealt} dano · ${t.open?'BRECHA ABERTA':t.wounds+'/8 PV'} · ${cost} AP`);
   render();return true;
- }finally{G.terrainAttackResolving=false;if(committed&&(op.dead||op.ap<=0)&&!isAI(op.pi)&&G.phase==='firefight')finishOp(op);render();}
+ }finally{G.terrainAttackResolving=false;if(committed&&G.phase==='firefight'&&!checkElimination())spend(op,0,isAI(op.pi));render();}
 }
 function compoundDeployCell(pi,x,y){const zones=pi===1?[AuspexCompound.zones.defence]:AuspexCompound.zones.offence;return zones.some(z=>x>=z.x&&x<z.x+z.w&&y>=z.y&&y<z.y+z.h);}
 const roofAt=(x,y)=>TERRAIN.find(t=>t.t==='h'&&t.z&&!t.noClimb&&x>=t.x&&x<t.x+t.w&&y>=t.y&&y<t.y+t.h);
@@ -1428,7 +1446,7 @@ function combatAssist(op,target){
   return alive(op.pi).filter(a=>a!==op&&mutualControl(a,target)&&!enemiesOf(op.pi).some(e=>e!==target&&mutualControl(a,e))).length;
 }
 function reachable(op,maxDist,opts={}){
-  const {ignoreCR=false,endInCR=false,fly=false,allowClimb=true}=opts;
+  const {ignoreCR=false,endInCR=false,fly=false,allowClimb=true,allowDrop=true}=opts;
   const seen={},out=[],q=[{x:op.x,y:op.y,z:zOf(op),d:0}];
   seen[op.x+','+op.y+','+zOf(op)]=0;
   while(q.length){
@@ -1457,11 +1475,12 @@ function reachable(op,maxDist,opts={}){
       seen[k]=nd;if(!(cr&&!endInCR&&!ignoreCR))q.push(next);
       if(endInCR?true:!cr)out.push(next);
     }
-    if(allowClimb){for(const s of STAIRS){
+    if(allowClimb||allowDrop){for(const s of STAIRS){
       if(s.decorative)continue;const fromZ=s.fromZ||0,toZ=s.toZ||s.z||2,
         atA=c.x===s.x&&c.y===s.y&&Math.abs(c.z-fromZ)<.001,atB=c.x===s.tx&&c.y===s.ty&&Math.abs(c.z-toZ)<.001;
       if(!atA&&!atB)continue;
-      const climbCost=s.ladder?1:(s.climbCost||Math.ceil(Math.abs(toZ-fromZ))),destinations=[atA?
+      if(atA&&!allowClimb||atB&&!allowDrop)continue;
+      const climbCost=atB?Math.max(0,Math.ceil(Math.abs(toZ-fromZ))-2):s.ladder?1:(s.climbCost||Math.ceil(Math.abs(toZ-fromZ))),destinations=[atA?
         {x:s.tx,y:s.ty,z:toZ,d:c.d+climbCost+Math.hypot(s.tx-s.x,s.ty-s.y)}:{x:s.x,y:s.y,z:fromZ,d:c.d+climbCost+Math.hypot(s.tx-s.x,s.ty-s.y)}];
       for(const v of destinations){
         if(v.d>maxDist+0.001||!surfaceAt(v.x,v.y,v.z)&&v.z>0||occupied(v.x,v.y,op,v.z))continue;
@@ -1730,7 +1749,7 @@ function continueDakkaDash(){
   if(combo.remaining[0]==='dash')actMove('dash');
   else pickWeapon(combo.op,'r','DAKKA DASH · escolha Dakka Shoota',w=>actShoot(w),w=>/dakka shoota/i.test(w.n));
 }
-function completeDakkaStep(kind){const c=G.dakkaCombo;if(!c||c.remaining[0]!==kind)return false;c.remaining.shift();c.completed++;continueDakkaDash();return true;}
+function completeDakkaStep(kind){if(G.guardWindow&&!G.guardActor){G.guardResumeCombo=kind;return;}const c=G.dakkaCombo;if(!c||c.remaining[0]!==kind)return false;c.remaining.shift();c.completed++;continueDakkaDash();return true;}
 function cancelDakkaDash(){
   const c=G.dakkaCombo;if(!c||c.op.shotThis)return false;
   Object.assign(c.op,c.snapshot);G.dakkaCombo=null;G.mode=null;G.targets=[];G.moveCells=[];G.weapon=null;closeOv();render();return true;
@@ -1741,7 +1760,7 @@ async function explodeBomb(op){
   const targets=[op,...G.ops.filter(t=>t!==op&&!t.dead&&dist(t,op)<=1&&compoundAreaAllowed(op,t)&&checkLoS(op,t).vis)];
   for(const target of targets){
     const prepared=await prepareShotDice(op,target,weapon,{vis:true,cover:false,obscured:false}),result=resolveShoot(op,target,weapon,prepared);
-    await protectShotWithIronHalo(target,weapon,result);const dealt=applyDmg(target,result.dmg,op);log(`${op.n}: Explosives → ${target.n} · ${dealt} dano`);
+    await protectShotWithIronHalo(target,weapon,result);const dealt=(prepared.retained?.primaryDamage||0)+applyDmg(target,result.dmg,op);log(`${op.n}: Explosives → ${target.n} · ${dealt} dano`);
   }
   return true;
 }
@@ -1763,6 +1782,7 @@ async function useBombExplosives(op){
 }
 function shotTargetState(op,tgt,w){
   const los=checkLoS(op,tgt);
+  if(G.guardActor===op&&G.guardPointBlank&&mutualControl(op,tgt))return{valid:true,los};
   if(dist(op,tgt)>RULES.rangeOf(w))return{valid:false,reason:'fora do alcance',los};
   if(!los.vis)return{valid:false,reason:'parede ou estrutura sólida bloqueia completamente a miniatura',los};
   if(tgt.templateId==='kt-kommando-grot'&&los.cover&&dist(op,tgt)>2)return{valid:false,reason:'Sneaky Zogger: Grot em cobertura; somente alvo a até 2″',los};
@@ -1888,6 +1908,7 @@ function mods(op,tgt,wpn,isShoot){
   const has=id=>pl.includes(id);
   // Effect handlers below are explicit; descriptive text never grants a bonus.
   if(injuryPenaltyApplies(op))m.hit+=1;
+  if(isShoot&&G.guardActor===op&&G.guardPointBlank)m.hit+=1;
   if(isShoot&&tgt&&tgt.order==='engage'&&zOf(op)-zOf(tgt)>=2)m.accurate=1;
   if(RULES.engine(op,TEAMS).blooded&&op.blooded)m.accurate=Math.max(1,m.accurate);
   // Regras universais da arma e modificadores de ploy.
@@ -1924,8 +1945,41 @@ function mods(op,tgt,wpn,isShoot){
   if(foePl.includes('pm_cont')&&enemiesOf(op.pi).some(e=>dist(e,op)<=3))m.hit+=1;
   m.pierce=tagVal(wpn,'Piercing');
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&op.moved&&/neutron/i.test(wpn.n))m.pierce=Math.max(1,m.pierce);
-  m.devast=tagVal(wpn,'Devastating');
+  m.devast=devastatingSpec(wpn).damage;
   return m;
+}
+function devastatingSpec(weapon){
+ for(const tag of weapon.tags||[]){const m=tag.match(/^(?:(\d+(?:\.\d+)?)\s*["″]\s*)?Devastating\s+(\d+)/i);if(m)return{radius:Number(m[1]||0),damage:Number(m[2])};}
+ return{radius:0,damage:0};
+}
+function areaCandidates(att,primary,weapon,kind){
+ const radius=tagVal(weapon,kind);if(!radius)return[];
+ const origin=primary.areaOrigin||primary;
+ return G.ops.filter(e=>e!==primary&&!e.dead&&e.x>=0&&dist(e,primary)<=radius&&(!G.guardActor||window.AuspexGuard.allowsTarget(att,e))&&compoundAreaAllowed(origin,e)&&(kind==='Blast'?checkLoS(origin,e).vis:e.pi!==att.pi&&shotTargetState(att,e,weapon).valid));
+}
+async function chooseAreaOrder(att,targets,title){
+ const pending=[...targets],ordered=[];
+ while(pending.length){if(isAI(att.pi)||pending.length===1){ordered.push(...pending);break;}
+  const i=await rulesChoice(att.pi,title,pending.map(o=>`${o.n} · ${o.hp} PV`),'Escolha o próximo alvo. Continuar mantém a ordem dos restantes.');
+  if(i<0){ordered.push(...pending);break;}ordered.push(pending.splice(i,1)[0]);
+ }return ordered;
+}
+async function shotAreaPlan(att,primary,weapon){
+ if(hasTag(weapon,'Blast'))return[primary,...await chooseAreaOrder(att,areaCandidates(att,primary,weapon,'Blast'),'BLAST — ORDEM DOS SECUNDÁRIOS')];
+ if(!hasTag(weapon,'Torrent'))return[primary];
+ const pending=areaCandidates(att,primary,weapon,'Torrent'),selected=[];
+ if(isAI(att.pi))selected.push(...pending);
+ else while(pending.length){const i=await rulesChoice(att.pi,'TORRENT — ADICIONAR ALVO',pending.map(o=>o.n),'Selecione quantos secundários desejar. Continuar encerra a seleção.');if(i<0)break;selected.push(pending.splice(i,1)[0]);}
+ return chooseAreaOrder(att,[primary,...selected],'TORRENT — ORDEM DOS ATAQUES');
+}
+async function retainedShotEffects(att,target,weapon,atk){
+ const spec=devastatingSpec(weapon),crits=atk.filter(d=>d.k==='crit').length,result={primaryDamage:0,splash:[],applied:true};
+ if(spec.damage&&crits){
+  const affected=[target,...(spec.radius?G.ops.filter(o=>o!==target&&!o.dead&&dist(o,target)<=spec.radius&&compoundAreaAllowed(target,o)&&checkLoS(target,o).vis):[])];
+  for(const op of affected){let damage=0;for(let i=0;i<crits;i++)damage+=applyDmg(op,spec.damage,att);if(op===target)result.primaryDamage=damage;else if(damage)result.splash.push(`${op.n} −${damage} Devastating`);}
+ }
+ if(crits&&hasTag(weapon,'Stun')&&!target.dead)await changeAPLPenalty(target,1);
+ return result;
 }
 
 // Rola dados de ataque aplicando re-rolls e conversões
@@ -2073,6 +2127,8 @@ async function prepareShotDice(att,tgt,wpn,blastLOS=null){
     if(successes.length){const selected=await rulesChoice(att.pi,'OBSCURED — DESCARTAR UM SUCESSO',successes.map(d=>`${d.v} · sucesso normal`),'O alvo continua válido. Críticos viram normais e um sucesso deve ser descartado.');atk.splice(atk.indexOf(successes[Math.max(0,selected)]),1);}
   }
   if(hasTag(wpn,'Markerlight'))return{atk,def:[]};
+  const retained=await retainedShotEffects(att,tgt,wpn,atk);
+  if(tgt.dead)return{atk,def:[],los,retained,allocation:{nCrit:0,nNorm:0}};
   const camo=tgt.templateId==='kt-aod-eliminator';
   const cover=los.cover&&(camo||!hasTag(wpn,'Saturate')&&!mo.saturate)?(los.vantageReveal&&tgt.order==='conceal'?2:1):0;
   if(cover&&hasChapter(tgt,'stealthy')){const option=await rulesChoice(tgt.pi,'STEALTHY',['Reter cobertura normal adicional','Reter uma cobertura crítica'],'Escolha a proteção; não acumula com cobertura melhorada por Vantage.');tgt.coverMode=option===1?'critical':'extra';}
@@ -2085,7 +2141,7 @@ async function prepareShotDice(att,tgt,wpn,blastLOS=null){
   if((G.ploys[tgt.pi]||[]).includes('aod_indomitus')&&def.filter(d=>d.k==='fail').length>=2){const failures=def.filter(d=>d.k==='fail');def.splice(def.indexOf(failures[0]),1);failures[1].k='suc';failures[1].retained=true;}
   if(def.some(d=>d.k==='suc')&&await offerEventPloy(tgt,'aod_transhuman','Converter um sucesso normal de defesa em crítico.'))def.find(d=>d.k==='suc').k='crit';
   const allocation=await chooseShotDefence(tgt,atk,def);
-  return{atk,def,los,allocation};
+  return{atk,def,los,allocation,retained};
 }
 async function chooseShotDefence(target,atk,def){
  if(isAI(target.pi))return null;
@@ -2129,7 +2185,7 @@ function resolveShoot(att,tgt,wpn,prepared=null){
   let atkLeft=atk.filter(r=>r.k!=='fail');
   if(mo.devast>0){
     const crits=atkLeft.filter(r=>r.k==='crit');
-    devastHits=crits.length; dmg+=crits.length*mo.devast;
+    devastHits=crits.length;if(!prepared?.retained?.applied)dmg+=crits.length*mo.devast;
     // Devastating não descarta o crítico: ele ainda é resolvido normalmente.
   }
   // Defensor bloqueia automaticamente (IA simples: bloqueia os mais perigosos)
@@ -2184,7 +2240,7 @@ async function resolveFight(att,def,aw,dw,options={}){
   if(typeof window!=='undefined')window.AuspexIntercessorGame?.action(att,'fight',aw);
   if(typeof window!=='undefined')window.AuspexAssaultPlayer?.action(att,'fight',aw);
   const am=mods(att,def,aw,false),dm=mods(def,att,dw,false);
-  const A=rollAtk(aw,{...am,deferRerolls:true,deferRetention:true},aw.a),D=rollAtk(dw,{...dm,deferRerolls:true,deferRetention:true},dw.a);
+  const A=rollAtk(aw,{...am,deferRerolls:true,deferRetention:true},aw.a),D=typeof window!=='undefined'&&window.AuspexGuard?.suppressed(def)?[]:rollAtk(dw,{...dm,deferRerolls:true,deferRetention:true},dw.a);
   await offerTiltingShield(def,A);await offerTiltingShield(att,D);
   await offerWeaponRerolls(att,A,am);await offerWeaponRerolls(def,D,dm);
   if(typeof offerCommandReroll==='function'){
@@ -2283,6 +2339,7 @@ function chooseGameMode(mode){
   document.getElementById('title-screen').classList.remove('on');startSelect();
 }
 function startSelect(){
+  G.guardWindow=null;G.guardActor=null;G.guardResolving=false;G.guardResumeAI=null;
   if(window.AuspexCompoundGame){AuspexCompound.reset();refreshCompoundTerrain();}
   G.deploymentState=null;G.dropZones=null;G.strategyState=null;G.tp=1;
   G.smoke=[];G.boomQueue=[];G.boomResolving=false;G.dakkaCombo=null;G.breachMove=null;G.breaches=[];
@@ -2472,7 +2529,7 @@ function startTP(){
   G.phase='strategy';G.gaRequired=null;
   [0,1].forEach(pi=>{if(P(pi).chapter)P(pi).chapter.secondary=P(pi).chapter.originalSecondary;});G.endingTP=false;
   G.ops.forEach(o=>{o._finishing=false;o.activated=false;o.ap=o.dead?0:o.apl;o.moved=false;o.movedFar=false;
-    o.chargedThis=false;o.shotThis=0;o.shotWeapons=[];o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;o.aiObjective=null;o.markerTarget=null;o.shotPrimaryTarget=null;});
+    o.chargedThis=false;o.shotThis=0;o.shotWeapons=[];o.foughtThis=0;o.usedActs=[];o.orderLocked=false;o.counteracted=false;o.activationStarted=false;o.aiObjective=null;o.markerTarget=null;o.shotPrimaryTarget=null;o.onGuard=null;o.guardNoRetaliation=null;});
   [0,1].forEach(pi=>{if(RULES.engine(alive(pi)[0],TEAMS).blooded){const mark=alive(pi).find(o=>!o.blooded)||alive(pi)[0];if(mark)mark.blooded=1;}});
   [0,1].forEach(pi=>{if(TEAMS[P(pi).team]?.sourceId==='kt-vespid')P(pi).communion=(d6()%3+1)+(alive(pi).some(o=>/oversight drone/i.test(o.n))?1:0);});
   G.ploys={0:[],1:[]};G.combatDoctrine={};G.doctrinePicker=null;
@@ -2804,6 +2861,7 @@ function aiAct(op,step){
   try{return aiActImpl(op,step);}catch(error){recoverAI(error);}
 }
 function continueAIAction(op,step){
+  if(G.guardWindow){G.guardResumeAI={op,step};return;}
   if(G.phase!=='firefight'||G.cur!==op.pi||!isAI(op.pi))return;
   if(op._finishing){G.aiBusy=false;return;}
   if(op.dead||op.hp<=0){G.aiBusy=false;if(!checkElimination())finishOp(op);return;}
@@ -2883,6 +2941,7 @@ function aiActImpl(op,step){
       log(`${op.n}: tiro da IA bloqueado por parede física`);G.mode=null;G.targets=[];G.weapon=null;render();setTimeout(()=>aiAct(op,step+1),180);return;}
   }
   if(aiTryCharge(op,step))return;
+  if(op.ap===1&&window.AuspexGuard?.canGuard(op)&&window.AuspexGuard.act()){setTimeout(()=>continueAIAction(op,step),400);return;}
   if(compoundActive()){
    const breach=stockadeAttackOptions(op).filter(a=>Math.max(a.w.d,a.w.c)>(a.kind==='m'?5:3)&&dist(op,a.target)<=6&&compoundIntervening(op,OBJS[0]).some(t=>t.id===a.t.id)).sort((a,b)=>(b.w.c-b.cost)-(a.w.c-a.cost))[0];
    if(breach){actStockadeAttack(breach.t.id,breach.kind,breach.index).then(()=>continueAIAction(op,step)).catch(recoverAI);return;}
@@ -2976,6 +3035,7 @@ function commitActivation(op){
   if(counterOK&&!op._countering){op._finishing=false;op.ap=1;op.usedActs=[];op.shotThis=0;op.shotWeapons=[];op.foughtThis=0;op.moved=false;op.movedFar=false;op.chargedThis=false;op.orderLocked=true;op._countering=true;op.counterMoveDistance=0;op.wrathCounter=false;op.markerTarget=null;op.shotPrimaryTarget=null;}
   if(!counterOK&&!op.activationStarted){
     op.activationStarted=true;
+    op.activationSerial=(op.activationSerial||0)+1;op.guardInterrupted=false;
     op.optics=false;op.planDiscountUsed=false;op.order=operativeOrder(op,op.order);
     op.shotProfiles=[];
     if(op.aplPenalty&&!hasChapter(op,'resolute')&&op.shakeTP!==G.tp)op.ap=Math.max(1,op.ap-op.aplPenalty);
@@ -3028,12 +3088,12 @@ function selectOp(op,automated=false){
   requestAnimationFrame(()=>focusBoard(op.x,op.y,true));
   msg(`<b>Inspecionando ${op.n}.</b> Veja o card ou a visão em primeira pessoa. A ativação só começa quando você tocar em <b class="hl">ATIVAR ESTE OPERATIVO</b>.`);
 }
-function canAct(op,cost){return !!op&&!op.dead&&op.hp>0&&!G.rerollChoice&&!G.terrainAttackResolving&&!G.boomResolving&&!G.endingTP&&!G.fightResolving&&!G.ployChoice&&!G.ironHaloChoice&&!G.heroicDoctrineOp&&!G.pendingReposition&&(!op._countering||cost===1||G.dakkaCombo?.op===op&&cost===0)&&op.ap>=cost;}
+function canAct(op,cost){return !!op&&(!G.guardWindow||G.guardActor===op)&&!op.dead&&op.hp>0&&!G.rerollChoice&&!G.terrainAttackResolving&&!G.boomResolving&&!G.endingTP&&!G.fightResolving&&!G.ployChoice&&!G.ironHaloChoice&&!G.heroicDoctrineOp&&!G.pendingReposition&&(!op._countering||cost===1||G.dakkaCombo?.op===op&&cost===0)&&op.ap>=cost;}
 function actionUsed(op,name){return op.usedActs.includes(name);}
-function recordAction(op,name){op.orderLocked=true;op.usedActs.push(name);}
-function spend(op,n,deferFinish=false){op.ap=Math.max(0,op.ap-n);if((op.dead||op.ap<=0)&&!deferFinish)finishOp(op);}
+function recordAction(op,name){if(typeof window!=='undefined')window.AuspexGuard?.onAction(op,name);op.orderLocked=true;op.usedActs.push(name);}
+function spend(op,n,deferFinish=false){op.ap=Math.max(0,op.ap-n);if(window.AuspexGuard?.queue(op,deferFinish))return;if((op.dead||op.ap<=0)&&!deferFinish)finishOp(op);}
 function finishOp(op){
-  if(G.rerollChoice||G.terrainAttackResolving||G.fightResolving||G.ployChoice||G.ironHaloChoice||G.heroicDoctrineOp||G.dakkaCombo||G.breachMove||G.boomResolving||op._finishing)return;op._finishing=true;
+  if(G.guardWindow||G.rerollChoice||G.terrainAttackResolving||G.fightResolving||G.ployChoice||G.ironHaloChoice||G.heroicDoctrineOp||G.dakkaCombo||G.breachMove||G.boomResolving||op._finishing)return;op._finishing=true;
   if(!op._countering){G.smoke=(G.smoke||[]).filter(s=>s.remainingActivations===undefined||--s.remainingActivations>0);}
   op.auspex=false;
   if(!op._countering&&op.supportAPL){op.apl-=op.supportAPL;op.supportAPL=0;}
@@ -3153,10 +3213,12 @@ function selectShotTarget(id){focusShotTarget(id);}
 function confirmShotTargetChoice(){const tgt=G.aimTarget;if(!tgt||!G.targets.includes(tgt))return;showShotPreview(tgt);}
 function showShotPreview(tgt){
   const op=G.sel,w=G.weapon||bestWeapon(op,'r'),range=weaponDamageRange(op,tgt,w),los=checkLoS(op,tgt),cover=los.cover?(los.coverType==='light'?'LEVE':'PESADA'):'SEM COBERTURA';
+  const areaKind=hasTag(w,'Blast')?'Blast':hasTag(w,'Torrent')?'Torrent':null,nearby=areaKind?areaCandidates(op,tgt,w,areaKind):[];
+  const areaInfo=areaKind?`<div class="abl"><b>${areaKind.toUpperCase()} · ${tagVal(w,areaKind)}″</b><br>${nearby.length?`${areaKind==='Blast'?'Também serão atacados':'Secundários disponíveis para selecionar'}: ${nearby.map(o=>`${o.n}${o.pi===op.pi?' (ALIADO)':''}`).join(', ')}`:'Nenhum secundário elegível próximo.'}${areaKind==='Torrent'?'<br>Cada secundário precisa ser um alvo válido do atirador.':''}</div>`:'';
   openOv('CONFIRMAR ATAQUE',`<div class="shot-preview"><div class="rowlbl">${op.n} → ${tgt.n}</div><div style="font:700 15px var(--fd);color:#eaf8ff;margin-top:4px">${w.n}</div>
     <div class="shot-range"><span>DANO POSSÍVEL</span><strong>${range.min}–${range.max} PV</strong></div>
     <div class="shot-meta"><div><b>${tgt.hp}/${tgt.maxhp}</b><small>PV DO ALVO</small></div><div><b>${tgt.sv}+</b><small>SAVE</small></div><div><b>${cover}</b><small>PROTEÇÃO</small></div></div>
-    <div style="font-size:9px;color:var(--txt2);line-height:1.45;margin-top:9px">${range.note}<br>O ataque ainda não gastou AP e nenhum dado foi rolado.</div></div>
+    ${areaInfo}<div style="font-size:9px;color:var(--txt2);line-height:1.45;margin-top:9px">${range.note}<br>O ataque ainda não gastou AP e nenhum dado foi rolado.</div></div>
     <div class="roster-actions"><button class="btn" onclick="cancelShotPreview()">CANCELAR</button><button class="btn" onclick="changeShotWeapon()">TROCAR ARMA</button><button class="btn pri confirm" onclick="confirmShot('${tgt.id}')">CONFIRMAR TIRO · ${RULES.shootPermission(op,w,TEAMS).cost} AP</button></div>`,true);
 }
 function cancelShotPreview(){closeOv();G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;render();msg('<b>Ataque cancelado.</b> Nenhum AP ou uso de arma foi gasto.');}
@@ -3175,32 +3237,26 @@ async function doShoot(tgt,opts={}){
   if(TEAMS[op.teamId].sourceId==='kt-vespid'&&!/drone/i.test(op.n)){const nearest=enemiesOf(op.pi).filter(e=>dist(op,e)<=8).sort((a,b)=>dist(op,a)-dist(op,b))[0];if(nearest&&nearest!==tgt){if(P(op.pi).communion<1){G.mode=null;G.targets=[];render();msg('<b class="hl">Communion:</b> sem pontos para ignorar o inimigo mais próximo.');return;}P(op.pi).communion--;}}
   const wasAlive=new Set(G.ops.filter(o=>!o.dead).map(o=>o.id)),hotHit=Math.max(2,Math.min(6,w.h+mods(op,tgt,w,true).hit));
   if(opts.ai&&hasEquipment(op.pi,'auspex')&&P(op.pi).equipmentUses?.auspex!==G.tp&&targetNow.los?.obscured&&dist(op,tgt)<=8)activateAuspex();
-  const prepared=await prepareShotDice(op,tgt,w);
-  const r=resolveShoot(op,tgt,w,prepared);
-  await protectShotWithIronHalo(tgt,w,r);
-  const dealt=r.marker?0:applyDmg(tgt,r.dmg,op);
+  const plan=await shotAreaPlan(op,tgt,w);let r=null,dealt=0,extra=[];
+  for(const target of plan){
+    if(target.dead)continue;
+    const prepared=await prepareShotDice(op,target,w,hasTag(w,'Blast')&&target!==tgt?targetNow.los:null);
+    const result=resolveShoot(op,target,w,prepared);await protectShotWithIronHalo(target,w,result);
+    const damage=result.marker?0:(prepared.retained?.primaryDamage||0)+applyDmg(target,result.dmg,op);
+    extra.push(...(prepared.retained?.splash||[]));
+    if(target===tgt){r=result;dealt=damage;}else extra.push(`${target.n} −${damage}`);
+    if(result.ironHaloPrevented)extra.push(`${target.n} ignorou ${result.ironHaloPrevented} de um dado normal`);
+    if(damage>0&&(hasTag(w,'Poison')||hasTag(w,'Toxic')))target.poisoned=Math.max(1,target.poisoned||0);
+    if(damage>0&&result.atk.some(d=>d.k==='crit')&&hasTag(w,'Terrorchem'))target.terrorchem=1;
+    if(damage>0&&TEAMS[op.teamId].sourceId==='kt-hota')op.pain=(op.pain||0)+(target.dead&&target.maxhp>=12?2:1);
+  }
+  r=r||{atk:[],def:[],dmg:0,nNorm:0,nCrit:0,los:targetNow.los};
   op.shotPrimaryTarget=tgt.id;op.shotThis++;op.battleShots=(op.battleShots||0)+1;
   (op.shotWeapons||(op.shotWeapons=[])).push(w.n);
   (op.shotProfiles||(op.shotProfiles=[])).push(w);
   RULES.useWeapon(op,w);
   if(w.equipment){const uses=P(op.pi).equipmentUses||(P(op.pi).equipmentUses={});uses[w.equipment]=w.equipment==='harpoon'?G.tp:(uses[w.equipment]||0)+1;}
   recordAction(op,'shoot');
-  let extra=[];
-  // Blast / Torrent atingem vizinhos
-  const splash=tagVal(w,'Blast')||tagVal(w,'Torrent');
-  if(splash&&!r.marker){
-    const blast=hasTag(w,'Blast');
-    for(const e of G.ops.filter(e=>!e.dead&&e.x>=0&&e!==tgt&&dist(e,tgt)<=splash&&compoundAreaAllowed(tgt,e)&&checkLoS(tgt,e).vis&&(blast||e.pi!==op.pi&&shotTargetState(op,e,w).valid))){
-      const secondaryDice=await prepareShotDice(op,e,w,blast?r.los:null);
-      const r2=resolveShoot(op,e,w,secondaryDice);await protectShotWithIronHalo(e,w,r2);const d2=applyDmg(e,r2.dmg,op);
-      if(d2)extra.push(`${e.n} −${d2}`);
-    }
-  }
-  if(r.ironHaloPrevented)extra.push(`${tgt.teamId==='kom'?'Só um Arranhão':'Iron Halo'}: ${tgt.n} ignorou ${r.ironHaloPrevented} de um dado normal`);
-  if(dealt>0&&(hasTag(w,'Poison')||hasTag(w,'Toxic')))tgt.poisoned=Math.max(1,tgt.poisoned||0);
-  if(r.atk.some(d=>d.k==='crit')&&hasTag(w,'Stun'))await changeAPLPenalty(tgt,1);
-  if(dealt>0&&r.atk.some(d=>d.k==='crit')&&hasTag(w,'Terrorchem'))tgt.terrorchem=1;
-  if(dealt>0&&TEAMS[op.teamId].sourceId==='kt-hota')op.pain=(op.pain||0)+(tgt.dead&&tgt.maxhp>=12?2:1);
   if(tgt.dead&&hasTag(w,'Stinger'))enemiesOf(op.pi).filter(e=>e!==tgt&&dist(e,tgt)<=2).forEach(e=>{const sd=d6()%3+1,got=applyDmg(e,sd,op);if(got)extra.push(`${e.n} −${got} por Stinger`);});
   const hotRoll=hasTag(w,'Hot')?d6():null;
   const hot=hotRoll!==null&&hotRoll<hotHit?applyDmg(op,hotRoll*2):0;
@@ -3208,6 +3264,7 @@ async function doShoot(tgt,opts={}){
   const casualties=G.ops.filter(o=>wasAlive.has(o.id)&&o.dead);
   log(`${op.n} atirou em ${tgt.n} com ${w.n}: ${dealt} de dano${hot?` · Hot causou ${hot} em ${op.n}`:''}${tgt.dead?' · INCAPACITADO':''}`);
   if(hot)extra.push(`${op.n} sofreu −${hot} por Hot`);G.mode=null;G.targets=[];G.weapon=null;G.aimTarget=null;
+  if(opts.guard){log(`Guard: ${extra.join(' · ')}`);return{casualties,dealt,target:tgt};}
   const continuation=G.dakkaCombo?.op===op?()=>completeDakkaStep('shoot'):opts.onContinue?()=>opts.onContinue({casualties,dealt,target:tgt}):null;
   showCombat('TIRO',op,tgt,w,r,dealt,extra,continuation,!!opts.ai);
   spend(op,permission.cost,!!opts.ai);render();if(!opts.ai)checkElimination();
@@ -3230,7 +3287,7 @@ async function doFight(tgt,opts={}){
   const aw=G.weapon||bestWeapon(op,'m');
   const dw=await chooseRetaliationWeapon(tgt);
   if(G.sel!==op||!canAct(op,1)||tgt.dead||tgt.hp<=0||!mutualControl(op,tgt)||!dw)return;
-  const r=await resolveFight(op,tgt,aw,dw);
+  const r=await resolveFight(op,tgt,aw,dw,{outsideActivation:!!opts.guard});
   op.foughtThis++;
   recordAction(op,'fight');
   const dA=r.dmgA, dD=r.dmgD;
@@ -3243,18 +3300,21 @@ async function doFight(tgt,opts={}){
   const casualties=G.ops.filter(o=>wasAlive.has(o.id)&&o.dead);
   log(`${op.n} lutou contra ${tgt.n}: ${dA} de dano causado · ${dD} sofrido${casualties.length?' · INCAPACITAÇÃO':''}`);
   G.mode=null;G.targets=[];G.weapon=null;
+  if(opts.guard)return{casualties,dealt:dA,target:tgt};
   showCombat('COMBATE',op,tgt,aw,{atk:r.A,def:r.D,dmg:r.dmgA,melee:true},dA,
     dD?[`${op.n} sofreu −${dD} ao retaliar`]:[],opts.onContinue?()=>opts.onContinue({casualties,dealt:dA,target:tgt}):null,!!opts.ai);
   spend(op,1,!!opts.ai);render();if(!opts.ai)checkElimination();
 }
 async function chooseRetaliationWeapon(op){
  const choices=weaponsOf(op,'m');
+ if(window.AuspexGuard?.suppressed(op)){const w=bestWeapon(op,'m');return w?{...w,a:0}:null;}
  if(choices.length<=1||isAI(op.pi))return choices.length?bestWeapon(op,'m'):null;
  const index=await rulesChoice(op.pi,'ARMA DE RETALIAÇÃO',choices.map(w=>`${w.n} · ${w.a} dados · ${w.h}+ · ${w.d}/${w.c} dano`),'Escolha o perfil para esta luta. Continuar mantém a primeira arma da lista.');
  return choices[Math.max(0,index)]||null;
 }
 function toggleOrder(){
   const op=G.sel;if(!op)return;
+  if(G.guardWindow)return;op.onGuard=null;
   if(op.orderLocked){msg('<b class="hl">A ordem é escolhida no início da ativação e já está travada.</b>');return;}
   op.order=operativeOrder(op,op.order==='conceal'?'engage':'conceal');
   log(`${op.n} → ${op.order==='conceal'?'Conceal':'Engage'}`);
@@ -3278,7 +3338,7 @@ function actPickUp(){
   const cost=missionAPCost(op);if(cost===0)op.planDiscountUsed=true;spend(op,cost);render();
   msg(`<b>${op.n}</b> iniciou a transmissão. No fim do TP: 1 VP por controlar ao menos um transmissor, +1 VP por controlar mais que o adversário.`);
 }
-function endActivation(){if(G.rerollChoice||G.fightResolving||G.terrainAttackResolving||G.pendingReposition||G.ployChoice||G.ironHaloChoice||G.heroicDoctrineOp)return;const op=G.sel;if(op&&activationCommitted(op))finishOp(op);}
+function endActivation(){if(G.guardWindow||G.rerollChoice||G.fightResolving||G.terrainAttackResolving||G.pendingReposition||G.ployChoice||G.ironHaloChoice||G.heroicDoctrineOp)return;const op=G.sel;if(op&&activationCommitted(op))finishOp(op);}
 /* ═══════════════ RENDERIZAÇÃO ═══════════════ */
 const bd=document.getElementById('board');
 const bw=document.getElementById('boardwrap');
@@ -3527,6 +3587,7 @@ function renderActsBody(){
   }
   if(G.pendingReposition){const p=G.pendingReposition;el.innerHTML=`<div class="inspect-banner">DESTINO: ${p.cell.z||0}″ · ${p.cell.d.toFixed(1)}″ de movimento · aguardando confirmação</div><button class="btn pri" onclick="confirmReposition()">CONFIRMAR REPOSICIONAMENTO · 1 AP</button><button class="btn" onclick="undoReposition()">↶ DESFAZER MOVIMENTO</button>`;return;}
   if(G.phase!=='firefight'){el.innerHTML='';return;}
+  if(G.guardWindow){el.innerHTML='<p>GUARD · resolvendo interrupção. A ativação será retomada em seguida.</p>';return;}
   if(humanInputLocked()){
     el.innerHTML=`<div class="ai-turn-lock"><span class="ai-pulse">IA AUSPEX EM OPERAÇÃO</span> · controles bloqueados até o fim da ativação</div><button class="btn" onclick="showLog()">📜 ACOMPANHAR LOG</button>`;
     return;
@@ -3583,6 +3644,7 @@ function renderActsBody(){
    + b(`Lutar${melee.length>1?' ▾':''}`,"actFight()",1,op.ap<1||!inCR||!melee.length||op.foughtThis>=maxF,'pri')
     + (compoundActive()?'':b('Iniciar transmissão',"actPickUp()",missionAPCost(op),op.ap<missionAPCost(op)||actionUsed(op,'objective')||!securableObjective(op)))
     + compoundDoorOptions(op).map(t=>b(`Abrir porta · ${t.id}`,`actCompoundDoor('${t.id}')`,missionAPCost(op),false)).join('')
+    + (window.AuspexGuard?.canGuard(op)?'<button class="btn" onclick="AuspexGuard.act()">GUARD · 1 AP<small>Vigiar a partir do bunker</small></button>':op.onGuard?'<small>EM GUARD · ação ou mudança de ordem encerra a vigília</small>':'')
     + (stockadeAttackOptions(op).length?'<button class="btn" onclick="showStockadeAttacks()">ATACAR PALIÇADA ▾<small>Escolher arma e brecha</small></button>':'')
     + (markerCapable(op)?b('Marcar alvo',"actMarkerlight()",1,op.ap<1||!markerTargets(op).length):'')
     + operativeActions(op).map(a=>b(a.name,`actOperativeAbility('${a.id}')`,1,!operativeActionAllowed(op,a.id))).join('')
@@ -3601,7 +3663,7 @@ function openOv(t,b,noClose,variant=''){
   if(variant)ov.classList.add(variant);ov.classList.add('on');
   document.querySelector('#ov .x').style.display=noClose?'none':'flex';
 }
-function closeOv(){G.adjustDoctrineOp=null;G.heroicDoctrineOp=null;document.getElementById('ov').classList.remove('on','targeting','mobile-battle-sheet');}
+function closeOv(){G.adjustDoctrineOp=null;G.heroicDoctrineOp=null;document.getElementById('ov').classList.remove('on','targeting','mobile-battle-sheet');window.AuspexGuard?.schedule();}
 let overlayContinue=null;
 function continueOverlay(){
   const fn=overlayContinue;overlayContinue=null;closeOv();
